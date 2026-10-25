@@ -55,6 +55,18 @@ public class PyromancerTests
             Assert.Equal(3.0, c.Remaining, 6); // the same ignite, 1 s older
         });
 
+        // A use whose ignites already landed on every target spreads nothing more (no extra stacks, even with room for them).
+        void Fireball(string dir)
+        {
+            Ignite100(dir, "test_fireball");
+            SetSkill(dir, "test_fireball", ("cooldown", "100")); // one cast
+        }
+        const string Stacks = "{\"type\":\"modifier\",\"stat\":\"ignite_max_stacks\",\"kind\":\"flat\",\"value\":4}";
+        var maxStacks = 0;
+        Run(MageAsc(Stacks + "," + Mech("spread_ignite"), Fireball), Mage(true, "test_fireball"), "test_pack", duration: 1.5,
+            observe: s => maxStacks = Math.Max(maxStacks, Enumerable.Range(0, 5).Max(i => s.Targets[i].Stacks("ignite"))));
+        Assert.Equal(1, maxStacks);
+
         var plainSpread = false;
         Run(MageAsc("", Mutate), Mage(true, "test_bolt"), "test_pack", duration: 2,
             observe: s => plainSpread |= Enumerable.Range(1, 4).Any(i => s.Targets[i].HasAilment("ignite")));
@@ -89,6 +101,21 @@ public class PyromancerTests
             Assert.Equal(1.25, capped[i] / plain[i], 3);
             Assert.Equal(1.0, unignited[i] / plain[i], 3);
         }
+
+        // target_ignited is the hit target: a fireball hits the whole pack, only #3 is ignited (4 stacks): only its hits gain 4%.
+        double[] TargetHits(string effects, int target)
+        {
+            var r = Run(MageAsc(effects), Mage(true, "test_fireball"), "test_pack", duration: 2, observe: s =>
+            {
+                if (s.Time != 0) return;
+                for (var k = 0; k < 4; k++) s.Targets[3].Apply(Ignite(), 99, StackRule.ReplaceWeakest);
+            });
+            return HitAmounts(r, "test_fireball").Where((_, i) => r.Log.Where(e => e.Kind == "hit").ElementAt(i).Text.Contains($"#{target}:")).ToArray();
+        }
+        var plain3 = TargetHits("", 3);
+        var ashes3 = TargetHits(Mech("ashes"), 3);
+        Assert.Equal(1.04, ashes3[1] / plain3[1], 3);
+        Assert.Equal(TargetHits("", 1)[1], TargetHits(Mech("ashes"), 1)[1], 9);
     }
 
     [Fact]

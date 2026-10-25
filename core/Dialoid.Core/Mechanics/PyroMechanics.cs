@@ -9,10 +9,11 @@ namespace Dialoid.Core.Mechanics;
 // ignite_max_stacks +2 for spells) and Метеоритный дождь (damage More -50 plus two on_use casts of the meteor) are plain effects.
 
 /// <summary>
-/// Распространение, sandbox rule (spec 10.4): on a pack, an ignite that lands on one target counts as applied to every other
-/// living pack target delay (1) s later. The copy is the same instance (same damage per second), delay seconds older; it
-/// lands by the target's stacking rule and does not spread again. ("A dying ignited target passes its ignite to its
-/// neighbours" is the game rule; the sandbox has no positions, so it uses this one.)
+/// Распространение, sandbox rule (spec 10.4): on a pack, the ignite a use lands counts as applied to every living pack
+/// target delay (1) s later. Ignites that landed at the same moment from the same skill form one group: the strongest of
+/// them spreads, delay seconds older and at the same damage per second, to the living targets the group missed (so a use
+/// that already ignited the whole pack adds nothing). Copies land by the target's stacking rule and never spread again.
+/// ("A dying ignited target passes its ignite to its neighbours" is the game rule; the sandbox has no positions.)
 /// </summary>
 public sealed class SpreadIgnite : IMechanic
 {
@@ -31,14 +32,16 @@ public sealed class SpreadIgnite : IMechanic
         var pending = ctx.State<List<Pending>>("pending");
         if (pending.Count == 0) return;
         var now = ctx.Time + dt; // end of this step: the ailments already ticked
-        var delay = ctx.Number("delay", 1);
-        foreach (var p in pending.Where(p => now >= p.LandedAt + delay - 1e-9).ToList())
+        var due = pending.Where(p => now >= p.LandedAt + ctx.Number("delay", 1) - 1e-9).ToList();
+        foreach (var p in due) pending.Remove(p);
+        foreach (var group in due.GroupBy(p => (p.LandedAt, p.Ailment.SourceSkillId)))
         {
-            pending.Remove(p);
-            var copy = p.Ailment with { Remaining = p.Ailment.Remaining - (now - p.LandedAt) };
+            var best = group.MaxBy(p => p.Ailment.DamagePerSec)!;
+            var copy = best.Ailment with { Remaining = best.Ailment.Remaining - (now - best.LandedAt) };
             if (copy.Remaining <= 1e-9) continue;
+            var reached = group.Select(p => p.Source).ToHashSet();
             for (var i = 0; i < ctx.TargetCount; i++)
-                if (i != p.Source && ctx.IsAlive(i))
+                if (!reached.Contains(i) && ctx.IsAlive(i))
                     ctx.LandAilment(i, copy);
         }
     }
