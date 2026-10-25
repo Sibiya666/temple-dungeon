@@ -418,29 +418,32 @@ public class AscendancyContentTests
         "training" => ContentHarness.Run(b, "training").DpsSingleTarget,
         "boss" => ContentHarness.Run(b, "boss").DpsSingleTarget,
         "swarm" => ContentHarness.Run(b, "swarm").DpsPack,
-        "survival" => SurvivalScore(b),
-        "ttd" => ContentHarness.Survival(b).TimeToDeath ?? 180,
+        "taken45" => 1 / DamageTakenInWindow(b, 45),
         "training_pack" => ContentHarness.Run(b, "training", 5).DpsPack,
         _ => throw new ArgumentException(metric),
     };
 
     /// <summary>
-    /// Survival against the attacking boss as seconds survived per point of damage taken (as in the skill fork tests): the boss
-    /// hits in rare big blows, so time to death alone moves in whole attacks.
+    /// Damage the character takes from «Атакующий босс» in the first <paramref name="seconds"/> of the fight (it must survive them).
+    /// A fixed window, unlike time to death (which moves in whole boss attacks of 3.5 s): armor and resistances count continuously;
+    /// a freeze counts as the attacks it makes the boss skip.
     /// </summary>
-    private static double SurvivalScore(Build b)
+    private static double DamageTakenInWindow(Build b, double seconds)
     {
-        var r = ContentHarness.Survival(b);
+        var r = new Simulator(ContentHarness.Data, MechanicRegistry.Default)
+            .Run(b, new SimConfig("attacking_boss", SimMode.Average, DummyAttacks: true, SurvivalCapSec: seconds));
         Assert.Empty(r.Violations);
+        Assert.True(r.TimeToDeath is null || r.TimeToDeath >= seconds - 1e-9, $"died at {r.TimeToDeath} s");
         var taken = r.DamageTaken?.Values.Sum() ?? 0;
-        return taken > 0 ? (r.TimeToDeath ?? 180) / taken : double.MaxValue;
+        Assert.True(taken > 0);
+        return taken;
     }
 
     /// <summary>Each notable is worth its 2 points in at least one reference-style build: taking it (on top of the build's
     /// other picks) raises that build's metric by more than 5%. Metrics: DPS on «Тренировочный» (training), on «Босс» (boss), on
     /// a pack of five immortal training dummies (training_pack: a long fight against a group, where ignites pile up), pack DPS on
-    /// «Рой» (swarm), survival score against «Атакующий босс» (survival, seconds per point of damage taken) and plain time to
-    /// death there (ttd: moves in whole boss attacks of 3.5 s — used for nodes whose gain is the extra blow survived).</summary>
+    /// «Рой» (swarm), and the inverse of the damage taken from «Атакующий босс» in a fixed 45 s window (taken45). Notables below
+    /// the bar are pinned separately (<see cref="Fire_armor_is_alive_but_below_the_bar"/>) as Task 10 items.</summary>
     [Theory]
     [InlineData("whirl_rage", "whirl", "training", new[] { "battle_trance" })]
     [InlineData("battle_trance", "whirl", "training", new[] { "whirl_rage" })]
@@ -455,16 +458,15 @@ public class AscendancyContentTests
     [InlineData("grounding", "precise", "training", new string[0])]
     [InlineData("storm_veins", "precise", "boss", new string[0])]
     [InlineData("spread_ignite", "pyro_compress", "swarm", new string[0])]
-    [InlineData("ashes", "pyro_fireball", "training_pack", new[] { "eternal_fire" })]
+    [InlineData("ashes", "pyro_compress", "training_pack", new[] { "spread_ignite" })]
     [InlineData("eternal_fire", "pyro_fireball", "training", new string[0])]
     [InlineData("meteor_rain", "pyro_meteor", "training", new string[0])]
-    [InlineData("fire_armor", "pyro_fireball", "ttd", new string[0])]
     [InlineData("soul_heat", "pyro_fireball_solo", "swarm", new string[0])]
     [InlineData("shatter", "cryo_lance", "training", new string[0])]
-    [InlineData("ice_armor", "cryo_lance", "survival", new string[0])]
+    [InlineData("ice_armor", "cryo_lance", "taken45", new string[0])]
     [InlineData("frost_orb_asc", "cryo_fireball", "training", new[] { "shatter", "brittle" })]
     [InlineData("brittle", "cryo_lance", "training", new string[0])]
-    [InlineData("aurora", "cryo_lance", "ttd", new[] { "ice_armor" })]
+    [InlineData("aurora", "cryo_lance", "taken45", new string[0])]
     [InlineData("glacier", "cryo_lance", "training", new string[0])]
     public void Every_notable_pays_off_in_a_reference_build(string notable, string build, string metric, string[] others)
     {
@@ -692,5 +694,61 @@ public class AscendancyContentTests
         double Armor(Build b) => Compile(b).Evaluator.Evaluate("armor", default).Value;
         Assert.Equal(Armor(Make(false)), Armor(Make(false, "fire_armor")), 6);
         Assert.True(Armor(Make(true, "fire_armor")) > Armor(Make(true)) * 1.1);
+    }
+
+    /// <summary>
+    /// Огненная броня is alive but under the ×1.05 bar (Task 10 mandatory, BALANCE_NOTES): +30% of the sorcerer's small armor cuts
+    /// about 3.5% of the boss damage in a fixed window, and the +10 fire resistance cap is never reached. Tripwire: when Task 10
+    /// lifts it over the bar, move it into <see cref="Every_notable_pays_off_in_a_reference_build"/>.
+    /// </summary>
+    [Fact]
+    public void Fire_armor_is_alive_but_below_the_bar()
+    {
+        var gain = DamageTakenInWindow(PyroFireball(), 45) / DamageTakenInWindow(PyroFireball("fire_armor"), 45);
+        Assert.True(gain is > 1.02 and <= 1.05, $"fire_armor ×{gain:0.###}");
+    }
+
+    /// <summary>
+    /// Spec 10.4 example: a Pyromancer Fireball with «Вечное пламя» and «Пламя души» 2/2 has 1 + 2 + 2 + 2 = 7 ignite stacks
+    /// (no passives, so nothing else adds stacks), and the sim really holds 7 on a target — never more. Holding them takes a
+    /// pack: «Распространение» stacks copies of each use's ignite on the other targets, «Вечный огонь» keeps them 6 s.
+    /// </summary>
+    [Fact]
+    public void Pyromancer_fireball_holds_seven_ignite_stacks()
+    {
+        var b = Sorcerer50("pyromancer", "eternal_fire", "spread_ignite");
+        b.PassiveNodes.Clear();
+        b.AttributeChoices.Clear();
+        b.Slots.Add(Slot("fireball", ("heat", 4), ("molten_core", 3), ("eternal_flame", 1), ("flame_mark", 1), ("soul_flame", 2),
+            ("lingering_heat", 3), ("mana_focus", 3), ("swift_orb", 2)));
+        b.Slots.Add(ManaSpark());
+        var ch = Compile(b);
+        var fb = ch.Skills.Single(x => x.SkillId == "fireball");
+        Assert.Equal(7, ch.Evaluator.WithExtra(fb.Modifiers).Evaluate("ignite_max_stacks", fb.Tags, null, 1).Value);
+
+        var sim = new Simulator(ContentHarness.Data, MechanicRegistry.Default);
+        var held = 0;
+        sim.StepObserver = s => held = Math.Max(held, s.Targets.Max(t => t.Stacks("ignite")));
+        Assert.Empty(sim.Run(b, new SimConfig("training", SimMode.Average, PackSizeOverride: 5)).Violations);
+        Assert.Equal(7, held);
+    }
+
+    /// <summary>
+    /// Хрупкость scales with the crit share of the damage: chill lands with the first lance hit, so every later lance crit gets
+    /// +15% More. The lance's damage grows by 0.15 × c·m / (1 − c + c·m) (crit chance c, crit multiplier m) — about ×1.054 in
+    /// the reference lance (c ≈ 21%, m = 2.05); both reference lances share the same crit nodes, hence the same gain.
+    /// </summary>
+    [Fact]
+    public void Brittle_gain_follows_the_crit_share()
+    {
+        var ch = Compile(CryoLance());
+        var lance = ch.Skills.Single(x => x.SkillId == "ice_lance");
+        var ev = ch.Evaluator.WithExtra(lance.Modifiers);
+        var c = ev.Evaluate("crit_chance", lance.Tags, null, lance.Base.CritChance).Value / 100;
+        var m = 1 + ev.Evaluate("crit_damage", lance.Tags).Value / 100;
+        var expected = 1 + 0.15 * c * m / (1 - c + c * m);
+        var plain = ContentHarness.Run(CryoLance(), "training").DamageBySkill["ice_lance"];
+        var brittle = ContentHarness.Run(CryoLance("brittle"), "training").DamageBySkill["ice_lance"];
+        Assert.Equal(expected, brittle / plain, 2);
     }
 }

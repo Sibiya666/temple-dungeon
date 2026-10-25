@@ -50,9 +50,11 @@ public sealed class SpreadIgnite : IMechanic
 }
 
 /// <summary>
-/// Пепел. Hits on ignited targets deal more_per_stack (+1)% More damage per ignite stack on the whole pack, at most cap (25)%.
-/// An endless buff (damage More, tag hit, condition target_ignited: the hit target) updated on each use and step, so a hit
-/// sees the stacks as of its use.
+/// Пепел. Damage to ignited targets is more_per_stack (+1)% More per ignite stack on the whole pack, at most cap (25)%.
+/// An endless buff updated on each use and step with two modifiers of the same value: hits (damage More, tag hit, condition
+/// target_ignited: the hit target), and new ignites (damage More, tag of the ailment: an ignite is damage to an ignited target
+/// by definition), which snapshot it when they land like every DoT modifier. The stacks are counted before the new ignite lands,
+/// and the bonus scales damage, not stacks, so there is no loop.
 /// </summary>
 public sealed class Ashes : IMechanic
 {
@@ -74,9 +76,10 @@ public sealed class Ashes : IMechanic
         ctx.SetCounter("buff", value);
         var id = "mechanic:" + ctx.Effect.MechanicId;
         if (value == 0) { ctx.RemoveBuff(id); return; }
-        var mod = new Modifier("damage", ModKind.More, value, TagSet.Of(HitCalculator.HitTag),
+        var hits = new Modifier("damage", ModKind.More, value, TagSet.Of(HitCalculator.HitTag),
             new[] { new Condition(ctx.Text("condition", "target_ignited")) }, null, ctx.Source);
-        ctx.ApplyBuff(id, double.PositiveInfinity, new[] { mod });
+        var dots = new Modifier("damage", ModKind.More, value, TagSet.Of(ctx.AilmentTag(ailment)), Array.Empty<Condition>(), null, ctx.Source);
+        ctx.ApplyBuff(id, double.PositiveInfinity, new[] { hits, dots });
     }
 }
 
