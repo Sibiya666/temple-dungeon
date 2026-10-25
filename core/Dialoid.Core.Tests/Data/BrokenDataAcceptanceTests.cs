@@ -39,7 +39,7 @@ public class BrokenDataAcceptanceTests
         var leftward = LoadMutated("skills.json", a => Node(Node(a, "test_slash")["tree"]!.AsArray(), "slash_depth")["effects"] =
             JsonNode.Parse("[{\"type\":\"add_conversion\",\"from\":\"fire\",\"to\":\"cold\",\"percent\":30}]"));
         Assert.Null(leftward.Data);
-        Assert.Contains(leftward.Errors, e => e.File == "skills.json" && e.Id == "test_slash");
+        Assert.Contains(leftward.Errors, e => e.File == "skills.json" && e.Id == "test_slash" && e.Message.Contains("только вправо"));
         Assert.All(new[] { cycle, island, unknown, leftward }, r => Assert.All(r.Errors, e => Assert.False(string.IsNullOrWhiteSpace(e.Message))));
     }
 }

@@ -36,12 +36,21 @@ public static class BuildCodec
     public static bool TryImport(string code, GameData data, out Build? build, out string? error)
     {
         build = null;
-        error = Decode(code, out var parsed);
-        if (error != null) return false;
-        error = CheckIds(parsed!, data);
-        if (error != null) return false;
-        build = parsed;
-        return true;
+        try
+        {
+            error = Decode(code, out var parsed);
+            if (error != null) return false;
+            error = CheckIds(parsed!, data);
+            if (error != null) return false;
+            build = parsed;
+            return true;
+        }
+        catch (Exception)
+        {
+            build = null;
+            error = "Код билда повреждён: не удалось разобрать содержимое";
+            return false;
+        }
     }
 
     private static string? Decode(string? code, out Build? build)
@@ -101,8 +110,12 @@ public static class BuildCodec
         build.Slots ??= new();
         build.ItemIds ??= new();
         build.Rotation ??= new();
-        foreach (var s in build.Slots) { s.SkillId ??= ""; s.NodePoints ??= new(); }
         if (build.Slots.Any(s => s == null)) { build = null; return "Код билда повреждён: пустой слот скилла"; }
+        foreach (var s in build.Slots) { s.SkillId ??= ""; s.NodePoints ??= new(); }
+        var hasNull = build.PassiveNodes.Any(x => x == null) || build.AscendancyNodes.Any(x => x == null)
+            || build.ItemIds.Any(x => x == null) || build.Rotation.Any(x => x == null)
+            || build.Slots.Any(sl => sl.NodePoints.Keys.Any(k => k == null));
+        if (hasNull) { build = null; return "Код билда повреждён: пустое значение в списке id"; }
         return null;
     }
 

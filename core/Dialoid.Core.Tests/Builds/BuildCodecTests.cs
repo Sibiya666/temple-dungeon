@@ -90,6 +90,23 @@ public class BuildCodecTests
         Assert.Contains("JSON", e5!);
     }
 
+    [Theory]
+    [InlineData("{\"slots\":[null]}")]
+    [InlineData("{\"passive_nodes\":[null]}")]
+    [InlineData("{\"item_ids\":[null]}")]
+    [InlineData("{\"ascendancy_nodes\":[null]}")]
+    [InlineData("{\"rotation\":[null]}")]
+    [InlineData("{\"class_id\":\"test_warrior\",\"slots\":[{\"skill_id\":\"test_slash\",\"node_points\":{\"slash_depth\":null}}]}")]
+    [InlineData("{\"class_id\":null,\"attribute_choices\":{\"a\":null}}")]
+    public void Import_rejects_null_elements_without_throwing(string json)
+    {
+        var ex = Record.Exception(() => BuildCodec.TryImport(Encode(json), Tiny, out _, out _));
+        Assert.Null(ex);
+        Assert.False(BuildCodec.TryImport(Encode(json), Tiny, out var build, out var error));
+        Assert.Null(build);
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
+
     [Fact]
     public void Import_rejects_wrong_prefix_version()
     {
