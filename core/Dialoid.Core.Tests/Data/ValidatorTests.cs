@@ -96,4 +96,57 @@ public class ValidatorTests
             "[{\"type\":\"modifier\",\"stat\":\"damage\",\"kind\":\"increased\",\"value\":1,\"conditions\":[{\"id\":\"nope\"}]}]"));
         Assert.Contains(skill.Errors, e => e.File == "skills.json" && e.Id == "test_slash" && e.Message.Contains("nope"));
     }
+
+    private static LoadResult SmallA(string effectsJson) =>
+        LoadMutated("passives.json", a => Node(a, "small_a")["effects"] = JsonNode.Parse(effectsJson));
+
+    [Fact]
+    public void Mechanic_param_of_wrong_type_is_a_load_error()
+    {
+        var r = SmallA("[{\"type\":\"mechanic\",\"id\":\"blood_pact\",\"params\":{\"life_more\":\"-30\"}}]");
+        Assert.Null(r.Data);
+        Assert.Contains(r.Errors, e => e.File == "passives.json" && e.Id == "small_a" && e.Message.Contains("life_more") && e.Message.Contains("числом"));
+    }
+
+    [Fact]
+    public void Mechanic_param_with_unknown_name_is_a_load_error()
+    {
+        var r = SmallA("[{\"type\":\"mechanic\",\"id\":\"blood_pact\",\"params\":{\"life_mor\":-30}}]");
+        Assert.Null(r.Data);
+        Assert.Contains(r.Errors, e => e.File == "passives.json" && e.Id == "small_a" && e.Message.Contains("неизвестный параметр «life_mor»"));
+    }
+
+    [Fact]
+    public void Mechanic_param_references_are_checked()
+    {
+        var ailment = SmallA("[{\"type\":\"mechanic\",\"id\":\"flesh_rend\",\"params\":{\"ailment\":\"bleeding\"}}]");
+        Assert.Contains(ailment.Errors, e => e.Id == "small_a" && e.Message.Contains("неизвестный недуг «bleeding»"));
+        var type = SmallA("[{\"type\":\"mechanic\",\"id\":\"ground_type\",\"params\":{\"type\":\"lightnig\"}}]");
+        Assert.Contains(type.Errors, e => e.Id == "small_a" && e.Message.Contains("lightnig"));
+        var grant = SmallA("[{\"type\":\"mechanic\",\"id\":\"grant_skill_node\",\"params\":{\"skill\":\"test_slash\",\"node\":\"nope\"}}]");
+        Assert.Contains(grant.Errors, e => e.Id == "small_a" && e.Message.Contains("нет узла «nope»"));
+        var missing = SmallA("[{\"type\":\"mechanic\",\"id\":\"grant_skill_node\",\"params\":{\"skill\":\"test_slash\"}}]");
+        Assert.Contains(missing.Errors, e => e.Id == "small_a" && e.Message.Contains("обязательный параметр «node»"));
+        var ok = SmallA("[{\"type\":\"mechanic\",\"id\":\"flesh_rend\",\"params\":{\"ailment\":\"bleed\",\"extra_stacks\":2}}]");
+        Assert.Empty(ok.Errors);
+    }
+
+    [Fact]
+    public void Character_phase_mechanic_with_a_skill_scope_is_a_load_error()
+    {
+        var r = SmallA("[{\"type\":\"mechanic\",\"id\":\"shatter\",\"scope\":\"skill:test_slash\"}]");
+        Assert.Null(r.Data);
+        Assert.Contains(r.Errors, e => e.File == "passives.json" && e.Id == "small_a" && e.Message.Contains("shatter") && e.Message.Contains("global"));
+        Assert.Empty(SmallA("[{\"type\":\"mechanic\",\"id\":\"flesh_rend\",\"scope\":\"skill:test_slash\"}]").Errors);
+    }
+
+    [Fact]
+    public void Every_catalog_mechanic_declares_its_params()
+    {
+        foreach (var id in new[] { "blood_pact", "titan_will", "inevitability", "avatar_of_fire", "blade_dance", "stone_skin",
+                     "berserk_frenzy", "insatiable", "reckless", "whirl_rage", "flesh_rend", "battle_trance", "blood_feast",
+                     "static_charge", "grounding", "ground_type", "spread_ignite", "ashes", "eternal_fire", "soul_heat", "fire_armor",
+                     "shatter", "ice_armor", "grant_skill_node", "ailment_swap", "brittle", "chill_slow" })
+            Assert.NotNull(MechanicRegistry.Default.Get(id).ParamSchema);
+    }
 }

@@ -19,6 +19,11 @@ public sealed class Shatter : IMechanic
 {
     public string Id => "shatter";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("more"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
+
     public void OnCompile(MechanicCompileContext ctx)
     {
         if (ctx.Skill != null) return;
@@ -40,6 +45,8 @@ public sealed class IceArmor : IMechanic
 {
     public string Id => "ice_armor";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Ailment(), P.Num("duration"), P.Num("armor"));
+
     public void OnAilmentApplied(MechanicSimContext ctx, AilmentInstance ailment)
     {
         if (ailment.AilmentId != ctx.Text("ailment", "freeze")) return;
@@ -56,6 +63,22 @@ public sealed class IceArmor : IMechanic
 public sealed class GrantSkillNode : IMechanic
 {
     public string Id => SkillCompiler.GrantSkillNodeId;
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } =
+        P.Of(P.Skill(required: true), new MechanicParam("node", MechanicParamKind.Text, Required: true));
+
+    /// <summary>The declared params, then: the node must be a node of that skill's tree.</summary>
+    public IEnumerable<string> Validate(MechanicEffect effect, Data.GameData data)
+    {
+        var errors = MechanicParamSchema.Validate(Id, ParamSchema, effect, data).ToList();
+        if (errors.Count == 0 && data.Skills.TryGetValue(effect.Params["skill"].GetString()!, out var skill))
+        {
+            var node = effect.Params["node"].GetString()!;
+            if (skill.Tree.All(n => n.Id != node))
+                errors.Add($"механика «{Id}»: в дереве скилла «{skill.Id}» нет узла «{node}»");
+        }
+        return errors;
+    }
 }
 
 /// <summary>
@@ -68,6 +91,8 @@ public sealed class GrantSkillNode : IMechanic
 public sealed class AilmentSwap : IMechanic
 {
     public string Id => "ailment_swap";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Skill(), P.Ailment("from"), P.Ailment("to"), P.Stat("duration_stat"), P.Num("ratio"));
 
     public void OnCompile(MechanicCompileContext ctx)
     {
@@ -98,6 +123,11 @@ public sealed class Brittle : IMechanic
 {
     public string Id => "brittle";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("more"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
+
     public void OnCompile(MechanicCompileContext ctx)
     {
         if (ctx.Skill != null) return;
@@ -111,6 +141,8 @@ public sealed class Brittle : IMechanic
 public sealed class ChillSlow : IMechanic
 {
     public string Id => "chill_slow";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("slow"));
 
     public AilmentInstance OnAilmentApplying(MechanicSimContext ctx, AilmentInstance ailment) =>
         ailment.AilmentId == "chill" ? ailment with { Magnitude = ctx.Number("slow", 25) } : ailment;

@@ -32,6 +32,11 @@ public sealed class BerserkFrenzy : IMechanic
 {
     public string Id => "berserk_frenzy";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("fury_pct"), P.Num("attack_more"), P.Num("damage_taken"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
+
     public void OnCompile(MechanicCompileContext ctx)
     {
         if (ctx.Skill != null) return;
@@ -50,6 +55,8 @@ public sealed class BerserkFrenzy : IMechanic
 public sealed class Insatiable : IMechanic
 {
     public string Id => "insatiable";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("fury_pct"), P.Num("life_pct_per_10"));
 
     public void OnUse(MechanicSimContext ctx)
     {
@@ -71,6 +78,11 @@ public sealed class Reckless : IMechanic
     private static readonly string[] Resists = { "resist_fire", "resist_cold", "resist_lightning", "resist_poison" };
 
     public string Id => "reckless";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("cap"), P.Num("more_per_pct"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
 
     public void OnCompile(MechanicCompileContext ctx)
     {
@@ -100,6 +112,8 @@ public sealed class WhirlRage : IMechanic
 {
     public string Id => "whirl_rage";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Skill(), P.Num("free_above_pct"), P.Num("speed_per_sec"), P.Num("speed_cap"));
+
     public void OnCompile(MechanicCompileContext ctx)
     {
         if (ctx.Skill is not { } skill || skill.SkillId != ctx.Text("skill", "whirlwind")) return;
@@ -117,6 +131,8 @@ public sealed class FleshRend : IMechanic
 {
     public string Id => "flesh_rend";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Ailment(), P.Num("extra_stacks"));
+
     public void OnHit(MechanicSimContext ctx)
     {
         var ailment = ctx.Text("ailment", "bleed");
@@ -133,6 +149,11 @@ public sealed class FleshRend : IMechanic
 public sealed class BattleTrance : IMechanic
 {
     public string Id => "battle_trance";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Text("buff"), P.Num("fury_per_attack"), P.Stat("suppress_stat"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
 
     public void OnCompile(MechanicCompileContext ctx)
     {
@@ -158,6 +179,11 @@ public sealed class BattleTrance : IMechanic
 public sealed class BloodFeast : IMechanic
 {
     public string Id => "blood_feast";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Ailment(), P.Stat("stat"), P.Num("cap"), P.Num("per_stack"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
 
     public void OnTick(MechanicSimContext ctx, double dt)
     {

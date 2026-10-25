@@ -21,6 +21,8 @@ public sealed class SpreadIgnite : IMechanic
 
     public string Id => "spread_ignite";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Ailment(), P.Num("delay"));
+
     public void OnAilmentApplied(MechanicSimContext ctx, AilmentInstance ailment)
     {
         if (ailment.AilmentId != ctx.Text("ailment", "ignite") || ctx.TargetCount < 2) return;
@@ -56,6 +58,8 @@ public sealed class Ashes : IMechanic
 {
     public string Id => "ashes";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Ailment(), P.Num("cap"), P.Num("more_per_stack"), P.Condition("condition"));
+
     public void OnUse(MechanicSimContext ctx) => Update(ctx);
     public void OnTick(MechanicSimContext ctx, double dt) => Update(ctx);
 
@@ -81,6 +85,8 @@ public sealed class EternalFire : IMechanic
 {
     public string Id => "eternal_fire";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Ailment(), P.Num("duration_mult"));
+
     public AilmentInstance OnAilmentApplying(MechanicSimContext ctx, AilmentInstance ailment) =>
         ailment.AilmentId == ctx.Text("ailment", "ignite") ? ailment with { Remaining = ailment.Remaining * ctx.Number("duration_mult", 1.5) } : ailment;
 }
@@ -93,6 +99,8 @@ public sealed class EternalFire : IMechanic
 public sealed class SoulHeat : IMechanic
 {
     public string Id => "soul_heat";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Skills("skills"), P.Ailment(), P.Num("per_target"), P.Num("max"));
 
     public void OnUse(MechanicSimContext ctx)
     {
@@ -137,6 +145,11 @@ public sealed class SoulHeat : IMechanic
 public sealed class FireArmor : IMechanic
 {
     public string Id => "fire_armor";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("armor_increased"), P.Num("resist_cap"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
 
     public void OnCompile(MechanicCompileContext ctx)
     {

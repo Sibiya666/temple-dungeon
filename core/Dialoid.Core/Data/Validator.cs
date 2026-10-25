@@ -181,14 +181,42 @@ public static class Validator
                             errors.Add(new DataError(file, ownerId, $"{where}неизвестный стат «{per.Stat}» в «per»"));
                         CheckConditions(me.Modifier, file, ownerId, where, errors);
                         break;
-                    case MechanicEffect mech when !mechanics.Contains(mech.MechanicId):
-                        errors.Add(new DataError(file, ownerId, $"{where}неизвестная механика «{mech.MechanicId}»"));
+                    case MechanicEffect mech:
+                        CheckMechanic(data, mechanics, mech, file, ownerId, where, errors);
                         break;
                     case GrantProcEffect proc:
                         CheckProcEffect(data, proc, file, ownerId, where, owner, errors);
                         break;
                 }
         }
+    }
+
+    private static string Describe(Scope scope) => scope switch
+    {
+        Scope.Global => "global",
+        Scope.Skill sk => "skill:" + sk.SkillId,
+        Scope.Tags t => "по тегам [" + string.Join(", ", t.Required.Items) + "]",
+        _ => scope.ToString(),
+    };
+
+    private static string SupportedNames(MechanicScopes scopes) => string.Join(" или ", new[]
+    {
+        (MechanicScopes.Global, "global"), (MechanicScopes.Skill, "skill:<id>"), (MechanicScopes.Tags, "по тегам"),
+    }.Where(x => scopes.HasFlag(x.Item1)).Select(x => x.Item2));
+
+    private static void CheckMechanic(GameData data, MechanicRegistry mechanics, MechanicEffect mech, string file, string ownerId,
+        string where, List<DataError> errors)
+    {
+        if (!mechanics.TryGet(mech.MechanicId, out var m))
+        {
+            errors.Add(new DataError(file, ownerId, $"{where}неизвестная механика «{mech.MechanicId}»"));
+            return;
+        }
+        if ((m.SupportedScopes & MechanicParamSchema.ScopeOf(mech.Scope)) == 0)
+            errors.Add(new DataError(file, ownerId,
+                $"{where}механика «{m.Id}» работает только с областью {SupportedNames(m.SupportedScopes)} (иначе она молча ничего не делает), а задана область {Describe(mech.Scope)}"));
+        foreach (var message in m.Validate(mech, data))
+            errors.Add(new DataError(file, ownerId, where + message));
     }
 
     private static bool IsTriggeredOnly(SkillDefinition sk) => sk.IsTriggeredOnly || sk.Tags.Contains("triggered");

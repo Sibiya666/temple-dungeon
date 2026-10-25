@@ -18,6 +18,11 @@ public sealed class StaticCharge : IMechanic
 {
     public string Id => "static_charge";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("max_charges"), P.Num("more"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
+
     private string BuffId => "mechanic:" + Id;
 
     public void OnUse(MechanicSimContext ctx)
@@ -53,6 +58,8 @@ public sealed class Grounding : IMechanic
 {
     public string Id => "grounding";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Ailment(), P.Num("min_effect"), P.Num("duration"));
+
     public AilmentInstance OnAilmentApplying(MechanicSimContext ctx, AilmentInstance ailment) =>
         ailment.AilmentId != ctx.Text("ailment", "shock")
             ? ailment
@@ -66,6 +73,8 @@ public sealed class Grounding : IMechanic
 public sealed class GroundType : IMechanic
 {
     public string Id => "ground_type";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.DamageType("type"));
 
     public void OnCompile(MechanicCompileContext ctx)
     {

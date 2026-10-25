@@ -20,6 +20,11 @@ public sealed class BloodPact : IMechanic
 {
     public string Id => "blood_pact";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("life_more"), P.Num("channel_max_sec"), P.Num("channel_cooldown_sec"), P.Num("cooldown_per_10_cost"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
+
     public void OnCompile(MechanicCompileContext ctx)
     {
         if (ctx.Skill is not { } skill)
@@ -48,6 +53,11 @@ public sealed class TitanWill : IMechanic
 {
     public string Id => "titan_will";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("more_per_point"), P.Attribute("attribute"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
+
     public void OnCompile(MechanicCompileContext ctx)
     {
         if (ctx.Skill != null) return;
@@ -66,6 +76,11 @@ public sealed class TitanWill : IMechanic
 public sealed class Inevitability : IMechanic
 {
     public string Id => "inevitability";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("hit_more"), P.Num("ailment_chance_more"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
 
     public void OnCompile(MechanicCompileContext ctx)
     {
@@ -86,6 +101,11 @@ public sealed class Inevitability : IMechanic
 public sealed class AvatarOfFire : IMechanic
 {
     public string Id => "avatar_of_fire";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("fire_penetration"), P.Num("ignite_max_stacks"), P.Num("fire_resist_max"), P.Num("physical_to_fire"), P.Num("lightning_to_fire"), P.Num("cold_to_fire"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
 
     public void OnCompile(MechanicCompileContext ctx)
     {
@@ -111,6 +131,11 @@ public sealed class BladeDance : IMechanic
 {
     public string Id => "blade_dance";
 
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("dodge_per_dex"), P.Num("dodge_max_bonus"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
+
     public void OnCompile(MechanicCompileContext ctx)
     {
         if (ctx.Skill != null) return;
@@ -128,6 +153,11 @@ public sealed class BladeDance : IMechanic
 public sealed class StoneSkin : IMechanic
 {
     public string Id => "stone_skin";
+
+    public IReadOnlyList<MechanicParam> ParamSchema { get; } = P.Of(P.Num("elemental_armor_fraction"));
+
+    /// <summary>Character-phase (or every-skill) mechanic: a scoped copy would do nothing.</summary>
+    public MechanicScopes SupportedScopes => MechanicScopes.Global;
 
     public void OnCompile(MechanicCompileContext ctx)
     {

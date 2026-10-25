@@ -1,3 +1,4 @@
+using Dialoid.Core.Data;
 using Dialoid.Core.Simulation;
 
 namespace Dialoid.Core.Effects;
@@ -19,6 +20,23 @@ namespace Dialoid.Core.Effects;
 public interface IMechanic
 {
     string Id { get; }
+
+    /// <summary>
+    /// The params this mechanic reads (spec 4.6), checked at load: unknown names, wrong types, missing required params and
+    /// references to missing data are data errors. null: no schema declared, params are not checked (test doubles only;
+    /// every catalog mechanic declares one, an empty list meaning "no params").
+    /// </summary>
+    IReadOnlyList<MechanicParam>? ParamSchema => null;
+
+    /// <summary>
+    /// The effect scopes this mechanic works in. A mechanic that works in the character phase (character modifiers, rules)
+    /// or must see every skill only works Global: a skill/tags-scoped copy would silently do nothing, so it is a load error.
+    /// </summary>
+    MechanicScopes SupportedScopes => MechanicScopes.Any;
+
+    /// <summary>Load-time check of one effect carrying this mechanic: Russian messages, empty when valid. Override to add
+    /// cross-param checks (call <see cref="MechanicParamSchema.Validate"/> for the declared params).</summary>
+    IEnumerable<string> Validate(MechanicEffect effect, GameData data) => MechanicParamSchema.Validate(Id, ParamSchema, effect, data);
 
     /// <summary>Compile time: modifiers (incl. Override with priority), costs, cooldowns, channel limits, conversions, rules.</summary>
     void OnCompile(MechanicCompileContext ctx) { }

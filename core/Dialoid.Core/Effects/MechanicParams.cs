@@ -2,7 +2,8 @@ using System.Text.Json;
 
 namespace Dialoid.Core.Effects;
 
-/// <summary>Typed reads of <see cref="MechanicEffect.Params"/>. A missing param yields the fallback; a param of the wrong type throws.</summary>
+/// <summary>Typed reads of <see cref="MechanicEffect.Params"/>. A missing param yields the fallback; a param of the wrong type throws
+/// (a backstop: loaded data is checked against <see cref="IMechanic.ParamSchema"/>, so only hand-built data gets here).</summary>
 public static class MechanicParams
 {
     public static double Number(MechanicEffect e, string name, double fallback)
