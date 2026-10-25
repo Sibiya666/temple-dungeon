@@ -21,7 +21,25 @@ public sealed record CompiledSkill(string SkillId, int Level, bool IsLoot, TagSe
 
     /// <summary>Final damage types that deal nothing (e.g. avatar_of_fire: unconverted physical).</summary>
     public IReadOnlySet<DamageType> NullifiedDamageTypes { get; init; } = NoTypes;
+
+    /// <summary>Channel skills: ticks speed up with whole seconds of continuous channelling (set by mechanics, e.g. whirl_rage).</summary>
+    public ChannelRamp? ChannelRamp { get; init; }
+
+    /// <summary>The node that granted each entry of <see cref="Mechanics"/> (same order). Missing entries fall back to kind "mechanic".</summary>
+    public IReadOnlyList<SourceRef> MechanicSources { get; init; } = Array.Empty<SourceRef>();
+
+    /// <summary>Scoped mechanics with the node that granted them.</summary>
+    public IEnumerable<(MechanicEffect Effect, SourceRef Source)> SourcedMechanics() =>
+        Mechanics.Select((m, i) => (m, i < MechanicSources.Count ? MechanicSources[i] : new SourceRef("mechanic", m.MechanicId, m.MechanicId)));
 }
 
 /// <summary>A channel lasts at most <paramref name="MaxSec"/>, then the skill goes on cooldown for <paramref name="CooldownSec"/>.</summary>
 public sealed record ChannelLimit(double MaxSec, double CooldownSec);
+
+/// <summary>Channel tick rate +<paramref name="PercentPerSec"/>% per whole second of continuous channelling, at most +<paramref name="CapPercent"/>%.
+/// A faster tick also costs proportionally less, so the cost per second is unchanged.</summary>
+public sealed record ChannelRamp(double PercentPerSec, double CapPercent)
+{
+    public double Multiplier(double channelSec) =>
+        1 + Math.Min(CapPercent, PercentPerSec * Math.Floor(Math.Max(0, channelSec) + 1e-9)) / 100;
+}

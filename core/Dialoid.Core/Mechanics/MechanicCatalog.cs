@@ -14,5 +14,14 @@ public static class MechanicCatalog
         registry.Register(new AvatarOfFire());
         registry.Register(new BladeDance());
         registry.Register(new StoneSkin());
+
+        // Berserker (spec 10.4)
+        registry.Register(new BerserkFrenzy());
+        registry.Register(new Insatiable());
+        registry.Register(new Reckless());
+        registry.Register(new WhirlRage());
+        registry.Register(new FleshRend());
+        registry.Register(new BattleTrance());
+        registry.Register(new BloodFeast());
     }
 }

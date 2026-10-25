@@ -45,7 +45,7 @@ public static class SkillCompiler
         int spent = paid.Values.Where(v => v > 0).Sum();
         return new CompiledSkill(def.Id, slot.Level, !native, state.Tags, state.DamageType, def.Base, state.Behavior,
             state.Conversions, state.Cost, state.Gain, state.Modifiers, state.Procs, state.Mechanics, points)
-        { FreePoints = slot.Level - spent };
+        { FreePoints = slot.Level - spent, MechanicSources = state.MechanicSources.ToList() };
     }
 
     private static bool TreeEffectApplies(Effect e, TagSet tags) => e.Scope switch

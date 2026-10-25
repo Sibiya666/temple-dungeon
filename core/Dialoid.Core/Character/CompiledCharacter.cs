@@ -23,4 +23,7 @@ public static class CharacterRules
 {
     /// <summary>Share of armor that also mitigates elemental hits taken, with the armor formula (stone_skin: 0.5).</summary>
     public const string ElementalArmorFraction = "elemental_armor_fraction";
+
+    /// <summary>Non-zero: the class resource never decays out of combat (berserk_frenzy).</summary>
+    public const string NoResourceDecay = "no_resource_decay";
 }

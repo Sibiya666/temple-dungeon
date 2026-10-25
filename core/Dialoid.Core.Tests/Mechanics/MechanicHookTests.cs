@@ -102,4 +102,39 @@ public class MechanicHookTests
         Assert.All(rec.UseSkills, s => Assert.Equal("test_slash", s));
         Assert.Equal(200, rec.Ticks); // one tick per step for the one skill carrying it
     }
+
+    private sealed class ScopedCounter : IMechanic
+    {
+        public string Id => "test_scoped_counter";
+        public readonly List<SourceRef> CompileSources = new();
+        public readonly List<(string? Skill, double Count, SourceRef Source)> Uses = new();
+
+        public void OnCompile(MechanicCompileContext ctx) => CompileSources.Add(ctx.Source);
+
+        public void OnUse(MechanicSimContext ctx)
+        {
+            ctx.SetCounter("uses", ctx.Counter("uses") + 1);
+            Uses.Add((ctx.SkillId, ctx.Counter("uses"), ctx.Source));
+        }
+    }
+
+    [Fact]
+    public void Scoped_mechanic_counts_per_skill_and_names_its_granting_node()
+    {
+        var rec = new ScopedCounter();
+        var reg = new MechanicRegistry();
+        reg.Register(rec);
+        var d = With("{\"type\":\"mechanic\",\"id\":\"test_scoped_counter\",\"scope\":{\"tags\":[\"attack\"]}}", registry: reg, kind: "small");
+
+        var r = Run(d, Make("test_warrior", 4, true, "test_greataxe", "test_slam", "test_slash"), "test_training", duration: 10, registry: reg);
+
+        Assert.Equal(2, rec.CompileSources.Count); // slam and slash
+        Assert.All(rec.CompileSources.Concat(rec.Uses.Select(u => u.Source)), s => Assert.Equal(("passive", NodeId), (s.Kind, s.Id)));
+        foreach (var skill in new[] { "test_slam", "test_slash" })
+        {
+            var counts = rec.Uses.Where(u => u.Skill == skill).Select(u => u.Count).ToArray();
+            Assert.Equal(Count(r, "use", skill), counts.Length);
+            Assert.Equal(Enumerable.Range(1, counts.Length).Select(i => (double)i), counts); // its own counter
+        }
+    }
 }

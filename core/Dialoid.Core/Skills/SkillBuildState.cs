@@ -18,6 +18,7 @@ internal sealed class SkillBuildState
     public readonly List<Modifier> Modifiers = new();
     public readonly List<GrantProcEffect> Procs = new();
     public readonly List<MechanicEffect> Mechanics = new();
+    public readonly List<SourceRef> MechanicSources = new();
 
     public SkillBuildState(SkillDefinition def)
     {
@@ -59,7 +60,10 @@ internal sealed class SkillBuildState
                 if (r.Field == ResourceField.Cost) Cost = r.Value; else Gain = r.Value;
                 break;
             case GrantProcEffect p: Procs.Add(p); break;
-            case MechanicEffect m when m.MechanicId != SkillCompiler.GrantSkillNodeId: Mechanics.Add(m); break;
+            case MechanicEffect m when m.MechanicId != SkillCompiler.GrantSkillNodeId:
+                Mechanics.Add(m);
+                MechanicSources.Add(src);
+                break;
         }
     }
 }

@@ -36,6 +36,45 @@ internal static class MechanicTestData
         return r.Data!;
     }
 
+    /// <summary>Tiny-fixture copy whose ascendancy start node (test_asc, warrior) carries exactly <paramref name="effectsJson"/>
+    /// (comma-separated effect objects): the effects are sourced as an ascendancy, like Berserker/Thunder nodes.</summary>
+    public static GameData Asc(string effectsJson, Action<string>? mutate = null)
+    {
+        var dir = FixturePaths.CopyTiny();
+        Edit(dir, "ascendancies.json", a => Find(a, "test_asc")["start"]!["effects"] = JsonNode.Parse($"[{effectsJson}]"));
+        mutate?.Invoke(dir);
+        var r = DataLoader.Load(dir);
+        Assert.Empty(r.Errors);
+        return r.Data!;
+    }
+
+    /// <summary>A level 20 warrior; <paramref name="asc"/> picks test_asc (whose start node is free).</summary>
+    public static Build Warrior(bool asc, string? weapon, params string[] skills)
+    {
+        var b = Make("test_warrior", 20, false, weapon, skills);
+        if (asc) b.AscendancyId = "test_asc";
+        return b;
+    }
+
+    /// <summary>Damage of each hit of <paramref name="skill"/> in log order (log numbers carry two decimals).</summary>
+    public static double[] HitAmounts(SimResult r, string skill) =>
+        r.Log.Where(e => e.Kind == "hit" && e.Text.StartsWith(skill + " ", StringComparison.Ordinal))
+            .Select(e => double.Parse(e.Text[(e.Text.LastIndexOf(':') + 1)..], System.Globalization.CultureInfo.InvariantCulture))
+            .ToArray();
+
+    /// <summary>Adds a skill object to skills.json and to the class's skill list.</summary>
+    public static void AddSkill(string dir, string classId, string skillJson)
+    {
+        var skill = JsonNode.Parse(skillJson)!;
+        Edit(dir, "skills.json", s => s.AsArray().Add(skill));
+        Edit(dir, "classes.json", c => Find(c, classId)["skills"]!.AsArray().Add(skill["id"]!.GetValue<string>()));
+    }
+
+    public static void AddTags(string dir, params string[] tags) => Edit(dir, "tags.json", t =>
+    {
+        foreach (var tag in tags) t.AsArray().Add(JsonNode.Parse($"{{\"id\":\"{tag}\",\"name\":\"{tag}\"}}"));
+    });
+
     public static GameData Keystone(string mechanicId, Action<string>? mutate = null) =>
         With($"{{\"type\":\"mechanic\",\"id\":\"{mechanicId}\"}}", mutate);
 

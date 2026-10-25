@@ -30,6 +30,7 @@ internal sealed class SimRun
     private readonly UseResolver _resolver;
     private readonly ProcEngine _procs;
     private bool _idle;
+    private readonly bool _noDecay;
 
     // Defensive mode (spec 11.3): the dummy attacks the character until death or the survival cap.
     private readonly bool _defensive;
@@ -72,7 +73,10 @@ internal sealed class SimRun
             OnHit = OnHit,
         };
         _procs = new ProcEngine(data, character, _skills, _s, _resolver, _log, weapon, mechanics);
-        _mechanicHooks = new MechanicRuntime(mechanics, character, skills, _s, _procs, _conditions, _log, data);
+        _mechanicHooks = new MechanicRuntime(mechanics, character, skills,
+            new MechanicSimEnv(_s, _procs, _conditions, _log, data, _resolver, _random, config.Mode == SimMode.Roll, weapon));
+        _resolver.OnAilment = _mechanicHooks.Ailment;
+        _noDecay = character.Rules.GetValueOrDefault(CharacterRules.NoResourceDecay) != 0;
 
         var ev = character.Evaluator;
         _s.LifeMax = _s.Life = data.Stats.ContainsKey("life") ? ev.Evaluate("life", default).Value : 0;
@@ -136,9 +140,10 @@ internal sealed class SimRun
         }
         else _s.ChannelSkillId = null;
 
-        var paid = Math.Min(_s.Resource, skill.Cost(_conditions));
+        var speed = skill.TickSpeed(_s, start); // channel ramp (whirl_rage)
+        var paid = Math.Min(_s.Resource, skill.Cost(_conditions) / speed);
         _s.Resource = Math.Max(0, _s.Resource - paid);
-        _s.BusyUntil = start + skill.UseTime(_conditions, _weapon, step);
+        _s.BusyUntil = start + Math.Max(step, skill.UseTime(_conditions, _weapon, step) / speed);
         var cd = skill.Cooldown(_conditions);
         if (cd > 0) _s.CooldownReadyAt[skill.Id] = start + cd;
         // Channel limit (blood_pact): channel time adds up per skill since its last forced cooldown (other skills used in
@@ -214,7 +219,7 @@ internal sealed class SimRun
     {
         var r = _s.Resource;
         if (_regenAvailable) r += _procs.Evaluator.Evaluate("resource_regen", default, _conditions).Value * dt;
-        if (_resource.DecayPerSec > 0 && (_s.LastHitTime is not { } last || t - last >= _resource.DecayDelaySec - Eps))
+        if (_resource.DecayPerSec > 0 && !_noDecay && (_s.LastHitTime is not { } last || t - last >= _resource.DecayDelaySec - Eps))
             r -= _resource.DecayPerSec * dt;
         _s.Resource = Math.Clamp(r, 0, _s.ResourceMax);
     }

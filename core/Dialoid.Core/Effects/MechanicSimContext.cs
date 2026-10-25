@@ -2,6 +2,7 @@ using System.Text.Json;
 using Dialoid.Core.Combat;
 using Dialoid.Core.Data;
 using Dialoid.Core.Simulation;
+using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Effects;
@@ -13,6 +14,7 @@ namespace Dialoid.Core.Effects;
 /// </summary>
 public sealed class MechanicSimContext
 {
+    private readonly MechanicSimEnv _env;
     private readonly SimState _s;
     private readonly ProcEngine _procs;
     private readonly SkillRuntime? _skill;
@@ -20,15 +22,15 @@ public sealed class MechanicSimContext
     private readonly SimLog _log;
     private readonly GameData _data;
 
-    internal MechanicSimContext(SimState s, ProcEngine procs, SimConditionContext conditions, SimLog log, GameData data,
-        MechanicEffect effect, SourceRef source, SkillRuntime? skill, bool triggered, int targetIndex = -1, HitResult? hit = null,
-        bool firstOnPrimary = false, double resourcePaid = 0)
+    internal MechanicSimContext(MechanicSimEnv env, MechanicEffect effect, SourceRef source, SkillRuntime? skill, bool triggered,
+        int targetIndex = -1, HitResult? hit = null, bool firstOnPrimary = false, double resourcePaid = 0)
     {
-        _s = s;
-        _procs = procs;
-        _conditions = conditions;
-        _log = log;
-        _data = data;
+        _env = env;
+        _s = env.State;
+        _procs = env.Procs;
+        _conditions = env.Conditions;
+        _log = env.Log;
+        _data = env.Data;
         Effect = effect;
         Source = source;
         _skill = skill;
@@ -44,6 +46,10 @@ public sealed class MechanicSimContext
     public SourceRef Source { get; }
     public double Number(string name, double fallback) => MechanicParams.Number(Effect, name, fallback);
     public string Text(string name, string fallback) => MechanicParams.Text(Effect, name, fallback);
+
+    /// <summary>Builds a modifier stamped with <see cref="Source"/> (for buffs set by the mechanic).</summary>
+    public Modifier Mod(string stat, ModKind kind, double value, TagSet? tags = null) =>
+        new(stat, kind, value, tags ?? TagSet.Empty, Array.Empty<Condition>(), null, Source);
 
     // ---- Event ----
 
@@ -61,6 +67,18 @@ public sealed class MechanicSimContext
     public bool IsFirstHitOnPrimary { get; }
     /// <summary>OnUse only: resource paid for this use (already deducted).</summary>
     public double ResourcePaid { get; }
+
+    /// <summary>
+    /// OnHit only: did this hit crit? Roll mode: the hit's own roll. Average mode has no discrete crits, so this is a chance
+    /// accumulator per mechanic, skill and target at the skill's crit chance (N hits give crit chance x N events).
+    /// </summary>
+    public bool IsCritEvent()
+    {
+        if (Hit == null || _skill == null) return false;
+        if (_env.RollMode) return Hit.IsCrit;
+        var chance = _skill.CritChance(_conditions, _env.Weapon) / 100;
+        return _env.Random.Chance($"mech:{Effect.MechanicId}:crit:{_skill.ChannelKey}:{TargetIndex}", chance);
+    }
 
     // ---- Character ----
 
@@ -95,7 +113,9 @@ public sealed class MechanicSimContext
 
     public double Counter(string key = "") => _s.MechanicCounters.GetValueOrDefault(CounterKey(key));
     public void SetCounter(string key, double value) => _s.MechanicCounters[CounterKey(key)] = value;
-    private string CounterKey(string key) => Effect.MechanicId + ":" + key;
+    // A skill/tags-scoped mechanic keeps separate counters per skill carrying it.
+    private string CounterKey(string key) =>
+        Effect.Scope is Scope.Global || _skill == null ? Effect.MechanicId + ":" + key : Effect.MechanicId + ":" + _skill.Id + ":" + key;
 
     // ---- Buffs: timed modifiers on every skill and the character (re-applying refreshes) ----
 
@@ -106,11 +126,21 @@ public sealed class MechanicSimContext
     // ---- Targets ----
 
     public int TargetCount => _s.Targets.Count;
+    /// <summary>Lowest-index living target (-1: every target is dead).</summary>
+    public int PrimaryTarget => _s.PrimaryIndex;
     public bool IsAlive(int target) => _s.IsAlive(target);
     public bool HasAilment(int target, string ailmentId) => _s.Targets[target].HasAilment(ailmentId);
     public int AilmentStacks(int target, string ailmentId) => _s.Targets[target].Stacks(ailmentId);
     public IReadOnlyList<AilmentInstance> Ailments(int target) => _s.Targets[target].Ailments;
     public void RemoveAilment(int target, string ailmentId) => _s.Targets[target].RemoveAilment(ailmentId);
+
+    /// <summary>Applies an ailment of the event skill to a target with no chance roll (like a proc). Its base is this hit's
+    /// ailment base (none outside OnHit, so only non-damaging ailments apply then). Returns false when nothing was applied.</summary>
+    public bool ApplyAilment(int target, string ailmentId)
+    {
+        if (_skill == null || !_s.IsAlive(target) || !_data.Ailments.TryGetValue(ailmentId, out var def)) return false;
+        return _env.Resolver.ForceAilment(_skill, target, def, Hit?.AilmentBase, $"mechanic {Effect.MechanicId}");
+    }
 
     /// <summary>Sets this mechanic's contribution (0 removes it) to a target's "damage taken" Increased bucket (spec 6.6).</summary>
     public void SetTargetDamageTaken(int target, double increasedPercent) =>
@@ -118,3 +148,7 @@ public sealed class MechanicSimContext
 
     public void Log(string text) => _log.Add(_s.Time, "mechanic", $"{Effect.MechanicId}: {text}");
 }
+
+/// <summary>The run services a <see cref="MechanicSimContext"/> works with.</summary>
+internal sealed record MechanicSimEnv(SimState State, ProcEngine Procs, SimConditionContext Conditions, SimLog Log, GameData Data,
+    UseResolver Resolver, IRandomSource Random, bool RollMode, WeaponStub? Weapon);

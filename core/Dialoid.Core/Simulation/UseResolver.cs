@@ -29,6 +29,9 @@ internal sealed class UseResolver
     /// <summary>Called for every hit: (skill, target index, result, is the first hit on the primary target). Proc hook point.</summary>
     public Action<SkillRuntime, int, HitResult, bool>? OnHit;
 
+    /// <summary>Called before an ailment instance lands: (skill, target index, instance) → instance to apply. Mechanic hook point.</summary>
+    public Func<SkillRuntime, int, AilmentInstance, AilmentInstance>? OnAilment;
+
     public UseResolver(SimState s, DummyDefinition dummy, WeaponStub? weapon, IRandomSource random, SimConditionContext conditions,
         DamageLedger ledger, SimLog log, GameData data, bool rollMode)
     {
@@ -127,14 +130,23 @@ internal sealed class UseResolver
 
             var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, defense, _conditions)
                 with { Triggered = skill.IsTriggeredCopy };
-            var maxStacks = (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, 1), 0, int.MaxValue);
-            target.Apply(instance, maxStacks, def.StackRule);
+            Land(skill, ti, target, def, instance);
             _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id})");
         }
     }
 
-    /// <summary>Proc ailment (spec 8.4): no chance roll. The base comes from the triggering hit; a damaging ailment with no base is skipped.</summary>
-    public bool ForceAilment(SkillRuntime skill, int ti, AilmentDefinition def, IReadOnlyDictionary<DamageType, double>? hitBase)
+    /// <summary>Mechanic hook, then the target's stacking rule. Max stacks: the stat (its data default as the base: bleed 8), 1 without the stat.</summary>
+    private void Land(SkillRuntime skill, int ti, TargetState target, AilmentDefinition def, AilmentInstance instance)
+    {
+        if (OnAilment != null) instance = OnAilment(skill, ti, instance);
+        var stackBase = _data.Stats.TryGetValue(def.MaxStacksStat, out var ms) ? ms.Default : 1;
+        var maxStacks = (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, stackBase), 0, int.MaxValue);
+        target.Apply(instance, maxStacks, def.StackRule);
+    }
+
+    /// <summary>Proc or mechanic ailment (spec 8.4): no chance roll. The base comes from the triggering hit; a damaging ailment with no base is skipped.</summary>
+    public bool ForceAilment(SkillRuntime skill, int ti, AilmentDefinition def, IReadOnlyDictionary<DamageType, double>? hitBase,
+        string origin = "proc")
     {
         double ailBase = 0;
         if (hitBase != null)
@@ -148,9 +160,8 @@ internal sealed class UseResolver
         var target = _s.Targets[ti];
         var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, DefenseOf(target), _conditions)
             with { Triggered = skill.IsTriggeredCopy };
-        var maxStacks = (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, 1), 0, int.MaxValue);
-        target.Apply(instance, maxStacks, def.StackRule);
-        _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id}, proc)");
+        Land(skill, ti, target, def, instance);
+        _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id}, {origin})");
         return true;
     }
 

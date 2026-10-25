@@ -17,6 +17,9 @@ public sealed class MechanicCompileContext
     /// <summary>Override priority of keystone rules: above anything data uses, so "fixed at X" really is fixed (spec 7.4).</summary>
     public const int KeystonePriority = 1_000_000;
 
+    /// <summary>Override priority of ascendancy rules ("resists always 0"): above data, below keystones.</summary>
+    public const int AscendancyPriority = 100_000;
+
     private readonly List<Modifier>? _characterMods;
     private readonly Dictionary<string, double>? _rules;
 
@@ -48,9 +51,11 @@ public sealed class MechanicCompileContext
     public double Number(string name, double fallback) => MechanicParams.Number(Effect, name, fallback);
     public string Text(string name, string fallback) => MechanicParams.Text(Effect, name, fallback);
 
-    /// <summary>Builds a modifier stamped with <see cref="Source"/> (so the stat breakdown names the keystone).</summary>
-    public Modifier Mod(string stat, ModKind kind, double value, PerStat? per = null, int priority = 0, TagSet? tags = null) =>
-        new(stat, kind, value, tags ?? TagSet.Empty, Array.Empty<Condition>(), per, Source, priority);
+    /// <summary>Builds a modifier stamped with <see cref="Source"/> (so the stat breakdown names the keystone).
+    /// <paramref name="conditions"/> (spec 4.5) make it live: the simulator checks them on every evaluation.</summary>
+    public Modifier Mod(string stat, ModKind kind, double value, PerStat? per = null, int priority = 0, TagSet? tags = null,
+        params Condition[] conditions) =>
+        new(stat, kind, value, tags ?? TagSet.Empty, conditions, per, Source, priority);
 
     /// <summary>Character phase: adds a modifier to the character pool (seen by every skill).</summary>
     public void AddCharacterModifier(Modifier m) => CharacterMods().Add(m);
@@ -100,6 +105,8 @@ public sealed class MechanicSkillDraft
         ResourceGain = skill.ResourceGain;
         Cooldown = skill.Base.Cooldown;
         ChannelLimit = skill.ChannelLimit;
+        ChannelRamp = skill.ChannelRamp;
+        Procs = skill.Procs;
     }
 
     public string SkillId => _skill.SkillId;
@@ -117,6 +124,12 @@ public sealed class MechanicSkillDraft
 
     /// <summary>Channel skills only: the channel stops after MaxSec and the skill goes on cooldown.</summary>
     public ChannelLimit? ChannelLimit { get; set; }
+
+    /// <summary>Channel skills only: ticks speed up with whole seconds of continuous channelling.</summary>
+    public ChannelRamp? ChannelRamp { get; set; }
+
+    /// <summary>The skill's procs (e.g. a cry's buff); replace the list to change them.</summary>
+    public IReadOnlyList<GrantProcEffect> Procs { get; set; }
 
     public IReadOnlyList<Modifier> Modifiers => _modifiers;
     public IReadOnlyList<Conversion> Conversions => _conversions;
@@ -149,6 +162,8 @@ public sealed class MechanicSkillDraft
         Modifiers = _modifiers.ToList(),
         Conversions = _conversions.ToList(),
         ChannelLimit = ChannelLimit,
+        ChannelRamp = ChannelRamp,
+        Procs = Procs.ToList(),
         NullifiedDamageTypes = new HashSet<DamageType>(_nullified),
     };
 }

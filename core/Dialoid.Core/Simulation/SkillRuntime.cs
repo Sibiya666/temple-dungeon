@@ -87,6 +87,11 @@ internal sealed class SkillRuntime
         return IsChannel ? cost * ChannelInterval : cost;
     }
 
+    /// <summary>Channel ramp (whirl_rage): tick speed multiplier at time <paramref name="at"/> of the channel in progress (1 otherwise).
+    /// A faster tick lasts and costs proportionally less.</summary>
+    public double TickSpeed(SimState s, double at) =>
+        IsChannel && Skill.ChannelRamp is { } ramp && s.ChannelSkillId == Id && !s.ChannelExhausted ? ramp.Multiplier(at - s.ChannelStart) : 1;
+
     /// <summary>Resource gained per use (spec 8.4: once per use if at least one target was hit).</summary>
     public double Gain(IConditionContext c) => Math.Max(0, Stat("resource_gen", c, Skill.ResourceGain));
 

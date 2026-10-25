@@ -33,8 +33,8 @@ internal static class MechanicCompiler
         var calls = new List<(IMechanic M, MechanicEffect E, SourceRef S)>();
         foreach (var (e, src) in globals)
             if (e is MechanicEffect me && registry.TryGet(me.MechanicId, out var m)) calls.Add((m, me, src));
-        foreach (var me in skill.Mechanics)
-            if (registry.TryGet(me.MechanicId, out var m)) calls.Add((m, me, new SourceRef("mechanic", me.MechanicId, me.MechanicId)));
+        foreach (var (me, src) in skill.SourcedMechanics())
+            if (registry.TryGet(me.MechanicId, out var m)) calls.Add((m, me, src));
         if (calls.Count == 0) return skill;
 
         var draft = new MechanicSkillDraft(skill, characterEvaluator, data);

@@ -15,22 +15,13 @@ internal sealed class MechanicRuntime
     private readonly MechanicRegistry _registry;
     private readonly IReadOnlyList<(IMechanic M, MechanicEffect E, SourceRef S)> _global;
     private readonly IReadOnlyList<SkillRuntime> _slotted;
-    private readonly SimState _s;
-    private readonly ProcEngine _procs;
-    private readonly SimConditionContext _conditions;
-    private readonly SimLog _log;
-    private readonly GameData _data;
+    private readonly MechanicSimEnv _env;
 
-    public MechanicRuntime(MechanicRegistry registry, CompiledCharacter character, IReadOnlyList<SkillRuntime> slotted, SimState s,
-        ProcEngine procs, SimConditionContext conditions, SimLog log, GameData data)
+    public MechanicRuntime(MechanicRegistry registry, CompiledCharacter character, IReadOnlyList<SkillRuntime> slotted, MechanicSimEnv env)
     {
         _registry = registry;
         _slotted = slotted;
-        _s = s;
-        _procs = procs;
-        _conditions = conditions;
-        _log = log;
-        _data = data;
+        _env = env;
         var global = new List<(IMechanic, MechanicEffect, SourceRef)>();
         foreach (var (e, src) in character.GlobalMechanics)
             if (e is MechanicEffect me && registry.TryGet(me.MechanicId, out var m)) global.Add((m, me, src));
@@ -55,6 +46,14 @@ internal sealed class MechanicRuntime
             m.OnKill(Ctx(e, src, source, triggered, target));
     }
 
+    /// <summary>Lets every mechanic of the skill change an ailment instance before it lands on the target.</summary>
+    public AilmentInstance Ailment(SkillRuntime skill, int target, AilmentInstance ailment)
+    {
+        foreach (var (m, e, src) in For(skill))
+            ailment = m.OnAilmentApplying(Ctx(e, src, skill, skill.IsTriggeredCopy, target), ailment);
+        return ailment;
+    }
+
     /// <summary>Global mechanics tick once; a scoped mechanic ticks once per slotted skill carrying it.</summary>
     public void Tick(double dt)
     {
@@ -69,12 +68,12 @@ internal sealed class MechanicRuntime
 
     private IEnumerable<(IMechanic M, MechanicEffect E, SourceRef S)> Scoped(SkillRuntime skill)
     {
-        foreach (var me in skill.Skill.Mechanics)
+        foreach (var (me, src) in skill.Skill.SourcedMechanics())
             if (_registry.TryGet(me.MechanicId, out var m))
-                yield return (m, me, new SourceRef("mechanic", me.MechanicId, me.MechanicId));
+                yield return (m, me, src);
     }
 
     private MechanicSimContext Ctx(MechanicEffect e, SourceRef src, SkillRuntime? skill, bool triggered, int target = -1,
         HitResult? hit = null, bool firstOnPrimary = false, double resourcePaid = 0) =>
-        new(_s, _procs, _conditions, _log, _data, e, src, skill, triggered, target, hit, firstOnPrimary, resourcePaid);
+        new(_env, e, src, skill, triggered, target, hit, firstOnPrimary, resourcePaid);
 }
