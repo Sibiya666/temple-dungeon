@@ -99,7 +99,8 @@
     "passive_start_node": "test_start_mage",
     "skills": [
       "test_bolt",
-      "test_spark"
+      "test_spark",
+      "test_beam"
     ],
     "ascendancies": []
   }

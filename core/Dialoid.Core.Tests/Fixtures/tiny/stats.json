@@ -374,5 +374,85 @@
     "min": 0,
     "max": 1000000000.0,
     "display": "number"
+  },
+  {
+    "id": "attack_speed",
+    "name": "Скорость атаки",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "area",
+    "name": "Область действия",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "duration",
+    "name": "Длительность",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "cooldown_recovery",
+    "name": "Скорость перезарядки",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "projectile_count",
+    "name": "Число снарядов",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "pierce_count",
+    "name": "Пробитие",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "chain_count",
+    "name": "Цепочки",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "resource_cost",
+    "name": "Стоимость ресурса",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "shock_effect",
+    "name": "Сила шока",
+    "default": 10,
+    "min": 0,
+    "max": 40,
+    "display": "percent"
+  },
+  {
+    "id": "freeze_duration",
+    "name": "Длительность заморозки",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
   }
 ]

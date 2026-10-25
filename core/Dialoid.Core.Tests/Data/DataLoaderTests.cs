@@ -88,4 +88,46 @@ public class DataLoaderTests
         Check("freeze", DamageType.Cold, "freeze_chance", 0, 1, "freeze_max_stacks", StackRule.StrongestOnly);
         Assert.Equal(100, d.Stats["chill_chance"].Default);
     }
+    [Fact]
+    public void Dummies_load_from_tiny_fixture()
+    {
+        var d = DataLoader.Load(FixturePaths.Tiny).Data!;
+        var training = d.Dummies["test_training"];
+        Assert.True(double.IsPositiveInfinity(training.LifePerTarget));
+        Assert.Equal(1, training.PackSize);
+        Assert.Equal(4, training.PackRadius);
+        Assert.Equal(1, training.FreezeDurationMultiplier);
+        Assert.Null(training.Attack);
+
+        var swarm = d.Dummies["test_swarm"];
+        Assert.Equal(5, swarm.PackSize);
+        Assert.Equal(100, swarm.LifePerTarget);
+        Assert.True(swarm.Respawn);
+
+        var boss = d.Dummies["test_boss"];
+        Assert.Equal(1000, boss.Armor);
+        Assert.False(boss.Respawn);
+
+        var attacker = d.Dummies["test_attacker"];
+        Assert.Equal(0.5, attacker.FreezeDurationMultiplier);
+        Assert.Equal(14, attacker.Attack!.DamagePerHit[DamageType.Physical]);
+        Assert.Equal(9, attacker.Attack.DamagePerHit[DamageType.Fire]);
+        Assert.Equal(3.5, attacker.Attack.IntervalSec);
+    }
+
+    [Fact]
+    public void Dummies_catalog_is_optional_and_validated()
+    {
+        var dir = FixturePaths.CopyTiny();
+        File.Delete(Path.Combine(dir, "dummies.json"));
+        var r = DataLoader.Load(dir);
+        Assert.Empty(r.Errors);
+        Assert.Empty(r.Data!.Dummies);
+
+        File.WriteAllText(Path.Combine(dir, "dummies.json"),
+            "[{\"id\":\"bad\",\"name\":\"Плохой\",\"pack_size\":0,\"resists\":{\"holy\":10}}]");
+        r = DataLoader.Load(dir);
+        Assert.Contains(r.Errors, e => e.File == "dummies.json" && e.Id == "bad" && e.Message.Contains("pack_size"));
+        Assert.Contains(r.Errors, e => e.File == "dummies.json" && e.Id == "bad" && e.Message.Contains("holy"));
+    }
 }

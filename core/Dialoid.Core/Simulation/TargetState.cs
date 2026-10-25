@@ -71,16 +71,28 @@ public sealed class TargetState
         }
     }
 
+    /// <summary>Death or respawn: ailments, freeze and freeze immunity are cleared and life is restored.</summary>
+    public void Reset()
+    {
+        _ailments.Clear();
+        FreezeRemaining = 0;
+        FreezeImmunityRemaining = 0;
+        Life = MaxLife;
+    }
+
     private static double Strength(AilmentInstance a) => a.Magnitude != 0 ? a.Magnitude : a.DamagePerSec;
 
-    /// <summary>Advances time; returns DoT damage dealt during dt. Expired ailments are removed.</summary>
-    public double Tick(double dt)
+    /// <summary>Advances time; returns DoT damage dealt during dt. Expired ailments are removed.
+    /// <paramref name="onDamage"/> receives each instance's share (for per-skill/type attribution).</summary>
+    public double Tick(double dt, Action<AilmentInstance, double>? onDamage = null)
     {
         double dmg = 0;
         for (var i = _ailments.Count - 1; i >= 0; i--)
         {
             var a = _ailments[i];
-            dmg += a.DamagePerSec * Math.Min(dt, a.Remaining);
+            var share = a.DamagePerSec * Math.Min(dt, a.Remaining);
+            dmg += share;
+            if (share != 0) onDamage?.Invoke(a, share);
             var rem = a.Remaining - dt;
             if (rem <= 0) _ailments.RemoveAt(i);
             else _ailments[i] = a with { Remaining = rem };

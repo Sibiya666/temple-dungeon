@@ -191,5 +191,50 @@
       "area_radius": 3,
       "duration": 4
     }
+  },
+  {
+    "id": "test_beam",
+    "name": "Тестовый луч",
+    "description": "Канальный луч молнии",
+    "class_id": "test_mage",
+    "unlock_level": 1,
+    "tags": [
+      "spell",
+      "channel",
+      "lightning"
+    ],
+    "spell_damage": {
+      "lightning": [
+        4,
+        6
+      ]
+    },
+    "cast_time": 0.25,
+    "resource_cost": 10,
+    "behavior": {
+      "channel_interval": 0.25
+    },
+    "tree": [
+      {
+        "id": "beam_focus",
+        "name": "Фокус луча",
+        "description": "+100% к урону после 2 с канала",
+        "max_points": 1,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 100,
+            "conditions": [
+              {
+                "id": "channelling_for",
+                "param": 2
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ]

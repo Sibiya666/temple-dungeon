@@ -24,6 +24,7 @@ public static class Validator
         CheckSkillTrees(data, errors);
         CheckItemAndWeaponReferences(data, errors);
         CheckEffectReferences(data, mechanics, errors);
+        CheckClassBonusConditions(data, errors);
         CheckStatCycles(data, errors);
         return errors;
     }
@@ -151,6 +152,7 @@ public static class Validator
                     errors.Add(new DataError("weapons.json", w.Id, $"Имплицит: неизвестный стат «{m.Stat}»"));
                 if (m.Per is { } per && !data.Stats.ContainsKey(per.Stat))
                     errors.Add(new DataError("weapons.json", w.Id, $"Имплицит: неизвестный стат «{per.Stat}» в «per»"));
+                CheckConditions(m, "weapons.json", w.Id, "Имплицит: ", errors);
             }
         }
     }
@@ -177,12 +179,27 @@ public static class Validator
                             errors.Add(new DataError(file, ownerId, $"{where}неизвестный стат «{me.Modifier.Stat}»"));
                         if (me.Modifier.Per is { } per && !data.Stats.ContainsKey(per.Stat))
                             errors.Add(new DataError(file, ownerId, $"{where}неизвестный стат «{per.Stat}» в «per»"));
+                        CheckConditions(me.Modifier, file, ownerId, where, errors);
                         break;
                     case MechanicEffect mech when !mechanics.Contains(mech.MechanicId):
                         errors.Add(new DataError(file, ownerId, $"{where}неизвестная механика «{mech.MechanicId}»"));
                         break;
                 }
         }
+    }
+
+    private static void CheckConditions(Modifier m, string file, string ownerId, string where, List<DataError> errors)
+    {
+        foreach (var c in m.Conditions.Where(c => !ConditionCatalog.IsKnown(c.Id)))
+            errors.Add(new DataError(file, ownerId,
+                $"{where}неизвестное условие «{c.Id}» (допустимы: {string.Join(", ", ConditionCatalog.Ids)})"));
+    }
+
+    private static void CheckClassBonusConditions(GameData data, List<DataError> errors)
+    {
+        foreach (var c in data.Classes.Values)
+            foreach (var m in c.ClassBonuses)
+                CheckConditions(m, "classes.json", c.Id, "Бонус класса: ", errors);
     }
 
     /// <summary>Per-stat dependencies ("X per Y") must be acyclic over every modifier the data can produce.</summary>

@@ -81,4 +81,19 @@ public class ValidatorTests
         Assert.Contains("damage", e.Message);
         Assert.Contains("str", e.Message);
     }
+    [Fact]
+    public void Validator_rejects_unknown_condition_id()
+    {
+        var r = LoadMutated("passives.json", a => Node(a, "small_a")["effects"] = JsonNode.Parse(
+            "[{\"type\":\"modifier\",\"stat\":\"damage\",\"kind\":\"increased\",\"value\":1,\"conditions\":[\"target_dancing\"]}]"));
+        Assert.Contains(r.Errors, e => e.File == "passives.json" && e.Id == "small_a" && e.Message.Contains("target_dancing"));
+
+        var ok = LoadMutated("passives.json", a => Node(a, "small_a")["effects"] = JsonNode.Parse(
+            "[{\"type\":\"modifier\",\"stat\":\"damage\",\"kind\":\"increased\",\"value\":1,\"conditions\":[\"target_ignited\"]}]"));
+        Assert.Empty(ok.Errors);
+
+        var skill = LoadMutated("skills.json", a => Node(a, "test_slash")["tree"]![0]!["effects"] = JsonNode.Parse(
+            "[{\"type\":\"modifier\",\"stat\":\"damage\",\"kind\":\"increased\",\"value\":1,\"conditions\":[{\"id\":\"nope\"}]}]"));
+        Assert.Contains(skill.Errors, e => e.File == "skills.json" && e.Id == "test_slash" && e.Message.Contains("nope"));
+    }
 }

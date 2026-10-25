@@ -1,6 +1,7 @@
 using Dialoid.Core.Character;
 using Dialoid.Core.Combat;
 using Dialoid.Core.Passives;
+using Dialoid.Core.Simulation;
 using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
@@ -25,6 +26,7 @@ public sealed class GameData
     public IReadOnlyDictionary<string, WeaponStub> Weapons { get; }
     public IReadOnlyDictionary<string, ItemStub> Items { get; }
     public ProgressionTable Progression { get; }
+    public IReadOnlyDictionary<string, DummyDefinition> Dummies { get; }
 
     internal GameData(Builder b)
     {
@@ -39,6 +41,7 @@ public sealed class GameData
         Weapons = new Dictionary<string, WeaponStub>(b.Weapons);
         Items = new Dictionary<string, ItemStub>(b.Items);
         Progression = b.Progression;
+        Dummies = new Dictionary<string, DummyDefinition>(b.Dummies);
     }
 
     internal sealed class Builder
@@ -55,6 +58,7 @@ public sealed class GameData
         public Dictionary<string, WeaponStub> Weapons { get; } = new();
         public Dictionary<string, ItemStub> Items { get; } = new();
         public ProgressionTable Progression { get; set; } = ProgressionTable.Empty;
+        public Dictionary<string, DummyDefinition> Dummies { get; } = new();
         public GameData Build() => new(this);
     }
 }

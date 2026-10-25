@@ -61,6 +61,7 @@ public static class DataLoader
         LoadWeapons(dataDirectory, b, errors, mechanics);
         LoadItems(dataDirectory, b, errors);
         LoadProgression(dataDirectory, b, errors);
+        LoadDummies(dataDirectory, b, errors);
 
         if (errors.Count > 0) return new LoadResult(null, errors);
         // Cross-file checks run only on data that loaded cleanly, so they do not drown real errors in noise.
@@ -219,6 +220,15 @@ public static class DataLoader
             if (errors.Count > before) continue;
             b.Weapons[id] = new WeaponStub(id, w.Name!, w.Type!, w.PhysMin, w.PhysMax, w.AttacksPerSecond, w.CritChance, implicits);
         }
+    }
+
+    private static void LoadDummies(string dir, GameData.Builder b, List<DataError> errors)
+    {
+        const string F = "dummies.json";
+        if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
+        foreach (var (id, d) in ReadCatalog<DummyJson>(dir, F, x => x.Id, errors))
+            if (d.ToDefinition(id, m => errors.Add(new DataError(F, id, m))) is { } def)
+                b.Dummies[id] = def;
     }
 
     private static void LoadItems(string dir, GameData.Builder b, List<DataError> errors)

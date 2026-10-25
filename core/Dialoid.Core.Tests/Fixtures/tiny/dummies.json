@@ -1,0 +1,43 @@
+[
+  {
+    "id": "test_training",
+    "name": "Тренировочный",
+    "pack_size": 1,
+    "life_per_target": null,
+    "respawn": false,
+    "armor": 0
+  },
+  {
+    "id": "test_swarm",
+    "name": "Рой",
+    "pack_size": 5,
+    "pack_radius": 4,
+    "life_per_target": 100,
+    "respawn": true,
+    "armor": 0
+  },
+  {
+    "id": "test_boss",
+    "name": "Босс",
+    "pack_size": 1,
+    "life_per_target": 1000,
+    "respawn": false,
+    "armor": 1000
+  },
+  {
+    "id": "test_attacker",
+    "name": "Атакующий",
+    "pack_size": 1,
+    "life_per_target": null,
+    "respawn": false,
+    "armor": 0,
+    "freeze_duration_multiplier": 0.5,
+    "attack": {
+      "damage_per_hit": {
+        "physical": 14,
+        "fire": 9
+      },
+      "interval_sec": 3.5
+    }
+  }
+]
