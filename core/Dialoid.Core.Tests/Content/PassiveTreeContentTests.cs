@@ -164,6 +164,135 @@ public class PassiveTreeContentTests
             }
     }
 
+    /// <summary>Names of skills and skill/ascendancy tree nodes from spec 10.1–10.5; passive nodes must not reuse them.</summary>
+    private static readonly string[] ReservedNames =
+    {
+        // skills (10.1, 10.2, 10.5)
+        "Рассекающий удар", "Сокрушение", "Боевой клич", "Вихрь", "Рывок", "Метательный топор",
+        "Искра", "Огненный шар", "Ледяное копье", "Шаровая молния", "Метеор", "Мерцание", "Ядовитый туман",
+        // Fireball tree (10.3)
+        "Жар", "Широкий взрыв", "Раскаленное ядро", "Вечное пламя", "Остаточный жар", "Пламенное кольцо", "Разделение",
+        "Сжатие", "Морозный шар", "Грозовой шар", "Концентрация маны", "Отдача", "Летучий шар", "Метка пламени",
+        "Перегрев", "Взрывная волна", "Пламя души",
+        // Cleave tree (10.3)
+        "Тяжелая рука", "Рваные раны", "Глубокий порез", "Кровопускание", "Жажда", "Неистовство", "Широкий замах",
+        "Раскол", "Точный удар", "Раскаленный клинок", "Пылающие раны", "Удар грома", "Эхо", "Стальная кожа",
+        "Сокрушительная сила", "Кромка",
+        // named nodes of the other skill trees (10.3)
+        "Кровавая жатва", "Устрашение", "Перегрузка", "Ледяная глыба", "Солнечный шар",
+        // ascendancies (10.4)
+        "Кровавое безумие", "Неутолимый", "Кровавый пир", "Без оглядки", "Вихрь ярости", "Рассечение плоти", "Боевой транс",
+        "Грозовое оружие", "Разряд", "Цепной удар", "Статический заряд", "Громовой топор", "Заземление", "Буря в жилах",
+        "Пожар", "Распространение", "Пепел", "Вечный огонь", "Метеоритный дождь", "Огненная броня", "Жар души",
+        "Вечная мерзлота", "Ледяная броня", "Хрупкость", "Северное сияние", "Ледник",
+    };
+
+    [Fact]
+    public void Passive_names_do_not_reuse_skill_or_ascendancy_node_names()
+    {
+        var reserved = new HashSet<string>(ReservedNames, StringComparer.OrdinalIgnoreCase);
+        var clashes = Tree.Nodes.Values.Where(n => reserved.Contains(n.Name)).Select(n => $"{n.Id} «{n.Name}»").ToList();
+        Assert.True(clashes.Count == 0, string.Join(", ", clashes));
+    }
+
+    private static (double Chance, double Damage) CritOf(PassiveNode n, TagSet context)
+    {
+        double c = 0, d = 0;
+        foreach (var e in n.Effects)
+        {
+            if (e is not ModifierEffect { Scope: Scope.Global } me) continue;
+            var m = me.Modifier;
+            if (m.Kind != ModKind.Flat || m.Conditions.Count != 0 || m.Per != null) continue;
+            if (!m.RequiredTags.Items.All(context.Contains)) continue;
+            if (m.Stat == "crit_chance") c += m.Value;
+            else if (m.Stat == "crit_damage") d += m.Value;
+        }
+        return (c, d);
+    }
+
+    /// <summary>
+    /// Greedy lower bound on the crit (chance, damage) the tree gives a skill with <paramref name="context"/> tags when
+    /// at most <paramref name="budget"/> points are spent from <paramref name="startId"/>: each step takes the shortest
+    /// path to the node whose path best raises c·d per point. Unconditional flat modifiers only.
+    /// </summary>
+    private static (double Chance, double Damage) BestCrit(string startId, TagSet context, double baseChance, double baseDamage, int budget)
+    {
+        var taken = new HashSet<string> { startId };
+        double c = baseChance, d = baseDamage;
+        int spent = 0;
+        while (true)
+        {
+            var parent = new Dictionary<string, string?>();
+            var queue = new Queue<string>();
+            foreach (var t in taken) { parent[t] = null; queue.Enqueue(t); }
+            while (queue.Count > 0)
+            {
+                var cur = queue.Dequeue();
+                foreach (var next in Tree.Edges[cur])
+                    if (!parent.ContainsKey(next) && Tree.Nodes[next].Kind != PassiveKind.Start)
+                    {
+                        parent[next] = cur;
+                        queue.Enqueue(next);
+                    }
+            }
+            double bestScore = 0;
+            List<string>? bestPath = null;
+            (double C, double D) bestTotals = default;
+            foreach (var target in parent.Keys.Where(k => !taken.Contains(k)))
+            {
+                var path = new List<string>();
+                for (var at = target; at != null && !taken.Contains(at); at = parent[at]) path.Add(at);
+                if (spent + path.Count > budget) continue;
+                double nc = c, nd = d;
+                foreach (var id in path)
+                {
+                    var (dc, dd) = CritOf(Tree.Nodes[id], context);
+                    nc += dc; nd += dd;
+                }
+                var score = (nc * nd - c * d) / path.Count;
+                if (score > bestScore) { bestScore = score; bestPath = path; bestTotals = (nc, nd); }
+            }
+            if (bestPath == null) return (c, d);
+            foreach (var id in bestPath) taken.Add(id);
+            spent += bestPath.Count;
+            (c, d) = bestTotals;
+        }
+    }
+
+    /// <summary>
+    /// Spec 7.4: a crit build must be able to beat Inevitability (+18% More on hits). Expected crit multiplier is
+    /// 1 + c·d (c = crit chance, d = crit_damage as fractions; base crit_damage 50 from stats.json).
+    /// Base crit chance 5 (weapon for attacks, skill for spells). Class dex bonus at L60: 0.04 × (base dex + 59) for the
+    /// class's own hit kind — Warrior 0.04 × 69 = 2.76 for attacks, Sorcerer 0.04 × 67 = 2.68 for spells.
+    /// Contexts: a fire-converted Cleave (attack, melee, area, physical, fire, hit) and Fireball (spell, projectile, area, fire, hit).
+    /// Within 20 points the tree alone must push 1 + c·d above 1.18.
+    /// </summary>
+    [Theory]
+    [InlineData("warrior", "attack,melee,area,physical,fire,hit")]
+    [InlineData("sorcerer", "spell,projectile,area,fire,hit")]
+    public void Crit_builds_beat_inevitability_within_20_points(string classId, string tags)
+    {
+        var cls = ContentHarness.Data.Classes[classId];
+        var context = TagSet.Of(tags.Split(','));
+        var dexBonus = cls.ClassBonuses
+            .Where(m => m.Stat == "crit_chance" && m.Per?.Stat == "dex" && m.RequiredTags.Items.All(context.Contains))
+            .Sum(m => m.Value * (cls.BaseAttributes[Attr.Dex] + 59) / m.Per!.Every);
+        Assert.True(dexBonus > 2.5, $"class dex crit bonus {dexBonus}");
+        var baseDamage = ContentHarness.Data.Stats["crit_damage"].Default;
+
+        var (c, d) = BestCrit(cls.PassiveStartNodeId, context, 5 + dexBonus, baseDamage, 20);
+        var gain = 1 + c / 100 * d / 100;
+        Assert.True(gain > 1.18, $"{classId}: crit {c:0.##}%, crit damage {d:0.##}% → ×{gain:0.###}");
+    }
+
+    [Fact]
+    public void Warrior_reaches_an_attack_crit_notable_within_8_points()
+    {
+        var dist = Distances("start_warrior");
+        var attack = TagSet.Of("attack", "melee", "physical");
+        Assert.Contains(OfKind(PassiveKind.Notable), n => dist[n.Id] <= 8 && CritOf(n, attack).Chance >= 4 && CritOf(n, attack).Damage >= 20);
+    }
+
     [Fact]
     public void Classes_match_spec_10()
     {

@@ -45,7 +45,7 @@
     ]
   },
   {
-    "id": "int_permafrost", "name": "Вечная мерзлота", "kind": "notable", "region": "int", "x": 318, "y": 169,
+    "id": "int_bitter_frost", "name": "Лютая стужа", "kind": "notable", "region": "int", "x": 318, "y": 169,
     "description": "+20% к урону холодом, +20% к длительности заморозки",
     "links": ["int_frost_2"],
     "effects": [
@@ -56,7 +56,7 @@
   {
     "id": "int_frost_3", "name": "Иней", "kind": "small", "region": "int", "x": 302, "y": 227,
     "description": "+10% к урону холодом",
-    "links": ["int_permafrost"],
+    "links": ["int_bitter_frost"],
     "effects": [
       {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["cold"]}
     ]
@@ -64,7 +64,7 @@
   {
     "id": "int_frost_4", "name": "Ледяная хватка", "kind": "small", "region": "int", "x": 371, "y": 197,
     "description": "+4% к шансу заморозки",
-    "links": ["int_permafrost"],
+    "links": ["int_bitter_frost"],
     "effects": [
       {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 4}
     ]
@@ -107,41 +107,41 @@
       {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["cold"]}
     ]
   },
-  // int: ветка «огонь и поджог»
+  // int: ветка «заклинания и огненные попадания»
   {
     "id": "int_attribute_4", "name": "Разум", "kind": "attribute", "region": "int", "x": 240, "y": 0,
     "description": "+5 к атрибуту, выбранному при взятии",
     "links": ["int_attribute_1", "int_attribute_2"]
   },
   {
-    "id": "int_flame_1", "name": "Жар", "kind": "small", "region": "int", "x": 300, "y": 0,
-    "description": "+10% к урону огнем",
+    "id": "int_flame_1", "name": "Чародейство", "kind": "small", "region": "int", "x": 300, "y": 0,
+    "description": "+10% к урону заклинаний",
     "links": ["int_attribute_4"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["fire"]}
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["spell"]}
     ]
   },
   {
-    "id": "int_flame_eater", "name": "Пожиратель пламени", "kind": "notable", "region": "int", "x": 360, "y": 0,
-    "description": "+25% к урону огнем, +20% к урону по подожженным целям",
+    "id": "int_archmage", "name": "Архимаг", "kind": "notable", "region": "int", "x": 360, "y": 0,
+    "description": "+20% к урону заклинаний, +6% к скорости заклинаний",
     "links": ["int_flame_1"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 25, "tags": ["fire"]},
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "conditions": ["target_ignited"]}
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "tags": ["spell"]},
+      {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 6}
     ]
   },
   {
-    "id": "int_flame_2", "name": "Тлеющий уголь", "kind": "small", "region": "int", "x": 373, "y": -59,
-    "description": "+5% к шансу поджога",
-    "links": ["int_flame_eater"],
+    "id": "int_flame_2", "name": "Беглость", "kind": "small", "region": "int", "x": 373, "y": -59,
+    "description": "+4% к скорости заклинаний",
+    "links": ["int_archmage"],
     "effects": [
-      {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 5}
+      {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 4}
     ]
   },
   {
-    "id": "int_flame_3", "name": "Жар", "kind": "small", "region": "int", "x": 420, "y": 0,
+    "id": "int_flame_3", "name": "Пламя", "kind": "small", "region": "int", "x": 420, "y": 0,
     "description": "+10% к урону огнем",
-    "links": ["int_flame_eater"],
+    "links": ["int_archmage"],
     "effects": [
       {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["fire"]}
     ]
@@ -152,36 +152,36 @@
     "links": ["int_flame_3"]
   },
   {
-    "id": "int_flame_4", "name": "Тлеющий уголь", "kind": "small", "region": "int", "x": 540, "y": 0,
-    "description": "+5% к шансу поджога",
+    "id": "int_flame_4", "name": "Раскаленная сталь", "kind": "small", "region": "int", "x": 540, "y": 0,
+    "description": "20% физического урона превращается в огонь",
     "links": ["int_attribute_5"],
     "effects": [
-      {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 5}
+      {"type": "add_conversion", "from": "physical", "to": "fire", "percent": 20}
     ]
   },
   {
-    "id": "int_inferno", "name": "Пекло", "kind": "notable", "region": "int", "x": 600, "y": 0,
-    "description": "+1 к максимуму стаков поджога, +20% к урону от поджога",
+    "id": "int_incineration", "name": "Испепеление", "kind": "notable", "region": "int", "x": 600, "y": 0,
+    "description": "+25% к урону огнем, +5% пробития сопротивления огню",
     "links": ["int_flame_4"],
     "effects": [
-      {"type": "modifier", "stat": "ignite_max_stacks", "kind": "flat", "value": 1},
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "tags": ["ailment_ignite"]}
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 25, "tags": ["fire"]},
+      {"type": "modifier", "stat": "penetration_fire", "kind": "flat", "value": 5}
     ]
   },
   {
-    "id": "int_flame_5", "name": "Жар", "kind": "small", "region": "int", "x": 612, "y": 86,
-    "description": "+10% к урону огнем",
-    "links": ["int_inferno"],
+    "id": "int_flame_5", "name": "Огненный удар", "kind": "small", "region": "int", "x": 612, "y": 86,
+    "description": "+12% к урону попаданий огнем",
+    "links": ["int_incineration"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["fire"]}
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 12, "tags": ["fire", "hit"]}
     ]
   },
   {
-    "id": "int_flame_6", "name": "Тлеющий уголь", "kind": "small", "region": "int", "x": 660, "y": 0,
-    "description": "+5% к шансу поджога",
-    "links": ["int_inferno"],
+    "id": "int_flame_6", "name": "Прожигание", "kind": "small", "region": "int", "x": 660, "y": 0,
+    "description": "+3% пробития сопротивления огню",
+    "links": ["int_incineration"],
     "effects": [
-      {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 5}
+      {"type": "modifier", "stat": "penetration_fire", "kind": "flat", "value": 3}
     ]
   },
   {
@@ -272,30 +272,31 @@
       {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2, "tags": ["spell"]}
     ]
   },
-  // int: мост «сила заклинаний»
+  // int: мост «поджог»
   {
-    "id": "int_sorcery_1", "name": "Чародейство", "kind": "small", "region": "int", "x": 487, "y": 187,
-    "description": "+10% к урону заклинаний",
+    "id": "int_ignite_1", "name": "Тлеющий уголь", "kind": "small", "region": "int", "x": 487, "y": 187,
+    "description": "+5% к шансу поджога",
     "links": ["int_attribute_3"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["spell"]}
+      {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 5}
     ]
   },
   {
-    "id": "int_archmage", "name": "Архимаг", "kind": "notable", "region": "int", "x": 536, "y": 134,
-    "description": "+20% к урону заклинаний, +6% к скорости заклинаний",
-    "links": ["int_sorcery_1"],
+    "id": "int_inferno", "name": "Пекло", "kind": "notable", "region": "int", "x": 536, "y": 134,
+    "description": "+1 к максимуму стаков поджога, +20% к урону от поджога, +15% к урону по подожженным целям",
+    "links": ["int_ignite_1"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "tags": ["spell"]},
-      {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 6}
+      {"type": "modifier", "stat": "ignite_max_stacks", "kind": "flat", "value": 1},
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "tags": ["ailment_ignite"]},
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 15, "conditions": ["target_ignited"]}
     ]
   },
   {
-    "id": "int_sorcery_2", "name": "Беглость", "kind": "small", "region": "int", "x": 518, "y": 64,
-    "description": "+4% к скорости заклинаний",
-    "links": ["int_archmage", "int_attribute_5"],
+    "id": "int_ignite_2", "name": "Долгое горение", "kind": "small", "region": "int", "x": 518, "y": 64,
+    "description": "+10% к урону от поджога",
+    "links": ["int_inferno", "int_attribute_5"],
     "effects": [
-      {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 4}
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["ailment_ignite"]}
     ]
   },
   // int: мост «защита от стихий»
@@ -434,19 +435,19 @@
   },
   {
     "id": "dex_phantom_step", "name": "Призрачный шаг", "kind": "notable", "region": "dex", "x": 0, "y": -360,
-    "description": "+3% к шансу уклонения, +2% к максимуму уклонения",
+    "description": "+3% к шансу уклонения, шанс уклонения увеличен на 15%",
     "links": ["dex_evasion_1"],
     "effects": [
       {"type": "modifier", "stat": "dodge_chance", "kind": "flat", "value": 3},
-      {"type": "modifier", "stat": "dodge_chance_max", "kind": "flat", "value": 2}
+      {"type": "modifier", "stat": "dodge_chance", "kind": "increased", "value": 15}
     ]
   },
   {
-    "id": "dex_evasion_2", "name": "Проворство", "kind": "small", "region": "dex", "x": -59, "y": -373,
-    "description": "+4% к скорости атак",
+    "id": "dex_evasion_2", "name": "Гибкость", "kind": "small", "region": "dex", "x": -59, "y": -373,
+    "description": "+5% к здоровью",
     "links": ["dex_phantom_step"],
     "effects": [
-      {"type": "modifier", "stat": "attack_speed", "kind": "increased", "value": 4}
+      {"type": "modifier", "stat": "life", "kind": "increased", "value": 5}
     ]
   },
   {
@@ -463,36 +464,36 @@
     "links": ["dex_evasion_3"]
   },
   {
-    "id": "dex_evasion_4", "name": "Проворство", "kind": "small", "region": "dex", "x": 0, "y": -540,
-    "description": "+4% к скорости атак",
+    "id": "dex_evasion_4", "name": "Гибкость", "kind": "small", "region": "dex", "x": 0, "y": -540,
+    "description": "+5% к здоровью",
     "links": ["dex_attribute_5"],
     "effects": [
-      {"type": "modifier", "stat": "attack_speed", "kind": "increased", "value": 4}
+      {"type": "modifier", "stat": "life", "kind": "increased", "value": 5}
     ]
   },
   {
-    "id": "dex_dancing_steel", "name": "Пляска стали", "kind": "notable", "region": "dex", "x": 0, "y": -600,
-    "description": "+8% к скорости атак, +2% к шансу уклонения",
+    "id": "dex_elusive", "name": "Неуловимость", "kind": "notable", "region": "dex", "x": 0, "y": -600,
+    "description": "+2% к шансу уклонения, +8% к здоровью",
     "links": ["dex_evasion_4"],
     "effects": [
-      {"type": "modifier", "stat": "attack_speed", "kind": "increased", "value": 8},
-      {"type": "modifier", "stat": "dodge_chance", "kind": "flat", "value": 2}
+      {"type": "modifier", "stat": "dodge_chance", "kind": "flat", "value": 2},
+      {"type": "modifier", "stat": "life", "kind": "increased", "value": 8}
     ]
   },
   {
     "id": "dex_evasion_5", "name": "Увертливость", "kind": "small", "region": "dex", "x": 86, "y": -612,
     "description": "+1% к шансу уклонения",
-    "links": ["dex_dancing_steel"],
+    "links": ["dex_elusive"],
     "effects": [
       {"type": "modifier", "stat": "dodge_chance", "kind": "flat", "value": 1}
     ]
   },
   {
-    "id": "dex_evasion_6", "name": "Проворство", "kind": "small", "region": "dex", "x": 0, "y": -660,
-    "description": "+4% к скорости атак",
-    "links": ["dex_dancing_steel"],
+    "id": "dex_evasion_6", "name": "Гибкость", "kind": "small", "region": "dex", "x": 0, "y": -660,
+    "description": "+5% к здоровью",
+    "links": ["dex_elusive"],
     "effects": [
-      {"type": "modifier", "stat": "attack_speed", "kind": "increased", "value": 4}
+      {"type": "modifier", "stat": "life", "kind": "increased", "value": 5}
     ]
   },
   {
@@ -559,7 +560,7 @@
     ]
   },
   {
-    "id": "dex_precise_strikes", "name": "Точные удары", "kind": "notable", "region": "dex", "x": -282, "y": -530,
+    "id": "dex_flawless_technique", "name": "Безупречная техника", "kind": "notable", "region": "dex", "x": -282, "y": -530,
     "description": "+20% к урону попаданий атаками, +10% к физическому урону",
     "links": ["dex_onslaught_5"],
     "effects": [
@@ -570,7 +571,7 @@
   {
     "id": "dex_onslaught_6", "name": "Выверенный удар", "kind": "small", "region": "dex", "x": -363, "y": -500,
     "description": "+10% к урону атаками",
-    "links": ["dex_precise_strikes"],
+    "links": ["dex_flawless_technique"],
     "effects": [
       {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["attack"]}
     ]
@@ -578,7 +579,7 @@
   {
     "id": "dex_onslaught_7", "name": "Быстрые руки", "kind": "small", "region": "dex", "x": -310, "y": -583,
     "description": "+4% к скорости атак",
-    "links": ["dex_precise_strikes"],
+    "links": ["dex_flawless_technique"],
     "effects": [
       {"type": "modifier", "stat": "attack_speed", "kind": "increased", "value": 4}
     ]
@@ -665,7 +666,7 @@
     ]
   },
   {
-    "id": "str_bleed_2", "name": "Кровопускание", "kind": "small", "region": "str", "x": -265, "y": -141,
+    "id": "str_bleed_2", "name": "Алая сталь", "kind": "small", "region": "str", "x": -265, "y": -141,
     "description": "+10% к урону от кровотечения",
     "links": ["str_bleed_1"],
     "effects": [
@@ -673,7 +674,7 @@
     ]
   },
   {
-    "id": "str_torn_wounds", "name": "Рваные раны", "kind": "notable", "region": "str", "x": -318, "y": -169,
+    "id": "str_open_wounds", "name": "Открытые раны", "kind": "notable", "region": "str", "x": -318, "y": -169,
     "description": "+10% к шансу кровотечения, +25% к урону от кровотечения",
     "links": ["str_bleed_2"],
     "effects": [
@@ -684,15 +685,15 @@
   {
     "id": "str_bleed_3", "name": "Зазубренная сталь", "kind": "small", "region": "str", "x": -302, "y": -227,
     "description": "+5% к шансу кровотечения",
-    "links": ["str_torn_wounds"],
+    "links": ["str_open_wounds"],
     "effects": [
       {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 5}
     ]
   },
   {
-    "id": "str_bleed_4", "name": "Кровопускание", "kind": "small", "region": "str", "x": -371, "y": -197,
+    "id": "str_bleed_4", "name": "Алая сталь", "kind": "small", "region": "str", "x": -371, "y": -197,
     "description": "+10% к урону от кровотечения",
-    "links": ["str_torn_wounds"],
+    "links": ["str_open_wounds"],
     "effects": [
       {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["ailment_bleed"]}
     ]
@@ -711,7 +712,7 @@
     ]
   },
   {
-    "id": "str_blood_harvest", "name": "Кровавая жатва", "kind": "notable", "region": "str", "x": -530, "y": -282,
+    "id": "str_bloodbath", "name": "Кровавая баня", "kind": "notable", "region": "str", "x": -530, "y": -282,
     "description": "+1 к максимуму стаков кровотечения, +20% к урону по кровоточащим целям",
     "links": ["str_bleed_5"],
     "effects": [
@@ -720,9 +721,9 @@
     ]
   },
   {
-    "id": "str_bleed_6", "name": "Кровопускание", "kind": "small", "region": "str", "x": -500, "y": -363,
+    "id": "str_bleed_6", "name": "Алая сталь", "kind": "small", "region": "str", "x": -500, "y": -363,
     "description": "+10% к урону от кровотечения",
-    "links": ["str_blood_harvest"],
+    "links": ["str_bloodbath"],
     "effects": [
       {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["ailment_bleed"]}
     ]
@@ -730,7 +731,7 @@
   {
     "id": "str_bleed_7", "name": "Зазубренная сталь", "kind": "small", "region": "str", "x": -583, "y": -310,
     "description": "+5% к шансу кровотечения",
-    "links": ["str_blood_harvest", "dex_onslaught_7"],
+    "links": ["str_bloodbath", "dex_onslaught_7"],
     "effects": [
       {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 5}
     ]
@@ -820,7 +821,7 @@
       {"type": "mechanic", "id": "stone_skin"}
     ]
   },
-  // str: ветка «физический урон и ближний бой»
+  // str: ветка «физический урон и крит атак»
   {
     "id": "str_brute_1", "name": "Грубая сила", "kind": "small", "region": "str", "x": -212, "y": 113,
     "description": "+10% к физическому урону",
@@ -839,27 +840,27 @@
   },
   {
     "id": "str_butcher", "name": "Мясник", "kind": "notable", "region": "str", "x": -318, "y": 169,
-    "description": "+20% к физическому урону, +6% к скорости атак в ближнем бою",
+    "description": "+20% к физическому урону, +3% к шансу крита атак",
     "links": ["str_brute_2"],
     "effects": [
       {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "tags": ["physical"]},
-      {"type": "modifier", "stat": "attack_speed", "kind": "increased", "value": 6, "tags": ["melee"]}
+      {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 3, "tags": ["attack"]}
     ]
   },
   {
-    "id": "str_brute_3", "name": "Грубая сила", "kind": "small", "region": "str", "x": -302, "y": 227,
-    "description": "+10% к физическому урону",
-    "links": ["str_butcher"],
-    "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["physical"]}
-    ]
-  },
-  {
-    "id": "str_brute_4", "name": "Тяжелый удар", "kind": "small", "region": "str", "x": -371, "y": 197,
+    "id": "str_brute_3", "name": "Тяжелый удар", "kind": "small", "region": "str", "x": -302, "y": 227,
     "description": "+10% к урону в ближнем бою",
     "links": ["str_butcher"],
     "effects": [
       {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["melee"]}
+    ]
+  },
+  {
+    "id": "str_brute_4", "name": "Грубая сила", "kind": "small", "region": "str", "x": -371, "y": 197,
+    "description": "+10% к физическому урону",
+    "links": ["str_butcher"],
+    "effects": [
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["physical"]}
     ]
   },
   {
@@ -868,36 +869,36 @@
     "links": ["str_brute_4"]
   },
   {
-    "id": "str_brute_5", "name": "Грубая сила", "kind": "small", "region": "str", "x": -477, "y": 254,
-    "description": "+10% к физическому урону",
+    "id": "str_brute_5", "name": "Слабое место", "kind": "small", "region": "str", "x": -477, "y": 254,
+    "description": "+2% к шансу крита атак",
     "links": ["str_attribute_6"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["physical"]}
+      {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2, "tags": ["attack"]}
     ]
   },
   {
-    "id": "str_earthshaker", "name": "Землетряс", "kind": "notable", "region": "str", "x": -530, "y": 282,
-    "description": "+15% к области скиллов ближнего боя, +20% к урону скиллов ближнего боя по области",
+    "id": "str_ruthless_strike", "name": "Безжалостный удар", "kind": "notable", "region": "str", "x": -530, "y": 282,
+    "description": "+5% к шансу крита атак, +25% к урону крита атак",
     "links": ["str_brute_5"],
     "effects": [
-      {"type": "modifier", "stat": "area", "kind": "increased", "value": 15, "tags": ["melee"]},
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "tags": ["melee", "area"]}
+      {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 5, "tags": ["attack"]},
+      {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 25, "tags": ["attack"]}
     ]
   },
   {
-    "id": "str_brute_6", "name": "Тяжелый удар", "kind": "small", "region": "str", "x": -500, "y": 363,
-    "description": "+10% к урону в ближнем бою",
-    "links": ["str_earthshaker"],
+    "id": "str_brute_6", "name": "Слабое место", "kind": "small", "region": "str", "x": -500, "y": 363,
+    "description": "+2% к шансу крита атак",
+    "links": ["str_ruthless_strike"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["melee"]}
+      {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2, "tags": ["attack"]}
     ]
   },
   {
-    "id": "str_brute_7", "name": "Грубая сила", "kind": "small", "region": "str", "x": -583, "y": 310,
-    "description": "+10% к физическому урону",
-    "links": ["str_earthshaker"],
+    "id": "str_brute_7", "name": "Добивание", "kind": "small", "region": "str", "x": -583, "y": 310,
+    "description": "+10% к урону крита атак",
+    "links": ["str_ruthless_strike"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["physical"]}
+      {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 10, "tags": ["attack"]}
     ]
   },
   // str: мост «здоровье и регенерация»
@@ -1060,35 +1061,39 @@
   },
   {
     "id": "will_flow_1", "name": "Напор", "kind": "small", "region": "will", "x": 0, "y": 300,
-    "description": "+8% к генерации ресурса",
+    "description": "+6% к генерации и регенерации ресурса",
     "links": ["will_attribute_4"],
     "effects": [
-      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 8}
+      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 6},
+      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 6}
     ]
   },
   {
     "id": "will_wellspring", "name": "Неиссякаемый источник", "kind": "notable", "region": "will", "x": 0, "y": 360,
-    "description": "+15 к максимуму ресурса, +20% к регенерации ресурса",
+    "description": "+10 к максимуму ресурса, +12% к генерации и регенерации ресурса",
     "links": ["will_flow_1"],
     "effects": [
-      {"type": "modifier", "stat": "resource_max", "kind": "flat", "value": 15},
-      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 20}
+      {"type": "modifier", "stat": "resource_max", "kind": "flat", "value": 10},
+      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 12},
+      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 12}
     ]
   },
   {
     "id": "will_flow_2", "name": "Сосредоточение", "kind": "small", "region": "will", "x": 59, "y": 373,
-    "description": "+10% к регенерации ресурса",
+    "description": "+6% к генерации и регенерации ресурса",
     "links": ["will_wellspring"],
     "effects": [
-      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 10}
+      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 6},
+      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 6}
     ]
   },
   {
     "id": "will_flow_3", "name": "Напор", "kind": "small", "region": "will", "x": 0, "y": 420,
-    "description": "+8% к генерации ресурса",
+    "description": "+6% к генерации и регенерации ресурса",
     "links": ["will_wellspring"],
     "effects": [
-      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 8}
+      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 6},
+      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 6}
     ]
   },
   {
@@ -1098,35 +1103,39 @@
   },
   {
     "id": "will_flow_4", "name": "Сосредоточение", "kind": "small", "region": "will", "x": 0, "y": 540,
-    "description": "+10% к регенерации ресурса",
+    "description": "+6% к генерации и регенерации ресурса",
     "links": ["will_attribute_5"],
     "effects": [
-      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 10}
+      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 6},
+      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 6}
     ]
   },
   {
     "id": "will_iron_will", "name": "Железная воля", "kind": "notable", "region": "will", "x": 0, "y": 600,
-    "description": "+15% к генерации ресурса, −8% к стоимости скиллов",
+    "description": "+10% к генерации и регенерации ресурса, −8% к стоимости скиллов",
     "links": ["will_flow_4"],
     "effects": [
-      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 15},
+      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 10},
+      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 10},
       {"type": "modifier", "stat": "resource_cost", "kind": "increased", "value": -8}
     ]
   },
   {
     "id": "will_flow_5", "name": "Напор", "kind": "small", "region": "will", "x": -86, "y": 612,
-    "description": "+8% к генерации ресурса",
+    "description": "+6% к генерации и регенерации ресурса",
     "links": ["will_iron_will"],
     "effects": [
-      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 8}
+      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 6},
+      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 6}
     ]
   },
   {
     "id": "will_flow_6", "name": "Сосредоточение", "kind": "small", "region": "will", "x": 0, "y": 660,
-    "description": "+10% к регенерации ресурса",
+    "description": "+6% к генерации и регенерации ресурса",
     "links": ["will_iron_will"],
     "effects": [
-      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 10}
+      {"type": "modifier", "stat": "resource_gen", "kind": "increased", "value": 6},
+      {"type": "modifier", "stat": "resource_regen", "kind": "increased", "value": 6}
     ]
   },
   {
@@ -1139,7 +1148,7 @@
   },
   // will: ветка «молния и шок»
   {
-    "id": "will_storm_1", "name": "Разряд", "kind": "small", "region": "will", "x": 113, "y": 212,
+    "id": "will_storm_1", "name": "Электризация", "kind": "small", "region": "will", "x": 113, "y": 212,
     "description": "+10% к урону молнией",
     "links": ["will_attribute_2"],
     "effects": [
@@ -1164,7 +1173,7 @@
     ]
   },
   {
-    "id": "will_storm_3", "name": "Разряд", "kind": "small", "region": "will", "x": 227, "y": 302,
+    "id": "will_storm_3", "name": "Электризация", "kind": "small", "region": "will", "x": 227, "y": 302,
     "description": "+10% к урону молнией",
     "links": ["will_storm_front"],
     "effects": [
@@ -1185,7 +1194,7 @@
     "links": ["will_storm_4"]
   },
   {
-    "id": "will_storm_5", "name": "Разряд", "kind": "small", "region": "will", "x": 254, "y": 477,
+    "id": "will_storm_5", "name": "Электризация", "kind": "small", "region": "will", "x": 254, "y": 477,
     "description": "+10% к урону молнией",
     "links": ["will_attribute_6"],
     "effects": [
@@ -1210,7 +1219,7 @@
     ]
   },
   {
-    "id": "will_storm_7", "name": "Разряд", "kind": "small", "region": "will", "x": 310, "y": 583,
+    "id": "will_storm_7", "name": "Электризация", "kind": "small", "region": "will", "x": 310, "y": 583,
     "description": "+10% к урону молнией",
     "links": ["will_chain_reaction"],
     "effects": [
