@@ -84,9 +84,31 @@ public sealed class CharacterCompiler
         AddPassives(build, cls, mods, mechanics, deferred);
         AddAscendancy(build, cls, mods, mechanics, deferred);
 
-        return new CompiledCharacter(build, cls, new StatEvaluator(_data.Stats, mods), mods,
-            Array.Empty<CompiledSkill>(), mechanics, deferred);
+        var skills = CompileSkills(build, cls, mechanics, deferred);
+        return new CompiledCharacter(build, cls, new StatEvaluator(_data.Stats, mods), mods, skills, mechanics, deferred);
     }
+
+    private IReadOnlyList<CompiledSkill> CompileSkills(Build build, ClassDefinition cls, List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
+    {
+        IReadOnlyList<Effect> Of(Func<string, bool> kind) => deferred.Where(d => kind(d.Source.Kind)).Select(d => d.Effect).ToList();
+        var granted = mechanics.Where(m => m.MechanicId == SkillCompiler.GrantSkillNodeId)
+            .Select(m => (SkillId: GrantParam(m, "skill"), NodeId: GrantParam(m, "node"))).ToList();
+        var ctx = new CompilationContext(_data, Of(k => k == "ascendancy"), Of(k => k == "keystone"),
+            Of(k => k == "passive"), granted, cls.Id);
+        var result = new List<CompiledSkill>();
+        foreach (var slot in build.Slots)
+        {
+            if (!_data.Skills.TryGetValue(slot.SkillId, out var def))
+                throw new ArgumentException($"Unknown skill '{slot.SkillId}'.", nameof(build));
+            result.Add(SkillCompiler.Compile(slot, def, ctx));
+        }
+        return result;
+    }
+
+    private static string GrantParam(MechanicEffect m, string name) =>
+        m.Params.TryGetValue(name, out var v) && v.ValueKind == System.Text.Json.JsonValueKind.String
+            ? v.GetString()!
+            : throw new ArgumentException($"Mechanic '{m.MechanicId}' needs a string param '{name}'.");
 
     private void AddPassives(Build build, ClassDefinition cls, List<Modifier> mods, List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
     {
@@ -130,6 +152,7 @@ public sealed class CharacterCompiler
             {
                 case ModifierEffect { Scope: Scope.Global } me: mods.Add(me.Modifier with { Source = src }); break;
                 case MechanicEffect mech: mechanics.Add(mech); break;
+                case ModifierEffect me: deferred.Add(new SourcedEffect(me with { Modifier = me.Modifier with { Source = src } }, src)); break;
                 default: deferred.Add(new SourcedEffect(e, src)); break;
             }
     }
