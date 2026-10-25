@@ -24,14 +24,14 @@ public class SurvivalTests
 
     /// <summary>Tiny fixture without attribute bonuses; the warrior gets exact flat defences from class bonuses.</summary>
     private static GameData Defence(double armor = 0, double fire = 0, double dodge = 0, double? damage = null, double? interval = null,
-        double? coldCap = null)
+        double taken = 0)
     {
         var dir = FixturePaths.CopyTiny();
         Edit(dir, "attributes.json", n => n["bonuses"] = new JsonArray());
         Edit(dir, "classes.json", n =>
         {
             var bonuses = Find(n, "test_warrior")["class_bonuses"]!.AsArray();
-            foreach (var (stat, v) in new[] { ("armor", armor), ("resist_fire", fire), ("dodge_chance", dodge) })
+            foreach (var (stat, v) in new[] { ("armor", armor), ("resist_fire", fire), ("dodge_chance", dodge), ("damage_taken", taken) })
                 if (v != 0) bonuses.Add(JsonNode.Parse($"{{\"stat\":\"{stat}\",\"kind\":\"flat\",\"value\":{v}}}"));
         });
         Edit(dir, "dummies.json", n =>
@@ -67,6 +67,15 @@ public class SurvivalTests
         Assert.Equal(8.1, r.DamageTaken[DamageType.Fire], 9);
         Assert.Equal(1, Count(r, "dummy_attack"));
         Assert.Equal(4.0, r.TimeToDeath);
+    }
+
+    [Fact]
+    public void Damage_taken_stat_increases_incoming_damage()
+    {
+        // 14 phys vs armor 140 -> 7, +10% damage taken -> 7.7; fire 9 -> 9.9
+        var r = Run(Defence(armor: 140, taken: 10), Warrior(1), cap: 4);
+        Assert.Equal(7.7, r.DamageTaken![DamageType.Physical], 9);
+        Assert.Equal(9.9, r.DamageTaken[DamageType.Fire], 9);
     }
 
     [Fact]

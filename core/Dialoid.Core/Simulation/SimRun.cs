@@ -248,6 +248,7 @@ internal sealed class SimRun
     /// </summary>
     private double? DummyAttackStep(double t, double dt)
     {
+        // Attack-time character state is read at the end of the step (at most one step of error).
         var attack = _dummy.Attack!;
         var ev = _procs.Evaluator;
 
@@ -285,6 +286,11 @@ internal sealed class SimRun
             return false;
         }
 
+        // Character damage_taken (percentage points, e.g. a risk node's +10%) applies after mitigation.
+        var takenMult = _data.Stats.ContainsKey("damage_taken")
+            ? 1 + Math.Max(-100, ev.Evaluate("damage_taken", default, _conditions).Value) / 100
+            : 1;
+
         double total = 0;
         foreach (var type in Enum.GetValues<DamageType>())
         {
@@ -302,6 +308,7 @@ internal sealed class SimRun
                 taken = hit * Mitigation.ResistMultiplier(Math.Min(resist, cap), 0);
             }
             if (taken <= 0) continue;
+            taken *= takenMult;
             _damageTaken[type] = _damageTaken.GetValueOrDefault(type) + taken;
             total += taken;
         }
