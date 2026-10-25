@@ -11,8 +11,14 @@ public sealed class CharacterCompiler
     private static readonly Attribute[] AllAttributes = { Attribute.Str, Attribute.Int, Attribute.Will, Attribute.Dex };
 
     private readonly GameData _data;
+    private readonly MechanicRegistry _mechanics;
 
-    public CharacterCompiler(GameData data) => _data = data;
+    /// <param name="mechanics">Registry whose OnCompile hooks run (default: <see cref="MechanicRegistry.Default"/>).</param>
+    public CharacterCompiler(GameData data, MechanicRegistry? mechanics = null)
+    {
+        _data = data;
+        _mechanics = mechanics ?? MechanicRegistry.Default;
+    }
 
     /// <summary>Compiles a build. Callers must run <see cref="BuildRules.Validate"/> first: unknown ids (class, passive, ascendancy, weapon) throw ArgumentException.</summary>
     public CompiledCharacter Compile(Build build)
@@ -80,12 +86,24 @@ public sealed class CharacterCompiler
         }
 
         var mechanics = new List<MechanicEffect>();
+        var sourcedMechanics = new List<SourcedEffect>();
         var deferred = new List<SourcedEffect>();
-        AddPassives(build, cls, mods, mechanics, deferred);
-        AddAscendancy(build, cls, mods, mechanics, deferred);
+        AddPassives(build, cls, mods, mechanics, sourcedMechanics, deferred);
+        AddAscendancy(build, cls, mods, mechanics, sourcedMechanics, deferred);
 
-        var skills = CompileSkills(build, cls, mechanics, deferred);
-        return new CompiledCharacter(build, cls, new StatEvaluator(_data.Stats, mods), mods, skills, mechanics, deferred);
+        // Mechanic hooks: the character phase edits the modifier pool, then the skill phase edits each compiled skill.
+        var globals = MechanicCompiler.Order(sourcedMechanics);
+        var characterRules = new Dictionary<string, double>();
+        MechanicCompiler.CharacterPhase(_mechanics, _data, build, cls, globals, mods, characterRules);
+        var evaluator = new StatEvaluator(_data.Stats, mods);
+
+        var skills = CompileSkills(build, cls, mechanics, deferred)
+            .Select(s => MechanicCompiler.SkillPhase(_mechanics, _data, build, cls, globals, evaluator, s)).ToList();
+        return new CompiledCharacter(build, cls, evaluator, mods, skills, mechanics, deferred)
+        {
+            GlobalMechanics = globals,
+            Rules = characterRules,
+        };
     }
 
     private IReadOnlyList<CompiledSkill> CompileSkills(Build build, ClassDefinition cls, List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
@@ -110,7 +128,7 @@ public sealed class CharacterCompiler
             ? v.GetString()!
             : throw new ArgumentException($"Mechanic '{m.MechanicId}' needs a string param '{name}'.");
 
-    private void AddPassives(Build build, ClassDefinition cls, List<Modifier> mods, List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
+    private void AddPassives(Build build, ClassDefinition cls, List<Modifier> mods, List<MechanicEffect> mechanics, List<SourcedEffect> sourcedMechanics, List<SourcedEffect> deferred)
     {
         foreach (var id in build.PassiveNodes.Distinct())
         {
@@ -125,27 +143,27 @@ public sealed class CharacterCompiler
                 mods.Add(new Modifier(choice.StatId(), ModKind.Flat, PassiveTree.AttributeNodeBonus, TagSet.Empty,
                     Array.Empty<Condition>(), null, src));
             }
-            AddEffects(node.Effects, src, mods, mechanics, deferred);
+            AddEffects(node.Effects, src, mods, mechanics, sourcedMechanics, deferred);
         }
     }
 
-    private void AddAscendancy(Build build, ClassDefinition cls, List<Modifier> mods, List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
+    private void AddAscendancy(Build build, ClassDefinition cls, List<Modifier> mods, List<MechanicEffect> mechanics, List<SourcedEffect> sourcedMechanics, List<SourcedEffect> deferred)
     {
         if (build.AscendancyId == null) return;
         if (!_data.Ascendancies.TryGetValue(build.AscendancyId, out var asc) || asc.ClassId != cls.Id)
             throw new ArgumentException($"Unknown ascendancy '{build.AscendancyId}' for class '{cls.Id}'.", nameof(build));
-        AddEffects(asc.Start.Effects, new SourceRef("ascendancy", asc.Start.Id, asc.Start.Name), mods, mechanics, deferred);
+        AddEffects(asc.Start.Effects, new SourceRef("ascendancy", asc.Start.Id, asc.Start.Name), mods, mechanics, sourcedMechanics, deferred);
         foreach (var id in build.AscendancyNodes.Distinct())
         {
             var node = asc.Notables.FirstOrDefault(n => n.Id == id)
                 ?? throw new ArgumentException($"Unknown ascendancy node '{id}' in '{asc.Id}'.", nameof(build));
-            AddEffects(node.Effects, new SourceRef("ascendancy", node.Id, node.Name), mods, mechanics, deferred);
+            AddEffects(node.Effects, new SourceRef("ascendancy", node.Id, node.Name), mods, mechanics, sourcedMechanics, deferred);
         }
     }
 
     /// <summary>Global modifiers go to the stat pool, mechanics to the mechanic list, everything else waits for skill compilation.</summary>
     private static void AddEffects(IReadOnlyList<Effect> effects, SourceRef src, List<Modifier> mods,
-        List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
+        List<MechanicEffect> mechanics, List<SourcedEffect> sourcedMechanics, List<SourcedEffect> deferred)
     {
         foreach (var e in effects)
             switch (e)
@@ -153,6 +171,7 @@ public sealed class CharacterCompiler
                 case ModifierEffect { Scope: Scope.Global } me: mods.Add(me.Modifier with { Source = src }); break;
                 case MechanicEffect mech:
                     mechanics.Add(mech);
+                    sourcedMechanics.Add(new SourcedEffect(mech, src));
                     if (mech.Scope is not Scope.Global) deferred.Add(new SourcedEffect(mech, src)); // also lands on matching skills
                     break;
                 case ModifierEffect me: deferred.Add(new SourcedEffect(me with { Modifier = me.Modifier with { Source = src } }, src)); break;

@@ -17,6 +17,7 @@ public sealed class TargetState
     public const double FreezeImmunitySec = 3;
 
     private readonly List<AilmentInstance> _ailments = new();
+    private readonly SortedDictionary<string, double> _damageTakenSources = new(StringComparer.Ordinal);
 
     public double Life, MaxLife;
     public bool Immortal;
@@ -28,9 +29,33 @@ public sealed class TargetState
     public IReadOnlyList<AilmentInstance> Ailments => _ailments;
     public bool IsFrozen => FreezeRemaining > 0;
 
-    /// <summary>Spec 6.6 additive bucket: strongest active shock (other contributors join later).</summary>
+    /// <summary>Spec 6.6 additive bucket: strongest active shock plus the keyed contributions set by mechanics.</summary>
     public double DamageTakenIncreased =>
-        _ailments.Where(a => a.AilmentId == "shock").Select(a => a.Magnitude).DefaultIfEmpty(0).Max();
+        _ailments.Where(a => a.AilmentId == "shock").Select(a => a.Magnitude).DefaultIfEmpty(0).Max() + _damageTakenSources.Values.Sum();
+
+    /// <summary>Sets (0 removes) one keyed contribution to the damage-taken bucket; cleared on death/respawn.</summary>
+    public void SetDamageTaken(string key, double increasedPercent)
+    {
+        if (increasedPercent == 0) _damageTakenSources.Remove(key);
+        else _damageTakenSources[key] = increasedPercent;
+    }
+
+    /// <summary>Active instances of an ailment (freeze: 1 while frozen).</summary>
+    public int Stacks(string ailmentId) =>
+        ailmentId == "freeze" ? (IsFrozen ? 1 : 0) : _ailments.Count(a => a.AilmentId == ailmentId);
+
+    /// <summary>Removes every instance of an ailment. Ending a freeze starts the usual freeze immunity.</summary>
+    public void RemoveAilment(string ailmentId)
+    {
+        if (ailmentId == "freeze")
+        {
+            if (!IsFrozen) return;
+            FreezeRemaining = 0;
+            FreezeImmunityRemaining = FreezeImmunitySec;
+            return;
+        }
+        _ailments.RemoveAll(a => a.AilmentId == ailmentId);
+    }
 
     public bool HasAilment(string ailmentId) =>
         ailmentId == "freeze" ? IsFrozen : _ailments.Any(a => a.AilmentId == ailmentId);
@@ -77,6 +102,7 @@ public sealed class TargetState
     public void Reset()
     {
         _ailments.Clear();
+        _damageTakenSources.Clear();
         FreezeRemaining = 0;
         FreezeImmunityRemaining = 0;
         Life = MaxLife;

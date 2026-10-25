@@ -5,6 +5,9 @@ namespace Dialoid.Core.Combat;
 /// <summary>Spec 6.1: base damage -> conversion -> modifiers -> crit -> defense -> damage taken. Ailment base is taken after modifiers and crit, before defense and damage taken.</summary>
 public static class HitCalculator
 {
+    /// <summary>Context tag present only when the damage of a hit is evaluated (never for DoTs or zones): "+X% to hits" modifiers require it.</summary>
+    public const string HitTag = "hit";
+
     public static HitResult Resolve(HitInput input)
     {
         var ev = input.Character.Evaluator;
@@ -34,7 +37,8 @@ public static class HitCalculator
 
         foreach (var p in portions)
         {
-            var ctx = skill.Tags;
+            if (skill.NullifiedDamageTypes.Contains(p.Type)) continue; // e.g. unconverted physical under avatar_of_fire
+            var ctx = skill.Tags.With(HitTag);
             foreach (var t in p.Lineage) ctx = ctx.With(t.ToString().ToLowerInvariant());
             var dmg = ev.Evaluate("damage", ctx, input.Conditions, 1);
             breakdown.Add(dmg);

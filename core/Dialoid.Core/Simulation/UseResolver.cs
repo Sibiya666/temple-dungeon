@@ -22,6 +22,7 @@ internal sealed class UseResolver
     private readonly DamageLedger _ledger;
     private readonly SimLog _log;
     private readonly IReadOnlyList<AilmentDefinition> _ailments;
+    private readonly GameData _data;
     private readonly bool _rollMode;
     private readonly Dictionary<string, int> _cursor = new(StringComparer.Ordinal);
 
@@ -39,6 +40,7 @@ internal sealed class UseResolver
         _ledger = ledger;
         _log = log;
         _rollMode = rollMode;
+        _data = data;
         _ailments = data.Ailments.Values.OrderBy(a => a.Id, StringComparer.Ordinal).ToList();
     }
 
@@ -118,7 +120,9 @@ internal sealed class UseResolver
                 ailBase += hit.AilmentBase.GetValueOrDefault(DamageType.Physical); // spec 6.7: poison from poison and physical
             if (ailBase <= 0) continue;
 
-            var chance = skill.Skill.Base.AilmentChances.GetValueOrDefault(def.Id) + skill.Stat(def.ChanceStat, _conditions);
+            // The skill's own chance is the stat's base (on top of the stat default), so Increased/More/Less scale it too.
+            var statDefault = _data.Stats.TryGetValue(def.ChanceStat, out var sd) ? sd.Default : 0;
+            var chance = skill.Stat(def.ChanceStat, _conditions, skill.Skill.Base.AilmentChances.GetValueOrDefault(def.Id) + statDefault);
             if (chance <= 0 || !_random.Chance($"ail:{def.Id}:{skill.ChannelKey}:{ti}", chance / 100)) continue;
 
             var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, defense, _conditions)

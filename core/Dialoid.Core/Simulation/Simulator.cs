@@ -42,7 +42,7 @@ public sealed class Simulator
             violations.Add(new RuleViolation("invalid_sim_config", $"Размер пака должен быть от 1 до {DummyDefinition.MaxPackSize}"));
         if (violations.Count > 0) return SimResult.Rejected(violations);
 
-        var character = new CharacterCompiler(_data).Compile(build);
+        var character = new CharacterCompiler(_data, _mechanics).Compile(build);
         WeaponStub? weapon = build.WeaponId != null ? _data.Weapons[build.WeaponId] : null;
         var skills = character.Skills.Select(s => new SkillRuntime(_data, character, s)).ToList();
         var run = new SimRun(_data, _mechanics, character, weapon, skills, new Rotation(build, skills), dummy!, config)

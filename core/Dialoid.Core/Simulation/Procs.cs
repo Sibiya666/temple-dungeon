@@ -31,11 +31,13 @@ internal sealed class ProcEngine
     private readonly (string Skill, bool Triggered)?[] _lastSource;
     private readonly Dictionary<(string Skill, int Level, double Percent), SkillRuntime> _copies = new();
     private readonly CompilationContext _compileContext;
+    private readonly MechanicRegistry _mechanics;
     private bool _castingTriggered;
 
     public ProcEngine(GameData data, CompiledCharacter character, Dictionary<string, SkillRuntime> skills, SimState s,
-        UseResolver resolver, SimLog log, WeaponStub? weapon)
+        UseResolver resolver, SimLog log, WeaponStub? weapon, MechanicRegistry mechanics)
     {
+        _mechanics = mechanics;
         _weapon = weapon;
         _data = data;
         _character = character;
@@ -125,6 +127,9 @@ internal sealed class ProcEngine
             if (procs[i].Trigger is Trigger.OnKill) Fire(skill, procs[i], _lastBase.GetValueOrDefault(skill.Id), targetIndex);
     }
 
+    /// <summary>The last damage source of a target (null: none or already consumed by a kill).</summary>
+    public (string Skill, bool Triggered)? LastSource(int targetIndex) => _lastSource[targetIndex];
+
     /// <summary>Damage over time or a zone tick hurt a target: remember the source for kill attribution.</summary>
     public void NoteDamage(int targetIndex, string skillId, bool triggered) => _lastSource[targetIndex] = (skillId, triggered);
 
@@ -149,6 +154,19 @@ internal sealed class ProcEngine
     }
 
     // ---- Buffs ----
+
+    /// <summary>Applies or refreshes a buff (never stacks) and pushes its modifiers into every evaluator.</summary>
+    public void ApplyBuff(string buffId, double durationSec, IReadOnlyList<Modifier> mods)
+    {
+        _s.Buffs[buffId] = durationSec;
+        _buffMods[buffId] = mods;
+        RefreshBuffs();
+    }
+
+    public void RemoveBuff(string buffId)
+    {
+        if (_s.Buffs.Remove(buffId)) RefreshBuffs();
+    }
 
     /// <summary>Called after buffs expired or were applied: pushes the active buff modifiers into every skill evaluator.</summary>
     public void RefreshBuffs()
@@ -177,9 +195,7 @@ internal sealed class ProcEngine
         switch (proc.Action)
         {
             case ProcAction.ApplyBuff b:
-                _s.Buffs[b.BuffId] = b.DurationSec; // re-applying refreshes, never stacks
-                _buffMods[b.BuffId] = b.Mods;
-                RefreshBuffs();
+                ApplyBuff(b.BuffId, b.DurationSec, b.Mods);
                 break;
             case ProcAction.ApplyAilment a:
                 if (proc.Trigger is Trigger.OnUse or Trigger.EveryNUses) _useAilments.Add((source, a.AilmentId)); // waits for this use's hit
@@ -238,6 +254,7 @@ internal sealed class ProcEngine
         {
             if (!_data.Skills.TryGetValue(cast.SkillId, out var def)) return null;
             baseSkill = SkillCompiler.Compile(new SkillSlot { SkillId = cast.SkillId, Level = source.Skill.Level }, def, _compileContext);
+            baseSkill = MechanicCompiler.SkillPhase(_mechanics, _data, _character, baseSkill); // keystones reach proc-cast skills too
         }
 
         var mods = baseSkill.Modifiers.ToList();

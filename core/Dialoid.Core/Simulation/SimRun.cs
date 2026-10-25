@@ -40,14 +40,13 @@ internal sealed class SimRun
     private double _nextAttack;
 
     private readonly IRandomSource _random;
-    private readonly MechanicRegistry _mechanics; // for mechanic hooks (Tasks 14–16)
+    private readonly MechanicRuntime _mechanicHooks;
 
     public Action<SimState>? StepObserver { get; init; }
 
     public SimRun(GameData data, MechanicRegistry mechanics, CompiledCharacter character, WeaponStub? weapon,
         IReadOnlyList<SkillRuntime> skills, Rotation rotation, DummyDefinition dummy, SimConfig config)
     {
-        _mechanics = mechanics;
         _data = data;
         _defensive = config.DummyAttacks && dummy.Attack is { IntervalSec: > 0 };
         _hasLifeStat = data.Stats.ContainsKey("life");
@@ -72,7 +71,8 @@ internal sealed class SimRun
         {
             OnHit = OnHit,
         };
-        _procs = new ProcEngine(data, character, _skills, _s, _resolver, _log, weapon);
+        _procs = new ProcEngine(data, character, _skills, _s, _resolver, _log, weapon, mechanics);
+        _mechanicHooks = new MechanicRuntime(mechanics, character, skills, _s, _procs, _conditions, _log, data);
 
         var ev = character.Evaluator;
         _s.LifeMax = _s.Life = data.Stats.ContainsKey("life") ? ev.Evaluate("life", default).Value : 0;
@@ -100,6 +100,7 @@ internal sealed class SimRun
             TickTargets(step);
             TickResource(t, step);
             TickBuffs(step);
+            _mechanicHooks.Tick(step);
             if (_defensive && DummyAttackStep(t, step) is { } deathTime) { timeToDeath = elapsed = deathTime; break; }
             if (HandleDeaths(t + step)) { timeToKill = elapsed = t + step; break; }
         }
@@ -126,17 +127,29 @@ internal sealed class SimRun
         var start = _s.BusyUntil > t - step + Eps ? _s.BusyUntil : t;
         if (skill.IsChannel)
         {
-            if (_s.ChannelSkillId != skill.Id) { _s.ChannelSkillId = skill.Id; _s.ChannelStart = start; }
+            if (_s.ChannelSkillId != skill.Id || _s.ChannelExhausted)
+            {
+                _s.ChannelSkillId = skill.Id;
+                _s.ChannelStart = start;
+                _s.ChannelExhausted = false;
+            }
         }
         else _s.ChannelSkillId = null;
 
-        _s.Resource = Math.Max(0, _s.Resource - skill.Cost(_conditions));
+        var paid = Math.Min(_s.Resource, skill.Cost(_conditions));
+        _s.Resource = Math.Max(0, _s.Resource - paid);
         _s.BusyUntil = start + skill.UseTime(_conditions, _weapon, step);
         var cd = skill.Cooldown(_conditions);
         if (cd > 0) _s.CooldownReadyAt[skill.Id] = start + cd;
+        // Channel limit (blood_pact): the tick that reaches MaxSec ends the channel and starts the cooldown when it ends.
+        if (skill.IsChannel && skill.Skill.ChannelLimit is { } limit && _s.BusyUntil - _s.ChannelStart >= limit.MaxSec - Eps)
+        {
+            _s.CooldownReadyAt[skill.Id] = Math.Max(_s.CooldownReadyAt.GetValueOrDefault(skill.Id), _s.BusyUntil + limit.CooldownSec);
+            _s.ChannelExhausted = true;
+        }
         _s.LastUseTime[skill.Id] = t;
         _log.Add(t, "use", skill.Id);
-        OnUse(skill);
+        OnUse(skill, paid);
 
         var outcome = _resolver.Apply(skill);
         if (outcome.TargetsHit > 0)
@@ -229,18 +242,31 @@ internal sealed class SimRun
 
     // ---- Hook points. Procs are handled by ProcEngine (Task 14); the dummy's attacks (defensive mode) come in Task 15. ----
 
-    /// <summary>on_use / every_n_uses procs.</summary>
-    private void OnUse(SkillRuntime skill) => _procs.OnUse(skill);
+    /// <summary>Mechanic OnUse, then on_use / every_n_uses procs.</summary>
+    private void OnUse(SkillRuntime skill, double resourcePaid)
+    {
+        _mechanicHooks.Use(skill, resourcePaid);
+        _procs.OnUse(skill);
+    }
 
-    /// <summary>on_hit / every_n_hits procs (on_hit fires once per use, for the first hit on the primary target).</summary>
-    private void OnHit(SkillRuntime skill, int targetIndex, HitResult hit, bool firstOnPrimary) =>
+    /// <summary>Mechanic OnHit, then on_hit / every_n_hits procs (on_hit fires once per use, for the first hit on the primary target).</summary>
+    private void OnHit(SkillRuntime skill, int targetIndex, HitResult hit, bool firstOnPrimary)
+    {
+        _mechanicHooks.Hit(skill, targetIndex, hit, firstOnPrimary);
         _procs.OnHit(skill, targetIndex, hit, firstOnPrimary);
+    }
 
     /// <summary>on_crit procs (once per use, primary target).</summary>
     private void OnCrit(SkillRuntime skill) => _procs.OnCrit(skill);
 
-    /// <summary>on_kill procs and "on death" mechanics (Task 16). Never fires for immortal dummies.</summary>
-    private void OnKill(int targetIndex) => _procs.OnKill(targetIndex);
+    /// <summary>Mechanic OnKill (the dying target still has its ailments), then on_kill procs. Never fires for immortal dummies.</summary>
+    private void OnKill(int targetIndex)
+    {
+        var src = _procs.LastSource(targetIndex);
+        var skill = src is { } k && _skills.TryGetValue(k.Skill, out var sk) ? sk : null;
+        _mechanicHooks.Kill(targetIndex, skill, src?.Triggered ?? false);
+        _procs.OnKill(targetIndex);
+    }
 
     /// <summary>
     /// One step of defensive mode: life regeneration, then every dummy attack falling in (t, t + dt] (the first after one interval;
@@ -291,6 +317,10 @@ internal sealed class SimRun
             ? 1 + Math.Max(-100, ev.Evaluate("damage_taken", default, _conditions).Value) / 100
             : 1;
 
+        // Armor applies to physical hits; a mechanic rule can make a share of it mitigate elemental hits too (stone_skin).
+        var armor = ev.Evaluate("armor", default, _conditions).Value;
+        var elementalArmor = _character.Rules.GetValueOrDefault(CharacterRules.ElementalArmorFraction);
+
         double total = 0;
         foreach (var type in Enum.GetValues<DamageType>())
         {
@@ -298,7 +328,7 @@ internal sealed class SimRun
             var hit = raw * gear;
             double taken;
             if (type == DamageType.Physical)
-                taken = hit * (1 - Mitigation.ArmorReduction(ev.Evaluate("armor", default, _conditions).Value, hit));
+                taken = hit * (1 - Mitigation.ArmorReduction(armor, hit));
             else
             {
                 var name = type.ToString().ToLowerInvariant();
@@ -306,6 +336,7 @@ internal sealed class SimRun
                 var capStat = "resist_" + name + "_max";
                 var cap = _data.Stats.ContainsKey(capStat) ? ev.Evaluate(capStat, default, _conditions).Value : 75;
                 taken = hit * Mitigation.ResistMultiplier(Math.Min(resist, cap), 0);
+                if (elementalArmor > 0) taken *= 1 - Mitigation.ArmorReduction(armor * elementalArmor, hit);
             }
             if (taken <= 0) continue;
             taken *= takenMult;

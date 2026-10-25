@@ -16,12 +16,17 @@ internal sealed class SimState
     /// <summary>Skill currently being channelled (null when not channelling) and when the channel began.</summary>
     public string? ChannelSkillId;
     public double ChannelStart;
+    /// <summary>The current channel hit its <see cref="Skills.ChannelLimit"/>: the next use of the skill starts a new channel.</summary>
+    public bool ChannelExhausted;
 
     public readonly Dictionary<string, double> CooldownReadyAt = new(StringComparer.Ordinal);
     public readonly Dictionary<string, double> LastUseTime = new(StringComparer.Ordinal);
 
     /// <summary>Active buffs: id → remaining seconds. Filled by procs (Task 14).</summary>
     public readonly Dictionary<string, double> Buffs = new(StringComparer.Ordinal);
+
+    /// <summary>Mechanic charges/counters, keyed "mechanic_id:key" (see MechanicSimContext.Counter).</summary>
+    public readonly Dictionary<string, double> MechanicCounters = new(StringComparer.Ordinal);
 
     public readonly List<TargetState> Targets = new();
     public readonly bool[] Dead;
