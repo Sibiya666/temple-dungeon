@@ -42,6 +42,6 @@
     ],
     "passive_start_node": "start_sorcerer",
     "skills": ["spark", "fireball", "ice_lance", "ball_lightning", "meteor", "blink"],
-    "ascendancies": []
+    "ascendancies": ["pyromancer", "cryomancer"]
   }
 ]

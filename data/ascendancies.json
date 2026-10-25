@@ -132,5 +132,137 @@
         ]
       }
     ]
+  },
+  {
+    "id": "pyromancer",
+    "name": "Пироман",
+    "class_id": "sorcerer",
+    "start": {
+      "id": "conflagration",
+      "name": "Пожар",
+      "description": "Заклинания держат на цели на 2 стака поджога больше (+2 к максимуму стаков). Складывается с узлами деревьев: «Вечное пламя» и «Пламя души» Огненного шара дают 1 + 2 + 2 + 2 = 7 стаков.",
+      "effects": [
+        { "type": "modifier", "stat": "ignite_max_stacks", "kind": "flat", "value": 2, "tags": ["spell"] }
+      ]
+    },
+    "notables": [
+      {
+        "id": "spread_ignite",
+        "name": "Распространение",
+        "description": "Поджог перекидывается на соседей. В песочнице: через 1 с после того, как применение подожгло цель пака, самый сильный из этих поджогов (с той же силой и оставшимся временем) ложится на всех живых целей пака, которых это применение не подожгло. Копии дальше не распространяются.",
+        "effects": [
+          { "type": "mechanic", "id": "spread_ignite", "params": { "ailment": "ignite", "delay": 1 } }
+        ]
+      },
+      {
+        "id": "ashes",
+        "name": "Пепел",
+        "description": "Удары по подожженным целям наносят +1% урона (More) за каждый стак поджога на всех целях пака, максимум +25%. Сами поджоги этот бонус не получают.",
+        "effects": [
+          { "type": "mechanic", "id": "ashes", "params": { "ailment": "ignite", "cap": 25, "more_per_stack": 1, "condition": "target_ignited" } }
+        ]
+      },
+      {
+        "id": "eternal_fire",
+        "name": "Вечный огонь",
+        "description": "Поджоги длятся на 50% дольше (4 → 6 с) и жгут с той же скоростью, то есть наносят на 50% больше урона за поджог.",
+        "effects": [
+          { "type": "mechanic", "id": "eternal_fire", "params": { "ailment": "ignite", "duration_mult": 1.5 } }
+        ]
+      },
+      {
+        "id": "meteor_rain",
+        "name": "Метеоритный дождь",
+        "description": "Метеор падает 3 раза подряд с силой 50%: сам Метеор наносит −50% урона (More), и каждое применение бесплатно роняет еще две его копии с тем же уроном. Копии не запускают проков и не считаются применениями. Поджог и «Огненное поле» Метеора тоже теряют 50%: поле одно на скилл, копии его обновляют, а не добавляют второе. Узел для Метеора на попаданиях.",
+        "effects": [
+          { "type": "modifier", "stat": "damage", "kind": "more", "value": -50, "scope": "skill:meteor" },
+          { "type": "grant_proc", "trigger": "on_use", "action": { "cast_skill": { "id": "meteor", "damage_percent": 100 } }, "scope": "skill:meteor" },
+          { "type": "grant_proc", "trigger": "on_use", "action": { "cast_skill": { "id": "meteor", "damage_percent": 100 } }, "scope": "skill:meteor" }
+        ]
+      },
+      {
+        "id": "fire_armor",
+        "name": "Огненная броня",
+        "description": "Пока скиллы чародея оставляют горящую землю, у него +30% брони (Increased) и максимум сопротивления огню +10%. В песочнице: если хоть один скилл в слотах создает огненную зону («Пламенное кольцо», «Огненное поле»).",
+        "effects": [
+          { "type": "mechanic", "id": "fire_armor", "params": { "armor_increased": 30, "resist_cap": 10 } }
+        ]
+      },
+      {
+        "id": "soul_heat",
+        "name": "Жар души",
+        "description": "Огненный шар и Метеор восстанавливают 1% максимума маны за каждую подожженную цель, которую задели (уже горевшую или подожженную этим ударом), максимум 5% за применение. Копии по проку ману не дают. На паке это почти бесконечная мана — осознанная награда за игру по толпе.",
+        "effects": [
+          { "type": "mechanic", "id": "soul_heat", "params": { "skills": ["fireball", "meteor"], "ailment": "ignite", "per_target": 1, "max": 5 } }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cryomancer",
+    "name": "Криомант",
+    "class_id": "sorcerer",
+    "start": {
+      "id": "permafrost",
+      "name": "Вечная мерзлота",
+      "description": "Охлаждение от чародея замедляет цель на 25% вместо 15% (в песочнице замедление на манекен пока не влияет). Урон холодом по охлажденной цели +10% (Increased).",
+      "effects": [
+        { "type": "mechanic", "id": "chill_slow", "params": { "slow": 25 } },
+        { "type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["cold"], "conditions": ["target_chilled"] }
+      ]
+    },
+    "notables": [
+      {
+        "id": "shatter",
+        "name": "Раскол",
+        "description": "Удар по замороженной цели наносит +100% урона (More) и снимает заморозку. Дальше действует обычный иммунитет к заморозке на 3 с, поэтому этот же удар цель снова не заморозит.",
+        "effects": [
+          { "type": "mechanic", "id": "shatter", "params": { "more": 100 } }
+        ]
+      },
+      {
+        "id": "ice_armor",
+        "name": "Ледяная броня",
+        "description": "Каждая заморозка, наложенная чародеем, дает ему +200 брони на 4 с (новая заморозка обновляет время, но не складывается).",
+        "effects": [
+          { "type": "mechanic", "id": "ice_armor", "params": { "ailment": "freeze", "duration": 4, "armor": 200 } }
+        ]
+      },
+      {
+        "id": "frost_orb_asc",
+        "name": "Морозный шар",
+        "description": "Огненный шар бесплатно получает узел «Морозный шар» (холод, шанс заморозки 10%) и занимает им развилку стихии: выбранный «Грозовой шар» отключается, его очко возвращается. Модификаторы шанса поджога из дерева шара («Раскаленное ядро») становятся шансом заморозки, а +% урона поджога из дерева («Остаточный жар») — +% длительности заморозки (1% урона = 0.5% длительности). Бонусы к поджогу от пассивок и других источников не переносятся и для холодного шара бесполезны. Заморозка подчиняется иммунитету 3 с.",
+        "effects": [
+          { "type": "mechanic", "id": "grant_skill_node", "params": { "skill": "fireball", "node": "frost_orb" } },
+          { "type": "mechanic", "id": "ailment_swap", "params": { "skill": "fireball", "from": "ignite", "to": "freeze", "duration_stat": "freeze_duration", "ratio": 0.5 }, "scope": "skill:fireball" }
+        ]
+      },
+      {
+        "id": "brittle",
+        "name": "Хрупкость",
+        "description": "Криты по охлажденным целям наносят +15% урона (More).",
+        "effects": [
+          { "type": "mechanic", "id": "brittle", "params": { "more": 15 } }
+        ]
+      },
+      {
+        "id": "aurora",
+        "name": "Северное сияние",
+        "description": "Все заклинания получают +10% шанса заморозки (замораживает только урон холодом). Заморозка длится на 50% дольше: 1.5 с вместо 1 с. После нее цель 3 с невосприимчива к заморозке.",
+        "effects": [
+          { "type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 10, "tags": ["spell"] },
+          { "type": "modifier", "stat": "freeze_duration", "kind": "increased", "value": 50 }
+        ]
+      },
+      {
+        "id": "glacier",
+        "name": "Ледник",
+        "description": "Ледяное копье оставляет ледяную тропу на 3 с: задетые копьем цели получают в секунду 15% базы недугов удара холодом (бонусы к урону копья действуют). Охлаждение накладывает сам удар копья; тропа одна на скилл и обновляется каждым броском.",
+        "effects": [
+          { "type": "set_behavior", "param": "ground_duration", "value": 3, "scope": "skill:ice_lance" },
+          { "type": "set_behavior", "param": "ground_fraction", "value": 0.15, "scope": "skill:ice_lance" }
+        ]
+      }
+    ]
   }
 ]

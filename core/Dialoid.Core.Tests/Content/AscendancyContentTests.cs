@@ -21,6 +21,8 @@ public class AscendancyContentTests
     [Theory]
     [InlineData("berserker", "warrior")]
     [InlineData("thunderer", "warrior")]
+    [InlineData("pyromancer", "sorcerer")]
+    [InlineData("cryomancer", "sorcerer")]
     public void Ascendancy_has_start_and_six_two_point_notables(string id, string classId)
     {
         Assert.True(ContentHarness.Data.Ascendancies.ContainsKey(id), $"no ascendancy '{id}'");
@@ -42,13 +44,15 @@ public class AscendancyContentTests
     /// Anti-goal 4 (spec 10.4): a notable changes a rule. «Bare» means every effect is an unconditional modifier of a scaling stat.
     /// Rule-changing effects: mechanic, conversion, behavior, damage type, tag, resource, proc, a conditional (or per-stat)
     /// modifier, and modifiers that move a defensive rule rather than scale damage — resistance penetration and the
-    /// maximum-resistance cap (Буря в жилах, written so in spec 10.4).
+    /// maximum-resistance cap (Буря в жилах, written so in spec 10.4) — and freeze chance/duration: freeze is crowd control (the
+    /// target skips its attacks, spec 6.7), not damage (Северное сияние, written so in spec 10.4).
     /// </summary>
     private static bool ChangesRule(Effect e) => e switch
     {
         MechanicEffect or AddConversionEffect or SetBehaviorEffect or AddBehaviorEffect or SetDamageTypeEffect
             or AddTagEffect or RemoveTagEffect or SetResourceEffect or GrantProcEffect => true,
         ModifierEffect { Modifier: var m } => m.Conditions.Count > 0 || m.Per != null
+            || m.Stat is "freeze_chance" or "freeze_duration"
             || m.Stat.StartsWith("penetration_", StringComparison.Ordinal)
             || (m.Stat.StartsWith("resist_", StringComparison.Ordinal) && m.Stat.EndsWith("_max", StringComparison.Ordinal)),
         _ => false,
@@ -126,14 +130,81 @@ public class AscendancyContentTests
         Assert.Contains(storm, m => m is { Stat: "resist_lightning_max", Kind: ModKind.Flat, Value: 10 });
     }
 
+    [Fact]
+    public void Pyromancer_nodes_match_spec()
+    {
+        var asc = Asc("pyromancer");
+        var stacks = Assert.Single(asc.Start.Effects.OfType<ModifierEffect>()).Modifier;
+        Assert.Equal(("ignite_max_stacks", ModKind.Flat, 2.0), (stacks.Stat, stacks.Kind, stacks.Value));
+        Assert.Equal(TagSet.Of("spell"), stacks.RequiredTags);
+
+        Mech(Notable("pyromancer", "spread_ignite"), "spread_ignite");
+        Mech(Notable("pyromancer", "ashes"), "ashes");
+        Mech(Notable("pyromancer", "eternal_fire"), "eternal_fire");
+
+        // Метеоритный дождь: the meteor itself at −50% (More) plus two copies on use — three falls at half power.
+        var rain = Notable("pyromancer", "meteor_rain");
+        Assert.All(rain.Effects, e => Assert.Equal(new Scope.Skill("meteor"), e.Scope));
+        var less = Assert.Single(rain.Effects.OfType<ModifierEffect>()).Modifier;
+        Assert.Equal(("damage", ModKind.More, -50.0), (less.Stat, less.Kind, less.Value));
+        var copies = rain.Effects.OfType<GrantProcEffect>().ToList();
+        Assert.Equal(2, copies.Count);
+        Assert.All(copies, p =>
+        {
+            Assert.IsType<Trigger.OnUse>(p.Trigger);
+            // A copy inherits the meteor's own −50%, so damage_percent 100 makes each copy a 50% fall (BALANCE_NOTES).
+            var cast = Assert.IsType<ProcAction.CastSkill>(p.Action);
+            Assert.Equal(("meteor", 100.0), (cast.SkillId, cast.DamagePercent));
+        });
+
+        Assert.IsType<Scope.Global>(Mech(Notable("pyromancer", "fire_armor"), "fire_armor").Scope);
+        var soul = Mech(Notable("pyromancer", "soul_heat"), "soul_heat");
+        Assert.Equal(new[] { "fireball", "meteor" }, soul.Params["skills"].EnumerateArray().Select(v => v.GetString()).ToArray());
+    }
+
+    [Fact]
+    public void Cryomancer_nodes_match_spec()
+    {
+        var asc = Asc("cryomancer");
+        Assert.Equal(25, Mech(asc.Start, "chill_slow").Params["slow"].GetDouble());
+        var cold = Assert.Single(asc.Start.Effects.OfType<ModifierEffect>()).Modifier;
+        Assert.Equal(("damage", ModKind.Increased, 10.0), (cold.Stat, cold.Kind, cold.Value));
+        Assert.Equal(TagSet.Of("cold"), cold.RequiredTags);
+        Assert.Equal("target_chilled", Assert.Single(cold.Conditions).Id);
+
+        Assert.IsType<Scope.Global>(Mech(Notable("cryomancer", "shatter"), "shatter").Scope);
+        Mech(Notable("cryomancer", "ice_armor"), "ice_armor");
+
+        var orb = Notable("cryomancer", "frost_orb_asc");
+        var grant = Mech(orb, "grant_skill_node");
+        Assert.Equal(("fireball", "frost_orb"), (Param(grant, "skill"), Param(grant, "node")));
+        Assert.Equal("fireball", Param(Mech(orb, "ailment_swap"), "skill"));
+
+        Assert.IsType<Scope.Global>(Mech(Notable("cryomancer", "brittle"), "brittle").Scope);
+
+        var aurora = Notable("cryomancer", "aurora").Effects.OfType<ModifierEffect>().Select(e => e.Modifier).ToList();
+        Assert.Contains(aurora, m => m is { Stat: "freeze_chance", Kind: ModKind.Flat, Value: 10 } && m.RequiredTags.Equals(TagSet.Of("spell")));
+        Assert.Contains(aurora, m => m is { Stat: "freeze_duration", Kind: ModKind.Increased, Value: 50 });
+
+        var glacier = Notable("cryomancer", "glacier");
+        Assert.All(glacier.Effects, e => Assert.Equal(new Scope.Skill("ice_lance"), e.Scope));
+        var beh = glacier.Effects.OfType<SetBehaviorEffect>().ToDictionary(e => e.Param, e => e.Value);
+        Assert.Equal(3, beh["ground_duration"]);
+        Assert.Equal(0.15, beh["ground_fraction"]);
+    }
+
     // ---- Temporary level-50 builds (until reference builds exist) ----
 
     /// <summary>The first <paramref name="count"/> warrior passives in breadth-first order from the class start, keystones
     /// excluded; attribute nodes take Strength. Breadth-first order keeps every prefix connected to the start.</summary>
-    private static (List<string> Nodes, Dictionary<string, Attr> Choices) WarriorPassives(int count)
+    private static (List<string> Nodes, Dictionary<string, Attr> Choices) WarriorPassives(int count) => ClassPassives("warrior", count, Attr.Str);
+
+    /// <summary>The first <paramref name="count"/> passives of the class in breadth-first order from its start, keystones excluded;
+    /// attribute nodes take <paramref name="attribute"/>.</summary>
+    private static (List<string> Nodes, Dictionary<string, Attr> Choices) ClassPassives(string classId, int count, Attr attribute)
     {
         var tree = ContentHarness.Data.Passives;
-        var start = ContentHarness.Data.Classes["warrior"].PassiveStartNodeId;
+        var start = ContentHarness.Data.Classes[classId].PassiveStartNodeId;
         var seen = new HashSet<string> { start };
         var queue = new Queue<string>(new[] { start });
         var nodes = new List<string>();
@@ -146,7 +217,7 @@ public class AscendancyContentTests
                 if (nodes.Count < count) nodes.Add(next);
             }
         }
-        var choices = nodes.Where(n => tree.Nodes[n].Kind == PassiveKind.Attribute).ToDictionary(n => n, _ => Attr.Str);
+        var choices = nodes.Where(n => tree.Nodes[n].Kind == PassiveKind.Attribute).ToDictionary(n => n, _ => attribute);
         return (nodes, choices);
     }
 
@@ -226,6 +297,101 @@ public class AscendancyContentTests
         return b;
     }
 
+    private static Build Sorcerer50(string? ascendancy, params string[] notables)
+    {
+        var (nodes, choices) = ClassPassives("sorcerer", 49, Attr.Int);
+        return new Build
+        {
+            ClassId = "sorcerer", Level = 50, WeaponId = "staff",
+            AscendancyId = ascendancy, AscendancyNodes = notables.ToList(),
+            PassiveNodes = nodes, AttributeChoices = choices,
+        };
+    }
+
+    /// <summary>The Spark of the sorcerer builds: a mana-oriented generator.</summary>
+    private static SkillSlot ManaSpark() => Slot("spark", ("crackle", 4), ("mana_siphon", 1), ("mana_current", 3), ("quick_spark", 3),
+        ("bright_flash", 3), ("dazzle", 1), ("static", 3), ("breakdown", 2));
+
+    /// <summary>Огненный шар на поджогах: стаки поджога, урон поджога, горящая земля и три шара.</summary>
+    private static Build PyroFireball(params string[] notables)
+    {
+        var b = Sorcerer50("pyromancer", notables);
+        b.Slots.Add(Slot("fireball", ("heat", 4), ("molten_core", 3), ("flame_mark", 1), ("eternal_flame", 1), ("soul_flame", 2),
+            ("lingering_heat", 3), ("wide_blast", 3), ("ring_of_fire", 1), ("scatter", 1), ("mana_focus", 1)));
+        b.Slots.Add(ManaSpark());
+        return b;
+    }
+
+    /// <summary>Огненный шар на поджогах без Искры: ману дает только «Жар души» (и регенерация).</summary>
+    private static Build PyroFireballSolo(params string[] notables)
+    {
+        var b = PyroFireball(notables);
+        b.Slots.RemoveAll(s => s.SkillId == "spark");
+        return b;
+    }
+
+    /// <summary>Сжатый Огненный шар на поджогах: одна цель (плюс пробитие), поэтому на паке поджог достается не всем.</summary>
+    private static Build PyroCompress(params string[] notables)
+    {
+        var b = Sorcerer50("pyromancer", notables);
+        b.Slots.Add(Slot("fireball", ("heat", 4), ("molten_core", 3), ("flame_mark", 1), ("eternal_flame", 1), ("soul_flame", 2),
+            ("lingering_heat", 3), ("compress", 1), ("mana_focus", 3), ("swift_orb", 2)));
+        b.Slots.Add(ManaSpark());
+        return b;
+    }
+
+    /// <summary>Метеор на попаданиях: плотное ядро кометы, криты с осколком кометы, без огненного поля.</summary>
+    private static Build PyroMeteor(params string[] notables)
+    {
+        var b = Sorcerer50("pyromancer", notables);
+        b.Slots.Add(Slot("meteor", ("sky_fire", 4), ("comet_core", 1), ("falling_star", 3), ("comet_fragment", 1), ("crater", 3),
+            ("star_thrift", 3), ("instant_fall", 1), ("kindling", 3), ("ash_veil", 1)));
+        b.Slots.Add(ManaSpark());
+        return b;
+    }
+
+    /// <summary>Ледяное копье на заморозке и критах.</summary>
+    private static Build CryoLance(params string[] notables)
+    {
+        var b = Sorcerer50("cryomancer", notables);
+        b.Slots.Add(Slot("ice_lance", ("frost_edge", 4), ("binding_lance", 1), ("bitter_cold", 3), ("deep_freeze", 3), ("ice_shards", 1),
+            ("point", 3), ("ice_crown", 1), ("cold_precision", 2), ("cold_poise", 2)));
+        b.Slots.Add(ManaSpark());
+        return b;
+    }
+
+    /// <summary>Огненный шар Криоманта: дерево поджога (шанс поджога), крит и три шара; «Морозный шар» делает его холодным.</summary>
+    private static Build CryoFireball(params string[] notables)
+    {
+        var b = Sorcerer50("cryomancer", notables);
+        b.Slots.Add(Slot("fireball", ("heat", 4), ("molten_core", 3), ("overheat", 3), ("blast_wave", 1), ("wide_blast", 3), ("scatter", 1),
+            ("mana_focus", 3), ("swift_orb", 2)));
+        b.Slots.Add(ManaSpark());
+        return b;
+    }
+
+    [Fact]
+    public void Pyromancer_build_compiles_and_simulates()
+    {
+        var b = PyroFireball("spread_ignite", "ashes", "eternal_fire", "soul_heat");
+        Assert.Empty(BuildRules.Validate(b, ContentHarness.Data));
+        var r = ContentHarness.Run(b, "swarm");
+        Assert.Empty(r.Violations);
+        Assert.True(r.DpsPack > 0);
+        Assert.True(r.DotDamage > 0);
+    }
+
+    [Fact]
+    public void Cryomancer_build_compiles_and_simulates()
+    {
+        var b = CryoLance("shatter", "brittle", "aurora", "glacier");
+        Assert.Empty(BuildRules.Validate(b, ContentHarness.Data));
+        var r = ContentHarness.Run(b, "training");
+        Assert.Empty(r.Violations);
+        Assert.True(r.DpsSingleTarget > 0);
+        Assert.True(r.DamageByType.GetValueOrDefault(DamageType.Cold) > 0);
+    }
+
     [Fact]
     public void Berserker_build_compiles_and_simulates()
     {
@@ -252,11 +418,29 @@ public class AscendancyContentTests
         "training" => ContentHarness.Run(b, "training").DpsSingleTarget,
         "boss" => ContentHarness.Run(b, "boss").DpsSingleTarget,
         "swarm" => ContentHarness.Run(b, "swarm").DpsPack,
+        "survival" => SurvivalScore(b),
+        "ttd" => ContentHarness.Survival(b).TimeToDeath ?? 180,
+        "training_pack" => ContentHarness.Run(b, "training", 5).DpsPack,
         _ => throw new ArgumentException(metric),
     };
 
+    /// <summary>
+    /// Survival against the attacking boss as seconds survived per point of damage taken (as in the skill fork tests): the boss
+    /// hits in rare big blows, so time to death alone moves in whole attacks.
+    /// </summary>
+    private static double SurvivalScore(Build b)
+    {
+        var r = ContentHarness.Survival(b);
+        Assert.Empty(r.Violations);
+        var taken = r.DamageTaken?.Values.Sum() ?? 0;
+        return taken > 0 ? (r.TimeToDeath ?? 180) / taken : double.MaxValue;
+    }
+
     /// <summary>Each notable is worth its 2 points in at least one reference-style build: taking it (on top of the build's
-    /// other picks) raises that build's metric by more than 5%.</summary>
+    /// other picks) raises that build's metric by more than 5%. Metrics: DPS on «Тренировочный» (training), on «Босс» (boss), on
+    /// a pack of five immortal training dummies (training_pack: a long fight against a group, where ignites pile up), pack DPS on
+    /// «Рой» (swarm), survival score against «Атакующий босс» (survival, seconds per point of damage taken) and plain time to
+    /// death there (ttd: moves in whole boss attacks of 3.5 s — used for nodes whose gain is the extra blow survived).</summary>
     [Theory]
     [InlineData("whirl_rage", "whirl", "training", new[] { "battle_trance" })]
     [InlineData("battle_trance", "whirl", "training", new[] { "whirl_rage" })]
@@ -270,6 +454,18 @@ public class AscendancyContentTests
     [InlineData("thunder_axe", "axe", "swarm", new string[0])]
     [InlineData("grounding", "precise", "training", new string[0])]
     [InlineData("storm_veins", "precise", "boss", new string[0])]
+    [InlineData("spread_ignite", "pyro_compress", "swarm", new string[0])]
+    [InlineData("ashes", "pyro_fireball", "training_pack", new[] { "eternal_fire" })]
+    [InlineData("eternal_fire", "pyro_fireball", "training", new string[0])]
+    [InlineData("meteor_rain", "pyro_meteor", "training", new string[0])]
+    [InlineData("fire_armor", "pyro_fireball", "ttd", new string[0])]
+    [InlineData("soul_heat", "pyro_fireball_solo", "swarm", new string[0])]
+    [InlineData("shatter", "cryo_lance", "training", new string[0])]
+    [InlineData("ice_armor", "cryo_lance", "survival", new string[0])]
+    [InlineData("frost_orb_asc", "cryo_fireball", "training", new[] { "shatter", "brittle" })]
+    [InlineData("brittle", "cryo_lance", "training", new string[0])]
+    [InlineData("aurora", "cryo_lance", "ttd", new[] { "ice_armor" })]
+    [InlineData("glacier", "cryo_lance", "training", new string[0])]
     public void Every_notable_pays_off_in_a_reference_build(string notable, string build, string metric, string[] others)
     {
         Func<string[], Build> make = build switch
@@ -280,6 +476,12 @@ public class AscendancyContentTests
             "crusher" => ThunderCrusher,
             "precise" => PreciseThunderer,
             "axe" => AxeThunderer,
+            "pyro_fireball" => PyroFireball,
+            "pyro_fireball_solo" => PyroFireballSolo,
+            "pyro_compress" => PyroCompress,
+            "pyro_meteor" => PyroMeteor,
+            "cryo_lance" => CryoLance,
+            "cryo_fireball" => CryoFireball,
             _ => throw new ArgumentException(build),
         };
         var without = Metric(make(others), metric);
@@ -404,5 +606,91 @@ public class AscendancyContentTests
         Assert.Empty(r.Violations);
         Assert.True(r.DamageBySkill.GetValueOrDefault("returning_axe") > 0);
         Assert.Equal(0, r.DamageByType.GetValueOrDefault(DamageType.Physical), 6);
+    }
+
+    private static double SkillStat(CompiledCharacter ch, string skill, string stat)
+    {
+        var s = ch.Skills.Single(x => x.SkillId == skill);
+        return ch.Evaluator.WithExtra(s.Modifiers).Evaluate(stat, s.Tags).Value;
+    }
+
+    private static CompiledCharacter Compile(Build b)
+    {
+        Assert.Empty(BuildRules.Validate(b, ContentHarness.Data));
+        return new CharacterCompiler(ContentHarness.Data, MechanicRegistry.Default).Compile(b);
+    }
+
+    /// <summary>
+    /// Морозный шар takes fork B of the fireball (spec 8.4, conflicts): a paid «Грозовой шар» is switched off and its point
+    /// returns; the fireball deals cold damage instead of lightning.
+    /// </summary>
+    [Fact]
+    public void Cryomancer_frost_orb_takes_fork_b()
+    {
+        Build Make(params string[] notables)
+        {
+            var b = Sorcerer50("cryomancer", notables);
+            b.Slots.Add(Slot("fireball", ("heat", 2), ("storm_orb", 1)));
+            return b;
+        }
+        var plain = Compile(Make()).Skills.Single();
+        Assert.Equal(1, plain.EffectiveNodePoints["storm_orb"]);
+        Assert.Equal(DamageType.Lightning, plain.DamageTypeOverride);
+
+        var fb = Compile(Make("frost_orb_asc")).Skills.Single();
+        Assert.Equal(1, fb.EffectiveNodePoints["frost_orb"]);
+        Assert.False(fb.EffectiveNodePoints.ContainsKey("storm_orb"));
+        Assert.Equal(plain.FreePoints + 1, fb.FreePoints);
+        Assert.Equal(DamageType.Cold, fb.DamageTypeOverride);
+
+        var r = ContentHarness.Run(Make("frost_orb_asc"), "training");
+        Assert.Empty(r.Violations);
+        Assert.True(r.DamageByType.GetValueOrDefault(DamageType.Cold) > 0);
+        Assert.Equal(0, r.DamageByType.GetValueOrDefault(DamageType.Lightning), 6);
+        Assert.Equal(0, r.DamageByType.GetValueOrDefault(DamageType.Fire), 6);
+    }
+
+    /// <summary>
+    /// Морозный шар, part 2: the fireball's own ignite chance from its tree («Раскаленное ядро» 3/3, +30) becomes freeze chance;
+    /// ignite chance from the character pool (passives) stays ignite chance and does nothing for a cold orb.
+    /// </summary>
+    [Fact]
+    public void Frost_orb_moves_the_fireball_tree_ignite_chance_to_freeze()
+    {
+        var plain = Compile(CryoFireball());
+        var orb = Compile(CryoFireball("frost_orb_asc"));
+        Assert.Equal(SkillStat(plain, "fireball", "freeze_chance") + 10 + 30, SkillStat(orb, "fireball", "freeze_chance"), 6);
+        Assert.Equal(SkillStat(plain, "fireball", "ignite_chance") - 30, SkillStat(orb, "fireball", "ignite_chance"), 6);
+    }
+
+    /// <summary>Метеоритный дождь: the meteor and its two copies each hit at 50% — 150% of the plain meteor's hit damage per cast.</summary>
+    [Fact]
+    public void Meteor_rain_drops_three_meteors_at_half_power()
+    {
+        Build Make(params string[] notables)
+        {
+            var b = Sorcerer50("pyromancer", notables);
+            b.Slots.Add(Slot("meteor"));
+            return b;
+        }
+        var plain = ContentHarness.Run(Make(), "training");
+        var rain = ContentHarness.Run(Make("meteor_rain"), "training");
+        Assert.Empty(rain.Violations);
+        Assert.Equal(1.5, rain.HitDamage / plain.HitDamage, 2);
+    }
+
+    /// <summary>Огненная броня needs burning ground from a slotted skill: Meteor without «Огненное поле» gets nothing.</summary>
+    [Fact]
+    public void Fire_armor_needs_burning_ground()
+    {
+        Build Make(bool field, params string[] notables)
+        {
+            var b = Sorcerer50("pyromancer", notables);
+            b.Slots.Add(field ? Slot("meteor", ("fire_field", 1)) : Slot("meteor", ("crater", 1)));
+            return b;
+        }
+        double Armor(Build b) => Compile(b).Evaluator.Evaluate("armor", default).Value;
+        Assert.Equal(Armor(Make(false)), Armor(Make(false, "fire_armor")), 6);
+        Assert.True(Armor(Make(true, "fire_armor")) > Armor(Make(true)) * 1.1);
     }
 }

@@ -906,8 +906,9 @@ public class SkillContentTests
 
     /// <summary>
     /// No sorcerer spender pays for itself (fix-round rule from the Warrior review): at the lowest cost per second its tree, the
-    /// passives and buffs of skills a sorcerer can slot can reach, chain-casting it still drains more mana than the highest regeneration
-    /// the passives allow. Refunds (Отдача) are capped cost reductions, so they enter at their cap.
+    /// passives, ascendancy nodes and buffs of skills a sorcerer can slot can reach, chain-casting it still drains more mana than the
+    /// highest regeneration the passives and ascendancies allow. Refunds (Отдача) are capped cost reductions, so they enter at their cap.
+    /// «Жар души» (spec 10.4) is the one explicit exception, see below.
     /// </summary>
     [Fact]
     public void Sorcerer_spenders_never_sustain_on_maximum_regeneration()
@@ -915,8 +916,25 @@ public class SkillContentTests
         var data = ContentHarness.Data;
         var sorcerer = data.Classes["sorcerer"];
         var slottable = sorcerer.SkillIds.Concat(data.Items.Values.Select(i => i.GrantsSkill)).Distinct().Select(id => data.Skills[id]).ToList();
-        var passiveMods = data.Passives.Nodes.Values.SelectMany(n => n.Effects).OfType<ModifierEffect>().Select(e => e.Modifier).ToList();
-        var buffMods = slottable.SelectMany(s => s.Tree).SelectMany(n => n.Effects).OfType<GrantProcEffect>()
+        // Ascendancy nodes (spec 10.4) are sources too: their modifiers (a scope becomes a tag requirement) and buffs join the pools.
+        var ascEffects = sorcerer.AscendancyIds.Select(id => data.Ascendancies[id]).SelectMany(a => a.Notables.Append(a.Start))
+            .SelectMany(n => n.Effects).ToList();
+        static Modifier Scoped(ModifierEffect e) => e.Scope switch
+        {
+            Scope.Skill sk => e.Modifier with { RequiredTags = e.Modifier.RequiredTags.With("skill:" + sk.SkillId) },
+            Scope.Tags t => e.Modifier with { RequiredTags = t.Required.Items.Aggregate(e.Modifier.RequiredTags, (acc, tag) => acc.With(tag)) },
+            _ => e.Modifier,
+        };
+        // Resource-flow mechanics of the catalogue: the only one a sorcerer ascendancy may carry is «Жар души» (soul_heat). Spec 10.4
+        // makes it the deliberate exception («почти бесконечная мана… осознанное решение»: Fireball and Meteor restore 1% mana per
+        // ignited target hit), so it is exempt and stays out of the sums below; without it no spender may sustain.
+        var resourceMechanics = new[] { "soul_heat", "insatiable", "whirl_rage", "battle_trance", "berserk_frenzy" };
+        Assert.All(ascEffects.OfType<MechanicEffect>().Where(m => resourceMechanics.Contains(m.MechanicId)),
+            m => Assert.Equal("soul_heat", m.MechanicId));
+        Assert.Contains(ascEffects, e => e is MechanicEffect { MechanicId: "soul_heat" }); // the exemption is real: Пироман carries it
+        var passiveMods = data.Passives.Nodes.Values.SelectMany(n => n.Effects).OfType<ModifierEffect>().Select(e => e.Modifier)
+            .Concat(ascEffects.OfType<ModifierEffect>().Select(Scoped)).ToList();
+        var buffMods = slottable.SelectMany(s => s.Tree).SelectMany(n => n.Effects).Concat(ascEffects).OfType<GrantProcEffect>()
             .Select(p => p.Action).OfType<ProcAction.ApplyBuff>().SelectMany(b => b.Mods).ToList();
 
         // Regeneration ignores skill tags: only untagged modifiers apply. Will: base + 59 levels + every attribute node (generous bound).
