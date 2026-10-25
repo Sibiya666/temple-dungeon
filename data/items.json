@@ -1,0 +1,14 @@
+[
+  {
+    "id": "ring_of_mist",
+    "name": "Кольцо тумана",
+    "grants_skill": "poison_cloud",
+    "skill_level_bonus": 0
+  },
+  {
+    "id": "veteran_axe",
+    "name": "Топор ветерана",
+    "grants_skill": "throwing_axe",
+    "skill_level_bonus": 2
+  }
+]

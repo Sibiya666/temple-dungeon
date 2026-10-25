@@ -2237,5 +2237,350 @@
     "behavior": {"area_radius": 3.0},
     "tree": [
     ]
+  },
+  {
+    "id": "poison_cloud",
+    "name": "Ядовитый туман",
+    "description": "Облако яда накрывает область (радиус 2.5 м) и висит 3 с: отравление гарантировано, зона отравляет всех задетых. Скилл из лута, без класса. Ни маны, ни Ярости не тратит и не дает: перезарядка 6 с.",
+    "class_id": null,
+    "unlock_level": 1,
+    "tags": [
+      "spell",
+      "area",
+      "poison",
+      "dot"
+    ],
+    "spell_damage": {
+      "poison": [
+        22,
+        30
+      ]
+    },
+    "cast_time": 0.5,
+    "cooldown": 6,
+    "resource_cost": 0,
+    "crit_chance": 5,
+    "behavior": {
+      "area_radius": 2.5,
+      "ground_duration": 3,
+      "ground_fraction": 0.25
+    },
+    "ailment_chances": {
+      "poison": 100
+    },
+    "tree": [
+      {
+        "id": "thick_mist",
+        "name": "Густой туман",
+        "description": "+15% площади за очко.",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "area",
+            "kind": "increased",
+            "value": 15
+          }
+        ]
+      },
+      {
+        "id": "expansion",
+        "name": "Расползание",
+        "description": "+20% площади за очко.",
+        "max_points": 2,
+        "requires": [
+          {
+            "node": "thick_mist",
+            "points": 3
+          }
+        ],
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "area",
+            "kind": "increased",
+            "value": 20
+          }
+        ]
+      },
+      {
+        "id": "long_haze",
+        "name": "Затяжная пелена",
+        "description": "Облако висит дольше: +0.5 с за очко к времени жизни зоны (базовые 3 с).",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "add_behavior",
+            "param": "ground_duration",
+            "delta": 0.5
+          }
+        ]
+      },
+      {
+        "id": "lingering",
+        "name": "Стойкие испарения",
+        "description": "Облако ядовитее: +6% базы недуга в секунду за очко к урону зоны (базовые 25%).",
+        "max_points": 3,
+        "requires": [
+          {
+            "node": "long_haze",
+            "points": 2
+          }
+        ],
+        "effects": [
+          {
+            "type": "add_behavior",
+            "param": "ground_fraction",
+            "delta": 0.06
+          }
+        ]
+      },
+      {
+        "id": "quick_brew",
+        "name": "Быстрая варка",
+        "description": "+20% скорости перезарядки за очко: облака накладываются друг на друга, яды стакаются без предела.",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "cooldown_recovery",
+            "kind": "increased",
+            "value": 20
+          }
+        ]
+      },
+      {
+        "id": "venom_dose",
+        "name": "Едкий состав",
+        "description": "+12% урона отравления за очко.",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 12,
+            "tags": [
+              "ailment_poison"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rot",
+        "name": "Гниение",
+        "description": "+20% урона за очко по отравленным целям.",
+        "max_points": 2,
+        "requires": [
+          {
+            "node": "venom_dose",
+            "points": 1
+          }
+        ],
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 20,
+            "conditions": [
+              "target_poisoned"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "caustic_burst",
+        "name": "Едкий выброс",
+        "description": "+3% шанса крита за очко.",
+        "max_points": 2,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "crit_chance",
+            "kind": "flat",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "id": "erosion",
+        "name": "Разъедание",
+        "description": "Яд пробивает защиту: +6% пробивания сопротивления яду за очко. Огненному туману не помогает.",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "penetration_poison",
+            "kind": "flat",
+            "value": 6
+          }
+        ]
+      },
+      {
+        "id": "heavy_vapor",
+        "name": "Тяжелые испарения",
+        "description": "+15% скорости каста за очко.",
+        "max_points": 2,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "cast_speed",
+            "kind": "increased",
+            "value": 15
+          }
+        ]
+      },
+      {
+        "id": "plague_mist",
+        "name": "Моровой туман",
+        "description": "Развилка стихии. Остается ядом. Каждое попадание дает вторую порцию отравления без броска шанса; облако шире (+30% площади); когда яд или зона облака убивает цель, облако выпускает копию с уроном 60% (бесплатно, без проков; копия обновляет ту же зону, второй зоны нет). Убийство, добитое копией, новой копии не дает.",
+        "max_points": 1,
+        "exclusive_group": "cloud_kind",
+        "effects": [
+          {
+            "type": "grant_proc",
+            "trigger": "on_hit",
+            "action": {
+              "apply_ailment": "poison"
+            }
+          },
+          {
+            "type": "modifier",
+            "stat": "area",
+            "kind": "increased",
+            "value": 30
+          },
+          {
+            "type": "grant_proc",
+            "trigger": "on_kill",
+            "action": {
+              "cast_skill": {
+                "id": "poison_cloud",
+                "damage_percent": 60
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "fire_mist",
+        "name": "Горючий туман",
+        "description": "Развилка стихии. Весь урон становится огнем: шанс поджога 50%, +25% урона (More). Отравление и бонусы к яду после этого не работают: «Едкий состав», «Моровой туман», «Разъедание» бесполезны.",
+        "max_points": 1,
+        "exclusive_group": "cloud_kind",
+        "effects": [
+          {
+            "type": "set_damage_type",
+            "to": "fire"
+          },
+          {
+            "type": "modifier",
+            "stat": "ignite_chance",
+            "kind": "flat",
+            "value": 50
+          },
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "more",
+            "value": 25
+          }
+        ]
+      },
+      {
+        "id": "ember_fume",
+        "name": "Тлеющий дым",
+        "description": "+20% урона поджога за очко.",
+        "max_points": 2,
+        "requires": [
+          {
+            "node": "fire_mist",
+            "points": 1
+          }
+        ],
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 20,
+            "tags": [
+              "ailment_ignite"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ash_smoke",
+        "name": "Горячий пепел",
+        "description": "Огненная зона сильнее: +8% базы недуга в секунду за очко.",
+        "max_points": 2,
+        "requires": [
+          {
+            "node": "fire_mist",
+            "points": 1
+          }
+        ],
+        "effects": [
+          {
+            "type": "add_behavior",
+            "param": "ground_fraction",
+            "delta": 0.08
+          }
+        ]
+      },
+      {
+        "id": "mist_cloak",
+        "name": "Туманный покров",
+        "description": "Каст дает −8% получаемого урона на 3 с.",
+        "max_points": 1,
+        "effects": [
+          {
+            "type": "grant_proc",
+            "trigger": "on_use",
+            "action": {
+              "apply_buff": {
+                "id": "mist_cloak",
+                "duration": 3,
+                "modifiers": [
+                  {
+                    "stat": "damage_taken",
+                    "kind": "flat",
+                    "value": -8
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "toxic_echo",
+        "name": "Ядовитое эхо",
+        "description": "Каждое 2-е применение выпускает копию облака с уроном 50% (бесплатно, без проков). Копия обновляет ту же зону, второй зоны нет.",
+        "max_points": 1,
+        "requires": [
+          {
+            "node": "quick_brew",
+            "points": 2
+          }
+        ],
+        "effects": [
+          {
+            "type": "grant_proc",
+            "trigger": {
+              "every_n_uses": 2
+            },
+            "action": {
+              "cast_skill": {
+                "id": "poison_cloud",
+                "damage_percent": 50
+              }
+            }
+          }
+        ]
+      }
+    ]
   }
 ]
