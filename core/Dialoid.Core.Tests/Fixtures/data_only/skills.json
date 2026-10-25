@@ -1,0 +1,21 @@
+[
+  {
+    "id": "data_only_flame",
+    "name": "Данная вспышка",
+    "description": "Скилл, добавленный только данными",
+    "class_id": null,
+    "unlock_level": 1,
+    "tags": ["spell", "fire"],
+    "spell_damage": { "fire": [10, 14] },
+    "cast_time": 0.5,
+    "tree": [
+      {
+        "id": "flame_power",
+        "name": "Сила вспышки",
+        "description": "+20% к урону за очко",
+        "max_points": 2,
+        "effects": [ { "type": "modifier", "stat": "damage", "kind": "increased", "value": 20 } ]
+      }
+    ]
+  }
+]

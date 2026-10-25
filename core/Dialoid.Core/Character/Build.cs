@@ -1,6 +1,6 @@
 namespace Dialoid.Core.Character;
 
-/// <summary>Mutable build description; serialized in Task 17.</summary>
+/// <summary>Mutable build description; serialized by BuildCodec.</summary>
 public sealed class Build
 {
     public string ClassId = "";

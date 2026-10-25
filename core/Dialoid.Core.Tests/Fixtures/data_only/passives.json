@@ -1,0 +1,8 @@
+[
+  {
+    "id": "data_only_node", "name": "Данный узел", "description": "+25% к урону огня, добавлен только данными",
+    "kind": "notable", "region": "test", "x": 200, "y": 0,
+    "links": ["small_c"],
+    "effects": [ { "type": "modifier", "stat": "damage", "kind": "increased", "value": 25, "tags": ["fire"] } ]
+  }
+]
