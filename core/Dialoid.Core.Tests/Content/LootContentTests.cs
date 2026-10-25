@@ -1,3 +1,4 @@
+using Dialoid.Core.Stats;
 using Dialoid.Core.Character;
 using Dialoid.Core.Combat;
 using Dialoid.Core.Effects;
@@ -139,13 +140,13 @@ public class LootContentTests
     [Fact]
     void Cloud_directions_each_pay_off()
     {
-        // Each direction against the same ten-point filler (venom_dose 3, rot 2, heavy_vapor 2 plus the tested nodes).
+        // Each direction against the same ten-point filler (venom_dose 3, rot 2, acrid_haze 2 plus the tested nodes).
         double Train(params (string, int)[] n) => ContentHarness.TrainingDps(Cloud("sorcerer", n));
         double Pack(params (string, int)[] n) => ContentHarness.Run(Cloud("sorcerer", n), "swarm").DpsPack;
         (string, int)[] Filler(params (string, int)[] tested)
         {
             var left = 10 - tested.Sum(x => x.Item2);
-            var filler = new[] { ("venom_dose", 3), ("rot", 2), ("heavy_vapor", 2), ("caustic_burst", 2), ("erosion", 3) };
+            var filler = new[] { ("venom_dose", 3), ("rot", 2), ("acrid_haze", 2), ("caustic_burst", 2), ("erosion", 3) };
             var rest = new List<(string, int)>();
             foreach (var f in filler)
             {
@@ -175,5 +176,21 @@ public class LootContentTests
             Assert.Empty(r.Violations);
             Assert.True(r.DpsSingleTarget > 0, cls);
         }
+    }
+
+    [Fact]
+    void Mist_cloak_is_up_at_most_half_the_time_at_maximum_cooldown_recovery()
+    {
+        var data = ContentHarness.Data;
+        var cloud = data.Skills["poison_cloud"];
+        var tags = cloud.Tags.With("skill:poison_cloud");
+        var passiveMods = data.Passives.Nodes.Values.SelectMany(n => n.Effects).OfType<ModifierEffect>().Select(e => e.Modifier);
+        var treeMods = cloud.Tree.SelectMany(n => n.Effects.OfType<ModifierEffect>().Select(e => e.Modifier with { Value = e.Modifier.Value * n.MaxPoints }));
+        var cdr = treeMods.Concat(passiveMods)
+            .Where(m => m is { Stat: "cooldown_recovery", Kind: ModKind.Increased, Value: > 0 } && m.RequiredTags.Items.All(t => tags.Contains(t)))
+            .Sum(m => m.Value);
+        var minCooldown = cloud.Base.Cooldown!.Value / (1 + cdr / 100);
+        foreach (var buff in cloud.Tree.SelectMany(n => n.Effects).OfType<GrantProcEffect>().Select(p => p.Action).OfType<ProcAction.ApplyBuff>())
+            Assert.True(buff.DurationSec <= minCooldown * 0.5 + 1e-9, $"{buff.BuffId}: {buff.DurationSec} s vs minimum cooldown {minCooldown:0.##} s (+{cdr}%)");
     }
 }
