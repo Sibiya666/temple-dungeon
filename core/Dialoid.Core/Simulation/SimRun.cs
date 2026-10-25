@@ -84,7 +84,8 @@ internal sealed class SimRun
         var steps = Math.Max(1, (int)Math.Round((_defensive ? _config.SurvivalCapSec : _config.DurationSec) / step));
         double elapsed = steps * step;
         double? timeToKill = null;
-        double? timeToDeath = _defensive ? _config.SurvivalCapSec : null; // alive at the cap => the cap
+        // Alive at the cap => the cap; a fight ended by killing a non-respawning dummy => null (neither died nor survived the cap).
+        double? timeToDeath = _defensive ? _config.SurvivalCapSec : null;
 
         for (var i = 0; i < steps; i++)
         {
@@ -92,7 +93,7 @@ internal sealed class SimRun
             _s.Time = t;
             Act(t, step);
             StepObserver?.Invoke(_s);
-            if (HandleDeaths(t)) { timeToKill = elapsed = t; break; }
+            if (HandleDeaths(t)) { timeToKill = elapsed = t; timeToDeath = null; break; }
 
             TickTargets(step);
             TickResource(t, step);
@@ -100,7 +101,7 @@ internal sealed class SimRun
             _mechanicHooks.Tick(step);
             TickLife(step);
             if (_defensive && DummyAttackStep(t, step) is { } deathTime) { timeToDeath = elapsed = deathTime; break; }
-            if (HandleDeaths(t + step)) { timeToKill = elapsed = t + step; break; }
+            if (HandleDeaths(t + step)) { timeToKill = elapsed = t + step; timeToDeath = null; break; }
         }
 
         return ResultBuilder.Build(_ledger, _log, Math.Max(elapsed, step), timeToKill, timeToDeath, _damageTaken);

@@ -217,6 +217,23 @@ public class SurvivalTests
     }
 
     [Fact]
+    public void Killing_a_non_respawning_attacker_ends_defensive_mode_without_a_death_time()
+    {
+        var dir = FixturePaths.CopyTiny();
+        Edit(dir, "dummies.json", n => Find(n, Attacker)["life_per_target"] = 30);
+        var r0 = DataLoader.Load(dir);
+        Assert.Empty(r0.Errors);
+        var b = new Build { ClassId = "test_warrior", Level = 1, WeaponId = "test_sword" };
+        b.Slots.Add(new SkillSlot { SkillId = "test_slash", Level = 1 });
+        b.Rotation.Add("test_slash");
+
+        var r = Run(r0.Data!, b, cap: 180);
+        Assert.NotNull(r.TimeToKill);
+        Assert.True(r.TimeToKill < 180);
+        Assert.Null(r.TimeToDeath); // neither died nor survived the cap: the fight ended
+    }
+
+    [Fact]
     public void Character_cannot_die_when_dummy_does_not_attack()
     {
         var d = Defence();
