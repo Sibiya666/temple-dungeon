@@ -1,0 +1,490 @@
+[
+  {
+    "id": "life",
+    "name": "Здоровье",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "life_regen_pct",
+    "name": "Регенерация здоровья, % в секунду",
+    "default": 0.5,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "armor",
+    "name": "Броня",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "dodge_chance",
+    "name": "Шанс уклонения",
+    "default": 0,
+    "min": 0,
+    "max": 50,
+    "display": "percent"
+  },
+  {
+    "id": "resist_fire",
+    "name": "Сопротивление огню",
+    "default": 0,
+    "min": -100,
+    "max": 75,
+    "display": "percent"
+  },
+  {
+    "id": "resist_fire_max",
+    "name": "Максимум сопротивления огню",
+    "default": 75,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "resist_cold",
+    "name": "Сопротивление холоду",
+    "default": 0,
+    "min": -100,
+    "max": 75,
+    "display": "percent"
+  },
+  {
+    "id": "resist_cold_max",
+    "name": "Максимум сопротивления холоду",
+    "default": 75,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "resist_lightning",
+    "name": "Сопротивление молнии",
+    "default": 0,
+    "min": -100,
+    "max": 75,
+    "display": "percent"
+  },
+  {
+    "id": "resist_lightning_max",
+    "name": "Максимум сопротивления молнии",
+    "default": 75,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "resist_poison",
+    "name": "Сопротивление яду",
+    "default": 0,
+    "min": -100,
+    "max": 75,
+    "display": "percent"
+  },
+  {
+    "id": "resist_poison_max",
+    "name": "Максимум сопротивления яду",
+    "default": 75,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "damage",
+    "name": "Урон",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_physical_damage_min",
+    "name": "Добавленный минимальный урон: physical",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_physical_damage_max",
+    "name": "Добавленный максимальный урон: physical",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_fire_damage_min",
+    "name": "Добавленный минимальный урон: fire",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_fire_damage_max",
+    "name": "Добавленный максимальный урон: fire",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_cold_damage_min",
+    "name": "Добавленный минимальный урон: cold",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_cold_damage_max",
+    "name": "Добавленный максимальный урон: cold",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_lightning_damage_min",
+    "name": "Добавленный минимальный урон: lightning",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_lightning_damage_max",
+    "name": "Добавленный максимальный урон: lightning",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_poison_damage_min",
+    "name": "Добавленный минимальный урон: poison",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_poison_damage_max",
+    "name": "Добавленный максимальный урон: poison",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "crit_chance",
+    "name": "Шанс крита",
+    "default": 0,
+    "min": 0,
+    "max": 100,
+    "display": "percent"
+  },
+  {
+    "id": "crit_damage",
+    "name": "Урон крита",
+    "default": 50,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "attack_speed",
+    "name": "Скорость атаки",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "cast_speed",
+    "name": "Скорость заклинаний",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "area",
+    "name": "Область действия",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "duration",
+    "name": "Длительность",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "cooldown_recovery",
+    "name": "Скорость перезарядки",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "projectile_count",
+    "name": "Число снарядов",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "pierce_count",
+    "name": "Пробитие",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "chain_count",
+    "name": "Цепочки",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "resource_max",
+    "name": "Максимум ресурса",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "resource_regen",
+    "name": "Регенерация ресурса",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "resource_gen",
+    "name": "Генерация ресурса",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "resource_cost",
+    "name": "Стоимость ресурса",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "penetration_physical",
+    "name": "Пробивание сопротивления: physical",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "penetration_fire",
+    "name": "Пробивание сопротивления: fire",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "penetration_cold",
+    "name": "Пробивание сопротивления: cold",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "penetration_lightning",
+    "name": "Пробивание сопротивления: lightning",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "penetration_poison",
+    "name": "Пробивание сопротивления: poison",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "bleed_chance",
+    "name": "Шанс кровотечения",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "ignite_chance",
+    "name": "Шанс поджога",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "poison_chance",
+    "name": "Шанс отравления",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "shock_chance",
+    "name": "Шанс шока",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "freeze_chance",
+    "name": "Шанс заморозки",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "chill_chance",
+    "name": "Шанс охлаждения",
+    "default": 100,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "bleed_max_stacks",
+    "name": "Максимум стаков: bleed",
+    "default": 8,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "ignite_max_stacks",
+    "name": "Максимум стаков: ignite",
+    "default": 1,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "poison_max_stacks",
+    "name": "Максимум стаков: poison",
+    "default": 1000000000.0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "shock_max_stacks",
+    "name": "Максимум стаков: shock",
+    "default": 1,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "chill_max_stacks",
+    "name": "Максимум стаков: chill",
+    "default": 1,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "freeze_max_stacks",
+    "name": "Максимум стаков: freeze",
+    "default": 1,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "shock_effect",
+    "name": "Сила шока",
+    "default": 10,
+    "min": 0,
+    "max": 40,
+    "display": "percent"
+  },
+  {
+    "id": "freeze_duration",
+    "name": "Длительность заморозки",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "damage_taken",
+    "name": "Получаемый урон",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "str",
+    "name": "Сила",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "int",
+    "name": "Интеллект",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "will",
+    "name": "Воля",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "dex",
+    "name": "Ловкость",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  }
+]

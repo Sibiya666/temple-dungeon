@@ -1,0 +1,122 @@
+[
+  {
+    "id": "life",
+    "name": "Здоровье",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "resist_fire",
+    "name": "Сопротивление огню",
+    "default": 0,
+    "min": -100,
+    "max": 75,
+    "display": "percent"
+  },
+  {
+    "id": "crit_chance",
+    "name": "Шанс крита",
+    "default": 0,
+    "min": 0,
+    "max": 100,
+    "display": "percent"
+  },
+  {
+    "id": "bleed_chance",
+    "name": "Шанс кровотечения",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "ignite_chance",
+    "name": "Шанс поджога",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "poison_chance",
+    "name": "Шанс отравления",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "shock_chance",
+    "name": "Шанс шока",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "freeze_chance",
+    "name": "Шанс заморозки",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "chill_chance",
+    "name": "Шанс охлаждения",
+    "default": 100,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "bleed_max_stacks",
+    "name": "Максимум стаков: bleed",
+    "default": 8,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "ignite_max_stacks",
+    "name": "Максимум стаков: ignite",
+    "default": 1,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "poison_max_stacks",
+    "name": "Максимум стаков: poison",
+    "default": 1000000000.0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "shock_max_stacks",
+    "name": "Максимум стаков: shock",
+    "default": 1,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "chill_max_stacks",
+    "name": "Максимум стаков: chill",
+    "default": 1,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "freeze_max_stacks",
+    "name": "Максимум стаков: freeze",
+    "default": 1,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "physical",
+    "name": "Физический"
+  },
+  {
+    "id": "fire",
+    "name": "Огонь"
+  },
+  {
+    "id": "cold",
+    "name": "Холод"
+  },
+  {
+    "id": "attack",
+    "name": "Атака"
+  },
+  {
+    "id": "ailment_bleed",
+    "name": "Недуг: bleed"
+  },
+  {
+    "id": "ailment_ignite",
+    "name": "Недуг: ignite"
+  },
+  {
+    "id": "ailment_poison",
+    "name": "Недуг: poison"
+  },
+  {
+    "id": "ailment_shock",
+    "name": "Недуг: shock"
+  },
+  {
+    "id": "ailment_chill",
+    "name": "Недуг: chill"
+  },
+  {
+    "id": "ailment_freeze",
+    "name": "Недуг: freeze"
+  }
+]

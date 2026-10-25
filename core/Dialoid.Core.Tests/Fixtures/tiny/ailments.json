@@ -1,0 +1,62 @@
+[
+  {
+    "id": "bleed",
+    "source_type": "physical",
+    "chance_stat": "bleed_chance",
+    "damage_fraction": 0.7,
+    "duration_sec": 5,
+    "max_stacks_stat": "bleed_max_stacks",
+    "stack_rule": "replace_weakest",
+    "tag": "ailment_bleed"
+  },
+  {
+    "id": "ignite",
+    "source_type": "fire",
+    "chance_stat": "ignite_chance",
+    "damage_fraction": 0.9,
+    "duration_sec": 4,
+    "max_stacks_stat": "ignite_max_stacks",
+    "stack_rule": "replace_weakest",
+    "tag": "ailment_ignite"
+  },
+  {
+    "id": "poison",
+    "source_type": "poison",
+    "chance_stat": "poison_chance",
+    "damage_fraction": 0.3,
+    "duration_sec": 3,
+    "max_stacks_stat": "poison_max_stacks",
+    "stack_rule": "unlimited",
+    "tag": "ailment_poison"
+  },
+  {
+    "id": "shock",
+    "source_type": "lightning",
+    "chance_stat": "shock_chance",
+    "damage_fraction": 0,
+    "duration_sec": 3,
+    "max_stacks_stat": "shock_max_stacks",
+    "stack_rule": "strongest_only",
+    "tag": "ailment_shock"
+  },
+  {
+    "id": "chill",
+    "source_type": "cold",
+    "chance_stat": "chill_chance",
+    "damage_fraction": 0,
+    "duration_sec": 2,
+    "max_stacks_stat": "chill_max_stacks",
+    "stack_rule": "strongest_only",
+    "tag": "ailment_chill"
+  },
+  {
+    "id": "freeze",
+    "source_type": "cold",
+    "chance_stat": "freeze_chance",
+    "damage_fraction": 0,
+    "duration_sec": 1,
+    "max_stacks_stat": "freeze_max_stacks",
+    "stack_rule": "strongest_only",
+    "tag": "ailment_freeze"
+  }
+]
