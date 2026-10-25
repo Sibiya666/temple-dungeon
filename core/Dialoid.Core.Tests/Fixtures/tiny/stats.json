@@ -140,7 +140,23 @@
     "name": "Шанс уклонения",
     "default": 0,
     "min": 0,
-    "max": 50,
+    "max": 100,
+    "display": "percent"
+  },
+  {
+    "id": "dodge_chance_max",
+    "name": "Максимум шанса уклонения",
+    "default": 50,
+    "min": 0,
+    "max": 100,
+    "display": "percent"
+  },
+  {
+    "id": "resist_fire_max",
+    "name": "Максимум сопротивления огню",
+    "default": 75,
+    "min": 0,
+    "max": 100,
     "display": "percent"
   },
   {

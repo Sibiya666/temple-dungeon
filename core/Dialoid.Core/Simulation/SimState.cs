@@ -41,6 +41,22 @@ internal sealed class SimState
             });
     }
 
+    /// <summary>Self-inflicted damage (life costs, blood magic): never lowers life below 1.</summary>
+    public void DamageSelf(double amount)
+    {
+        if (amount <= 0 || Life <= 1) return;
+        Life = Math.Max(1, Life - amount);
+    }
+
+    /// <summary>Pays a life cost. Refused (nothing paid) when current life is not above the cost, so the payer can never die from it.</summary>
+    public bool TryPayLife(double cost)
+    {
+        if (cost <= 0) return true;
+        if (Life <= cost) return false;
+        Life -= cost;
+        return true;
+    }
+
     public bool IsAlive(int i) => !Dead[i];
 
     /// <summary>Lowest-index living target, or -1 when every target is dead.</summary>

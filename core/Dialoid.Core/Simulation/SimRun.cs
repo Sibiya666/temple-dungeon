@@ -31,6 +31,14 @@ internal sealed class SimRun
     private readonly ProcEngine _procs;
     private bool _idle;
 
+    // Defensive mode (spec 11.3): the dummy attacks the character until death or the survival cap.
+    private readonly bool _defensive;
+    private readonly bool _hasLifeStat;
+    private readonly bool _hasDodgeMax;
+    private readonly GameData _data;
+    private readonly SortedDictionary<DamageType, double> _damageTaken = new();
+    private double _nextAttack;
+
     private readonly IRandomSource _random;
     private readonly MechanicRegistry _mechanics; // for mechanic hooks (Tasks 14–16)
 
@@ -40,6 +48,11 @@ internal sealed class SimRun
         IReadOnlyList<SkillRuntime> skills, Rotation rotation, DummyDefinition dummy, SimConfig config)
     {
         _mechanics = mechanics;
+        _data = data;
+        _defensive = config.DummyAttacks && dummy.Attack is { IntervalSec: > 0 };
+        _hasLifeStat = data.Stats.ContainsKey("life");
+        _hasDodgeMax = data.Stats.ContainsKey("dodge_chance_max");
+        _nextAttack = dummy.Attack?.IntervalSec ?? 0;
         _character = character;
         _weapon = weapon;
         _regenAvailable = data.Stats.ContainsKey("resource_regen");
@@ -71,9 +84,10 @@ internal sealed class SimRun
     public SimResult Execute()
     {
         var step = _config.StepSec;
-        var steps = Math.Max(1, (int)Math.Round(_config.DurationSec / step));
+        var steps = Math.Max(1, (int)Math.Round((_defensive ? _config.SurvivalCapSec : _config.DurationSec) / step));
         double elapsed = steps * step;
         double? timeToKill = null;
+        double? timeToDeath = _defensive ? _config.SurvivalCapSec : null; // alive at the cap => the cap
 
         for (var i = 0; i < steps; i++)
         {
@@ -86,11 +100,11 @@ internal sealed class SimRun
             TickTargets(step);
             TickResource(t, step);
             TickBuffs(step);
-            if (_config.DummyAttacks) DummyAttackStep(t, step);
+            if (_defensive && DummyAttackStep(t, step) is { } deathTime) { timeToDeath = elapsed = deathTime; break; }
             if (HandleDeaths(t + step)) { timeToKill = elapsed = t + step; break; }
         }
 
-        return ResultBuilder.Build(_ledger, _log, Math.Max(elapsed, step), timeToKill, timeToDeath: null);
+        return ResultBuilder.Build(_ledger, _log, Math.Max(elapsed, step), timeToKill, timeToDeath, _damageTaken);
     }
 
     private void Act(double t, double step)
@@ -228,6 +242,74 @@ internal sealed class SimRun
     /// <summary>on_kill procs and "on death" mechanics (Task 16). Never fires for immortal dummies.</summary>
     private void OnKill(int targetIndex) => _procs.OnKill(targetIndex);
 
-    /// <summary>Task 15: the dummy attacks the character (uses _dummy.Attack, freeze skips attacks, TimeToDeath, SurvivalCapSec).</summary>
-    private void DummyAttackStep(double t, double dt) { }
+    /// <summary>
+    /// One step of defensive mode: life regeneration, then every dummy attack falling in (t, t + dt] (the first after one interval;
+    /// skipped while the attacking target is frozen or dead). Returns the time of death, or null when the character survives the step.
+    /// </summary>
+    private double? DummyAttackStep(double t, double dt)
+    {
+        var attack = _dummy.Attack!;
+        var ev = _procs.Evaluator;
+
+        if (_hasLifeStat)
+        {
+            _s.LifeMax = ev.Evaluate("life", default, _conditions).Value;
+            var regen = ev.Evaluate("life_regen_pct", default, _conditions).Value / 100 * _s.LifeMax;
+            _s.Life = Math.Min(_s.LifeMax, _s.Life + regen * dt);
+        }
+
+        var end = t + dt;
+        while (_nextAttack <= end + Eps)
+        {
+            var at = _nextAttack;
+            _nextAttack += attack.IntervalSec;
+            if (!_s.IsAlive(0) || _s.Targets[0].IsFrozen) continue;
+            if (ReceiveAttack(attack, at)) return at;
+        }
+        return null;
+    }
+
+    /// <summary>One dummy hit: dodge first, then per-type mitigation. Returns true when the character dies.</summary>
+    private bool ReceiveAttack(DummyAttack attack, double at)
+    {
+        var ev = _procs.Evaluator;
+        var gear = Growth.Gear(_character.Build.Level);
+
+        var dodge = ev.Evaluate("dodge_chance", default, _conditions).Value;
+        var dodgeMax = _hasDodgeMax ? ev.Evaluate("dodge_chance_max", default, _conditions).Value : 50;
+        var p = Math.Clamp(Math.Min(dodge, dodgeMax), 0, 100) / 100;
+        _log.Add(at, "dummy_attack", $"interval {SimLog.Num(attack.IntervalSec)}");
+        if (_random.Chance("dodge", p))
+        {
+            _log.Add(at, "dodge", "attack dodged");
+            return false;
+        }
+
+        double total = 0;
+        foreach (var type in Enum.GetValues<DamageType>())
+        {
+            if (!attack.DamagePerHit.TryGetValue(type, out var raw) || raw <= 0) continue;
+            var hit = raw * gear;
+            double taken;
+            if (type == DamageType.Physical)
+                taken = hit * (1 - Mitigation.ArmorReduction(ev.Evaluate("armor", default, _conditions).Value, hit));
+            else
+            {
+                var name = type.ToString().ToLowerInvariant();
+                var resist = ev.Evaluate("resist_" + name, default, _conditions).Value;
+                var capStat = "resist_" + name + "_max";
+                var cap = _data.Stats.ContainsKey(capStat) ? ev.Evaluate(capStat, default, _conditions).Value : 75;
+                taken = hit * Mitigation.ResistMultiplier(Math.Min(resist, cap), 0);
+            }
+            if (taken <= 0) continue;
+            _damageTaken[type] = _damageTaken.GetValueOrDefault(type) + taken;
+            total += taken;
+        }
+
+        _s.Life -= total;
+        if (_s.Life > 0) return false;
+        _s.Life = 0;
+        _log.Add(at, "death", "character died");
+        return true;
+    }
 }

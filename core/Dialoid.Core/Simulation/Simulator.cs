@@ -30,11 +30,13 @@ public sealed class Simulator
         var violations = new List<RuleViolation>(BuildRules.Validate(build, _data));
         if (!_data.Dummies.TryGetValue(config.DummyId, out var dummy))
             violations.Add(new RuleViolation("unknown_dummy", $"Неизвестный манекен «{config.DummyId}»"));
-        if (!(config.StepSec > 0) || !(config.DurationSec > 0) || double.IsInfinity(config.DurationSec))
+        // In defensive mode the run lasts until death or the survival cap, so the cap replaces DurationSec.
+        var span = config.DummyAttacks && dummy?.Attack != null ? config.SurvivalCapSec : config.DurationSec;
+        if (!(config.StepSec > 0) || !(span > 0) || double.IsInfinity(span))
             violations.Add(new RuleViolation("invalid_sim_config", "Длительность и шаг симуляции должны быть положительными"));
-        else if (config.StepSec > config.DurationSec)
+        else if (config.StepSec > span)
             violations.Add(new RuleViolation("invalid_sim_config", "Шаг симуляции не может быть больше её длительности"));
-        else if (config.DurationSec / config.StepSec > MaxSteps)
+        else if (span / config.StepSec > MaxSteps)
             violations.Add(new RuleViolation("invalid_sim_config", $"Слишком много шагов симуляции: больше {MaxSteps}"));
         if (config.PackSizeOverride is < 1 or > DummyDefinition.MaxPackSize)
             violations.Add(new RuleViolation("invalid_sim_config", $"Размер пака должен быть от 1 до {DummyDefinition.MaxPackSize}"));
