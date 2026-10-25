@@ -30,8 +30,33 @@ public static class BuildRules
         return bonuses.Count == 0 ? 0 : Math.Min(LootSkillMaxCap, LootSkillBaseCap + bonuses.Max());
     }
 
+    /// <summary>
+    /// A copy of a programmatically built <paramref name="build"/> with every null treated as empty: null lists and
+    /// dictionaries become empty, null list elements (ids, slots) are dropped, a null class or slot skill id becomes "".
+    /// <see cref="Validate"/> and the simulator work on this copy, so a hand-made build never makes them throw.
+    /// </summary>
+    public static Build Normalized(Build build) => new()
+    {
+        ClassId = build.ClassId ?? "",
+        Level = build.Level,
+        AscendancyId = build.AscendancyId,
+        AscendancyNodes = (build.AscendancyNodes ?? new()).Where(x => x != null).ToList(),
+        PassiveNodes = (build.PassiveNodes ?? new()).Where(x => x != null).ToList(),
+        AttributeChoices = new Dictionary<string, Attribute>(build.AttributeChoices ?? new()),
+        Slots = (build.Slots ?? new()).Where(s => s != null).Select(s => new SkillSlot
+        {
+            SkillId = s.SkillId ?? "",
+            Level = s.Level,
+            NodePoints = new Dictionary<string, int>(s.NodePoints ?? new()),
+        }).ToList(),
+        WeaponId = build.WeaponId,
+        ItemIds = (build.ItemIds ?? new()).Where(x => x != null).ToList(),
+        Rotation = (build.Rotation ?? new()).Where(x => x != null).ToList(),
+    };
+
     public static IReadOnlyList<RuleViolation> Validate(Build build, GameData data)
     {
+        build = Normalized(build);
         var v = new List<RuleViolation>();
         void Add(string code, string message) => v.Add(new RuleViolation(code, message));
 

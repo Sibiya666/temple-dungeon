@@ -27,6 +27,7 @@ public sealed class Simulator
 
     public SimResult Run(Build build, SimConfig config)
     {
+        build = BuildRules.Normalized(build); // a hand-made build with null lists compiles as if they were empty
         var violations = new List<RuleViolation>(BuildRules.Validate(build, _data));
         if (!_data.Dummies.TryGetValue(config.DummyId, out var dummy))
             violations.Add(new RuleViolation("unknown_dummy", $"Неизвестный манекен «{config.DummyId}»"));

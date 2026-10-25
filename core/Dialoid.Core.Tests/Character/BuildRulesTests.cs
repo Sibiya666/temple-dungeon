@@ -17,6 +17,28 @@ public class BuildRulesTests
     }
 
     [Fact]
+    public void Programmatic_build_with_null_lists_is_treated_as_empty()
+    {
+        var b = new Build
+        {
+            ClassId = "test_warrior", Level = 5, AscendancyNodes = null!, PassiveNodes = null!, AttributeChoices = null!,
+            Slots = null!, ItemIds = null!, Rotation = null!,
+        };
+        Assert.Empty(BuildRules.Validate(b, Data));
+        Assert.Contains("unknown_class", Codes(new Build { ClassId = null!, PassiveNodes = new List<string> { null! } }));
+
+        var withNullItems = TestBuilds.Warrior(level: 5, weapon: "test_sword");
+        withNullItems.Slots.Add(new SkillSlot { SkillId = "test_slash", NodePoints = null! });
+        withNullItems.Slots.Add(null!);
+        withNullItems.ItemIds.Add(null!);
+        Assert.Empty(BuildRules.Validate(withNullItems, Data));
+
+        var r = new Dialoid.Core.Simulation.Simulator(Data, Dialoid.Core.Effects.MechanicRegistry.Default)
+            .Run(b, new Dialoid.Core.Simulation.SimConfig("test_training", Dialoid.Core.Simulation.SimMode.Average, DurationSec: 1));
+        Assert.Empty(r.Violations);
+    }
+
+    [Fact]
     public void Unknown_class_and_level_range()
     {
         var b = new Build { ClassId = "nope", Level = 99 };
