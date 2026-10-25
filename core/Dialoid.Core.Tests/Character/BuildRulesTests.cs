@@ -69,12 +69,27 @@ public class BuildRulesTests
         Assert.Contains("unknown_ascendancy_node", Codes(b));
     }
 
+    /// <summary>Tiny data plus a chain of 12 extra small passives off the warrior start, so L10 can be overspent.</summary>
+    private static GameData LoadWithLongChain()
+    {
+        var dir = FixturePaths.CopyTiny();
+        var path = Path.Combine(dir, "passives.json");
+        var arr = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!.AsArray();
+        for (int i = 1; i <= 12; i++)
+            arr.Add(System.Text.Json.Nodes.JsonNode.Parse(
+                $"{{\"id\":\"chain_{i}\",\"name\":\"Цепь {i}\",\"description\":\"\",\"kind\":\"small\",\"region\":\"test\",\"x\":0,\"y\":{i},\"links\":[\"{(i == 1 ? "test_start_warrior" : "chain_" + (i - 1))}\"]}}"));
+        File.WriteAllText(path, arr.ToJsonString());
+        return DataLoader.Load(dir).Data!;
+    }
+
     [Fact]
     public void Illegal_build_after_level_decrease_reports_all_violations()
     {
-        // A fully legal L60 build: 5 slots, ascendancy with its points, passives, loot skills from equipped items.
+        var data = LoadWithLongChain();
+        // A fully legal L60 build: 16 passives, 5 slots, ascendancy with its points, loot skills from equipped items.
         var b = TestBuilds.Warrior(60, "test_greataxe", new[] { "test_cloud_ring", "test_bolt_charm", "test_spark_charm" });
         b.PassiveNodes.AddRange(new[] { "small_a", "small_b", "small_c", "attr_node" });
+        b.PassiveNodes.AddRange(Enumerable.Range(1, 12).Select(i => "chain_" + i));
         b.AttributeChoices["attr_node"] = Dialoid.Core.Character.Attribute.Dex;
         b.AscendancyId = "test_asc";
         b.AscendancyNodes.AddRange(new[] { "asc_n1", "asc_n2", "asc_n3" });
@@ -86,24 +101,23 @@ public class BuildRulesTests
             new SkillSlot { SkillId = "test_bolt", Level = 10 },
             new SkillSlot { SkillId = "test_spark", Level = 10 },
         });
-        Assert.Empty(Codes(b));
+        Assert.Empty(BuildRules.Validate(b, data));
 
         // Lowering the level makes it illegal in many ways at once, and nothing throws.
-        // (The tiny passive tree has only a few nodes, so we drop to level 2 instead of 10 to overspend passive points.)
-        b.Level = 2;
-        var codes = Codes(b);
-        Assert.Contains("too_many_passive_points", codes);
-        Assert.Contains("slot_locked", codes);
-        Assert.Contains("ascendancy_locked", codes);
-        Assert.Contains("skill_level_above_cap", codes);
-        Assert.Contains("skill_locked_by_level", codes);
-
-        // At level 10 the slots, ascendancy and skill levels are already illegal.
         b.Level = 10;
-        codes = Codes(b);
-        Assert.Contains("slot_locked", codes);
+        var codes = BuildRules.Validate(b, data).Select(v => v.Code).ToList();
+        Assert.Contains("too_many_passive_points", codes); // 16 nodes, 9 points
+        Assert.Contains("slot_locked", codes);             // 5 slots, 3 open
         Assert.Contains("ascendancy_locked", codes);
-        Assert.Contains("skill_level_above_cap", codes);
+        Assert.Contains("skill_level_above_cap", codes);   // skill level 20 above character level 10
+    }
+
+    [Fact]
+    public void Unknown_skill_node_has_its_own_code()
+    {
+        var b = TestBuilds.Warrior(weapon: "test_sword", slot: new SkillSlot { SkillId = "test_slash", Level = 5, NodePoints = { ["ghost_node"] = 1 } });
+        Assert.Contains("unknown_skill_node", Codes(b));
+        Assert.DoesNotContain("skill_node_requirement_unmet", Codes(b));
     }
 
     [Fact]

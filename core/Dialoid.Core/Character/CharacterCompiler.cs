@@ -14,6 +14,7 @@ public sealed class CharacterCompiler
 
     public CharacterCompiler(GameData data) => _data = data;
 
+    /// <summary>Compiles a build. Callers must run <see cref="BuildRules.Validate"/> first: unknown ids (class, passive, ascendancy, weapon) throw ArgumentException.</summary>
     public CompiledCharacter Compile(Build build)
     {
         if (!_data.Classes.TryGetValue(build.ClassId, out var cls))

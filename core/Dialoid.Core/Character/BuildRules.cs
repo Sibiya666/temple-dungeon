@@ -162,7 +162,7 @@ public static class BuildRules
         foreach (var (id, p) in points)
         {
             if (!nodes.TryGetValue(id, out var node))
-                add("skill_node_requirement_unmet", $"В дереве скилла «{skill.Id}» нет узла «{id}»");
+                add("unknown_skill_node", $"В дереве скилла «{skill.Id}» нет узла «{id}»");
             else if (p < 0 || p > node.MaxPoints)
                 add("skill_node_over_max", $"В узле «{id}» скилла «{skill.Id}» очков {p}, максимум {node.MaxPoints}");
         }
