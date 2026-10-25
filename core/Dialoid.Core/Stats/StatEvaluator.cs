@@ -8,22 +8,28 @@ public sealed class StatEvaluator
     public StatEvaluator(IReadOnlyDictionary<string, StatDefinition> defs, IReadOnlyList<Modifier> modifiers)
     {
         _defs = defs;
-        _modifiers = modifiers;
+        _modifiers = modifiers.ToArray();
     }
 
     public StatEvaluator WithExtra(IReadOnlyList<Modifier> extra) =>
-        new(_defs, _modifiers.Concat(extra).ToList());
+        new(_defs, _modifiers.Concat(extra).ToArray());
 
     public StatResult Evaluate(string stat, TagSet context, IConditionContext? conditions = null, double? baseValue = null) =>
-        Evaluate(stat, context, conditions, baseValue, new HashSet<string>());
+        Evaluate(stat, context, conditions, baseValue, new List<string>(), new Dictionary<string, StatResult>());
 
     private StatResult Evaluate(string stat, TagSet context, IConditionContext? conditions, double? baseValue,
-        HashSet<string> visiting)
+        List<string> visiting, Dictionary<string, StatResult> memo)
     {
         if (!_defs.TryGetValue(stat, out var def))
             throw new KeyNotFoundException($"Unknown stat '{stat}'.");
-        if (!visiting.Add(stat))
-            throw new InvalidOperationException($"Cyclic 'per' dependency on stat '{stat}'.");
+        var at = visiting.IndexOf(stat);
+        if (at >= 0)
+        {
+            var path = visiting.GetRange(at, visiting.Count - at);
+            path.Add(stat);
+            throw new InvalidOperationException($"Cyclic 'per' dependency: {string.Join(" -> ", path)}.");
+        }
+        visiting.Add(stat);
         try
         {
             var baseV = baseValue ?? def.Default;
@@ -44,7 +50,12 @@ public sealed class StatEvaluator
                 var v = m.Value;
                 if (m.Per is { } per)
                 {
-                    var perVal = Evaluate(per.Stat, context, conditions, null, visiting).Value;
+                    if (per.Every == 0)
+                        throw new ArgumentException(
+                            $"Modifier from '{m.Source.Id}' on stat '{m.Stat}' has per.Every == 0.");
+                    if (!memo.TryGetValue(per.Stat, out var perRes))
+                        memo[per.Stat] = perRes = Evaluate(per.Stat, context, conditions, null, visiting, memo);
+                    var perVal = perRes.Value;
                     v *= perVal / per.Every;
                     if (per.Cap is { } cap) v = m.Value >= 0 ? Math.Min(v, cap) : Math.Max(v, -cap);
                 }
@@ -75,7 +86,7 @@ public sealed class StatEvaluator
         }
         finally
         {
-            visiting.Remove(stat);
+            visiting.RemoveAt(visiting.Count - 1);
         }
     }
 
