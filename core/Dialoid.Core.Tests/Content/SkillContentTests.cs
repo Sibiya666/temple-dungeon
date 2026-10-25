@@ -428,4 +428,384 @@ public class SkillContentTests
         var ramp = SkillDamage(Ww(("spin_up", 3), ("blade_hurricane", 1)), "whirlwind");
         Assert.True(ramp / plain > 1.15, $"ramp ×{ramp / plain:0.###}");
     }
+
+    // ---------------- Sorcerer (spec 10.2, 10.3) ----------------
+
+    // Spec 10.2 table: id, unlock level, tags, role. The spec's «основной спендер» rows carry the spender tag like the Warrior's.
+    private static readonly SkillRow[] SorcererTable =
+    {
+        new("spark", 1, new[] { "spell", "projectile", "lightning", "generator" }, "generator"),
+        new("fireball", 1, new[] { "spell", "projectile", "area", "fire", "spender" }, "spender"),
+        new("ice_lance", 4, new[] { "spell", "projectile", "cold", "spender" }, "spender"),
+        new("ball_lightning", 8, new[] { "spell", "projectile", "area", "lightning", "spender" }, "spender"),
+        new("meteor", 12, new[] { "spell", "area", "fire", "spender" }, "spender"),
+        new("blink", 16, new[] { "spell", "movement" }, null),
+    };
+
+    [Fact]
+    public void Sorcerer_has_six_skills_from_spec_table()
+    {
+        var sorcerer = ContentHarness.Data.Classes["sorcerer"];
+        Assert.Equal(SorcererTable.Select(r => r.Id).OrderBy(x => x), sorcerer.SkillIds.OrderBy(x => x));
+
+        foreach (var row in SorcererTable)
+        {
+            var s = Skills[row.Id];
+            Assert.Equal("sorcerer", s.ClassId);
+            Assert.Equal(row.Unlock, s.UnlockLevel);
+            Assert.False(s.IsTriggeredOnly);
+            Assert.False(s.IsAttack, $"{row.Id}: sorcerer skills are spells");
+            Assert.Equal(row.Tags.OrderBy(x => x), s.Tags.Items.OrderBy(x => x));
+            if (row.Role == "generator") Assert.True(s.Base.ResourceGain > 0 && s.Base.ResourceCost == 0, row.Id);
+            if (row.Role == "spender") Assert.True(s.Base.ResourceCost > 0 && s.Base.ResourceGain == 0, row.Id);
+            if (row.Id != "blink")
+            {
+                Assert.NotEmpty(s.Base.SpellDamage);
+                Assert.True(s.Base.CastTime > 0, row.Id);
+            }
+        }
+
+        var spark = Skills["spark"];
+        Assert.Equal(3, spark.Base.ResourceGain);
+        Assert.Equal(2, spark.Base.Behavior["chain_count"]);
+        Assert.Equal(12, Skills["fireball"].Base.ResourceCost);
+        Assert.Equal(10, Skills["ice_lance"].Base.ResourceCost);
+        Assert.Equal(3, Skills["ice_lance"].Base.Behavior["pierce_count"]);
+        var ball = Skills["ball_lightning"];
+        Assert.Equal(20, ball.Base.ResourceCost);
+        Assert.Equal(10, ball.Base.HitsPerUse);
+        Assert.Equal(35, Skills["meteor"].Base.ResourceCost);
+        var blink = Skills["blink"];
+        Assert.Equal(6, blink.Base.Cooldown);
+        Assert.Empty(blink.Base.SpellDamage);
+        Assert.Equal(0, blink.Base.ResourceCost);
+        foreach (var id in new[] { "spark", "fireball", "ice_lance", "ball_lightning", "meteor" }) Assert.Null(Skills[id].Base.Cooldown);
+    }
+
+    // Spec 10.3 «Огненный шар»: id, name, points, group, requires. Deviations (BALANCE_NOTES): «Отдача» is an average refund with a cap,
+    // «Пламенное кольцо» does not add the dot tag to the skill.
+    private static readonly NodeRow[] FireballTree =
+    {
+        new("heat", "Жар", 4, null),
+        new("wide_blast", "Широкий взрыв", 3, null, ("heat", 2)),
+        new("molten_core", "Раскаленное ядро", 3, null, ("heat", 2)),
+        new("eternal_flame", "Вечное пламя", 1, null, ("molten_core", 3)),
+        new("lingering_heat", "Остаточный жар", 3, null, ("eternal_flame", 1)),
+        new("ring_of_fire", "Пламенное кольцо", 1, null, ("wide_blast", 3)),
+        new("scatter", "Разделение", 1, "fireball_form", ("heat", 4)),
+        new("compress", "Сжатие", 1, "fireball_form", ("heat", 4)),
+        new("frost_orb", "Морозный шар", 1, "fireball_element", ("heat", 2)),
+        new("storm_orb", "Грозовой шар", 1, "fireball_element", ("heat", 2)),
+        new("mana_focus", "Концентрация маны", 3, null),
+        new("backlash", "Отдача", 2, null, ("mana_focus", 3)),
+        new("swift_orb", "Летучий шар", 2, null, ("mana_focus", 1)),
+        new("flame_mark", "Метка пламени", 1, null, ("molten_core", 1)),
+        new("overheat", "Перегрев", 3, null, ("heat", 4)),
+        new("blast_wave", "Взрывная волна", 1, null, ("overheat", 3)),
+        new("soul_flame", "Пламя души", 2, null, ("flame_mark", 1), ("eternal_flame", 1)),
+    };
+
+    [Fact]
+    public void Fireball_tree_matches_spec_10_3()
+    {
+        var fb = Skills["fireball"];
+        Assert.Equal((14.0, 20.0), fb.Base.SpellDamage[DamageType.Fire]);
+        Assert.Single(fb.Base.SpellDamage);
+        Assert.Equal(0.75, fb.Base.CastTime);
+        Assert.Equal(12, fb.Base.ResourceCost);
+        Assert.Equal(1, fb.Base.Behavior["projectile_count"]);
+        Assert.Equal(1.5, fb.Base.Behavior["explosion_radius"]);
+        Assert.Equal(20, fb.Base.AilmentChances["ignite"]);
+        Assert.Equal(6, fb.Base.CritChance);
+        Assert.Equal(120, fb.Base.AddedDamageEffectiveness);
+
+        var nodes = fb.Tree.ToDictionary(n => n.Id);
+        Assert.Equal(FireballTree.Select(r => r.Id).OrderBy(x => x), nodes.Keys.OrderBy(x => x));
+        foreach (var row in FireballTree)
+        {
+            var n = nodes[row.Id];
+            Assert.Equal(row.Name, n.Name);
+            Assert.Equal(row.MaxPoints, n.MaxPoints);
+            Assert.Equal(row.Group, n.ExclusiveGroup);
+            Assert.Equal(row.Requires.OrderBy(r => r.Node), n.Requires.OrderBy(r => r.NodeId));
+        }
+
+        Modifier Mod(string node, string stat) => Assert.Single(nodes[node].Effects.OfType<ModifierEffect>(), e => e.Modifier.Stat == stat).Modifier;
+        Assert.Equal((ModKind.Increased, 8.0, 0), (Mod("heat", "damage").Kind, Mod("heat", "damage").Value, Mod("heat", "damage").RequiredTags.Items.Count));
+        Assert.Equal((ModKind.Increased, 15.0), (Mod("wide_blast", "area").Kind, Mod("wide_blast", "area").Value));
+        Assert.Equal((ModKind.Flat, 10.0), (Mod("molten_core", "ignite_chance").Kind, Mod("molten_core", "ignite_chance").Value));
+        Assert.Equal((ModKind.Flat, 2.0), (Mod("eternal_flame", "ignite_max_stacks").Kind, Mod("eternal_flame", "ignite_max_stacks").Value));
+        Assert.Equal((15.0, "ailment_ignite"), (Mod("lingering_heat", "damage").Value, Mod("lingering_heat", "damage").RequiredTags.Items.Single()));
+        Assert.Equal((ModKind.Flat, -1.0), (Mod("mana_focus", "resource_cost").Kind, Mod("mana_focus", "resource_cost").Value));
+        Assert.Equal((ModKind.Increased, 8.0), (Mod("swift_orb", "cast_speed").Kind, Mod("swift_orb", "cast_speed").Value));
+        Assert.Equal((ModKind.More, 30.0, "target_ignited"), (Mod("flame_mark", "damage").Kind, Mod("flame_mark", "damage").Value, Mod("flame_mark", "damage").Conditions.Single().Id));
+        Assert.Equal((ModKind.Flat, 2.0), (Mod("overheat", "crit_chance").Kind, Mod("overheat", "crit_chance").Value));
+        Assert.Equal((ModKind.Flat, 1.0), (Mod("soul_flame", "ignite_max_stacks").Kind, Mod("soul_flame", "ignite_max_stacks").Value));
+        var refund = Mod("backlash", "resource_cost");
+        Assert.True(refund is { Kind: ModKind.Flat, Value: < 0, Per: { Stat: "crit_chance", Cap: > 0 } }, "Отдача: refund scales with crit chance and is capped");
+
+        // Fork A: multi or sniper.
+        Assert.Contains(nodes["scatter"].Effects, e => e is AddBehaviorEffect { Param: "projectile_count", Delta: 2 });
+        Assert.Equal((ModKind.More, -25.0), (Mod("scatter", "damage").Kind, Mod("scatter", "damage").Value));
+        Assert.Contains(nodes["compress"].Effects, e => e is RemoveTagEffect { Tag: "area" });
+        Assert.Contains(nodes["compress"].Effects, e => e is AddBehaviorEffect { Param: "pierce_count", Delta: 1 });
+        Assert.Equal((ModKind.More, 60.0), (Mod("compress", "damage").Kind, Mod("compress", "damage").Value));
+
+        // Fork B: element change. «Морозный шар» keeps the id frost_orb (the Cryomancer grants it).
+        Assert.Contains(nodes["frost_orb"].Effects, e => e is SetDamageTypeEffect { To: DamageType.Cold });
+        Assert.Equal(10.0, Mod("frost_orb", "freeze_chance").Value);
+        Assert.Contains(nodes["storm_orb"].Effects, e => e is SetDamageTypeEffect { To: DamageType.Lightning });
+        Assert.Equal(25.0, Mod("storm_orb", "shock_chance").Value);
+        Assert.Contains(nodes["storm_orb"].Effects, e => e is AddBehaviorEffect { Param: "chain_count", Delta: 1 });
+
+        // Crit explosions: a triggered mini-skill «Взрыв» at 50%, with no ignite chance of its own.
+        var wave = Assert.Single(nodes["blast_wave"].Effects.OfType<GrantProcEffect>());
+        Assert.IsType<Trigger.OnCrit>(wave.Trigger);
+        var cast = Assert.IsType<ProcAction.CastSkill>(wave.Action);
+        Assert.Equal(50, cast.DamagePercent);
+        var blast = Skills[cast.SkillId];
+        Assert.True(blast.IsTriggeredOnly);
+        Assert.True(blast.Tags.Contains("triggered"));
+        Assert.Empty(blast.Base.AilmentChances);
+        Assert.Equal(fb.Base.SpellDamage[DamageType.Fire], blast.Base.SpellDamage[DamageType.Fire]);
+    }
+
+    [Fact]
+    public void Fireball_ring_of_fire_creates_ground_zone()
+    {
+        var ring = Skills["fireball"].Tree.Single(n => n.Id == "ring_of_fire");
+        Assert.Contains(ring.Effects, e => e is SetBehaviorEffect { Param: "ground_duration", Value: 2 });
+        Assert.Contains(ring.Effects, e => e is SetBehaviorEffect { Param: "ground_fraction", Value: 0.25 });
+
+        // In the simulator the burning ground adds damage over time (25% of the hit's ailment base per second on the hit targets).
+        var plain = Sorcerer(Slot("fireball", 5, ("heat", 2), ("wide_blast", 3)), Slot("spark", 1));
+        var ring5 = Sorcerer(Slot("fireball", 6, ("heat", 2), ("wide_blast", 3), ("ring_of_fire", 1)), Slot("spark", 1));
+        var a = ContentHarness.Run(plain, "training");
+        var b = ContentHarness.Run(ring5, "training");
+        Assert.Empty(b.Violations);
+        Assert.True(b.DotDamage > a.DotDamage * 1.5, $"dot {a.DotDamage:0} -> {b.DotDamage:0}");
+    }
+
+    private static SkillSlot Slot(string skillId, int level, params (string Node, int Points)[] nodes)
+    {
+        var slot = new SkillSlot { SkillId = skillId, Level = level };
+        foreach (var (n, p) in nodes) slot.NodePoints[n] = p;
+        return slot;
+    }
+
+    private static Build Sorcerer(params SkillSlot[] slots)
+    {
+        var b = new Build { ClassId = "sorcerer", Level = 20, WeaponId = "staff" };
+        b.Slots.AddRange(slots);
+        return b;
+    }
+
+    private static double Single(Build b)
+    {
+        var r = ContentHarness.Run(b, "training");
+        Assert.Empty(r.Violations);
+        return r.DpsSingleTarget;
+    }
+
+    private static double Pack(Build b) => ContentHarness.Run(b, "swarm").DpsPack;
+
+    private static double Survival(Build b)
+    {
+        var r = ContentHarness.Survival(b);
+        Assert.Empty(r.Violations);
+        return r.TimeToDeath ?? double.MaxValue;
+    }
+
+    /// <summary>Asserts that <paramref name="expected"/> scores strictly best among the fork options.</summary>
+    private static void Wins(string expected, IEnumerable<string> options, Func<string, double> score, string scenario)
+    {
+        var scores = options.ToDictionary(o => o, score);
+        var best = scores.OrderByDescending(kv => kv.Value).First();
+        var runnerUp = scores.Where(kv => kv.Key != expected).Max(kv => kv.Value);
+        Assert.True(best.Key == expected && scores[expected] > runnerUp * 1.01,
+            $"{scenario}: expected {expected} to win, got {string.Join(", ", scores.Select(kv => $"{kv.Key}={kv.Value:0.##}"))}");
+    }
+
+    [Fact]
+    public void Each_fireball_fork_option_wins_its_own_scenario()
+    {
+        // Fork A (Разделение / Сжатие) in a Spark loop.
+        Build A(string fork) => Sorcerer(Slot("fireball", 5, ("heat", 4), (fork, 1)), Slot("spark", 1));
+        string[] a = { "scatter", "compress" };
+        Wins("compress", a, f => Single(A(f)), "single target");
+        Wins("scatter", a, f => Pack(A(f)), "pack of 5");
+
+        // Fork B (Морозный / Грозовой шар): lightning chains through the pack, the frost orb freezes the attacking boss.
+        Build B(string fork) => Sorcerer(Slot("fireball", 3, ("heat", 2), (fork, 1)), Slot("spark", 1));
+        string[] b = { "frost_orb", "storm_orb" };
+        Wins("storm_orb", b, f => Pack(B(f)), "pack of 5");
+        Wins("frost_orb", b, f => Survival(B(f)), "survival");
+    }
+
+    /// <summary>Mana per second of a lone generator: gain per use × uses per second.</summary>
+    private static double ManaPerSecond(Build b, string skillId)
+    {
+        var ch = new CharacterCompiler(ContentHarness.Data, MechanicRegistry.Default).Compile(b);
+        var sk = ch.Skills.Single(s => s.SkillId == skillId);
+        var ev = ch.Evaluator.WithExtra(sk.Modifiers);
+        var gain = ev.Evaluate("resource_gen", sk.Tags, null, sk.ResourceGain).Value;
+        var speed = ev.Evaluate("cast_speed", sk.Tags, null, 1).Value;
+        return gain * speed / sk.Base.CastTime;
+    }
+
+    [Fact]
+    public void Each_spark_flow_option_wins_its_own_scenario()
+    {
+        Build S(string fork) => Sorcerer(Slot("spark", 3, ("crackle", 2), (fork, 1)));
+        string[] forks = { "spark_fan", "focused_arc", "mana_siphon" };
+        Wins("focused_arc", forks, f => Single(S(f)), "single target");
+        Wins("spark_fan", forks, f => Pack(S(f)), "pack of 5");
+        Wins("mana_siphon", forks, f => ManaPerSecond(S(f), "spark"), "mana per second");
+    }
+
+    [Fact]
+    public void Each_ice_lance_form_wins_its_own_scenario()
+    {
+        Build L(string fork) => Sorcerer(Slot("ice_lance", 3, ("frost_edge", 2), (fork, 1)), Slot("spark", 1));
+        string[] forks = { "glacial_block", "piercing_cold", "binding_lance" };
+        Wins("glacial_block", forks, f => Single(L(f)), "single target");
+        Wins("piercing_cold", forks, f => Pack(L(f)), "pack of 5");
+        Wins("binding_lance", forks, f => Survival(L(f)), "survival");
+    }
+
+    [Fact]
+    public void Each_ball_lightning_form_wins_its_own_scenario()
+    {
+        Build B(string fork) => Sorcerer(Slot("ball_lightning", 3, ("storm_core", 2), (fork, 1)), Slot("spark", 1));
+        string[] forks = { "static_orb", "dense_orb" };
+        Wins("dense_orb", forks, f => Single(B(f)), "single target");
+        Wins("static_orb", forks, f => Pack(B(f)), "pack of 5");
+    }
+
+    [Fact]
+    public void Each_meteor_form_wins_its_own_scenario()
+    {
+        Build M(string fork) => Sorcerer(Slot("meteor", 3, ("sky_fire", 2), (fork, 1)), Slot("spark", 1));
+        string[] forks = { "comet_core", "starfall" };
+        Wins("comet_core", forks, f => Single(M(f)), "single target");
+        Wins("starfall", forks, f => Pack(M(f)), "pack of 5");
+    }
+
+    [Fact]
+    public void Each_blink_burst_wins_its_own_scenario()
+    {
+        Build B(string fork) => Sorcerer(Slot("fireball", 1), Slot("spark", 1), Slot("blink", 1, (fork, 1)));
+        string[] forks = { "arrival_flare", "frost_wake" };
+        Wins("arrival_flare", forks, f => Pack(B(f)), "pack of 5");
+        Wins("frost_wake", forks, f => Survival(B(f)), "survival");
+        // Without a tree Blink deals no damage: the burst nodes are what make it worth a slot.
+        var bare = Single(Sorcerer(Slot("fireball", 1), Slot("spark", 1), Slot("blink", 1)));
+        Assert.True(Single(B("arrival_flare")) > bare);
+    }
+
+    [Fact]
+    public void Blink_storm_step_shocks_and_amplifies_the_rotation()
+    {
+        var bare = Single(Sorcerer(Slot("fireball", 1), Slot("spark", 1), Slot("blink", 1, ("short_step", 1))));
+        var storm = Single(Sorcerer(Slot("fireball", 1), Slot("spark", 1), Slot("blink", 1, ("storm_step", 1))));
+        Assert.True(storm / bare > 1.05, $"storm step ×{storm / bare:0.###}");
+    }
+
+    [Fact]
+    public void Sorcerer_spender_loops_beat_spark_spam_without_dwarfing_it()
+    {
+        // Starting numbers (Task 10 tunes): a spender + Spark rotation beats Spark alone, but by less than 2x.
+        var sparkOnly = ContentHarness.TrainingDps(Sorcerer(Slot("spark", 1)));
+        foreach (var spender in new[] { "fireball", "ice_lance", "ball_lightning", "meteor" })
+        {
+            var loop = ContentHarness.TrainingDps(Sorcerer(Slot(spender, 1), Slot("spark", 1)));
+            Assert.True(loop / sparkOnly is >= 1.1 and <= 2.0, $"{spender}: loop ×{loop / sparkOnly:0.###} (Spark alone {sparkOnly:0.#})");
+        }
+    }
+
+    /// <summary>
+    /// No sorcerer spender pays for itself (fix-round rule from the Warrior review): at the lowest cost per second its tree, the
+    /// passives and buffs of skills a sorcerer can slot can reach, chain-casting it still drains more mana than the highest regeneration
+    /// the passives allow. Refunds (Отдача) are capped cost reductions, so they enter at their cap.
+    /// </summary>
+    [Fact]
+    public void Sorcerer_spenders_never_sustain_on_maximum_regeneration()
+    {
+        var data = ContentHarness.Data;
+        var sorcerer = data.Classes["sorcerer"];
+        var slottable = sorcerer.SkillIds.Concat(data.Items.Values.Select(i => i.GrantsSkill)).Distinct().Select(id => data.Skills[id]).ToList();
+        var passiveMods = data.Passives.Nodes.Values.SelectMany(n => n.Effects).OfType<ModifierEffect>().Select(e => e.Modifier).ToList();
+        var buffMods = slottable.SelectMany(s => s.Tree).SelectMany(n => n.Effects).OfType<GrantProcEffect>()
+            .Select(p => p.Action).OfType<ProcAction.ApplyBuff>().SelectMany(b => b.Mods).ToList();
+
+        // Regeneration ignores skill tags: only untagged modifiers apply. Will: base + 59 levels + every attribute node (generous bound).
+        var attributeNodes = data.Passives.Nodes.Values.Count(n => n.Kind == PassiveKind.Attribute);
+        var will = sorcerer.BaseAttributes[Attr.Will] + 59 + 5.0 * attributeNodes;
+        var regenMods = passiveMods.Concat(buffMods).Where(m => m.Stat == "resource_regen" && m.RequiredTags.Items.Count == 0).ToList();
+        var willRegen = data.AttributeRules.Bonuses.Where(b => b.Attribute == Attr.Will && b.Stat == "resource_regen").Sum(b => b.ValuePerPoint)
+                        + sorcerer.ClassBonuses.Where(m => m.Stat == "resource_regen" && m.Per?.Stat == "will").Sum(m => m.Value / m.Per!.Every);
+        var maxRegen = (sorcerer.Resource.RegenPerSec + regenMods.Where(m => m.Kind == ModKind.Flat && m.Value > 0).Sum(m => m.Value))
+                       * (1 + (regenMods.Where(m => m.Kind == ModKind.Increased && m.Value > 0).Sum(m => m.Value) + willRegen * will) / 100);
+
+        foreach (var skill in slottable.Where(s => s.Tags.Contains("spender")))
+        {
+            var tags = skill.Tags.With("skill:" + skill.Id);
+            bool Applies(Modifier m) => m.RequiredTags.Items.All(t => tags.Contains(t) || t == "skill:" + skill.Id);
+            var outside = passiveMods.Concat(buffMods).Where(Applies).ToList();
+            foreach (var picks in ForkPicks(skill.Tree))
+            {
+                var nodes = skill.Tree.Where(n => n.ExclusiveGroup == null || picks.Contains(n)).ToList();
+                var treeMods = nodes.SelectMany(n => n.Effects.OfType<ModifierEffect>()
+                    .Select(e => e.Modifier with { Value = e.Modifier.Value * (e.PerPoint ? n.MaxPoints : 1) })).ToList();
+                var all = treeMods.Concat(outside).ToList();
+                double CostCut(Modifier m)
+                {
+                    if (m.Per == null) return m.Value;
+                    Assert.True(m.Per.Cap != null, $"{skill.Id}: a cost reduction scaled by {m.Per.Stat} needs a cap");
+                    return -m.Per.Cap!.Value;
+                }
+                var baseCost = nodes.SelectMany(n => n.Effects).OfType<SetResourceEffect>().Where(e => e.Field == ResourceField.Cost)
+                    .Select(e => e.Value).DefaultIfEmpty(skill.Base.ResourceCost).Last();
+                var flat = all.Where(m => m.Stat == "resource_cost" && m.Kind == ModKind.Flat && m.Value < 0).Sum(CostCut);
+                var inc = all.Where(m => m.Stat == "resource_cost" && m.Kind == ModKind.Increased && m.Value < 0).Sum(m => m.Value);
+                var minCost = (baseCost + flat) * (1 + inc / 100);
+                var slowest = 1 + all.Where(m => m.Stat == "cast_speed" && m.Kind == ModKind.Increased && m.Value < 0).Sum(m => m.Value) / 100;
+                var useTime = skill.Base.CastTime / slowest;
+                var picked = string.Join(", ", picks.Select(p => p.Id));
+                Assert.True(maxRegen < minCost / useTime * 0.95,
+                    $"{skill.Id} [{picked}]: {minCost:0.##} mana per {useTime:0.##} s vs regeneration up to {maxRegen:0.##}/s");
+            }
+        }
+    }
+
+    /// <summary>Every way to pick one node in each exclusive group of a tree.</summary>
+    private static IEnumerable<List<SkillTreeNode>> ForkPicks(IReadOnlyList<SkillTreeNode> tree)
+    {
+        var groups = tree.Where(n => n.ExclusiveGroup != null).GroupBy(n => n.ExclusiveGroup).Select(g => g.ToList()).ToList();
+        IEnumerable<List<SkillTreeNode>> Walk(int gi)
+        {
+            if (gi == groups.Count) { yield return new List<SkillTreeNode>(); yield break; }
+            foreach (var rest in Walk(gi + 1))
+                foreach (var n in groups[gi])
+                    yield return rest.Append(n).ToList();
+        }
+        return Walk(0);
+    }
+
+    [Fact]
+    public void Damage_type_changes_warn_about_what_they_disable()
+    {
+        // A node that replaces the skill's damage type silently kills ailment and type nodes built on the old type: it must say so.
+        foreach (var skill in Skills.Values)
+            foreach (var n in skill.Tree.Where(n => n.Effects.Any(e => e is SetDamageTypeEffect)))
+                Assert.True(n.Description.Contains("не работа", StringComparison.Ordinal), $"{skill.Id}/{n.Id}: no warning in «{n.Description}»");
+    }
+
+    [Fact]
+    public void Node_names_are_unique_across_all_skill_trees()
+    {
+        var dupes = Skills.Values.SelectMany(s => s.Tree.Select(n => (Skill: s.Id, n.Name))).GroupBy(x => x.Name)
+            .Where(g => g.Count() > 1).Select(g => $"{g.Key}: {string.Join(", ", g.Select(x => x.Skill))}").ToList();
+        Assert.True(dupes.Count == 0, string.Join("; ", dupes));
+    }
 }
