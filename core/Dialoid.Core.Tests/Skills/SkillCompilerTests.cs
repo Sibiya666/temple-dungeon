@@ -16,9 +16,12 @@ public class SkillCompilerTests
     private static readonly GameData Data = DataLoader.Load(FixturePaths.Tiny).Data!;
     private static readonly Scope.Global G = new();
 
+    private static IReadOnlyList<SourcedEffect> Src(IReadOnlyList<Effect>? e, string kind) =>
+        (e ?? Array.Empty<Effect>()).Select(x => new SourcedEffect(x, new SourceRef(kind, kind + "_node", "N"))).ToList();
+
     private static CompilationContext Ctx(IReadOnlyList<Effect>? asc = null, IReadOnlyList<Effect>? key = null,
         IReadOnlyList<Effect>? passive = null, IReadOnlyList<(string, string)>? granted = null, string? classId = "test_mage") =>
-        new(Data, asc ?? Array.Empty<Effect>(), key ?? Array.Empty<Effect>(), passive ?? Array.Empty<Effect>(),
+        new(Data, Src(asc, "ascendancy"), Src(key, "keystone"), Src(passive, "passive"),
             granted ?? Array.Empty<(string, string)>(), classId);
 
     private static SkillTreeNode Node(string id, int max, string? group, params Effect[] effects) =>
@@ -102,7 +105,7 @@ public class SkillCompilerTests
         // skill-scoped effect from a passive only hits the named skill
         var one = new Effect[] { new AddBehaviorEffect("chain", 2, Own("test_spark")) };
         Assert.False(SkillCompiler.Compile(Slot("test_bolt", 5), Data.Skills["test_bolt"], Ctx(passive: one)).Behavior.ContainsKey("chain"));
-        Assert.Equal(4, SkillCompiler.Compile(Slot("test_spark", 5), Data.Skills["test_spark"], Ctx(passive: one)).Behavior["chain"] + 2);
+        Assert.Equal(2, SkillCompiler.Compile(Slot("test_spark", 5), Data.Skills["test_spark"], Ctx(passive: one)).Behavior["chain"]);
     }
 
     [Fact]
@@ -140,11 +143,11 @@ public class SkillCompilerTests
     [Fact]
     public void RemoveTag_area_removes_area_behaviour()
     {
-        var def = Skill("s", TagSet.Of("spell", "area"), behavior: new() { ["areaRadius"] = 4, ["projectile_count"] = 1 },
+        var def = Skill("s", TagSet.Of("spell", "area"), behavior: new() { ["area_radius"] = 4, ["projectile_count"] = 1 },
             tree: Node("n", 1, null, new RemoveTagEffect("area", Own("s"))));
         var c = SkillCompiler.Compile(Slot("s", 5, ("n", 1)), def, Ctx());
         Assert.False(c.Tags.Contains("area"));
-        Assert.False(c.Behavior.ContainsKey("areaRadius"));
+        Assert.False(c.Behavior.ContainsKey("area_radius"));
         Assert.Equal(1, c.Behavior["projectile_count"]);
         var cloud = SkillCompiler.Compile(Slot("test_cloud", 5), Data.Skills["test_cloud"],
             Ctx(asc: new Effect[] { new RemoveTagEffect("area", Own("test_cloud")) }, classId: "test_mage"));
@@ -213,5 +216,66 @@ public class SkillCompilerTests
         Assert.Equal(4, slash.FreePoints);
         // asc_start's global damage modifier stays in the stat pool, not duplicated on the skill
         Assert.DoesNotContain(slash.Modifiers, m => m.Source.Kind == "ascendancy");
+    }
+
+    [Fact]
+    public void Outside_conversion_and_modifier_keep_real_source()
+    {
+        var conv = new Effect[] { new AddConversionEffect(DamageType.Physical, DamageType.Cold, 25, Own("test_bolt"), false) };
+        var c = SkillCompiler.Compile(Slot("test_bolt", 5), Data.Skills["test_bolt"], Ctx(passive: conv, asc: conv));
+        Assert.Equal(new[] { "passive_node", "ascendancy_node" }, c.Conversions.Select(x => x.Source.Id));
+        Assert.All(c.Conversions, x => Assert.Equal("N", x.Source.Name));
+    }
+
+    [Fact]
+    public void Scoped_mechanics_from_outside_land_on_matching_skill()
+    {
+        var m = new MechanicEffect("some_mech", new Dictionary<string, JsonElement>(), new Scope.Tags(TagSet.Of("fire")));
+        var bolt = SkillCompiler.Compile(Slot("test_bolt", 5), Data.Skills["test_bolt"], Ctx(asc: new Effect[] { m }));
+        var spark = SkillCompiler.Compile(Slot("test_spark", 5), Data.Skills["test_spark"], Ctx(asc: new Effect[] { m }));
+        Assert.Single(bolt.Mechanics);
+        Assert.Empty(spark.Mechanics);
+    }
+
+    private static GameData LoadWithEffects(string ascEffectsJson, string passiveEffectsJson)
+    {
+        var dir = FixturePaths.CopyTiny();
+        var ap = Path.Combine(dir, "ascendancies.json");
+        var arr = JsonNode.Parse(File.ReadAllText(ap))!.AsArray();
+        arr[0]!["notables"]!.AsArray()[0]!["effects"] = JsonNode.Parse(ascEffectsJson);
+        File.WriteAllText(ap, arr.ToJsonString());
+        var pp = Path.Combine(dir, "passives.json");
+        var pj = JsonNode.Parse(File.ReadAllText(pp))!;
+        var nodes = pj is JsonArray pa ? pa : pj["nodes"]!.AsArray();
+        var target = nodes.First(n => n!["kind"]?.GetValue<string>() == "notable" || n!["kind"]?.GetValue<string>() == "small")!;
+        target["effects"] = JsonNode.Parse(passiveEffectsJson);
+        File.WriteAllText(pp, pj.ToJsonString());
+        var res = DataLoader.Load(dir);
+        Assert.NotNull(res.Data);
+        return res.Data!;
+    }
+
+    [Fact]
+    public void Deferred_effects_flow_through_CharacterCompiler_to_matching_skills_only()
+    {
+        var data = LoadWithEffects(
+            "[{\"type\":\"set_damage_type\",\"to\":\"cold\",\"scope\":\"skill:test_slash\"}]",
+            "[{\"type\":\"add_conversion\",\"from\":\"physical\",\"to\":\"fire\",\"percent\":30,\"scope\":{\"tags\":[\"melee\"]}}]");
+        var passiveId = data.Passives.Nodes.Values.First(n => n.Effects.OfType<AddConversionEffect>().Any()).Id;
+        var build = TestBuilds.Warrior(level: 30, weapon: "test_sword", slots: new[] { Slot("test_slash", 5), Slot("test_slam", 5), Slot("test_cloud", 5) });
+        build.AscendancyId = "test_asc";
+        build.AscendancyNodes.Add("asc_n1");
+        build.PassiveNodes.Add(passiveId);
+        var ch = new CharacterCompiler(data).Compile(build);
+        var slash = ch.Skills[0];
+        Assert.Equal(DamageType.Cold, slash.DamageTypeOverride);
+        Assert.True(slash.Tags.Contains("cold") && !slash.Tags.Contains("physical"));
+        var conv = Assert.Single(slash.Conversions);
+        Assert.Equal(passiveId, conv.Source.Id);
+        Assert.Equal("passive", conv.Source.Kind);
+        Assert.Equal(30, conv.Percent);
+        Assert.Null(ch.Skills[1].DamageTypeOverride);
+        Assert.Empty(ch.Skills[1].Conversions);
+        Assert.Empty(ch.Skills[2].Conversions); // test_cloud has no melee tag
     }
 }

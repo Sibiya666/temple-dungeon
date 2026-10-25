@@ -90,7 +90,7 @@ public sealed class CharacterCompiler
 
     private IReadOnlyList<CompiledSkill> CompileSkills(Build build, ClassDefinition cls, List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
     {
-        IReadOnlyList<Effect> Of(Func<string, bool> kind) => deferred.Where(d => kind(d.Source.Kind)).Select(d => d.Effect).ToList();
+        IReadOnlyList<SourcedEffect> Of(Func<string, bool> kind) => deferred.Where(d => kind(d.Source.Kind)).ToList();
         var granted = mechanics.Where(m => m.MechanicId == SkillCompiler.GrantSkillNodeId)
             .Select(m => (SkillId: GrantParam(m, "skill"), NodeId: GrantParam(m, "node"))).ToList();
         var ctx = new CompilationContext(_data, Of(k => k == "ascendancy"), Of(k => k == "keystone"),
@@ -151,7 +151,10 @@ public sealed class CharacterCompiler
             switch (e)
             {
                 case ModifierEffect { Scope: Scope.Global } me: mods.Add(me.Modifier with { Source = src }); break;
-                case MechanicEffect mech: mechanics.Add(mech); break;
+                case MechanicEffect mech:
+                    mechanics.Add(mech);
+                    if (mech.Scope is not Scope.Global) deferred.Add(new SourcedEffect(mech, src)); // also lands on matching skills
+                    break;
                 case ModifierEffect me: deferred.Add(new SourcedEffect(me with { Modifier = me.Modifier with { Source = src } }, src)); break;
                 default: deferred.Add(new SourcedEffect(e, src)); break;
             }

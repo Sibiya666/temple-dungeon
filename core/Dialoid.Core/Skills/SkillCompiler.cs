@@ -6,9 +6,9 @@ using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Skills;
 
-/// <summary>Effects that reach slotted skills from outside their own tree. ClassId decides IsLoot (null: a skill without a class is loot).</summary>
-public sealed record CompilationContext(GameData Data, IReadOnlyList<Effect> AscendancyEffects, IReadOnlyList<Effect> KeystoneEffects,
-    IReadOnlyList<Effect> PassiveScopedEffects, IReadOnlyList<(string SkillId, string NodeId)> GrantedNodes, string? ClassId = null);
+/// <summary>Sourced effects that reach slotted skills from outside their own tree. ClassId decides IsLoot (null: a skill without a class is loot).</summary>
+public sealed record CompilationContext(GameData Data, IReadOnlyList<SourcedEffect> AscendancyEffects, IReadOnlyList<SourcedEffect> KeystoneEffects,
+    IReadOnlyList<SourcedEffect> PassiveScopedEffects, IReadOnlyList<(string SkillId, string NodeId)> GrantedNodes, string? ClassId = null);
 
 /// <summary>
 /// Pure skill compilation (spec 4.6, 8.4). Effects are applied in a fixed order: skill tree nodes, passives,
@@ -34,9 +34,9 @@ public static class SkillCompiler
 
         // Tag scopes of outside effects are matched against the tags as the tree left them.
         var treeTags = state.Tags;
-        ApplyOutside(state, def, treeTags, ctx.PassiveScopedEffects, "passive");
-        ApplyOutside(state, def, treeTags, ctx.AscendancyEffects, "ascendancy");
-        ApplyOutside(state, def, treeTags, ctx.KeystoneEffects, "keystone");
+        ApplyOutside(state, def, treeTags, ctx.PassiveScopedEffects);
+        ApplyOutside(state, def, treeTags, ctx.AscendancyEffects);
+        ApplyOutside(state, def, treeTags, ctx.KeystoneEffects);
 
         bool native = ctx.ClassId != null && ctx.Data.Classes.TryGetValue(ctx.ClassId, out var cls)
             ? cls.SkillIds.Contains(def.Id)
@@ -54,10 +54,9 @@ public static class SkillCompiler
         _ => true,
     };
 
-    private static void ApplyOutside(SkillBuildState state, SkillDefinition def, TagSet treeTags, IReadOnlyList<Effect> effects, string kind)
+    private static void ApplyOutside(SkillBuildState state, SkillDefinition def, TagSet treeTags, IReadOnlyList<SourcedEffect> effects)
     {
-        var src = new SourceRef(kind, kind, kind);
-        foreach (var e in effects)
+        foreach (var (e, src) in effects)
         {
             switch (e.Scope)
             {

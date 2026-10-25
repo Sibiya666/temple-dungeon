@@ -8,7 +8,7 @@ namespace Dialoid.Core.Skills;
 /// <summary>Mutable accumulator used while one skill is compiled.</summary>
 internal sealed class SkillBuildState
 {
-    private static readonly string[] AreaBehaviorKeys = { "areaRadius", "area_radius" };
+    private static readonly string[] AreaBehaviorKeys = { "area_radius" };
 
     public TagSet Tags;
     public DamageType? DamageType;
