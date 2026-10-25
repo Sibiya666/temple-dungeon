@@ -478,7 +478,9 @@ public class SkillContentTests
         var blink = Skills["blink"];
         Assert.Equal(6, blink.Base.Cooldown);
         Assert.Empty(blink.Base.SpellDamage);
-        Assert.Equal(0, blink.Base.ResourceCost);
+        Assert.Equal(10, blink.Base.ResourceCost);
+        Assert.Equal(0, blink.Base.ResourceGain);
+        Assert.DoesNotContain(blink.Tree.SelectMany(n => n.Effects), e => e is ModifierEffect { Modifier.Stat: "resource_gen" } || e is SetResourceEffect { Field: ResourceField.Gain });
         foreach (var id in new[] { "spark", "fireball", "ice_lance", "ball_lightning", "meteor" }) Assert.Null(Skills[id].Base.Cooldown);
     }
 
@@ -546,9 +548,10 @@ public class SkillContentTests
 
         // Fork A: multi or sniper.
         Assert.Contains(nodes["scatter"].Effects, e => e is AddBehaviorEffect { Param: "projectile_count", Delta: 2 });
-        Assert.Equal((ModKind.More, -25.0), (Mod("scatter", "damage").Kind, Mod("scatter", "damage").Value));
+        Assert.Equal((ModKind.More, -15.0), (Mod("scatter", "damage").Kind, Mod("scatter", "damage").Value));
         Assert.Contains(nodes["compress"].Effects, e => e is RemoveTagEffect { Tag: "area" });
         Assert.Contains(nodes["compress"].Effects, e => e is AddBehaviorEffect { Param: "pierce_count", Delta: 1 });
+        Assert.Contains(nodes["compress"].Effects, e => e is ModifierEffect { Modifier: { Stat: "projectile_count", Kind: ModKind.Override, Value: 1 } });
         Assert.Equal((ModKind.More, 60.0), (Mod("compress", "damage").Kind, Mod("compress", "damage").Value));
 
         // Fork B: element change. «Морозный шар» keeps the id frost_orb (the Cryomancer grants it).
@@ -609,11 +612,16 @@ public class SkillContentTests
 
     private static double Pack(Build b) => ContentHarness.Run(b, "swarm").DpsPack;
 
+    /// <summary>
+    /// Survival against the attacking boss as seconds survived per point of damage taken: the boss hits in rare big blows, so time to
+    /// death alone moves in whole attacks; dividing by the damage actually taken makes every blocked or softened blow count.
+    /// </summary>
     private static double Survival(Build b)
     {
         var r = ContentHarness.Survival(b);
         Assert.Empty(r.Violations);
-        return r.TimeToDeath ?? double.MaxValue;
+        var taken = r.DamageTaken?.Values.Sum() ?? 0;
+        return taken > 0 ? (r.TimeToDeath ?? 180) / taken : double.MaxValue;
     }
 
     /// <summary>Asserts that <paramref name="expected"/> scores strictly best among the fork options.</summary>
@@ -626,20 +634,127 @@ public class SkillContentTests
             $"{scenario}: expected {expected} to win, got {string.Join(", ", scores.Select(kv => $"{kv.Key}={kv.Value:0.##}"))}");
     }
 
+    // ---- Fork scenarios at skill level 20 (fix round 1): every option of a main fork, with the best compatible allocation of the
+    // rest of its tree for the scenario and the reachable +1 projectile / +1 chain notables, wins its scenario against the other
+    // options and against taking no fork at all ("none": the point goes to the rest of the tree). ----
+
+    private const string NoFork = "none";
+
+    private static readonly string[] SpellNotables = { "dex_volley", "will_chain_reaction" };
+    private static readonly string[] FrostNotables = { "dex_volley", "will_chain_reaction", "int_frozen_heart" };
+
+    /// <summary>The union of the shortest passive paths from the Sorcerer start to the given notables.</summary>
+    private static List<string> PathTo(IEnumerable<string> goals)
+    {
+        var tree = ContentHarness.Data.Passives;
+        const string start = "start_sorcerer";
+        var taken = new HashSet<string>();
+        foreach (var goal in goals)
+        {
+            var prev = new Dictionary<string, string> { [start] = start };
+            var queue = new Queue<string>(new[] { start });
+            while (queue.Count > 0 && !prev.ContainsKey(goal))
+            {
+                var at = queue.Dequeue();
+                foreach (var next in tree.Edges[at])
+                    if (prev.TryAdd(next, at)) queue.Enqueue(next);
+            }
+            for (var n = goal; n != start; n = prev[n]) taken.Add(n);
+        }
+        return taken.OrderBy(x => x, StringComparer.Ordinal).ToList();
+    }
+
+    /// <summary>A Sorcerer with the +1 projectile and +1 lightning-chain notables (attribute nodes into Intelligence), at the lowest
+    /// level that pays for them and at least 20.</summary>
+    private static Build FullSorcerer(params SkillSlot[] slots) => SorcererWith(SpellNotables, slots);
+
+    /// <summary><see cref="FullSorcerer"/> plus the freeze notable «Ледяное сердце» and the freeze nodes on the way.</summary>
+    private static Build FrostSorcerer(params SkillSlot[] slots) => SorcererWith(FrostNotables, slots);
+
+    private static Build SorcererWith(IEnumerable<string> goals, SkillSlot[] slots)
+    {
+        var path = PathTo(goals);
+        var b = new Build { ClassId = "sorcerer", Level = Math.Max(20, path.Count + 1), WeaponId = "staff" };
+        b.PassiveNodes.AddRange(path);
+        foreach (var id in path)
+            if (ContentHarness.Data.Passives.Nodes[id].Kind == PassiveKind.Attribute) b.AttributeChoices[id] = Attr.Int;
+        b.Slots.AddRange(slots);
+        return b;
+    }
+
+    /// <summary>
+    /// Spends <paramref name="level"/> points greedily in priority order: a node is skipped when another node of its exclusive group
+    /// was taken or its requirements are not met yet. <see cref="NoFork"/> entries are skipped. Points the list leaves over go to the
+    /// remaining non-fork nodes in tree order (the "none" variants spend their fork point there).
+    /// </summary>
+    private static SkillSlot Layout(string skillId, int level, params (string Node, int Points)[] priority)
+    {
+        var tree = Skills[skillId].Tree.ToDictionary(n => n.Id);
+        var slot = new SkillSlot { SkillId = skillId, Level = level };
+        var left = level;
+        var groups = new Dictionary<string, string>();
+        foreach (var (id, want) in priority)
+        {
+            if (id == NoFork || left == 0) continue;
+            var n = tree[id];
+            if (n.ExclusiveGroup != null && groups.TryGetValue(n.ExclusiveGroup, out var g) && g != id) continue;
+            if (!n.Requires.All(r => slot.NodePoints.GetValueOrDefault(r.NodeId) >= r.Points)) continue;
+            var have = slot.NodePoints.GetValueOrDefault(id);
+            var add = Math.Min(Math.Min(want, n.MaxPoints) - have, left);
+            if (add <= 0) continue;
+            slot.NodePoints[id] = have + add;
+            left -= add;
+            if (n.ExclusiveGroup != null) groups[n.ExclusiveGroup] = id;
+        }
+        foreach (var n in Skills[skillId].Tree.Where(n => n.ExclusiveGroup == null))
+        {
+            if (left == 0) break;
+            if (!n.Requires.All(r => slot.NodePoints.GetValueOrDefault(r.NodeId) >= r.Points)) continue;
+            var add = Math.Min(n.MaxPoints - slot.NodePoints.GetValueOrDefault(n.Id), left);
+            if (add <= 0) continue;
+            slot.NodePoints[n.Id] = slot.NodePoints.GetValueOrDefault(n.Id) + add;
+            left -= add;
+        }
+        Assert.True(left == 0, $"{skillId}: {left} points left unspent");
+        return slot;
+    }
+
+    /// <summary>The Spark of the spender rotations: a mana-oriented layout, the same for every option compared.</summary>
+    private static SkillSlot LoopSpark() => Layout("spark", 20, ("crackle", 4), ("mana_siphon", 1), ("mana_current", 3), ("quick_spark", 3),
+        ("bright_flash", 3), ("dazzle", 1), ("static", 3), ("breakdown", 2));
+
+    [Fact]
+    public void Full_fork_builds_take_the_reachable_notables()
+    {
+        foreach (var b in new[] { FullSorcerer(), FrostSorcerer() })
+        {
+            Assert.Contains("dex_volley", b.PassiveNodes);
+            Assert.Contains("will_chain_reaction", b.PassiveNodes);
+            Assert.Empty(BuildRules.Validate(b, ContentHarness.Data));
+        }
+        Assert.Contains("int_frozen_heart", FrostSorcerer().PassiveNodes);
+    }
+
     [Fact]
     public void Each_fireball_fork_option_wins_its_own_scenario()
     {
-        // Fork A (Разделение / Сжатие) in a Spark loop.
-        Build A(string fork) => Sorcerer(Slot("fireball", 5, ("heat", 4), (fork, 1)), Slot("spark", 1));
-        string[] a = { "scatter", "compress" };
-        Wins("compress", a, f => Single(A(f)), "single target");
-        Wins("scatter", a, f => Pack(A(f)), "pack of 5");
+        // Fork A (Разделение / Сжатие).
+        string[] a = { "scatter", "compress", NoFork };
+        Build ASingle(string f) => FullSorcerer(Layout("fireball", 20, ("heat", 4), (f, 1), ("overheat", 3), ("blast_wave", 1), ("molten_core", 3),
+            ("flame_mark", 1), ("eternal_flame", 1), ("soul_flame", 2), ("lingering_heat", 3), ("mana_focus", 3)), LoopSpark());
+        Build APack(string f) => FullSorcerer(Layout("fireball", 20, ("heat", 4), (f, 1), ("wide_blast", 3), ("ring_of_fire", 1), ("molten_core", 3),
+            ("flame_mark", 1), ("eternal_flame", 1), ("soul_flame", 2), ("lingering_heat", 3), ("mana_focus", 3)), LoopSpark());
+        Wins("compress", a, f => Single(ASingle(f)), "fireball A, single target");
+        Wins("scatter", a, f => Pack(APack(f)), "fireball A, pack of 5");
 
-        // Fork B (Морозный / Грозовой шар): lightning chains through the pack, the frost orb freezes the attacking boss.
-        Build B(string fork) => Sorcerer(Slot("fireball", 3, ("heat", 2), (fork, 1)), Slot("spark", 1));
+        // Fork B (Морозный / Грозовой шар). Element orbs fill the tree with crit and economy, the fire orb with ignite.
         string[] b = { "frost_orb", "storm_orb" };
-        Wins("storm_orb", b, f => Pack(B(f)), "pack of 5");
-        Wins("frost_orb", b, f => Survival(B(f)), "survival");
+        SkillSlot BTree(string f) => Layout("fireball", 20, ("heat", 4), (f, 1), ("scatter", 1), ("wide_blast", 3), ("ring_of_fire", 1),
+            ("overheat", 3), ("blast_wave", 1), ("mana_focus", 3), ("backlash", 1), ("swift_orb", 2));
+        Wins("storm_orb", b, f => Pack(FullSorcerer(BTree(f), LoopSpark())), "fireball B, pack of 5");
+        Wins("storm_orb", b, f => Single(FullSorcerer(BTree(f), LoopSpark())), "fireball B, single target");
+        // A frost build takes the freeze passives on the way to «Ледяное сердце»; fire and lightning orbs cannot freeze with them.
+        Wins("frost_orb", b.Append(NoFork), f => Survival(FrostSorcerer(BTree(f), LoopSpark())), "fireball B, survival");
     }
 
     /// <summary>Mana per second of a lone generator: gain per use × uses per second.</summary>
@@ -656,61 +771,127 @@ public class SkillContentTests
     [Fact]
     public void Each_spark_flow_option_wins_its_own_scenario()
     {
-        Build S(string fork) => Sorcerer(Slot("spark", 3, ("crackle", 2), (fork, 1)));
-        string[] forks = { "spark_fan", "focused_arc", "mana_siphon" };
-        Wins("focused_arc", forks, f => Single(S(f)), "single target");
-        Wins("spark_fan", forks, f => Pack(S(f)), "pack of 5");
-        Wins("mana_siphon", forks, f => ManaPerSecond(S(f), "spark"), "mana per second");
+        Build S(string f) => FullSorcerer(Layout("spark", 20, ("crackle", 4), (f, 1), ("mana_current", 3), ("quick_spark", 3), ("bright_flash", 3),
+            ("dazzle", 1), ("static", 3), ("breakdown", 2), ("ionize", 1)));
+        string[] forks = { "spark_fan", "focused_arc", "mana_siphon", NoFork };
+        Wins("focused_arc", forks, f => Single(S(f)), "spark, single target");
+        Wins("spark_fan", forks, f => Pack(S(f)), "spark, pack of 5");
+        Wins("mana_siphon", forks, f => ManaPerSecond(S(f), "spark"), "spark, mana per second");
     }
 
     [Fact]
     public void Each_ice_lance_form_wins_its_own_scenario()
     {
-        Build L(string fork) => Sorcerer(Slot("ice_lance", 3, ("frost_edge", 2), (fork, 1)), Slot("spark", 1));
-        string[] forks = { "glacial_block", "piercing_cold", "binding_lance" };
-        Wins("glacial_block", forks, f => Single(L(f)), "single target");
-        Wins("piercing_cold", forks, f => Pack(L(f)), "pack of 5");
-        Wins("binding_lance", forks, f => Survival(L(f)), "survival");
+        string[] forks = { "glacial_block", "piercing_cold", "binding_lance", NoFork };
+        Build Damage(string f) => FullSorcerer(Layout("ice_lance", 20, ("frost_edge", 4), (f, 1), ("ice_wedge", 2), ("point", 3), ("cold_precision", 2),
+            ("ice_crown", 1), ("ice_sting", 3), ("swift_ice", 3), ("cold_poise", 3)), LoopSpark());
+        Build Guard(string f) => FullSorcerer(Layout("ice_lance", 20, ("frost_edge", 2), (f, 1), ("bitter_cold", 3), ("deep_freeze", 3), ("ice_shards", 1),
+            ("ice_carapace", 1), ("point", 3), ("ice_crown", 1), ("frost_edge", 4), ("swift_ice", 3)), LoopSpark());
+        Wins("glacial_block", forks, f => Single(Damage(f)), "ice lance, single target");
+        Wins("piercing_cold", forks, f => Pack(Damage(f)), "ice lance, pack of 5");
+        Wins("binding_lance", forks, f => Survival(Guard(f)), "ice lance, survival");
     }
 
     [Fact]
     public void Each_ball_lightning_form_wins_its_own_scenario()
     {
-        Build B(string fork) => Sorcerer(Slot("ball_lightning", 3, ("storm_core", 2), (fork, 1)), Slot("spark", 1));
-        string[] forks = { "static_orb", "dense_orb" };
-        Wins("dense_orb", forks, f => Single(B(f)), "single target");
-        Wins("static_orb", forks, f => Pack(B(f)), "pack of 5");
+        string[] forks = { "static_orb", "dense_orb", NoFork };
+        Build Single1(string f) => FullSorcerer(Layout("ball_lightning", 20, ("storm_core", 4), (f, 1), ("long_flight", 3), ("bright_discharge", 3),
+            ("flash", 1), ("static_field", 3), ("spark_cascade", 2), ("quick_charge", 3), ("twin_orb", 1)), LoopSpark());
+        Build PackB(string f) => FullSorcerer(Layout("ball_lightning", 20, ("storm_core", 4), (f, 1), ("long_flight", 3), ("big_orb", 3), ("arc_discharge", 1),
+            ("static_field", 3), ("spark_cascade", 2), ("quick_charge", 3), ("capacitor", 1)), LoopSpark());
+        Wins("dense_orb", forks, f => Single(Single1(f)), "ball lightning, single target");
+        Wins("static_orb", forks, f => Pack(PackB(f)), "ball lightning, pack of 5");
     }
 
     [Fact]
     public void Each_meteor_form_wins_its_own_scenario()
     {
-        Build M(string fork) => Sorcerer(Slot("meteor", 3, ("sky_fire", 2), (fork, 1)), Slot("spark", 1));
-        string[] forks = { "comet_core", "starfall" };
-        Wins("comet_core", forks, f => Single(M(f)), "single target");
-        Wins("starfall", forks, f => Pack(M(f)), "pack of 5");
+        string[] forks = { "comet_core", "starfall", NoFork };
+        Build SingleM(string f) => FullSorcerer(Layout("meteor", 20, ("sky_fire", 4), (f, 1), ("falling_star", 3), ("comet_fragment", 1), ("kindling", 3),
+            ("core_heat", 2), ("star_thrift", 3), ("fire_field", 1), ("scorched_earth", 3)), LoopSpark());
+        Build PackM(string f) => FullSorcerer(Layout("meteor", 20, ("sky_fire", 4), (f, 1), ("crater", 3), ("fire_field", 1), ("scorched_earth", 3),
+            ("kindling", 3), ("core_heat", 2), ("star_thrift", 3)), LoopSpark());
+        Wins("comet_core", forks, f => Single(SingleM(f)), "meteor, single target");
+        Wins("starfall", forks, f => Pack(PackM(f)), "meteor, pack of 5");
     }
+
+    /// <summary>Fireball + Spark at level 20, the rotation Blink is added to.</summary>
+    private static SkillSlot BlinkRotationFireball() => Layout("fireball", 20, ("heat", 4), ("scatter", 1), ("wide_blast", 3), ("ring_of_fire", 1),
+        ("molten_core", 3), ("flame_mark", 1), ("eternal_flame", 1), ("soul_flame", 2), ("lingering_heat", 3), ("mana_focus", 1));
 
     [Fact]
     public void Each_blink_burst_wins_its_own_scenario()
     {
-        Build B(string fork) => Sorcerer(Slot("fireball", 1), Slot("spark", 1), Slot("blink", 1, (fork, 1)));
-        string[] forks = { "arrival_flare", "frost_wake" };
-        Wins("arrival_flare", forks, f => Pack(B(f)), "pack of 5");
-        Wins("frost_wake", forks, f => Survival(B(f)), "survival");
-        // Without a tree Blink deals no damage: the burst nodes are what make it worth a slot.
-        var bare = Single(Sorcerer(Slot("fireball", 1), Slot("spark", 1), Slot("blink", 1)));
-        Assert.True(Single(B("arrival_flare")) > bare);
+        string[] forks = { "arrival_flare", "frost_wake", NoFork };
+        // Blink first in the rotation: it is used whenever its cooldown is ready.
+        Build B(string f) => FullSorcerer(Layout("blink", 20, (f, 1), ("double_flare", 1), ("deep_cold", 3), ("short_step", 5), ("light_step", 5),
+            ("storm_step", 1), ("high_voltage", 5), ("afterimage", 1), ("elusive", 1), ("phase_barrier", 1)), BlinkRotationFireball(), LoopSpark());
+        Wins("arrival_flare", forks, f => Pack(B(f)), "blink, pack of 5");
+        Wins("arrival_flare", forks, f => Single(B(f)), "blink, single target");
+        Wins("frost_wake", forks, f => Survival(B(f)), "blink, survival");
+    }
+
+    /// <summary>
+    /// Blink is a utility slot, not a mandatory damage multiplier (fix round 1): at maximum attainable cooldown recovery (tree, passives,
+    /// buffs of slottable skills) no buff and no shock it grants is up more than about half the time.
+    /// </summary>
+    [Fact]
+    public void Blink_buffs_and_shock_stay_up_at_most_half_the_time()
+    {
+        var data = ContentHarness.Data;
+        var blink = Skills["blink"];
+        var tags = blink.Tags.With("skill:blink");
+        var passiveMods = data.Passives.Nodes.Values.SelectMany(n => n.Effects).OfType<ModifierEffect>().Select(e => e.Modifier);
+        var buffMods = data.Classes["sorcerer"].SkillIds.Select(id => Skills[id]).SelectMany(s => s.Tree).SelectMany(n => n.Effects)
+            .OfType<GrantProcEffect>().Select(p => p.Action).OfType<ProcAction.ApplyBuff>().SelectMany(b => b.Mods);
+        var treeMods = blink.Tree.SelectMany(n => n.Effects.OfType<ModifierEffect>().Select(e => e.Modifier with { Value = e.Modifier.Value * n.MaxPoints }));
+        var cdr = treeMods.Concat(passiveMods).Concat(buffMods)
+            .Where(m => m is { Stat: "cooldown_recovery", Kind: ModKind.Increased, Value: > 0 } && m.RequiredTags.Items.All(t => tags.Contains(t)))
+            .Sum(m => m.Value);
+        var minCooldown = blink.Base.Cooldown!.Value / (1 + cdr / 100);
+
+        foreach (var n in blink.Tree)
+            foreach (var p in n.Effects.OfType<GrantProcEffect>())
+            {
+                var every = p.Trigger is Trigger.EveryNUses e ? e.N : 1;
+                var duration = p.Action switch
+                {
+                    ProcAction.ApplyBuff b => b.DurationSec,
+                    ProcAction.ApplyAilment { AilmentId: "shock" or "chill" } a => data.Ailments[a.AilmentId].DurationSec,
+                    _ => 0,
+                };
+                Assert.True(duration <= minCooldown * every * 0.5 + 1e-9,
+                    $"blink/{n.Id}: {duration} s every {minCooldown * every:0.##} s at maximum cooldown recovery (+{cdr}%)");
+            }
     }
 
     [Fact]
-    public void Blink_storm_step_shocks_and_amplifies_the_rotation()
+    public void Blink_adds_a_bounded_bonus_to_the_rotation()
     {
-        var bare = Single(Sorcerer(Slot("fireball", 1), Slot("spark", 1), Slot("blink", 1, ("short_step", 1))));
-        var storm = Single(Sorcerer(Slot("fireball", 1), Slot("spark", 1), Slot("blink", 1, ("storm_step", 1))));
-        Assert.True(storm / bare > 1.05, $"storm step ×{storm / bare:0.###}");
+        // Offence-oriented Blink at level 20 (storm step, focus, fire exit, spark trail) against the same rotation without it.
+        var two = Single(FullSorcerer(BlinkRotationFireball(), LoopSpark()));
+        var storm = Single(FullSorcerer(Layout("blink", 20, ("storm_step", 1), ("high_voltage", 5), ("short_step", 5), ("light_step", 5),
+            ("blink_focus", 1), ("lingering_focus", 1), ("impulse", 1), ("arrival_flare", 1)), BlinkRotationFireball(), LoopSpark()));
+        var full = Single(FullSorcerer(Layout("blink", 20, ("storm_step", 1), ("high_voltage", 5), ("short_step", 5), ("blink_focus", 1),
+            ("lingering_focus", 1), ("impulse", 1), ("arrival_flare", 1), ("double_flare", 1), ("spark_trail", 1), ("twin_spark", 1),
+            ("fire_exit", 1), ("light_step", 1)), BlinkRotationFireball(), LoopSpark()));
+        Assert.True(storm / two is > 1.05 and < 1.35, $"storm/focus blink ×{storm / two:0.###}");
+        Assert.True(full / two < 1.4, $"offensive blink ×{full / two:0.###} (storm/focus ×{storm / two:0.###})");
     }
 
+    [Fact]
+    public void Meteor_copies_refresh_the_fire_field_without_weakening_it()
+    {
+        // Zones are one per skill id: the comet fragment's copy refreshes the field instead of adding a second one. Its ailment base is
+        // the same (the copy's 40% is a More modifier, not a base change), so the field's damage over time does not drop.
+        Build M(bool fragment) => FullSorcerer(Layout("meteor", 20, ("sky_fire", 4), ("fire_field", 1), ("scorched_earth", 3), ("falling_star", 3),
+            (fragment ? "comet_fragment" : "crater", 1), ("crater", 3), ("star_thrift", 3), ("instant_fall", 1), ("kindling", 1)), LoopSpark());
+        var without = ContentHarness.Run(M(false), "training");
+        var with = ContentHarness.Run(M(true), "training");
+        Assert.Empty(with.Violations);
+        Assert.True(with.DotDamage >= without.DotDamage * 0.98, $"dot {without.DotDamage:0} -> {with.DotDamage:0}");
+    }
     [Fact]
     public void Sorcerer_spender_loops_beat_spark_spam_without_dwarfing_it()
     {
@@ -747,6 +928,27 @@ public class SkillContentTests
         var maxRegen = (sorcerer.Resource.RegenPerSec + regenMods.Where(m => m.Kind == ModKind.Flat && m.Value > 0).Sum(m => m.Value))
                        * (1 + (regenMods.Where(m => m.Kind == ModKind.Increased && m.Value > 0).Sum(m => m.Value) + willRegen * will) / 100);
 
+        // Inflow from slottable non-generators that gain mana per use (fix round 1: Blink once did): the highest gain per use over the
+        // shortest attainable cooldown. A non-generator without a cooldown must not gain mana at all.
+        var willGen = data.AttributeRules.Bonuses.Where(b => b.Attribute == Attr.Will && b.Stat == "resource_gen").Sum(b => b.ValuePerPoint)
+                      + sorcerer.ClassBonuses.Where(m => m.Stat == "resource_gen" && m.Per?.Stat == "will").Sum(m => m.Value / m.Per!.Every);
+        double inflow = 0;
+        foreach (var s in slottable.Where(s => !s.Tags.Contains("generator")))
+        {
+            var stags = s.Tags.With("skill:" + s.Id);
+            var mods = s.Tree.SelectMany(n => n.Effects.OfType<ModifierEffect>()
+                    .Select(e => e.Modifier with { Value = e.Modifier.Value * (e.PerPoint ? n.MaxPoints : 1) }))
+                .Concat(passiveMods).Concat(buffMods).Where(m => m.Value > 0 && m.RequiredTags.Items.All(t => stags.Contains(t))).ToList();
+            var gainBase = s.Tree.SelectMany(n => n.Effects).OfType<SetResourceEffect>().Where(e => e.Field == ResourceField.Gain)
+                .Select(e => e.Value).Append(s.Base.ResourceGain).Max();
+            var gain = (gainBase + mods.Where(m => m is { Stat: "resource_gen", Kind: ModKind.Flat }).Sum(m => m.Value))
+                       * (1 + (mods.Where(m => m is { Stat: "resource_gen", Kind: ModKind.Increased }).Sum(m => m.Value) + willGen * will) / 100);
+            if (gain <= 0) continue;
+            Assert.True(s.Base.Cooldown is > 0, $"{s.Id}: a non-generator without a cooldown gains {gain:0.#} mana per use");
+            var cdr = mods.Where(m => m is { Stat: "cooldown_recovery", Kind: ModKind.Increased }).Sum(m => m.Value);
+            inflow += gain / (s.Base.Cooldown!.Value / (1 + cdr / 100));
+        }
+
         foreach (var skill in slottable.Where(s => s.Tags.Contains("spender")))
         {
             var tags = skill.Tags.With("skill:" + skill.Id);
@@ -772,8 +974,8 @@ public class SkillContentTests
                 var slowest = 1 + all.Where(m => m.Stat == "cast_speed" && m.Kind == ModKind.Increased && m.Value < 0).Sum(m => m.Value) / 100;
                 var useTime = skill.Base.CastTime / slowest;
                 var picked = string.Join(", ", picks.Select(p => p.Id));
-                Assert.True(maxRegen < minCost / useTime * 0.95,
-                    $"{skill.Id} [{picked}]: {minCost:0.##} mana per {useTime:0.##} s vs regeneration up to {maxRegen:0.##}/s");
+                Assert.True(maxRegen + inflow < minCost / useTime * 0.95,
+                    $"{skill.Id} [{picked}]: {minCost:0.##} mana per {useTime:0.##} s vs regeneration up to {maxRegen:0.##}/s + {inflow:0.##}/s from other skills");
             }
         }
     }

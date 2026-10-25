@@ -1159,36 +1159,37 @@
         ]
       },
       {
-        "id": "long_arc",
-        "name": "Длинная дуга",
-        "description": "Цепь +1 цель за очко.",
+        "id": "storm_fan",
+        "name": "Грозовой веер",
+        "description": "Веер искр чаще шокирует: +6% шанса шока за очко.",
         "max_points": 2,
-        "requires": [{"node": "crackle", "points": 2}],
+        "requires": [{"node": "spark_fan", "points": 1}],
         "effects": [
-          {"type": "add_behavior", "param": "chain_count", "delta": 1}
+          {"type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 6}
         ]
       },
       {
         "id": "spark_fan",
         "name": "Веер искр",
-        "description": "Развилка потока. +2 искры, каждая летит в свою цель и цепляет соседей; урон −20% (More).",
+        "description": "Развилка потока. +2 искры, каждая летит в свою цель и цепляет соседей. Убийство искрой разгоняет каст: +25% скорости каста на 3 с (работает только там, где враги умирают; по одной цели веер ничего не дает).",
         "max_points": 1,
         "requires": [{"node": "crackle", "points": 2}],
         "exclusive_group": "spark_flow",
         "effects": [
           {"type": "add_behavior", "param": "projectile_count", "delta": 2},
-          {"type": "modifier", "stat": "damage", "kind": "more", "value": -20}
+          {"type": "grant_proc", "trigger": "on_kill", "action": {"apply_buff": {"id": "spark_rush", "duration": 3, "modifiers": [{"stat": "cast_speed", "kind": "increased", "value": 25}]}}}
         ]
       },
       {
         "id": "focused_arc",
         "name": "Сфокусированный разряд",
-        "description": "Развилка потока. Искра сама не перескакивает (базовая цепь 0, «Длинная дуга» не работает; внешние бонусы к цепи остаются): весь разряд уходит в цель, урон +45% (More).",
+        "description": "Развилка потока. Одна искра без цепи: число искр всегда 1 и цепь всегда 0 (бонусы к снарядам и цепи не работают), весь разряд уходит в цель — урон +45% (More).",
         "max_points": 1,
         "requires": [{"node": "crackle", "points": 2}],
         "exclusive_group": "spark_flow",
         "effects": [
-          {"type": "set_behavior", "param": "chain_count", "value": 0},
+          {"type": "modifier", "stat": "projectile_count", "kind": "override", "value": 1},
+          {"type": "modifier", "stat": "chain_count", "kind": "override", "value": 0},
           {"type": "modifier", "stat": "damage", "kind": "more", "value": 45}
         ]
       },
@@ -1217,7 +1218,7 @@
         "id": "breakdown",
         "name": "Пробой",
         "description": "+5% эффекта шока за очко.",
-        "max_points": 2,
+        "max_points": 3,
         "requires": [{"node": "static", "points": 3}],
         "effects": [
           {"type": "modifier", "stat": "shock_effect", "kind": "flat", "value": 5}
@@ -1236,7 +1237,7 @@
       {
         "id": "overload",
         "name": "Перегрузка",
-        "description": "Каждая 10-я искра обрушивает малый Метеор: копия Метеора с уроном 30% (с его деревом, если Метеор в слоте).",
+        "description": "Каждая 10-я искра обрушивает малый Метеор: копия Метеора с уроном 30% (с его деревом, если Метеор в слоте). Если у Метеора есть «Огненное поле», копия обновляет это же поле, а не добавляет второе (зона одна на скилл).",
         "max_points": 1,
         "requires": [{"node": "crackle", "points": 4}],
         "effects": [
@@ -1378,7 +1379,7 @@
       {
         "id": "ring_of_fire",
         "name": "Пламенное кольцо",
-        "description": "Взрыв оставляет горящую землю на 2 с: 25% базы недуга удара в секунду по задетым целям (одна зона, обновляется каждым шаром; бонусы к DoT действуют).",
+        "description": "Взрыв оставляет горящую землю на 2 с: 25% базы недуга удара в секунду по задетым целям (одна зона на скилл: обновляется каждым шаром, копии шара — «Огненный выход» Мерцания — обновляют ее же; бонусы к DoT действуют).",
         "max_points": 1,
         "requires": [{"node": "wide_blast", "points": 3}],
         "effects": [
@@ -1389,25 +1390,26 @@
       {
         "id": "scatter",
         "name": "Разделение",
-        "description": "Развилка формы. +2 шара, каждый летит в свою цель; урон −25% (More).",
+        "description": "Развилка формы. +2 шара, каждый летит в свою цель; урон −15% (More).",
         "max_points": 1,
         "requires": [{"node": "heat", "points": 4}],
         "exclusive_group": "fireball_form",
         "effects": [
           {"type": "add_behavior", "param": "projectile_count", "delta": 2},
-          {"type": "modifier", "stat": "damage", "kind": "more", "value": -25}
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -15}
         ]
       },
       {
         "id": "compress",
         "name": "Сжатие",
-        "description": "Развилка формы. Шар без взрыва (снимает тег area, бонусы к площади не работают), +60% More урона, пробивает 1 цель.",
+        "description": "Развилка формы. Один сжатый шар без взрыва: снимает тег area (бонусы к площади не работают), число шаров всегда 1 (бонусы к снарядам не работают), +60% More урона, пробивает 1 цель.",
         "max_points": 1,
         "requires": [{"node": "heat", "points": 4}],
         "exclusive_group": "fireball_form",
         "effects": [
           {"type": "remove_tag", "tag": "area"},
           {"type": "set_behavior", "param": "explosion_radius", "value": 0},
+          {"type": "modifier", "stat": "projectile_count", "kind": "override", "value": 1},
           {"type": "add_behavior", "param": "pierce_count", "delta": 1},
           {"type": "modifier", "stat": "damage", "kind": "more", "value": 60}
         ]
@@ -1563,25 +1565,26 @@
       {
         "id": "piercing_cold",
         "name": "Сквозной холод",
-        "description": "Развилка формы. Копье пробивает еще 1 цель (весь пак из 5), урон +10% (More).",
+        "description": "Развилка формы. Копье пробивает еще 1 цель и бьет сильнее: урон +15% (More).",
         "max_points": 1,
         "requires": [{"node": "frost_edge", "points": 2}],
         "exclusive_group": "lance_form",
         "effects": [
           {"type": "add_behavior", "param": "pierce_count", "delta": 1},
-          {"type": "modifier", "stat": "damage", "kind": "more", "value": 10}
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 15}
         ]
       },
       {
         "id": "binding_lance",
         "name": "Сковывающее копье",
-        "description": "Развилка формы. Шанс заморозки +25%, длительность заморозки +100%, урон −20% (More): замороженный враг не бьет.",
+        "description": "Развилка формы. Копье сковывает врага: шанс заморозки +25%, длительность заморозки +100% (замороженный враг не бьет), попадание ослабляет удары врага — −10% получаемого урона на 2 с; урон −20% (More).",
         "max_points": 1,
         "requires": [{"node": "frost_edge", "points": 2}],
         "exclusive_group": "lance_form",
         "effects": [
           {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 25},
           {"type": "modifier", "stat": "freeze_duration", "kind": "increased", "value": 100},
+          {"type": "grant_proc", "trigger": "on_hit", "action": {"apply_buff": {"id": "binding_lance", "duration": 2, "modifiers": [{"stat": "damage_taken", "kind": "flat", "value": -10}]}}},
           {"type": "modifier", "stat": "damage", "kind": "more", "value": -20}
         ]
       },
@@ -1738,32 +1741,33 @@
       {
         "id": "static_orb",
         "name": "Неподвижная сфера",
-        "description": "Развилка формы. Шар останавливается у цели и становится турелью: снимает тег projectile, поле радиусом 3 м, урон −10% (More). «Дуговой разряд» с ней не работает.",
+        "description": "Развилка формы. Шар останавливается у цели и становится турелью: поле радиусом 3 м, все разряды бьют по месту — в движке +15% урона (More).",
         "max_points": 1,
         "requires": [{"node": "storm_core", "points": 2}],
         "exclusive_group": "ball_form",
         "effects": [
-          {"type": "remove_tag", "tag": "projectile"},
           {"type": "set_behavior", "param": "area_radius", "value": 3.0},
-          {"type": "modifier", "stat": "damage", "kind": "more", "value": -10}
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 15}
         ]
       },
       {
         "id": "dense_orb",
         "name": "Плотный сгусток",
-        "description": "Развилка формы. Шар сжимается: радиус 1 м, урон +50% (More).",
+        "description": "Развилка формы. Шар сжимается: радиус 1 м, один шар без дуг (число шаров всегда 1 и цепь всегда 0; бонусы к снарядам и цепи не работают), урон +50% (More).",
         "max_points": 1,
         "requires": [{"node": "storm_core", "points": 2}],
         "exclusive_group": "ball_form",
         "effects": [
           {"type": "set_behavior", "param": "area_radius", "value": 1.0},
+          {"type": "modifier", "stat": "projectile_count", "kind": "override", "value": 1},
+          {"type": "modifier", "stat": "chain_count", "kind": "override", "value": 0},
           {"type": "modifier", "stat": "damage", "kind": "more", "value": 50}
         ]
       },
       {
         "id": "arc_discharge",
         "name": "Дуговой разряд",
-        "description": "Летящий шар бьет дугой еще 1 цель (+1 цепь). Не работает с «Неподвижной сферой».",
+        "description": "Шар бьет дугой еще 1 цель (+1 цепь).",
         "max_points": 1,
         "requires": [{"node": "big_orb", "points": 3}],
         "effects": [
@@ -1907,7 +1911,7 @@
       {
         "id": "starfall",
         "name": "Звездопад",
-        "description": "Развилка формы. Вместо одного падают 3 малых метеора (тег projectile), каждый в свою цель, взрыв 1.6 м; урон −30% (More).",
+        "description": "Развилка формы. Вместо одного падают 3 малых метеора (тег projectile, бонусы к снарядам действуют), каждый в свою цель, взрыв 1.6 м; урон −20% (More).",
         "max_points": 1,
         "requires": [{"node": "sky_fire", "points": 2}],
         "exclusive_group": "meteor_form",
@@ -1915,13 +1919,13 @@
           {"type": "add_tag", "tag": "projectile"},
           {"type": "set_behavior", "param": "projectile_count", "value": 3},
           {"type": "set_behavior", "param": "explosion_radius", "value": 1.6},
-          {"type": "modifier", "stat": "damage", "kind": "more", "value": -30}
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -20}
         ]
       },
       {
         "id": "fire_field",
         "name": "Огненное поле",
-        "description": "Место падения горит 3 с: 30% базы недуга удара в секунду по задетым целям (с «Ледяным метеором» поле холодное).",
+        "description": "Место падения горит 3 с: 30% базы недуга удара в секунду по задетым целям (с «Ледяным метеором» поле холодное). Поле одно на скилл: копии Метеора («Осколок кометы», «Перегрузка» Искры) обновляют его, а не добавляют второе.",
         "max_points": 1,
         "effects": [
           {"type": "set_behavior", "param": "ground_duration", "value": 3},
@@ -2017,7 +2021,7 @@
       {
         "id": "comet_fragment",
         "name": "Осколок кометы",
-        "description": "Крит откалывает осколок: копия Метеора с уроном 40% (бесплатно, без проков).",
+        "description": "Крит откалывает осколок: копия Метеора с уроном 40% (бесплатно, без проков). С «Огненным полем» копия обновляет то же поле (база недуга у копии та же), второго поля нет.",
         "max_points": 1,
         "requires": [{"node": "falling_star", "points": 3}],
         "effects": [
@@ -2038,12 +2042,13 @@
   {
     "id": "blink",
     "name": "Мерцание",
-    "description": "Телепорт на короткое расстояние, перезарядка 6 с. Урона не наносит. Перемещение движком не моделируется: без узлов дерева Мерцание только тратит 0.2 с каста; дерево делает из него взрыв, контроль, защиту или усиление.",
+    "description": "Телепорт на короткое расстояние: 10 маны, перезарядка 6 с. Урона не наносит и маны не дает. Перемещение движком не моделируется: без узлов дерева Мерцание только тратит 0.2 с каста и ману; дерево делает из него взрыв, контроль, защиту или короткое усиление (баффы держатся не больше половины минимальной перезарядки).",
     "class_id": "sorcerer",
     "unlock_level": 16,
     "tags": ["spell", "movement"],
     "cast_time": 0.2,
     "cooldown": 6,
+    "resource_cost": 10,
     "tree": [
       {
         "id": "short_step",
@@ -2055,21 +2060,12 @@
         ]
       },
       {
-        "id": "swift_step",
-        "name": "Мгновенный шаг",
-        "description": "+20% скорости каста Мерцания за очко.",
-        "max_points": 3,
-        "effects": [
-          {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 20}
-        ]
-      },
-      {
-        "id": "ether_step",
-        "name": "Эфирный шаг",
-        "description": "Мерцание дает +3 маны за очко.",
+        "id": "light_step",
+        "name": "Легкий шаг",
+        "description": "−2 маны к стоимости Мерцания за очко.",
         "max_points": 5,
         "effects": [
-          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 3}
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -2}
         ]
       },
       {
@@ -2095,13 +2091,12 @@
       {
         "id": "frost_wake",
         "name": "Ледяной след",
-        "description": "Развилка взрыва. На месте старта остается лед: основная цель заморожена (без броска шанса) и охлаждена, чародей получает +150 брони на 3 с.",
+        "description": "Развилка взрыва. На месте старта остается лед: основная цель заморожена (без броска шанса), чародей получает +150 брони на 1.5 с.",
         "max_points": 1,
         "exclusive_group": "blink_burst",
         "effects": [
           {"type": "grant_proc", "trigger": "on_use", "action": {"apply_ailment": "freeze"}},
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_ailment": "chill"}},
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "frost_wake", "duration": 3, "modifiers": [{"stat": "armor", "kind": "flat", "value": 150}]}}}
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "frost_wake", "duration": 1.5, "modifiers": [{"stat": "armor", "kind": "flat", "value": 150}]}}}
         ]
       },
       {
@@ -2117,11 +2112,11 @@
       {
         "id": "storm_step",
         "name": "Грозовой шаг",
-        "description": "Мерцание шокирует основную цель без броска шанса (3 с), эффект этого шока +15%.",
+        "description": "Каждое 2-е Мерцание шокирует основную цель без броска шанса (3 с); эффект шока от Мерцания +10%.",
         "max_points": 1,
         "effects": [
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_ailment": "shock"}},
-          {"type": "modifier", "stat": "shock_effect", "kind": "flat", "value": 15}
+          {"type": "grant_proc", "trigger": {"every_n_uses": 2}, "action": {"apply_ailment": "shock"}},
+          {"type": "modifier", "stat": "shock_effect", "kind": "flat", "value": 10}
         ]
       },
       {
@@ -2137,65 +2132,93 @@
       {
         "id": "blink_focus",
         "name": "Фокус перемещения",
-        "description": "После Мерцания заклинания наносят +30% More урона 1.5 с (≈ следующее заклинание).",
+        "description": "После Мерцания заклинания наносят +20% More урона 1 с (≈ следующее заклинание).",
         "max_points": 1,
         "effects": [
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blink_focus", "duration": 1.5, "modifiers": [{"stat": "damage", "kind": "more", "value": 30, "tags": ["spell"]}]}}}
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blink_focus", "duration": 1, "modifiers": [{"stat": "damage", "kind": "more", "value": 20, "tags": ["spell"]}]}}}
         ]
       },
       {
         "id": "lingering_focus",
         "name": "Долгий фокус",
-        "description": "«Фокус перемещения» держится 3 с.",
+        "description": "«Фокус перемещения» держится 1.7 с.",
         "max_points": 1,
         "requires": [{"node": "blink_focus", "points": 1}],
         "effects": [
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blink_focus", "duration": 3, "modifiers": [{"stat": "damage", "kind": "more", "value": 30, "tags": ["spell"]}]}}}
-        ]
-      },
-      {
-        "id": "second_charge",
-        "name": "Второй заряд",
-        "description": "Второй заряд Мерцания: в движке +50% скорости перезарядки.",
-        "max_points": 1,
-        "effects": [
-          {"type": "modifier", "stat": "cooldown_recovery", "kind": "increased", "value": 50}
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blink_focus", "duration": 1.7, "modifiers": [{"stat": "damage", "kind": "more", "value": 20, "tags": ["spell"]}]}}}
         ]
       },
       {
         "id": "elusive",
         "name": "Неуловимость",
-        "description": "После Мерцания +25% уклонения на 2 с.",
+        "description": "После Мерцания +25% уклонения на 1.5 с.",
         "max_points": 1,
         "effects": [
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "elusive", "duration": 2, "modifiers": [{"stat": "dodge_chance", "kind": "flat", "value": 25}]}}}
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "elusive", "duration": 1.5, "modifiers": [{"stat": "dodge_chance", "kind": "flat", "value": 25}]}}}
         ]
       },
       {
         "id": "afterimage",
         "name": "Остаточный образ",
-        "description": "После Мерцания −10% получаемого урона на 3 с.",
+        "description": "После Мерцания −10% получаемого урона на 1.5 с.",
         "max_points": 1,
         "effects": [
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "afterimage", "duration": 3, "modifiers": [{"stat": "damage_taken", "kind": "flat", "value": -10}]}}}
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "afterimage", "duration": 1.5, "modifiers": [{"stat": "damage_taken", "kind": "flat", "value": -10}]}}}
+        ]
+      },
+      {
+        "id": "phase_barrier",
+        "name": "Фазовый барьер",
+        "description": "После Мерцания +15% ко всем сопротивлениям на 1.5 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "phase_barrier", "duration": 1.5, "modifiers": [{"stat": "resist_fire", "kind": "flat", "value": 15}, {"stat": "resist_cold", "kind": "flat", "value": 15}, {"stat": "resist_lightning", "kind": "flat", "value": 15}, {"stat": "resist_poison", "kind": "flat", "value": 15}]}}}
+        ]
+      },
+      {
+        "id": "ether_mend",
+        "name": "Эфирное исцеление",
+        "description": "После Мерцания +3% регенерации здоровья в секунду на 1.5 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "ether_mend", "duration": 1.5, "modifiers": [{"stat": "life_regen_pct", "kind": "flat", "value": 3}]}}}
         ]
       },
       {
         "id": "impulse",
         "name": "Импульс",
-        "description": "После Мерцания +15% скорости каста на 3 с.",
+        "description": "После Мерцания +15% скорости каста на 1.5 с.",
         "max_points": 1,
         "effects": [
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blink_impulse", "duration": 3, "modifiers": [{"stat": "cast_speed", "kind": "increased", "value": 15}]}}}
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blink_impulse", "duration": 1.5, "modifiers": [{"stat": "cast_speed", "kind": "increased", "value": 15}]}}}
         ]
       },
       {
         "id": "spark_trail",
         "name": "Искровой след",
-        "description": "Мерцание выпускает Искру: копия Искры с уроном 100% (с ее деревом, если Искра в слоте; маны не дает).",
+        "description": "Мерцание выпускает Искру: копия Искры с уроном 30% (с ее деревом, если Искра в слоте; маны не дает).",
         "max_points": 1,
         "effects": [
-          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "spark", "damage_percent": 100}}}
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "spark", "damage_percent": 30}}}
+        ]
+      },
+      {
+        "id": "twin_spark",
+        "name": "Двойная искра",
+        "description": "Искровой след выпускает вторую Искру: еще одна копия с уроном 30%.",
+        "max_points": 1,
+        "requires": [{"node": "spark_trail", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "spark", "damage_percent": 30}}}
+        ]
+      },
+      {
+        "id": "fire_exit",
+        "name": "Огненный выход",
+        "description": "Мерцание выпускает Огненный шар: копия шара с уроном 20% (с его деревом, если шар в слоте; маны не стоит и не дает). С «Пламенным кольцом» копия обновляет ту же горящую землю.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "fireball", "damage_percent": 20}}}
         ]
       }
     ]
