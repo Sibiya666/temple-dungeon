@@ -59,7 +59,7 @@ internal sealed class UseResolver
             var target = _s.Targets[ti];
             for (var h = 0; h < Math.Max(1, skill.Skill.Base.HitsPerUse); h++)
             {
-                var isCrit = _random.CritOrExpected($"crit:{skill.Id}", critChance);
+                var isCrit = _random.CritOrExpected($"crit:{skill.ChannelKey}", critChance);
                 var defense = DefenseOf(target);
                 var hit = HitCalculator.Resolve(new HitInput(skill.Character, skill.Skill, defense, _conditions, isCrit,
                     _random.InRange, _weapon));
@@ -81,7 +81,7 @@ internal sealed class UseResolver
         }
 
         // Average mode has no discrete crits: a crit "event" (recently_crit, on_crit) goes through the chance accumulator.
-        var critEvent = _rollMode ? primaryCrit == true : _random.Chance($"critevent:{skill.Id}", critChance / 100);
+        var critEvent = _rollMode ? primaryCrit == true : _random.Chance($"critevent:{skill.ChannelKey}", critChance / 100);
         if (primaryHit != null) MakeZone(skill, primaryHit, targets);
         return new UseOutcome(targets.Count, critEvent, targets);
     }
@@ -95,16 +95,16 @@ internal sealed class UseResolver
         var extra = Math.Max(0, skill.Coverage(n, _dummy.PackRadius, _conditions) - 1);
         var count = (int)Math.Floor(extra + 1e-9);
         var frac = extra - count;
-        if (frac > 1e-9 && _random.Chance($"cover:{skill.Id}", frac)) count++;
+        if (frac > 1e-9 && _random.Chance($"cover:{skill.ChannelKey}", frac)) count++;
         if (count == 0) return result;
 
-        var cursor = _cursor.GetValueOrDefault(skill.Id, primary);
+        var cursor = _cursor.GetValueOrDefault(skill.ChannelKey, primary);
         for (var step = 1; step <= n && result.Count <= count; step++)
         {
             var i = (cursor + step) % n;
             if (i == primary || !_s.IsAlive(i)) continue;
             result.Add(i);
-            _cursor[skill.Id] = i;
+            _cursor[skill.ChannelKey] = i;
         }
         return result;
     }
@@ -119,9 +119,10 @@ internal sealed class UseResolver
             if (ailBase <= 0) continue;
 
             var chance = skill.Skill.Base.AilmentChances.GetValueOrDefault(def.Id) + skill.Stat(def.ChanceStat, _conditions);
-            if (chance <= 0 || !_random.Chance($"ail:{def.Id}:{skill.Id}:{ti}", chance / 100)) continue;
+            if (chance <= 0 || !_random.Chance($"ail:{def.Id}:{skill.ChannelKey}:{ti}", chance / 100)) continue;
 
-            var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, defense, _conditions);
+            var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, defense, _conditions)
+                with { Triggered = skill.IsTriggeredCopy };
             var maxStacks = (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, 1), 0, int.MaxValue);
             target.Apply(instance, maxStacks, def.StackRule);
             _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id})");
@@ -141,7 +142,8 @@ internal sealed class UseResolver
         if (ailBase <= 0 && def.DamageFraction > 0) return false;
 
         var target = _s.Targets[ti];
-        var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, DefenseOf(target), _conditions);
+        var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, DefenseOf(target), _conditions)
+            with { Triggered = skill.IsTriggeredCopy };
         var maxStacks = (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, 1), 0, int.MaxValue);
         target.Apply(instance, maxStacks, def.StackRule);
         _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id}, proc)");
@@ -163,6 +165,9 @@ internal sealed class UseResolver
             if (v > best) { best = v; type = t; }
         }
         if (total <= 0) return;
-        _s.Zones[skill.Id] = new GroundZone(skill.Id, type, total, fraction, duration, targets.ToList());
+        _s.Zones[skill.Id] = new GroundZone(skill.Id, type, total, fraction, duration, targets.ToList())
+        {
+            Triggered = skill.IsTriggeredCopy,
+        };
     }
 }

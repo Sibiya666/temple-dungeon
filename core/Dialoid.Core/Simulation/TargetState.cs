@@ -7,6 +7,8 @@ public sealed record AilmentInstance(string AilmentId, DamageType Type, double D
 {
     /// <summary>Shock: increased damage taken %; chill: slow %; otherwise 0.</summary>
     public double Magnitude { get; init; }
+    /// <summary>Applied by a triggered copy: kills it causes fire no procs.</summary>
+    public bool Triggered { get; init; }
 }
 
 /// <summary>Mutable state of a target: life, active ailments, freeze and freeze immunity (spec 6.7).</summary>

@@ -25,6 +25,8 @@ internal sealed class SkillRuntime
     public CompiledCharacter Character { get; private set; }
     /// <summary>A triggered copy cast by a proc: costs nothing, generates nothing and never fires procs.</summary>
     public bool IsTriggeredCopy { get; }
+    /// <summary>Key of this skill's random channels and target cursor; a copy has its own so it never advances the slotted skill's accumulators.</summary>
+    public string ChannelKey => IsTriggeredCopy ? Id + "#copy" : Id;
     /// <summary>Ids of the buffs this skill itself grants on use; a buff skill is not recast while one of them is active.</summary>
     public IReadOnlyList<string> OwnBuffIds { get; }
     public string Id => Skill.SkillId;

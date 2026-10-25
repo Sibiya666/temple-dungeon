@@ -59,6 +59,7 @@ internal sealed class ProcEngine
     /// <summary>One use of a rotation skill (a channel tick counts as one): on_use and every_n_uses.</summary>
     public void OnUse(SkillRuntime skill)
     {
+        _useAilments.Clear();
         if (skill.IsTriggeredCopy) return;
         var procs = skill.Skill.Procs;
         for (var i = 0; i < procs.Count; i++)
@@ -125,7 +126,10 @@ internal sealed class ProcEngine
     }
 
     /// <summary>Damage over time or a zone tick hurt a target: remember the source for kill attribution.</summary>
-    public void NoteDamage(int targetIndex, string skillId) => _lastSource[targetIndex] = (skillId, false);
+    public void NoteDamage(int targetIndex, string skillId, bool triggered) => _lastSource[targetIndex] = (skillId, triggered);
+
+    /// <summary>The use ended: pending on_use ailments that found no hit are dropped.</summary>
+    public void EndUse() => _useAilments.Clear();
 
     /// <summary>Runs the queued triggered casts. Hooks stay silent while a copy is being cast.</summary>
     public void Flush()

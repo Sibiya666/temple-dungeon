@@ -318,6 +318,49 @@ public class ProcTests
     }
 
     [Fact]
+    public void Dot_and_zone_kills_by_a_triggered_copy_do_not_fire_on_kill()
+    {
+        // The rotation skill (spark) only echoes bolt copies; all real damage is the copies' hits and ignite DoT.
+        // Bolt is slotted with on_kill -> cast bolt, which must never fire for kills the copies cause.
+        var d = Variant(s =>
+        {
+            Free(s, "test_spark", "test_bolt");
+            Node(s, "test_bolt")["ailment_chances"] = new JsonObject { ["ignite"] = 100 };
+            Node(s, "test_bolt")["behavior"]!["ground_duration"] = 3;
+            Node(s, "test_bolt")["behavior"]!["ground_fraction"] = 40;
+            Node(s, "test_bolt")["spell_damage"] = JsonNode.Parse("{\"fire\":[1,1]}");
+            AddProc(s, "test_spark", "echo", "\"on_hit\"", CastSkill("test_bolt", 100));
+            AddProc(s, "test_bolt", "chain", "\"on_kill\"", CastSkill("test_bolt", 100));
+        });
+        var b = MageBuild(8, new[] { "test_spark" },
+            ("test_spark", 1, new[] { "echo" }), ("test_bolt", 1, new[] { "chain" }));
+        var r = Run(d, b, dummy: "test_swarm", duration: 30);
+        Assert.True(Count(r, "kill") > 0);
+        Assert.Equal(0, Count(r, "proc", "on_kill"));
+    }
+
+    [Fact]
+    public void Copy_does_not_advance_the_slotted_skills_accumulators()
+    {
+        List<double> CritProcTimes(bool withCopy)
+        {
+            var d = Variant(s =>
+            {
+                Free(s, "test_bolt");
+                Node(s, "test_bolt")["crit_chance"] = 24.68; // 25%
+                AddProc(s, "test_bolt", "crit_proc", "\"on_crit\"", Noop);
+                AddProc(s, "test_bolt", "self", "\"on_use\"", CastSkill("test_bolt", 100));
+            });
+            var nodes = withCopy ? new[] { "crit_proc", "self" } : new[] { "crit_proc" };
+            var r = Run(d, MageBuild(1 + 3, new[] { "test_bolt" }, ("test_bolt", 3, nodes)), duration: 6);
+            Assert.Equal(8, Count(r, "use"));
+            return r.Log.Where(e => e.Kind == "proc" && e.Text.Contains("on_crit")).Select(e => e.Time).ToList();
+        }
+        Assert.Equal(CritProcTimes(false), CritProcTimes(true));
+        Assert.Equal(2, CritProcTimes(true).Count);
+    }
+
+    [Fact]
     public void Apply_ailment_proc_uses_the_triggering_hit_base()
     {
         var d = Variant(s =>

@@ -51,4 +51,8 @@ internal sealed class SimState
 
 /// <summary>A ground zone (burning ground etc.): ticks a fraction of the creating hit's ailment base per second on the targets it covered.</summary>
 internal sealed record GroundZone(string SkillId, DamageType Type, double AilmentBase, double FractionPerSec, double Remaining,
-    IReadOnlyList<int> TargetIndices);
+    IReadOnlyList<int> TargetIndices)
+{
+    /// <summary>Created by a triggered copy: kills it causes fire no procs.</summary>
+    public bool Triggered { get; init; }
+}

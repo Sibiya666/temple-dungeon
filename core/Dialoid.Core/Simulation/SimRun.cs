@@ -135,6 +135,7 @@ internal sealed class SimRun
             _s.LastCritTime = t;
             OnCrit(skill);
         }
+        _procs.EndUse();
         _procs.Flush();
     }
 
@@ -148,7 +149,7 @@ internal sealed class SimRun
             var dmg = target.Tick(dt, (a, share) =>
             {
                 _ledger.AddDot(a.SourceSkillId, index, a.Type, share);
-                _procs.NoteDamage(index, a.SourceSkillId);
+                _procs.NoteDamage(index, a.SourceSkillId, a.Triggered);
             });
             if (!target.Immortal) target.Life -= dmg;
         }
@@ -166,7 +167,7 @@ internal sealed class SimRun
                     _resolver.DefenseOf(target), zone.Type, _conditions);
                 var share = dps * span;
                 _ledger.AddDot(zone.SkillId, i, zone.Type, share);
-                _procs.NoteDamage(i, zone.SkillId);
+                _procs.NoteDamage(i, zone.SkillId, zone.Triggered);
                 if (!target.Immortal) target.Life -= share;
             }
             var left = zone.Remaining - dt;
