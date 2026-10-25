@@ -19,7 +19,7 @@
     ],
     "passive_start_node": "start_warrior",
     "skills": ["cleave", "crush", "battle_cry", "whirlwind", "charge", "throwing_axe"],
-    "ascendancies": []
+    "ascendancies": ["berserker", "thunderer"]
   },
   {
     "id": "sorcerer",

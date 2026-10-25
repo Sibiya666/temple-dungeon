@@ -1,0 +1,136 @@
+[
+  {
+    "id": "berserker",
+    "name": "Берсерк",
+    "class_id": "warrior",
+    "start": {
+      "id": "berserk_frenzy",
+      "name": "Кровавое безумие",
+      "description": "Ярость больше не затухает. На 100 Ярости персонаж в «Безумии»: атаки наносят +20% урона (More), а сам он получает на 10% больше урона.",
+      "effects": [
+        { "type": "mechanic", "id": "berserk_frenzy", "params": { "fury_pct": 100, "attack_more": 20, "damage_taken": 10 } }
+      ]
+    },
+    "notables": [
+      {
+        "id": "insatiable",
+        "name": "Неутолимый",
+        "description": "Атака, оплаченная при 100 Ярости, платит здоровьем вместо Ярости: 2% максимума здоровья за каждые 10 Ярости стоимости. Ярость остается на 100, «Безумие» держится. Если здоровья не больше цены, атака платит Яростью как обычно.",
+        "effects": [
+          { "type": "mechanic", "id": "insatiable", "params": { "fury_pct": 100, "life_pct_per_10": 2 } }
+        ]
+      },
+      {
+        "id": "blood_feast",
+        "name": "Кровавый пир",
+        "description": "Максимум стаков кровотечения +7 (с 8 до 15). Каждый стак кровотечения на основной цели дает +1% скорости атаки (Increased), максимум +15%.",
+        "effects": [
+          { "type": "modifier", "stat": "bleed_max_stacks", "kind": "flat", "value": 7 },
+          { "type": "mechanic", "id": "blood_feast", "params": { "ailment": "bleed", "stat": "attack_speed", "cap": 15, "per_stack": 1 } }
+        ]
+      },
+      {
+        "id": "reckless",
+        "name": "Без оглядки",
+        "description": "Сопротивления персонажа всегда 0 (keystone может это перебить). Урон +1% (More) за каждый 1% недостающего здоровья, максимум +40%.",
+        "effects": [
+          { "type": "mechanic", "id": "reckless", "params": { "cap": 40, "more_per_pct": 1 } }
+        ]
+      },
+      {
+        "id": "whirl_rage",
+        "name": "Вихрь ярости",
+        "description": "Вихрь ничего не стоит, пока Ярость выше 50%: канал длится бесконечно. Удары Вихря идут на 10% чаще за каждую полную секунду непрерывного канала, максимум +50%.",
+        "effects": [
+          { "type": "mechanic", "id": "whirl_rage", "params": { "skill": "whirlwind", "free_above_pct": 50, "speed_per_sec": 10, "speed_cap": 50 } }
+        ]
+      },
+      {
+        "id": "flesh_rend",
+        "name": "Рассечение плоти",
+        "description": "Крит по уже кровоточащей цели накладывает дополнительный стак кровотечения (без броска шанса).",
+        "effects": [
+          { "type": "mechanic", "id": "flesh_rend", "params": { "ailment": "bleed", "extra_stacks": 1 } }
+        ]
+      },
+      {
+        "id": "battle_trance",
+        "name": "Боевой транс",
+        "description": "Пока действует бафф Боевого клича, каждая атака, попавшая в цель, дает +5 Ярости (бонусы генерации Ярости это усиливают). Бафф клича теряет бонус урона; остальные его бонусы (броня «Железного клича») остаются.",
+        "effects": [
+          { "type": "mechanic", "id": "battle_trance", "params": { "buff": "battle_cry", "fury_per_attack": 5, "suppress_stat": "damage" } }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "thunderer",
+    "name": "Громовержец",
+    "class_id": "warrior",
+    "start": {
+      "id": "storm_weapon",
+      "name": "Грозовое оружие",
+      "description": "25% физического урона атак превращается в молнию.",
+      "effects": [
+        { "type": "add_conversion", "from": "physical", "to": "lightning", "percent": 25, "scope": { "tags": ["attack"] } }
+      ]
+    },
+    "notables": [
+      {
+        "id": "discharge",
+        "name": "Разряд",
+        "description": "Сокрушение оставляет грозовую землю на 3 с: задетые цели получают 20% урона удара молнией в секунду (вместо 10% «Трещин»). Удар Сокрушения всегда накладывает шок (шанс +100%).",
+        "effects": [
+          { "type": "set_behavior", "param": "ground_duration", "value": 3, "scope": "skill:crush" },
+          { "type": "set_behavior", "param": "ground_fraction", "value": 0.2, "scope": "skill:crush" },
+          { "type": "mechanic", "id": "ground_type", "params": { "type": "lightning" }, "scope": "skill:crush" },
+          { "type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 100, "scope": "skill:crush" }
+        ]
+      },
+      {
+        "id": "chain_strike",
+        "name": "Цепной удар",
+        "description": "Атаки ближнего боя цепляют еще одну цель (+1 цепь). С «Грозовым оружием» урон молнией есть у каждой атаки. Цепь работает у атак без площади (Точный удар, Таран); площадным ударам она не добавляет целей.",
+        "effects": [
+          { "type": "add_behavior", "param": "chain_count", "delta": 1, "scope": { "tags": ["attack", "melee"] } }
+        ]
+      },
+      {
+        "id": "static_charge",
+        "name": "Статический заряд",
+        "description": "Каждое применение, нанесшее урон молнией, дает заряд (до 10); копии по проку зарядов не дают. На 10 зарядах следующий спендер наносит +100% урона (More) и сбрасывает заряды.",
+        "effects": [
+          { "type": "mechanic", "id": "static_charge", "params": { "max_charges": 10, "more": 100 } }
+        ]
+      },
+      {
+        "id": "thunder_axe",
+        "name": "Громовой топор",
+        "description": "Метательный топор становится молнией и перескакивает еще на одну цель (+1 цепь). Это действует и на возвратный топор узла «Возвращение». Весь урон топора — молния, поэтому бонусы к физическому урону и конверсии физического урона из его дерева («Грозовое лезвие», «Отравленные лезвия») на него больше не действуют.",
+        "effects": [
+          { "type": "set_damage_type", "to": "lightning", "scope": "skill:throwing_axe" },
+          { "type": "add_behavior", "param": "chain_count", "delta": 1, "scope": "skill:throwing_axe" },
+          { "type": "set_damage_type", "to": "lightning", "scope": "skill:returning_axe" },
+          { "type": "add_behavior", "param": "chain_count", "delta": 1, "scope": "skill:returning_axe" }
+        ]
+      },
+      {
+        "id": "grounding",
+        "name": "Заземление",
+        "description": "Шок, наложенный персонажем, имеет эффект не меньше 20% и длится 5 с.",
+        "effects": [
+          { "type": "mechanic", "id": "grounding", "params": { "ailment": "shock", "min_effect": 20, "duration": 5 } }
+        ]
+      },
+      {
+        "id": "storm_veins",
+        "name": "Буря в жилах",
+        "description": "Атаки пробивают 15% сопротивления молнии целей. Максимум сопротивления молнии персонажа +10%.",
+        "effects": [
+          { "type": "modifier", "stat": "penetration_lightning", "kind": "flat", "value": 15, "tags": ["attack"] },
+          { "type": "modifier", "stat": "resist_lightning_max", "kind": "flat", "value": 10 }
+        ]
+      }
+    ]
+  }
+]
