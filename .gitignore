@@ -1,0 +1,7 @@
+bin/
+obj/
+.godot/
+*.user
+.DS_Store
+TestResults/
+.superpowers/
