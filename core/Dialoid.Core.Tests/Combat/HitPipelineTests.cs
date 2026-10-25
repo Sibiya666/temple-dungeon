@@ -70,6 +70,13 @@ public class HitPipelineTests
     }
 
     [Fact]
+    public void Damage_taken_below_minus_100_deals_nothing_instead_of_healing()
+    {
+        Assert.Equal(0, Hit(Char(), Fire100(), Target(taken: -150)).Final[DamageType.Fire], 9);
+        Assert.Equal(50, Hit(Char(), Fire100(), Target(taken: -50)).Final[DamageType.Fire], 9);
+    }
+
+    [Fact]
     public void Primary_attribute_more_applies_to_hits()
     {
         var c = Char(Mod("damage", ModKind.More, 25));

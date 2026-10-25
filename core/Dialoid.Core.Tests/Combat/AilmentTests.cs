@@ -57,6 +57,13 @@ public class AilmentTests
         => Assert.Equal(22.5, AilmentCalculator.DotDps(100, Ignite, Char(), Skill("fire"), Def()), 9);
 
     [Fact]
+    public void Damage_taken_below_minus_100_makes_dots_and_zones_deal_nothing()
+    {
+        Assert.Equal(0, AilmentCalculator.DotDps(100, Ignite, Char(), Skill("fire"), Def(taken: -150)), 9);
+        Assert.Equal(0, AilmentCalculator.GroundZoneDps(100, 0.2, Char(), Skill("fire"), Def(taken: -150)), 9);
+    }
+
+    [Fact]
     public void Ailment_ignores_delivery_tag_modifiers()
     {
         var sk = Skill("spell", "fire");

@@ -71,7 +71,7 @@ public static class HitCalculator
                 input.Target.Resists.TryGetValue(p.Type, out var resist);
                 amount *= Mitigation.ResistMultiplier(resist, pen);
             }
-            amount *= 1 + input.Target.DamageTakenIncreased / 100;
+            amount *= input.Target.DamageTakenMultiplier;
 
             final[p.Type] = final.GetValueOrDefault(p.Type) + amount;
             ailment[p.Type] = ailment.GetValueOrDefault(p.Type) + ailmentBase;

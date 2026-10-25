@@ -4,7 +4,11 @@ using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Combat;
 
-public sealed record TargetDefense(double Armor, IReadOnlyDictionary<DamageType, double> Resists, double DamageTakenIncreased);
+public sealed record TargetDefense(double Armor, IReadOnlyDictionary<DamageType, double> Resists, double DamageTakenIncreased)
+{
+    /// <summary>1 + DamageTakenIncreased%, never below 0: below −100% the target takes nothing (damage never heals).</summary>
+    public double DamageTakenMultiplier => Math.Max(0, 1 + DamageTakenIncreased / 100);
+}
 
 public enum CritOutcome { Roll, Expected }
 

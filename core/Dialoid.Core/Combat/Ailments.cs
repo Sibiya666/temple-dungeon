@@ -23,7 +23,7 @@ public static class AilmentCalculator
         var mult = Math.Max(0, ch.Evaluator.Evaluate("damage", ctx, conditions, 1).Value);
         var dps = ailmentBase * def.DamageFraction / def.DurationSec * mult;
         dps *= Defense(def.SourceType, ch, ctx, t, conditions); // resist path only: bleed (physical) ignores armor
-        return dps * (1 + t.DamageTakenIncreased / 100);
+        return dps * t.DamageTakenMultiplier;
     }
 
     /// <summary>Ground zone (burning ground etc.): fraction of the ailment base per second, with the skill's own tags plus dot.</summary>
@@ -37,7 +37,7 @@ public static class AilmentCalculator
             dps *= 1 - Mitigation.ArmorReduction(t.Armor, dps);
         else
             dps *= Defense(zoneType, ch, ctx, t, conditions);
-        return dps * (1 + t.DamageTakenIncreased / 100);
+        return dps * t.DamageTakenMultiplier;
     }
 
     // Resist (with penetration) path; bleed and other DoTs never use armor.
