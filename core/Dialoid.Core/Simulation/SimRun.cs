@@ -156,7 +156,7 @@ internal sealed class SimRun
                 if (!_s.IsAlive(i)) continue;
                 var target = _s.Targets[i];
                 var dps = AilmentCalculator.GroundZoneDps(zone.AilmentBase, zone.FractionPerSec, skill.Character, skill.Skill,
-                    _resolver.DefenseOf(target), zone.Type);
+                    _resolver.DefenseOf(target), zone.Type, _conditions);
                 var share = dps * span;
                 _ledger.AddDot(zone.SkillId, i, zone.Type, share);
                 if (!target.Immortal) target.Life -= share;

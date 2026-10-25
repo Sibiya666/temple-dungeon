@@ -121,7 +121,7 @@ internal sealed class UseResolver
             var chance = skill.Skill.Base.AilmentChances.GetValueOrDefault(def.Id) + skill.Stat(def.ChanceStat, _conditions);
             if (chance <= 0 || !_random.Chance($"ail:{def.Id}:{skill.Id}:{ti}", chance / 100)) continue;
 
-            var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, defense);
+            var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, defense, _conditions);
             var maxStacks = (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, 1), 0, int.MaxValue);
             target.Apply(instance, maxStacks, def.StackRule);
             _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id})");

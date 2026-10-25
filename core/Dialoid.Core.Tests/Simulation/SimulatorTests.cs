@@ -126,7 +126,8 @@ public class SimulatorTests
         // Max mana 100 + 15 Int / 2 = 107.5; regen 5 × (1 + 2%) = 5.1/s; bolt costs 12.
         var r = Run(Tiny, Mage(1, "test_bolt"), "test_training");
         var uses = Count(r, "use");
-        Assert.InRange(uses, 33, 36); // (107.5 + 60 × 5.1) / 12 ≈ 34.5
+        // Mana available by the last step: 107.5 + 59.95 × 5.1 ≈ 413.2 → floor(413.2 / 12) = 34 casts.
+        Assert.Equal(34, uses);
         var free = Run(FreeBolt, Mage(1, "test_bolt"), "test_training");
         Assert.True(r.DpsSingleTarget < free.DpsSingleTarget * 0.5);
         Assert.Contains(r.Log, e => e.Kind == "no_resource");
@@ -394,8 +395,114 @@ public class SimulatorTests
         Assert.False(at[100]);
         Assert.True(at[200]);
         // 4 ticks per second; the node doubles tick damage from 2 s on.
-        var hits = r.Log.Where(e => e.Kind == "use").ToList();
-        Assert.Equal(12, hits.Count);
+        Assert.Equal(12, Count(r, "use"));
+        var hits = r.Log.Where(e => e.Kind == "hit").ToDictionary(e => (int)Math.Round(e.Time * 100), HitAmount);
+        Assert.Equal(hits[0], hits[175], 2);       // 1.75 s: not yet
+        Assert.Equal(2 * hits[0], hits[200], 1e-2); // 2.0 s: +100% Increased
+        Assert.Equal(2 * hits[0], hits[275], 1e-2);
+    }
+
+    private static double HitAmount(SimEvent e) =>
+        double.Parse(e.Text[(e.Text.LastIndexOf(':') + 1)..].Trim(), System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>test_bolt free, 6% crit (see FreeBolt), plus extra edits.</summary>
+    private static GameData BoltVariant(Action<JsonNode> edit) => Variant(s =>
+    {
+        var bolt = Node(s, "test_bolt");
+        bolt["resource_cost"] = 0;
+        bolt["crit_chance"] = 5.68;
+        edit(bolt);
+    });
+
+    [Fact]
+    public void Conditional_modifiers_apply_to_ailment_dot()
+    {
+        // Bolt always ignites; the node gives +100% DoT damage while the primary target is ignited.
+        var d = BoltVariant(b =>
+        {
+            b["ailment_chances"] = new JsonObject { ["ignite"] = 100 };
+            b["tree"] = JsonNode.Parse("""
+                [{"id":"bolt_burn","name":"Пламя","description":"","max_points":1,
+                  "effects":[{"type":"modifier","stat":"damage","kind":"increased","value":100,"tags":["dot"],
+                              "conditions":["target_ignited"]}]}]
+                """);
+        });
+        var plain = Run(d, Mage(1, "test_bolt"), "test_training");
+        var b = Mage(1, "test_bolt");
+        b.Slots[0].NodePoints["bolt_burn"] = 1;
+        var boosted = Run(d, b, "test_training");
+        Assert.True(plain.DotDamage > 0);
+        Assert.Equal(plain.HitDamage, boosted.HitDamage, 9); // the modifier needs the dot tag
+        // An ignite applied while the target is already ignited is doubled. Equal-strength ignites do not replace,
+        // so the doubled one runs out after 4 s and the next ignite lands on an unignited target (×1) — ratio ≈ 1.87.
+        // Without the condition context reaching the DoT the ratio would be exactly 1.
+        Assert.InRange(boosted.DotDamage / plain.DotDamage, 1.5, 2.0);
+    }
+
+    [Fact]
+    public void Ground_zone_ticks_refreshes_once_per_skill_and_expires()
+    {
+        var zonePerSec = 17 * 1.03 * 0.5 * 1.0375; // ailment base (after crit) × fraction × Int More
+        var d = BoltVariant(b => b["behavior"] = new JsonObject
+            { ["projectile_count"] = 1, ["ground_duration"] = 2, ["ground_fraction"] = 0.5 });
+        var r = Run(d, Mage(1, "test_bolt"), "test_training");
+        // Refreshed every 0.75 s (< 2 s): exactly one zone active for the whole 60 s, never stacked.
+        Assert.Equal(zonePerSec * 60, r.DotDamage, 1e-6);
+        Assert.Equal(r.HitDamage + r.DotDamage, r.DamageBySkill["test_bolt"], 1e-6);
+        Assert.Equal(r.HitDamage + r.DotDamage, r.DamageByType[DamageType.Fire], 1e-6);
+
+        // Cooldown 5 s: 12 uses, each zone lives 2 s and then expires.
+        var cd = BoltVariant(b =>
+        {
+            b["cooldown"] = 5;
+            b["behavior"] = new JsonObject { ["projectile_count"] = 1, ["ground_duration"] = 2, ["ground_fraction"] = 0.5 };
+        });
+        var r2 = Run(cd, Mage(1, "test_bolt"), "test_training");
+        Assert.Equal(12, Count(r2, "use"));
+        Assert.Equal(zonePerSec * 2 * 12, r2.DotDamage, 1e-6);
+    }
+
+    [Fact]
+    public void Shock_amplifies_following_hits()
+    {
+        var d = Variant(s => Node(s, "test_spark")["ailment_chances"] = new JsonObject { ["shock"] = 100 });
+        var plain = Run(Tiny, Mage(1, "test_spark"), "test_training");
+        var shocked = Run(d, Mage(1, "test_spark"), "test_training");
+        Assert.Equal(100, Count(shocked, "use"));
+        // First hit unshocked, the other 99 take +10% (shock_effect default 10, refreshed every 0.6 s < 3 s).
+        Assert.Equal((1 + 99 * 1.1) / 100, shocked.HitDamage / plain.HitDamage, 9);
+    }
+
+    [Fact]
+    public void Dummy_freeze_multiplier_reaches_targets()
+    {
+        var d = BoltVariant(b =>
+        {
+            b["spell_damage"] = new JsonObject { ["cold"] = new JsonArray(14, 20) };
+            b["tags"] = new JsonArray("spell", "projectile", "cold");
+            b["ailment_chances"] = new JsonObject { ["freeze"] = 100 };
+        });
+        double Freeze(string dummy)
+        {
+            double f = double.NaN;
+            Run(d, Mage(1, "test_bolt"), dummy, duration: 0.05, observe: s => f = s.Targets[0].FreezeRemaining);
+            return f;
+        }
+        Assert.Equal(1.0, Freeze("test_training"), 9);
+        Assert.Equal(0.5, Freeze("test_attacker"), 9);
+    }
+
+    [Theory]
+    [InlineData(0, 60)]
+    [InlineData(0.05, 0)]
+    [InlineData(1, 0.5)]
+    [InlineData(0.00001, 60)]
+    public void Absurd_configs_are_rejected(double step, double duration)
+    {
+        var r = new Simulator(Tiny, MechanicRegistry.Default)
+            .Run(Mage(1, "test_bolt"), new SimConfig("test_training", SimMode.Average, DurationSec: duration, StepSec: step));
+        Assert.Contains(r.Violations, v => v.Code == "invalid_sim_config");
+        Assert.Empty(r.Log);
     }
 
     [Fact]

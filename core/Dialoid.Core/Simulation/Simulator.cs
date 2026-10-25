@@ -11,6 +11,8 @@ namespace Dialoid.Core.Simulation;
 /// </summary>
 public sealed class Simulator
 {
+    public const int MaxSteps = 1_000_000;
+
     private readonly GameData _data;
     private readonly MechanicRegistry _mechanics;
 
@@ -30,6 +32,10 @@ public sealed class Simulator
             violations.Add(new RuleViolation("unknown_dummy", $"Неизвестный манекен «{config.DummyId}»"));
         if (!(config.StepSec > 0) || !(config.DurationSec > 0) || double.IsInfinity(config.DurationSec))
             violations.Add(new RuleViolation("invalid_sim_config", "Длительность и шаг симуляции должны быть положительными"));
+        else if (config.StepSec > config.DurationSec)
+            violations.Add(new RuleViolation("invalid_sim_config", "Шаг симуляции не может быть больше её длительности"));
+        else if (config.DurationSec / config.StepSec > MaxSteps)
+            violations.Add(new RuleViolation("invalid_sim_config", $"Слишком много шагов симуляции: больше {MaxSteps}"));
         if (config.PackSizeOverride is < 1 or > DummyDefinition.MaxPackSize)
             violations.Add(new RuleViolation("invalid_sim_config", $"Размер пака должен быть от 1 до {DummyDefinition.MaxPackSize}"));
         if (violations.Count > 0) return SimResult.Rejected(violations);
