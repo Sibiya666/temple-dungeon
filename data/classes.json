@@ -18,7 +18,7 @@
       { "stat": "crit_chance", "kind": "flat", "value": 0.04, "tags": ["attack"], "per": { "stat": "dex", "every": 1 } }
     ],
     "passive_start_node": "start_warrior",
-    "skills": [],
+    "skills": ["cleave", "crush", "battle_cry", "whirlwind", "charge", "throwing_axe"],
     "ascendancies": []
   },
   {
