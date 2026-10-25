@@ -287,7 +287,7 @@ public class AscendancyContentTests
         Assert.True(with > without * 1.05, $"{notable} in {build} ({metric}): {without:0} → {with:0}");
     }
 
-    private static (double FullFuryShare, double MinLifeShare) Track(Build b)
+    private static (double FullFuryShare, double MinLifeShare) Track(Build b, double seconds = 60)
     {
         var sim = new Simulator(ContentHarness.Data, MechanicRegistry.Default);
         int steps = 0, full = 0;
@@ -298,7 +298,7 @@ public class AscendancyContentTests
             if (s.Resource >= s.ResourceMax - 1e-6) full++;
             minLife = Math.Min(minLife, s.Life / s.LifeMax);
         };
-        var r = sim.Run(b, new SimConfig("training", SimMode.Average));
+        var r = sim.Run(b, new SimConfig("training", SimMode.Average, DurationSec: seconds));
         Assert.Empty(r.Violations);
         return ((double)full / steps, minLife);
     }
@@ -317,11 +317,11 @@ public class AscendancyContentTests
     }
 
     /// <summary>
-    /// No resource loop: Неутолимый turns Fury cost into life, it does not make spenders free. Life regeneration does not cover
-    /// the payments (life falls well below half in 60 s) and the attacking boss kills the character sooner.
+    /// Неутолимый turns Fury cost into life: on «Кровавый вихрь» life regeneration does not cover the payments (life falls
+    /// below half in 60 s), and the attacking boss kills the character sooner.
     /// </summary>
     [Fact]
-    public void Insatiable_is_paid_with_life_and_never_self_sustains()
+    public void Insatiable_drains_life_on_blood_whirl_and_costs_survival()
     {
         var plain = Track(BloodWhirl("battle_trance"));
         var insatiable = Track(BloodWhirl("battle_trance", "insatiable"));
@@ -332,6 +332,47 @@ public class AscendancyContentTests
         var ttdPlain = ContentHarness.Survival(BloodWhirl("battle_trance")).TimeToDeath ?? 180;
         var ttdInsatiable = ContentHarness.Survival(BloodWhirl("battle_trance", "insatiable")).TimeToDeath ?? 180;
         Assert.True(ttdInsatiable < ttdPlain * 0.8, $"time to death {ttdPlain:0.0} → {ttdInsatiable:0.0}");
+    }
+
+    /// <summary>
+    /// Allowed steady state (spec 10.4: «пока хватает здоровья и регенерации»): Железный клич + Несгибаемость + Отрывистый рев
+    /// + Неумолчный клич 5/5 and Экономное вращение 3/3 regenerate more life per cry cycle than Неутолимый takes for the
+    /// Whirlwind channel, so the life-paid frenzy holds indefinitely. It stays well below the free channel of Вихрь ярости.
+    /// </summary>
+    [Fact]
+    public void Insatiable_whirlwind_is_sustained_by_regeneration_on_iron_cry()
+    {
+        var b = Warrior50("berserker", "greataxe", "battle_trance", "insatiable");
+        b.Slots.Add(Slot("battle_cry", ("iron_cry", 1), ("unyielding", 1), ("sharp_roar", 1), ("tireless", 5)));
+        b.Slots.Add(Slot("whirlwind", ("steel_storm", 4), ("spin_up", 3), ("blade_hurricane", 1), ("thrifty_spin", 3), ("cutting_wind", 3)));
+        b.Slots.Add(Slot("cleave", ("lacerate", 3), ("deep_cut", 2), ("thirst", 3), ("heavy_hand", 4)));
+        var (full, minLife) = Track(b, 180);
+        Assert.True(full > 0.9, $"frenzy share {full:0.00}");
+        Assert.True(minLife > 0.9, $"min life {minLife:0.00}");
+        Assert.True(ContentHarness.TrainingDps(b) < ContentHarness.TrainingDps(WhirlBerserker("whirl_rage", "battle_trance")));
+    }
+
+    /// <summary>
+    /// Неутолимый with Crush in the Вихрь-берсерк rotation is dead in the sim: Crush first spends Fury before it reaches 100;
+    /// Whirlwind first keeps the free channel and Crush is never picked. Depends on the owner question (rotation option
+    /// «тратить только на полном ресурсе»).
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Insatiable_does_nothing_for_crush_in_the_whirl_berserker(bool crushFirst)
+    {
+        Build Make(params string[] n)
+        {
+            var b = WhirlBerserker(n);
+            b.Slots.Insert(2, Slot("crush", ("brute_force", 4), ("torn_earth", 3), ("bloody_harvest", 3), ("heavy_blow", 3), ("peak_fury", 1), ("stun", 1)));
+            b.Rotation = crushFirst ? new() { "battle_cry", "crush", "whirlwind", "cleave" } : new() { "battle_cry", "whirlwind", "crush", "cleave" };
+            return b;
+        }
+        var without = ContentHarness.TrainingDps(Make("whirl_rage", "battle_trance"));
+        var with = ContentHarness.TrainingDps(Make("whirl_rage", "battle_trance", "insatiable"));
+        Assert.Equal(without, with, 6);
+        Assert.Equal(1, Track(Make("whirl_rage", "battle_trance", "insatiable")).MinLifeShare, 6);
     }
 
     /// <summary>Triggered-only mini-skills (spec 8.4) are reached only through their procs: a build cannot slot them.
