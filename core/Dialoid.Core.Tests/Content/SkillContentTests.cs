@@ -4,6 +4,8 @@ using Dialoid.Core.Simulation;
 using Dialoid.Core.Effects;
 using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
+using Dialoid.Core.Passives;
+using Attr = Dialoid.Core.Character.Attribute;
 
 namespace Dialoid.Core.Tests.Content;
 
@@ -37,6 +39,9 @@ public class SkillContentTests
         var tree = Skills[skillId].Tree;
         Assert.InRange(tree.Count, 15, 22);
         Assert.True(tree.Sum(n => n.MaxPoints) >= 30, $"{skillId}: Σmax_points = {tree.Sum(n => n.MaxPoints)}");
+        var (reachable, worstPick) = WorstReachablePoints(tree);
+        var floor = SpecFixedReachableFloor.GetValueOrDefault(skillId, 28);
+        Assert.True(reachable >= floor, $"{skillId}: only {reachable} points reachable when picking {worstPick} (need {floor})");
         Assert.True(tree.Where(n => n.ExclusiveGroup != null).GroupBy(n => n.ExclusiveGroup).Any(g => g.Count() >= 2),
             $"{skillId}: no exclusive group with at least two nodes");
         var pure = tree.Where(IsPureDamageNode).Select(n => n.Id).ToList();
@@ -45,6 +50,66 @@ public class SkillContentTests
         Assert.All(tree, n => Assert.NotEmpty(n.Effects));
         Assert.All(tree, n => Assert.False(string.IsNullOrWhiteSpace(n.Description), $"{skillId}/{n.Id}: empty description"));
         Assert.Equal(tree.Count, tree.Select(n => n.Name).Distinct().Count());
+        var keystoneNames = ContentHarness.Data.Passives.Nodes.Values.Where(n => n.Kind == PassiveKind.Keystone)
+            .Select(n => n.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        Assert.All(tree, n => Assert.False(keystoneNames.Contains(n.Name), $"{skillId}/{n.Id}: «{n.Name}» is a keystone name"));
+    }
+
+    /// <summary>
+    /// Trees fixed by spec 10.3 keep the spec layout even when its forks leave fewer points (Cleave: 25, logged in BALANCE_NOTES).
+    /// Every other tree must leave at least 28 points reachable whatever the player picks in its exclusive groups.
+    /// </summary>
+    private static readonly Dictionary<string, int> SpecFixedReachableFloor = new() { ["cleave"] = 25 };
+
+    /// <summary>
+    /// The fewest points a player can still spend after picking one reachable node in every exclusive group: the other nodes of
+    /// each group are lost, and so is every node whose requirements can no longer be met. Returns the total and the worst picks.
+    /// </summary>
+    internal static (int Points, string Picks) WorstReachablePoints(IReadOnlyList<SkillTreeNode> tree)
+    {
+        var groups = tree.Where(n => n.ExclusiveGroup != null).GroupBy(n => n.ExclusiveGroup!).Select(g => g.ToList()).ToList();
+        var worst = (Points: int.MaxValue, Picks: "");
+        void Walk(int gi, List<SkillTreeNode> picks)
+        {
+            if (gi == groups.Count)
+            {
+                var banned = groups.SelectMany(g => g).Where(n => !picks.Contains(n)).Select(n => n.Id).ToHashSet();
+                var open = new HashSet<string>();
+                bool grew = true;
+                while (grew)
+                {
+                    grew = false;
+                    foreach (var n in tree)
+                        if (!banned.Contains(n.Id) && !open.Contains(n.Id) && n.Requires.All(r => open.Contains(r.NodeId)))
+                        {
+                            open.Add(n.Id);
+                            grew = true;
+                        }
+                }
+                if (picks.Any(p => !open.Contains(p.Id))) return; // a pick the player cannot reach is no choice at all
+                var pts = tree.Where(n => open.Contains(n.Id)).Sum(n => n.MaxPoints);
+                if (pts < worst.Points) worst = (pts, string.Join(", ", picks.Select(p => p.Id)));
+                return;
+            }
+            foreach (var n in groups[gi])
+            {
+                picks.Add(n);
+                Walk(gi + 1, picks);
+                picks.RemoveAt(picks.Count - 1);
+            }
+        }
+        Walk(0, new List<SkillTreeNode>());
+        return worst;
+    }
+
+    [Fact]
+    public void Worst_reachable_points_respects_forks_and_requirements()
+    {
+        // Cleave: picking «Раскол» loses «Точный удар» + «Кромка» (3), picking «Удар грома» loses «Раскаленный клинок» + «Пылающие раны» (4).
+        var (pts, picks) = WorstReachablePoints(Skills["cleave"].Tree);
+        Assert.Equal(32 - 7, pts);
+        Assert.Contains("split", picks);
+        Assert.Contains("thunder_strike", picks);
     }
 
     [Fact]
@@ -281,5 +346,86 @@ public class SkillContentTests
             var loop = ContentHarness.TrainingDps(Two(spender));
             Assert.InRange(loop / cleaveOnly, 1.1, 2.0);
         }
+    }
+
+    [Fact]
+    public void Crush_never_sustains_itself_even_at_maximum_generation_and_minimum_cost()
+    {
+        // Upper bound on Fury one Crush use can return vs the lowest cost it can reach (fix round 1, blocker 1).
+        var data = ContentHarness.Data;
+        var crush = Skills["crush"];
+        var tags = crush.Tags.With("skill:crush");
+        bool Applies(Modifier m) => m.RequiredTags.Items.All(t => tags.Contains(t) || t == "skill:crush");
+        var passiveMods = data.Passives.Nodes.Values.SelectMany(n => n.Effects).OfType<ModifierEffect>().Select(e => e.Modifier).ToList();
+        var treeMods = crush.Tree.SelectMany(n => n.Effects.OfType<ModifierEffect>().Select(e => e.Modifier with { Value = e.Modifier.Value * n.MaxPoints })).ToList();
+        var buffMods = data.Skills.Values.SelectMany(s => s.Tree).SelectMany(n => n.Effects).OfType<GrantProcEffect>()
+            .Select(p => p.Action).OfType<ProcAction.ApplyBuff>().SelectMany(b => b.Mods).ToList();
+        var all = passiveMods.Concat(treeMods).Concat(buffMods).Where(Applies).ToList();
+        double Sum(string stat, ModKind kind, Func<double, bool> sign) => all.Where(m => m.Stat == stat && m.Kind == kind && sign(m.Value)).Sum(m => m.Value);
+
+        // Will at 60: class base + 59 levels + every attribute node of the tree put into Will (unreachable together: a generous bound).
+        var warrior = data.Classes["warrior"];
+        var attributeNodes = data.Passives.Nodes.Values.Count(n => n.Kind == PassiveKind.Attribute);
+        var will = warrior.BaseAttributes[Attr.Will] + 59 + 5.0 * attributeNodes;
+        var willGen = data.AttributeRules.Bonuses.Where(b => b.Attribute == Attr.Will && b.Stat == "resource_gen").Sum(b => b.ValuePerPoint)
+                      + warrior.ClassBonuses.Where(m => m.Stat == "resource_gen" && m.Per?.Stat == "will").Sum(m => m.Value / m.Per!.Every);
+        const double battleTranceFlat = 5; // Berserker «Боевой транс»: +5 Fury per attack while the cry is up
+        var maxGain = (crush.Base.ResourceGain + Sum("resource_gen", ModKind.Flat, v => v > 0) + battleTranceFlat)
+                      * (1 + (Sum("resource_gen", ModKind.Increased, v => v > 0) + willGen * will) / 100);
+        var minCost = (crush.Base.ResourceCost + Sum("resource_cost", ModKind.Flat, v => v < 0))
+                      * (1 + Sum("resource_cost", ModKind.Increased, v => v < 0) / 100);
+        Assert.True(maxGain < minCost * 0.95, $"Crush returns up to {maxGain:0.#} Fury for a minimum cost of {minCost:0.#}");
+    }
+
+    private static Build Axe(string fork, int level = 1)
+    {
+        var slot = new SkillSlot { SkillId = "throwing_axe", Level = level, NodePoints = { [fork] = 1 } };
+        return new Build { ClassId = "warrior", Level = 20, WeaponId = "sword", Slots = { slot } };
+    }
+
+    /// <summary>Fury per second of a lone generator: gain per use × uses per second (attack speed and time multiplier).</summary>
+    private static double FuryPerSecond(Build b, string skillId)
+    {
+        var ch = new CharacterCompiler(ContentHarness.Data, MechanicRegistry.Default).Compile(b);
+        var sk = ch.Skills.Single(s => s.SkillId == skillId);
+        var ev = ch.Evaluator.WithExtra(sk.Modifiers);
+        var gain = ev.Evaluate("resource_gen", sk.Tags, null, sk.ResourceGain).Value;
+        var speed = ev.Evaluate("attack_speed", sk.Tags, null, 1).Value;
+        return gain * ContentHarness.Data.Weapons[b.WeaponId!].AttacksPerSecond * speed / sk.Base.AttackTimeMultiplier;
+    }
+
+    [Fact]
+    public void Each_axe_flight_option_wins_its_own_scenario()
+    {
+        string[] forks = { "returning", "axe_fan", "boomerang" };
+        string Best(Func<string, double> score) => forks.OrderByDescending(score).First();
+
+        Assert.Equal("returning", Best(f => ContentHarness.TrainingDps(Axe(f))));                 // single target
+        Assert.Equal("axe_fan", Best(f => ContentHarness.Run(Axe(f), "swarm").DpsPack));          // pack of 5
+        Assert.Equal("boomerang", Best(f => FuryPerSecond(Axe(f), "throwing_axe")));             // Fury per second
+        // The returning axe hits only the primary target even with extra axes and pierce on the main throw.
+        var multi = new Build { ClassId = "warrior", Level = 20, WeaponId = "sword", Slots =
+        {
+            new SkillSlot { SkillId = "throwing_axe", Level = 9, NodePoints = { ["returning"] = 1, ["whetstone"] = 2, ["spare_axe"] = 2, ["piercing_throw"] = 3, ["catch"] = 1 } },
+        } };
+        var r = ContentHarness.Run(multi, "swarm");
+        var copyHits = r.Log.Count(e => e.Kind == "hit" && e.Text.StartsWith("returning_axe", StringComparison.Ordinal));
+        var uses = r.Log.Count(e => e is { Kind: "use", Text: "throwing_axe" });
+        Assert.Equal(uses, copyHits);
+    }
+
+    [Fact]
+    public void Whirlwind_ramp_pays_off_in_a_spender_rotation()
+    {
+        Build Ww(params (string, int)[] nodes)
+        {
+            var slot = new SkillSlot { SkillId = "whirlwind", Level = 4 };
+            foreach (var (n, p) in nodes) slot.NodePoints[n] = p;
+            return new Build { ClassId = "warrior", Level = 20, WeaponId = "greataxe",
+                Slots = { slot, new SkillSlot { SkillId = "cleave", Level = 1 } } };
+        }
+        var plain = SkillDamage(Ww(("wide_circle", 3), ("steel_cocoon", 1)), "whirlwind");
+        var ramp = SkillDamage(Ww(("spin_up", 3), ("blade_hurricane", 1)), "whirlwind");
+        Assert.True(ramp / plain > 1.15, $"ramp ×{ramp / plain:0.###}");
     }
 }
