@@ -29,6 +29,20 @@ public class DataLoaderTests
     }
 
     [Fact]
+    public void Multiplier_stats_default_to_1_and_never_go_negative()
+    {
+        foreach (var dir in new[] { FixturePaths.RealData, FixturePaths.Tiny })
+        {
+            var stats = DataLoader.Load(dir).Data!.Stats;
+            foreach (var id in new[] { "cast_speed", "attack_speed", "cooldown_recovery", "area", "freeze_duration", "damage" })
+            {
+                Assert.Equal(1, stats[id].Default);
+                Assert.Equal(0, stats[id].Min);
+            }
+        }
+    }
+
+    [Fact]
     public void Missing_file_reports_error_with_file_name()
     {
         var dir = FixturePaths.CopyTiny();

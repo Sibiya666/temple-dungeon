@@ -106,7 +106,7 @@
   {
     "id": "damage",
     "name": "Урон",
-    "default": 0,
+    "default": 1,
     "min": 0,
     "max": 1000000000.0,
     "display": "number"
@@ -210,24 +210,24 @@
   {
     "id": "attack_speed",
     "name": "Скорость атаки",
-    "default": 0,
-    "min": -1000000000.0,
+    "default": 1,
+    "min": 0,
     "max": 1000000000.0,
     "display": "percent"
   },
   {
     "id": "cast_speed",
     "name": "Скорость заклинаний",
-    "default": 0,
-    "min": -1000000000.0,
+    "default": 1,
+    "min": 0,
     "max": 1000000000.0,
     "display": "percent"
   },
   {
     "id": "area",
     "name": "Область действия",
-    "default": 0,
-    "min": -1000000000.0,
+    "default": 1,
+    "min": 0,
     "max": 1000000000.0,
     "display": "percent"
   },
@@ -242,8 +242,8 @@
   {
     "id": "cooldown_recovery",
     "name": "Скорость перезарядки",
-    "default": 0,
-    "min": -1000000000.0,
+    "default": 1,
+    "min": 0,
     "max": 1000000000.0,
     "display": "percent"
   },
@@ -450,8 +450,8 @@
   {
     "id": "freeze_duration",
     "name": "Длительность заморозки",
-    "default": 0,
-    "min": -1000000000.0,
+    "default": 1,
+    "min": 0,
     "max": 1000000000.0,
     "display": "percent"
   },
