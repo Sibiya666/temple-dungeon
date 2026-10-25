@@ -2,7 +2,9 @@ using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Combat;
 
-/// <summary>Spec 6.1: base damage -> conversion -> modifiers -> crit -> defense -> damage taken. Ailment base is taken after modifiers and crit, before defense and damage taken.</summary>
+/// <summary>Spec 6.1: base damage -> conversion -> modifiers -> crit -> defense -> damage taken. The ailment base is taken after
+/// base damage, conversion and crit, before damage modifiers, defense and damage taken (spec 6.1 item 7: ailments apply their own
+/// modifiers once, no double dipping).</summary>
 public static class HitCalculator
 {
     /// <summary>Context tag present only when the damage of a hit is evaluated (never for DoTs or zones): "+X% to hits" modifiers require it.</summary>

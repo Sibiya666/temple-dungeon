@@ -10,8 +10,6 @@ public sealed record TargetDefense(double Armor, IReadOnlyDictionary<DamageType,
     public double DamageTakenMultiplier => Math.Max(0, 1 + DamageTakenIncreased / 100);
 }
 
-public enum CritOutcome { Roll, Expected }
-
 /// <param name="IsCrit">null = expected value; true/false = forced outcome.</param>
 /// <param name="Weapon">Equipped weapon (the compiled character does not carry it); required for attack skills.</param>
 public sealed record HitInput(CompiledCharacter Character, CompiledSkill Skill, TargetDefense Target,

@@ -32,7 +32,6 @@ internal sealed class ProcEngine
     private readonly Dictionary<(string Skill, int Level, double Percent), SkillRuntime> _copies = new();
     private readonly CompilationContext _compileContext;
     private readonly MechanicRegistry _mechanics;
-    private bool _castingTriggered;
 
     public ProcEngine(GameData data, CompiledCharacter character, Dictionary<string, SkillRuntime> skills, SimState s,
         UseResolver resolver, SimLog log, WeaponStub? weapon, MechanicRegistry mechanics)
@@ -150,9 +149,7 @@ internal sealed class ProcEngine
             if (copy == null || !copy.WeaponFits(_weapon)) continue;
             if (copy.Skill.Procs.Count > 0)
                 _log.Add(_s.Time, "proc_blocked", $"{copy.Id}: triggered copy fires no procs");
-            _castingTriggered = true;
-            try { _resolver.Apply(copy); }
-            finally { _castingTriggered = false; }
+            _resolver.Apply(copy); // a copy's hooks never fire procs: every proc hook returns early for triggered copies
         }
     }
 
@@ -193,7 +190,6 @@ internal sealed class ProcEngine
 
     private void Fire(SkillRuntime source, GrantProcEffect proc, IReadOnlyDictionary<DamageType, double>? hitBase, int hitTarget)
     {
-        if (_castingTriggered) return; // runtime guard: never reached through the hooks, kept as a hard stop
         Log(source, proc);
         switch (proc.Action)
         {

@@ -21,7 +21,6 @@ public sealed class TargetState
 
     public double Life, MaxLife;
     public bool Immortal;
-    public TargetDefense Defense = new(0, new Dictionary<DamageType, double>(), 0);
     public double FreezeRemaining, FreezeImmunityRemaining;
     /// <summary>Scales applied freeze durations; the simulator sets it from the dummy (boss = 0.5).</summary>
     public double FreezeDurationMultiplier = 1.0;

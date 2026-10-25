@@ -6,7 +6,8 @@ public static class Coverage
     public static double AreaTargets(int pack, double radius, double packRadius = 4.0)
     {
         if (pack <= 1) return 1;
-        var f = Math.Min(1.0, Math.Pow(radius / packRadius, 2));
+        var ratio = radius / packRadius;
+        var f = Math.Min(1.0, ratio * ratio);
         return 1 + (pack - 1) * f;
     }
 
