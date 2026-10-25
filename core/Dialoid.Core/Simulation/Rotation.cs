@@ -31,6 +31,7 @@ internal sealed class Rotation
         {
             if (s.CooldownReadyAt.TryGetValue(skill.Id, out var ready) && ready > s.Time + Eps) continue;
             if (!skill.WeaponFits(weapon)) continue;
+            if (skill.OwnBuffIds.Any(id => s.Buffs.TryGetValue(id, out var left) && left > 0)) continue; // buff still running
             if (skill.Cost(c) > s.Resource + Eps) continue;
             return skill;
         }

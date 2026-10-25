@@ -19,7 +19,7 @@ internal sealed class SimRun
     private readonly WeaponStub? _weapon;
     private readonly ResourceDefinition _resource;
     private readonly bool _regenAvailable;
-    private readonly IReadOnlyDictionary<string, SkillRuntime> _skills;
+    private readonly Dictionary<string, SkillRuntime> _skills;
     private readonly Rotation _rotation;
     private readonly DummyDefinition _dummy;
     private readonly SimConfig _config;
@@ -28,6 +28,7 @@ internal sealed class SimRun
     private readonly SimLog _log = new();
     private readonly DamageLedger _ledger;
     private readonly UseResolver _resolver;
+    private readonly ProcEngine _procs;
     private bool _idle;
 
     private readonly IRandomSource _random;
@@ -58,6 +59,7 @@ internal sealed class SimRun
         {
             OnHit = OnHit,
         };
+        _procs = new ProcEngine(data, character, _skills, _s, _resolver, _log, weapon);
 
         var ev = character.Evaluator;
         _s.LifeMax = _s.Life = data.Stats.ContainsKey("life") ? ev.Evaluate("life", default).Value : 0;
@@ -133,6 +135,7 @@ internal sealed class SimRun
             _s.LastCritTime = t;
             OnCrit(skill);
         }
+        _procs.Flush();
     }
 
     private void TickTargets(double dt)
@@ -142,7 +145,11 @@ internal sealed class SimRun
             if (!_s.IsAlive(i)) continue;
             var target = _s.Targets[i];
             var index = i;
-            var dmg = target.Tick(dt, (a, share) => _ledger.AddDot(a.SourceSkillId, index, a.Type, share));
+            var dmg = target.Tick(dt, (a, share) =>
+            {
+                _ledger.AddDot(a.SourceSkillId, index, a.Type, share);
+                _procs.NoteDamage(index, a.SourceSkillId);
+            });
             if (!target.Immortal) target.Life -= dmg;
         }
 
@@ -159,6 +166,7 @@ internal sealed class SimRun
                     _resolver.DefenseOf(target), zone.Type, _conditions);
                 var share = dps * span;
                 _ledger.AddDot(zone.SkillId, i, zone.Type, share);
+                _procs.NoteDamage(i, zone.SkillId);
                 if (!target.Immortal) target.Life -= share;
             }
             var left = zone.Remaining - dt;
@@ -170,7 +178,7 @@ internal sealed class SimRun
     private void TickResource(double t, double dt)
     {
         var r = _s.Resource;
-        if (_regenAvailable) r += _character.Evaluator.Evaluate("resource_regen", default, _conditions).Value * dt;
+        if (_regenAvailable) r += _procs.Evaluator.Evaluate("resource_regen", default, _conditions).Value * dt;
         if (_resource.DecayPerSec > 0 && (_s.LastHitTime is not { } last || t - last >= _resource.DecayDelaySec - Eps))
             r -= _resource.DecayPerSec * dt;
         _s.Resource = Math.Clamp(r, 0, _s.ResourceMax);
@@ -178,12 +186,14 @@ internal sealed class SimRun
 
     private void TickBuffs(double dt)
     {
+        var expired = false;
         foreach (var id in _s.Buffs.Keys.ToList())
         {
             var left = _s.Buffs[id] - dt;
-            if (left <= Eps) _s.Buffs.Remove(id);
+            if (left <= Eps) { _s.Buffs.Remove(id); expired = true; }
             else _s.Buffs[id] = left;
         }
+        if (expired) _procs.RefreshBuffs();
     }
 
     /// <summary>Logs kills, clears ailments, respawns when the dummy respawns. Returns true when every target is dead for good.</summary>
@@ -198,22 +208,24 @@ internal sealed class SimRun
             target.Reset();
             if (!_dummy.Respawn) _s.Dead[i] = true;
         }
+        _procs.Flush();
         return !_dummy.Respawn && _s.PrimaryIndex < 0;
     }
 
-    // ---- Hook points. Procs/triggers arrive in Task 14, the dummy's attacks (defensive mode) in Task 15. ----
+    // ---- Hook points. Procs are handled by ProcEngine (Task 14); the dummy's attacks (defensive mode) come in Task 15. ----
 
-    /// <summary>Task 14: on_use / every_n_uses procs.</summary>
-    private void OnUse(SkillRuntime skill) { }
+    /// <summary>on_use / every_n_uses procs.</summary>
+    private void OnUse(SkillRuntime skill) => _procs.OnUse(skill);
 
-    /// <summary>Task 14: on_hit / every_n_hits procs (on_hit fires once per use, for the first hit on the primary target).</summary>
-    private void OnHit(SkillRuntime skill, int targetIndex, HitResult hit, bool firstOnPrimary) { }
+    /// <summary>on_hit / every_n_hits procs (on_hit fires once per use, for the first hit on the primary target).</summary>
+    private void OnHit(SkillRuntime skill, int targetIndex, HitResult hit, bool firstOnPrimary) =>
+        _procs.OnHit(skill, targetIndex, hit, firstOnPrimary);
 
-    /// <summary>Task 14: on_crit procs (once per use, primary target).</summary>
-    private void OnCrit(SkillRuntime skill) { }
+    /// <summary>on_crit procs (once per use, primary target).</summary>
+    private void OnCrit(SkillRuntime skill) => _procs.OnCrit(skill);
 
-    /// <summary>Task 14: on_kill procs and "on death" mechanics. Never fires for immortal dummies.</summary>
-    private void OnKill(int targetIndex) { }
+    /// <summary>on_kill procs and "on death" mechanics (Task 16). Never fires for immortal dummies.</summary>
+    private void OnKill(int targetIndex) => _procs.OnKill(targetIndex);
 
     /// <summary>Task 15: the dummy attacks the character (uses _dummy.Attack, freeze skips attacks, TimeToDeath, SurvivalCapSec).</summary>
     private void DummyAttackStep(double t, double dt) { }

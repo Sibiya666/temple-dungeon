@@ -160,15 +160,15 @@ public static class Validator
     private static void CheckEffectReferences(GameData data, MechanicRegistry mechanics, List<DataError> errors)
     {
         foreach (var n in data.Passives.Nodes.Values)
-            CheckEffects("passives.json", n.Id, n.Effects, null);
+            CheckEffects("passives.json", n.Id, n.Effects, null, null);
         foreach (var a in data.Ascendancies.Values)
             foreach (var node in a.Notables.Prepend(a.Start))
-                CheckEffects("ascendancies.json", a.Id, node.Effects, node.Id);
+                CheckEffects("ascendancies.json", a.Id, node.Effects, node.Id, null);
         foreach (var sk in data.Skills.Values)
             foreach (var node in sk.Tree)
-                CheckEffects("skills.json", sk.Id, node.Effects, node.Id);
+                CheckEffects("skills.json", sk.Id, node.Effects, node.Id, sk);
 
-        void CheckEffects(string file, string ownerId, IReadOnlyList<Effect> effects, string? nodeId)
+        void CheckEffects(string file, string ownerId, IReadOnlyList<Effect> effects, string? nodeId, SkillDefinition? owner)
         {
             var where = nodeId == null ? "" : $"Узел «{nodeId}»: ";
             foreach (var e in effects)
@@ -184,7 +184,39 @@ public static class Validator
                     case MechanicEffect mech when !mechanics.Contains(mech.MechanicId):
                         errors.Add(new DataError(file, ownerId, $"{where}неизвестная механика «{mech.MechanicId}»"));
                         break;
+                    case GrantProcEffect proc:
+                        CheckProcEffect(data, proc, file, ownerId, where, owner, errors);
+                        break;
                 }
+        }
+    }
+
+    private static bool IsTriggeredOnly(SkillDefinition sk) => sk.IsTriggeredOnly || sk.Tags.Contains("triggered");
+
+    private static void CheckProcEffect(GameData data, GrantProcEffect proc, string file, string ownerId, string where,
+        SkillDefinition? owner, List<DataError> errors)
+    {
+        // Loop protection (spec 8.4): a triggered skill never grants or fires procs.
+        var target = owner ?? (proc.Scope is Scope.Skill s && data.Skills.TryGetValue(s.SkillId, out var sk) ? sk : null);
+        if (target != null && IsTriggeredOnly(target))
+            errors.Add(new DataError(file, ownerId,
+                $"{where}скилл «{target.Id}» помечен как triggered: он никогда не запускает проки, GrantProc на нём запрещён"));
+        switch (proc.Action)
+        {
+            case ProcAction.CastSkill cast when !data.Skills.ContainsKey(cast.SkillId):
+                errors.Add(new DataError(file, ownerId, $"{where}прок запускает неизвестный скилл «{cast.SkillId}»"));
+                break;
+            case ProcAction.ApplyAilment ail when !data.Ailments.ContainsKey(ail.AilmentId):
+                errors.Add(new DataError(file, ownerId, $"{where}прок накладывает неизвестный недуг «{ail.AilmentId}»"));
+                break;
+            case ProcAction.ApplyBuff buff:
+                foreach (var m in buff.Mods)
+                {
+                    if (!data.Stats.ContainsKey(m.Stat))
+                        errors.Add(new DataError(file, ownerId, $"{where}бафф «{buff.BuffId}»: неизвестный стат «{m.Stat}»"));
+                    CheckConditions(m, file, ownerId, $"{where}бафф «{buff.BuffId}»: ", errors);
+                }
+                break;
         }
     }
 

@@ -1,6 +1,7 @@
 using Dialoid.Core.Character;
 using Dialoid.Core.Combat;
 using Dialoid.Core.Data;
+using Dialoid.Core.Effects;
 using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
@@ -16,9 +17,16 @@ internal sealed class SkillRuntime
 
     private readonly GameData _data;
 
+    private readonly CompiledCharacter _baseCharacter;
+    private readonly StatEvaluator _skillEvaluator;
+
     public CompiledSkill Skill { get; }
-    /// <summary>The compiled character whose evaluator also holds this skill's tree/scoped modifiers.</summary>
-    public CompiledCharacter Character { get; }
+    /// <summary>The compiled character whose evaluator also holds this skill's tree/scoped modifiers and the active buffs.</summary>
+    public CompiledCharacter Character { get; private set; }
+    /// <summary>A triggered copy cast by a proc: costs nothing, generates nothing and never fires procs.</summary>
+    public bool IsTriggeredCopy { get; }
+    /// <summary>Ids of the buffs this skill itself grants on use; a buff skill is not recast while one of them is active.</summary>
+    public IReadOnlyList<string> OwnBuffIds { get; }
     public string Id => Skill.SkillId;
     public TagSet Tags => Skill.Tags;
     public bool IsAttack => Skill.Base.WeaponEffectiveness != null;
@@ -26,14 +34,25 @@ internal sealed class SkillRuntime
     public bool IsGenerator => Tags.Contains("generator");
     public bool IsTriggeredOnly { get; }
 
-    public SkillRuntime(GameData data, CompiledCharacter character, CompiledSkill skill)
+    public SkillRuntime(GameData data, CompiledCharacter character, CompiledSkill skill, bool isTriggeredCopy = false)
     {
         _data = data;
         Skill = skill;
-        Character = character with { Evaluator = character.Evaluator.WithExtra(skill.Modifiers) };
+        IsTriggeredCopy = isTriggeredCopy;
+        _baseCharacter = character;
+        _skillEvaluator = character.Evaluator.WithExtra(skill.Modifiers);
+        Character = character with { Evaluator = _skillEvaluator };
+        OwnBuffIds = skill.Tags.Contains("buff")
+            ? skill.Procs.Where(p => p.Trigger is Trigger.OnUse && p.Action is ProcAction.ApplyBuff)
+                .Select(p => ((ProcAction.ApplyBuff)p.Action).BuffId).Distinct().ToList()
+            : Array.Empty<string>();
         IsTriggeredOnly = Tags.Contains("triggered")
                           || (data.Skills.TryGetValue(skill.SkillId, out var def) && def.IsTriggeredOnly);
     }
+
+    /// <summary>Replaces the active buff modifiers that join this skill's evaluator (empty list: no buffs).</summary>
+    public void SetBuffs(IReadOnlyList<Modifier> buffMods) =>
+        Character = _baseCharacter with { Evaluator = buffMods.Count == 0 ? _skillEvaluator : _skillEvaluator.WithExtra(buffMods) };
 
     /// <summary>Evaluates a stat for this skill; a stat missing from the data yields <paramref name="baseValue"/> (or 0).</summary>
     public double Stat(string stat, IConditionContext? c, double? baseValue = null) =>

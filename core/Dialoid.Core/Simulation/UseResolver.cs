@@ -128,6 +128,26 @@ internal sealed class UseResolver
         }
     }
 
+    /// <summary>Proc ailment (spec 8.4): no chance roll. The base comes from the triggering hit; a damaging ailment with no base is skipped.</summary>
+    public bool ForceAilment(SkillRuntime skill, int ti, AilmentDefinition def, IReadOnlyDictionary<DamageType, double>? hitBase)
+    {
+        double ailBase = 0;
+        if (hitBase != null)
+        {
+            ailBase = hitBase.GetValueOrDefault(def.SourceType);
+            if (def.Id == "poison" && def.SourceType != DamageType.Physical)
+                ailBase += hitBase.GetValueOrDefault(DamageType.Physical);
+        }
+        if (ailBase <= 0 && def.DamageFraction > 0) return false;
+
+        var target = _s.Targets[ti];
+        var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, DefenseOf(target), _conditions);
+        var maxStacks = (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, 1), 0, int.MaxValue);
+        target.Apply(instance, maxStacks, def.StackRule);
+        _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id}, proc)");
+        return true;
+    }
+
     /// <summary>Behavior ground_duration/ground_fraction: one zone per skill, refreshed by each use, covering the same targets as the hit.
     /// Its base is the primary hit's total ailment base; its damage type is the largest share of that base.</summary>
     private void MakeZone(SkillRuntime skill, HitResult hit, IReadOnlyList<int> targets)
