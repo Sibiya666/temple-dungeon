@@ -2,7 +2,10 @@ using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Simulation;
 
-/// <summary>Evaluates the spec 4.5 condition catalog from simulation state. target_* conditions refer to the primary target.</summary>
+/// <summary>
+/// Evaluates the spec 4.5 condition catalog from simulation state. target_* conditions refer to the target being hit while
+/// a hit (or its ailments) is resolved (<see cref="HitTarget"/>), otherwise to the primary target.
+/// </summary>
 internal sealed class SimConditionContext : IConditionContext
 {
     public const double RecentlySec = 4;
@@ -11,6 +14,9 @@ internal sealed class SimConditionContext : IConditionContext
     private readonly SimState _s;
 
     public SimConditionContext(SimState state) => _s = state;
+
+    /// <summary>Index of the target being hit (set by the use resolver around one hit); null: target_* use the primary target.</summary>
+    public int? HitTarget { get; set; }
 
     public bool IsMet(Condition c) => c.Id switch
     {
@@ -30,7 +36,8 @@ internal sealed class SimConditionContext : IConditionContext
         _ => false, // the validator rejects unknown ids
     };
 
-    private bool PrimaryHas(string ailmentId) => _s.Primary?.HasAilment(ailmentId) ?? false;
+    private bool PrimaryHas(string ailmentId) =>
+        HitTarget is { } i ? _s.Targets[i].HasAilment(ailmentId) : _s.Primary?.HasAilment(ailmentId) ?? false;
 
     private bool RecentlyUsed(string? skillId, double window)
     {

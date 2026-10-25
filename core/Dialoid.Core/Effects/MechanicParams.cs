@@ -13,6 +13,16 @@ public static class MechanicParams
             : throw new ArgumentException($"Mechanic '{e.MechanicId}': param '{name}' must be a number.");
     }
 
+    /// <summary>A list of strings: a JSON array of strings, or one string (one item).</summary>
+    public static IReadOnlyList<string> Texts(MechanicEffect e, string name, IReadOnlyList<string> fallback)
+    {
+        if (!e.Params.TryGetValue(name, out var v)) return fallback;
+        if (v.ValueKind == JsonValueKind.String) return new[] { v.GetString()! };
+        if (v.ValueKind == JsonValueKind.Array && v.EnumerateArray().All(x => x.ValueKind == JsonValueKind.String))
+            return v.EnumerateArray().Select(x => x.GetString()!).ToList();
+        throw new ArgumentException($"Mechanic '{e.MechanicId}': param '{name}' must be a string or an array of strings.");
+    }
+
     public static string Text(MechanicEffect e, string name, string fallback)
     {
         if (!e.Params.TryGetValue(name, out var v)) return fallback;

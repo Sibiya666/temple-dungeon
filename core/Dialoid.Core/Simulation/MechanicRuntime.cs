@@ -54,6 +54,13 @@ internal sealed class MechanicRuntime
         return ailment;
     }
 
+    /// <summary>Tells every mechanic of the skill that an ailment instance landed on the target.</summary>
+    public void AilmentLanded(SkillRuntime skill, int target, AilmentInstance ailment)
+    {
+        foreach (var (m, e, src) in For(skill))
+            m.OnAilmentApplied(Ctx(e, src, skill, skill.IsTriggeredCopy, target), ailment);
+    }
+
     /// <summary>Global mechanics tick once; a scoped mechanic ticks once per slotted skill carrying it.</summary>
     public void Tick(double dt)
     {

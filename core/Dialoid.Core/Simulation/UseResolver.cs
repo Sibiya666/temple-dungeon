@@ -32,6 +32,9 @@ internal sealed class UseResolver
     /// <summary>Called before an ailment instance lands: (skill, target index, instance) → instance to apply. Mechanic hook point.</summary>
     public Func<SkillRuntime, int, AilmentInstance, AilmentInstance>? OnAilment;
 
+    /// <summary>Called after an ailment instance actually landed (the target's stacking rule accepted it). Mechanic hook point.</summary>
+    public Action<SkillRuntime, int, AilmentInstance>? OnAilmentLanded;
+
     public UseResolver(SimState s, DummyDefinition dummy, WeaponStub? weapon, IRandomSource random, SimConditionContext conditions,
         DamageLedger ledger, SimLog log, GameData data, bool rollMode)
     {
@@ -61,27 +64,18 @@ internal sealed class UseResolver
 
         foreach (var ti in targets)
         {
-            var target = _s.Targets[ti];
             for (var h = 0; h < Math.Max(1, skill.Skill.Base.HitsPerUse); h++)
             {
-                var isCrit = _random.CritOrExpected($"crit:{skill.ChannelKey}", critChance);
-                var defense = DefenseOf(target);
-                var hit = HitCalculator.Resolve(new HitInput(skill.Character, skill.Skill, defense, _conditions, isCrit,
-                    _random.InRange, _weapon));
-                double total = 0;
-                foreach (var (type, amount) in hit.Final)
+                // target_* conditions refer to this target while its hit, hooks and ailments are resolved.
+                var outer = _conditions.HitTarget;
+                _conditions.HitTarget = ti;
+                try
                 {
-                    _ledger.AddHit(skill.Id, ti, type, amount);
-                    total += amount;
+                    bool first = ti == primary && h == 0;
+                    var (hit, isCrit) = ResolveHit(skill, ti, critChance, first);
+                    if (first) { primaryHit = hit; primaryCrit = isCrit; }
                 }
-                if (!target.Immortal) target.Life -= total;
-                _log.Add(_s.Time, "hit", $"{skill.Id} -> #{ti}: {SimLog.Num(total)}");
-                if (isCrit == true) _log.Add(_s.Time, "crit", $"{skill.Id} -> #{ti}");
-
-                bool first = ti == primary && h == 0;
-                if (first) { primaryHit = hit; primaryCrit = isCrit; }
-                OnHit?.Invoke(skill, ti, hit, first);
-                ApplyAilments(skill, ti, target, hit, defense);
+                finally { _conditions.HitTarget = outer; }
             }
         }
 
@@ -89,6 +83,29 @@ internal sealed class UseResolver
         var critEvent = _rollMode ? primaryCrit == true : _random.Chance($"critevent:{skill.ChannelKey}", critChance / 100);
         if (primaryHit != null) MakeZone(skill, primaryHit, targets);
         return new UseOutcome(targets.Count, critEvent, targets);
+    }
+
+    /// <summary>One hit on one target: damage, log, the hit hook, then the hit's ailments.</summary>
+    private (HitResult Hit, bool? IsCrit) ResolveHit(SkillRuntime skill, int ti, double critChance, bool first)
+    {
+        var target = _s.Targets[ti];
+        var isCrit = _random.CritOrExpected($"crit:{skill.ChannelKey}", critChance);
+        var defense = DefenseOf(target);
+        var hit = HitCalculator.Resolve(new HitInput(skill.Character, skill.Skill, defense, _conditions, isCrit,
+            _random.InRange, _weapon));
+        double total = 0;
+        foreach (var (type, amount) in hit.Final)
+        {
+            _ledger.AddHit(skill.Id, ti, type, amount);
+            total += amount;
+        }
+        if (!target.Immortal) target.Life -= total;
+        _log.Add(_s.Time, "hit", $"{skill.Id} -> #{ti}: {SimLog.Num(total)}");
+        if (isCrit == true) _log.Add(_s.Time, "crit", $"{skill.Id} -> #{ti}");
+
+        OnHit?.Invoke(skill, ti, hit, first);
+        ApplyAilments(skill, ti, target, hit, defense);
+        return (hit, isCrit);
     }
 
     /// <summary>Primary target plus floor(C−1) others; the fractional part goes through the chance channel cover:&lt;skill&gt;
@@ -135,13 +152,33 @@ internal sealed class UseResolver
         }
     }
 
-    /// <summary>Mechanic hook, then the target's stacking rule. Max stacks: the stat (its data default as the base: bleed 8), 1 without the stat.</summary>
-    private void Land(SkillRuntime skill, int ti, TargetState target, AilmentDefinition def, AilmentInstance instance)
+    /// <summary>Pre-apply mechanic hook, then the target's stacking rule, then (if it landed) the post-apply hook.</summary>
+    private bool Land(SkillRuntime skill, int ti, TargetState target, AilmentDefinition def, AilmentInstance instance)
     {
         if (OnAilment != null) instance = OnAilment(skill, ti, instance);
+        if (!target.Apply(instance, MaxStacks(skill, def), def.StackRule)) return false;
+        OnAilmentLanded?.Invoke(skill, ti, instance);
+        return true;
+    }
+
+    /// <summary>Max stacks: the stat (its data default as the base: bleed 8), 1 without the stat.</summary>
+    private int MaxStacks(SkillRuntime skill, AilmentDefinition def)
+    {
         var stackBase = _data.Stats.TryGetValue(def.MaxStacksStat, out var ms) ? ms.Default : 1;
-        var maxStacks = (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, stackBase), 0, int.MaxValue);
-        target.Apply(instance, maxStacks, def.StackRule);
+        return (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, stackBase), 0, int.MaxValue);
+    }
+
+    /// <summary>
+    /// Lands a copy of an instance that already landed elsewhere (spread_ignite) on target <paramref name="ti"/>: the
+    /// target's stacking rule with the skill's max stacks, and no mechanic hooks (the original went through them).
+    /// Returns false when the target refused it.
+    /// </summary>
+    public bool LandCopy(SkillRuntime skill, int ti, AilmentInstance instance, string origin)
+    {
+        if (!_s.IsAlive(ti) || !_data.Ailments.TryGetValue(instance.AilmentId, out var def)) return false;
+        if (!_s.Targets[ti].Apply(instance, MaxStacks(skill, def), def.StackRule)) return false;
+        _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id}, {origin})");
+        return true;
     }
 
     /// <summary>Proc or mechanic ailment (spec 8.4): no chance roll. The base comes from the triggering hit; a damaging ailment with no base is skipped.</summary>
@@ -158,9 +195,15 @@ internal sealed class UseResolver
         if (ailBase <= 0 && def.DamageFraction > 0) return false;
 
         var target = _s.Targets[ti];
-        var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, DefenseOf(target), _conditions)
-            with { Triggered = skill.IsTriggeredCopy };
-        Land(skill, ti, target, def, instance);
+        var outer = _conditions.HitTarget;
+        _conditions.HitTarget = ti;
+        try
+        {
+            var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, DefenseOf(target), _conditions)
+                with { Triggered = skill.IsTriggeredCopy };
+            Land(skill, ti, target, def, instance);
+        }
+        finally { _conditions.HitTarget = outer; }
         _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id}, {origin})");
         return true;
     }

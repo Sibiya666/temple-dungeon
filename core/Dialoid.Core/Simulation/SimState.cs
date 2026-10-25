@@ -30,6 +30,9 @@ internal sealed class SimState
     /// <summary>Mechanic charges/counters, keyed "mechanic_id:key" (see MechanicSimContext.Counter).</summary>
     public readonly Dictionary<string, double> MechanicCounters = new(StringComparer.Ordinal);
 
+    /// <summary>Mechanic per-run objects (queues and the like), keyed like the counters (see MechanicSimContext.State).</summary>
+    public readonly Dictionary<string, object> MechanicState = new(StringComparer.Ordinal);
+
     public readonly List<TargetState> Targets = new();
     public readonly bool[] Dead;
 

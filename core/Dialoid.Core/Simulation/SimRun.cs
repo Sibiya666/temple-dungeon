@@ -76,6 +76,7 @@ internal sealed class SimRun
         _mechanicHooks = new MechanicRuntime(mechanics, character, skills,
             new MechanicSimEnv(_s, _procs, _conditions, _log, data, _resolver, _random, config.Mode == SimMode.Roll, weapon));
         _resolver.OnAilment = _mechanicHooks.Ailment;
+        _resolver.OnAilmentLanded = _mechanicHooks.AilmentLanded;
         _noDecay = character.Rules.GetValueOrDefault(CharacterRules.NoResourceDecay) != 0;
 
         var ev = character.Evaluator;
@@ -202,8 +203,10 @@ internal sealed class SimRun
             {
                 if (!_s.IsAlive(i)) continue;
                 var target = _s.Targets[i];
+                _conditions.HitTarget = i; // target_* conditions refer to the target in the zone
                 var dps = AilmentCalculator.GroundZoneDps(zone.AilmentBase, zone.FractionPerSec, skill.Character, skill.Skill,
                     _resolver.DefenseOf(target), zone.Type, _conditions);
+                _conditions.HitTarget = null;
                 var share = dps * span;
                 _ledger.AddDot(zone.SkillId, i, zone.Type, share);
                 _procs.NoteDamage(i, zone.SkillId, zone.Triggered);

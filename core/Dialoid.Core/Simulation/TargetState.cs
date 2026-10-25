@@ -60,26 +60,29 @@ public sealed class TargetState
     public bool HasAilment(string ailmentId) =>
         ailmentId == "freeze" ? IsFrozen : _ailments.Any(a => a.AilmentId == ailmentId);
 
-    public void Apply(AilmentInstance a, int maxStacks, StackRule rule)
+    /// <summary>Applies an instance by its stacking rule. Returns false when it was refused (frozen or immune to freeze,
+    /// weaker than the current one, or no free stack and not stronger than the weakest).</summary>
+    public bool Apply(AilmentInstance a, int maxStacks, StackRule rule)
     {
         if (a.AilmentId == "freeze")
         {
-            if (IsFrozen || FreezeImmunityRemaining > 0) return;
+            if (IsFrozen || FreezeImmunityRemaining > 0) return false;
             FreezeRemaining = a.Remaining * FreezeDurationMultiplier;
-            return;
+            return true;
         }
 
         switch (rule)
         {
             case StackRule.Unlimited:
                 _ailments.Add(a);
-                break;
+                return true;
             case StackRule.StrongestOnly:
             {
                 var idx = _ailments.FindIndex(x => x.AilmentId == a.AilmentId);
                 if (idx < 0) _ailments.Add(a);
                 else if (Strength(a) >= Strength(_ailments[idx])) _ailments[idx] = a;
-                break;
+                else return false;
+                return true;
             }
             default: // ReplaceWeakest
             {
@@ -93,7 +96,8 @@ public sealed class TargetState
                 }
                 if (count < maxStacks) _ailments.Add(a);
                 else if (weakest >= 0 && a.DamagePerSec > _ailments[weakest].DamagePerSec) _ailments[weakest] = a;
-                break;
+                else return false;
+                return true;
             }
         }
     }

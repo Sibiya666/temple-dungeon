@@ -24,8 +24,10 @@ public sealed class MechanicCompileContext
     private readonly Dictionary<string, double>? _rules;
 
     internal MechanicCompileContext(GameData data, Build build, ClassDefinition cls, MechanicEffect effect, SourceRef source,
-        List<Modifier>? characterMods, Dictionary<string, double>? rules, MechanicSkillDraft? skill)
+        List<Modifier>? characterMods, Dictionary<string, double>? rules, MechanicSkillDraft? skill,
+        IReadOnlyList<CompiledSkill>? slottedSkills = null)
     {
+        SlottedSkills = slottedSkills ?? Array.Empty<CompiledSkill>();
         Data = data;
         Build = build;
         Class = cls;
@@ -48,8 +50,15 @@ public sealed class MechanicCompileContext
     /// <summary>Null in the character phase; the skill being edited in the skill phase.</summary>
     public MechanicSkillDraft? Skill { get; }
 
+    /// <summary>
+    /// The build's slotted skills as the skill compiler left them (tree, passive, ascendancy and keystone effects), before
+    /// the mechanic skill phase. Available in both phases, e.g. "if any slotted skill makes burning ground" (fire_armor).
+    /// </summary>
+    public IReadOnlyList<CompiledSkill> SlottedSkills { get; }
+
     public double Number(string name, double fallback) => MechanicParams.Number(Effect, name, fallback);
     public string Text(string name, string fallback) => MechanicParams.Text(Effect, name, fallback);
+    public IReadOnlyList<string> Texts(string name, params string[] fallback) => MechanicParams.Texts(Effect, name, fallback);
 
     /// <summary>Builds a modifier stamped with <see cref="Source"/> (so the stat breakdown names the keystone).
     /// <paramref name="conditions"/> (spec 4.5) make it live: the simulator checks them on every evaluation.</summary>
@@ -141,6 +150,14 @@ public sealed class MechanicSkillDraft
 
     /// <summary>Adds a modifier that applies to this skill only (its hits, ailments, zones and stats).</summary>
     public void AddModifier(Modifier m) => _modifiers.Add(m);
+
+    /// <summary>Removes this skill's matching modifiers (not the character pool's); returns them in order.</summary>
+    public IReadOnlyList<Modifier> RemoveModifiers(Func<Modifier, bool> match)
+    {
+        var removed = _modifiers.Where(match).ToList();
+        _modifiers.RemoveAll(m => match(m));
+        return removed;
+    }
 
     /// <summary>Adds a rightward conversion (spec 6.3); totals above 100% are scaled down by the resolver.</summary>
     public void AddConversion(DamageType from, DamageType to, double percent, SourceRef source)

@@ -11,7 +11,8 @@ namespace Dialoid.Core.Effects;
 /// (<c>ctx.Skill == null</c>: change character modifiers and rules) and then one skill-phase call per compiled skill
 /// (<c>ctx.Skill != null</c>: change that skill's cost, cooldown, channel limit, conversions, modifiers). A skill/tags-scoped
 /// mechanic gets skill-phase calls only, for the skills it landed on. Order: non-keystone sources first, keystones last.</item>
-/// <item><see cref="OnUse"/>, <see cref="OnHit"/>, <see cref="OnKill"/>, <see cref="OnTick"/>, <see cref="OnAilmentApplying"/>: the simulator. Global-scope
+/// <item><see cref="OnUse"/>, <see cref="OnHit"/>, <see cref="OnKill"/>, <see cref="OnTick"/>, <see cref="OnAilmentApplying"/>,
+/// <see cref="OnAilmentApplied"/>: the simulator. Global-scope
 /// mechanics fire for every skill; scoped ones only for the skill that carries them (never both, no double firing).</item>
 /// </list>
 /// </summary>
@@ -40,4 +41,12 @@ public interface IMechanic
     /// unchanged, or with another magnitude/duration/dps. Mechanics run in hook order, each seeing the previous result.
     /// </summary>
     AilmentInstance OnAilmentApplying(MechanicSimContext ctx, AilmentInstance ailment) => ailment;
+
+    /// <summary>
+    /// An ailment instance of the event skill actually landed on <see cref="MechanicSimContext.TargetIndex"/>: the target's
+    /// stacking rule accepted it (a freeze on a frozen or freeze-immune target, or an ignite weaker than every stack, did not
+    /// land). <paramref name="ailment"/> is the instance after every <see cref="OnAilmentApplying"/>. Copies landed by
+    /// <see cref="MechanicSimContext.LandAilment"/> do not fire it.
+    /// </summary>
+    void OnAilmentApplied(MechanicSimContext ctx, AilmentInstance ailment) { }
 }

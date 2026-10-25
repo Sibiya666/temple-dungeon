@@ -91,14 +91,16 @@ public sealed class CharacterCompiler
         AddPassives(build, cls, mods, mechanics, sourcedMechanics, deferred);
         AddAscendancy(build, cls, mods, mechanics, sourcedMechanics, deferred);
 
-        // Mechanic hooks: the character phase edits the modifier pool, then the skill phase edits each compiled skill.
+        // Skills compile from data alone; then mechanic hooks: the character phase edits the modifier pool (it can see the
+        // compiled skills), then the skill phase edits each compiled skill.
+        var compiledSkills = CompileSkills(build, cls, mechanics, deferred);
         var globals = MechanicCompiler.Order(sourcedMechanics);
         var characterRules = new Dictionary<string, double>();
-        MechanicCompiler.CharacterPhase(_mechanics, _data, build, cls, globals, mods, characterRules);
+        MechanicCompiler.CharacterPhase(_mechanics, _data, build, cls, globals, mods, characterRules, compiledSkills);
         var evaluator = new StatEvaluator(_data.Stats, mods);
 
-        var skills = CompileSkills(build, cls, mechanics, deferred)
-            .Select(s => MechanicCompiler.SkillPhase(_mechanics, _data, build, cls, globals, evaluator, s)).ToList();
+        var skills = compiledSkills
+            .Select(s => MechanicCompiler.SkillPhase(_mechanics, _data, build, cls, globals, evaluator, s, compiledSkills)).ToList();
         return new CompiledCharacter(build, cls, evaluator, mods, skills, mechanics, deferred)
         {
             GlobalMechanics = globals,

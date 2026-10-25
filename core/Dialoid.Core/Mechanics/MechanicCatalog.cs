@@ -28,5 +28,12 @@ public static class MechanicCatalog
         registry.Register(new StaticCharge());
         registry.Register(new Grounding());
         registry.Register(new GroundType());
+
+        // Pyromancer (spec 10.4)
+        registry.Register(new SpreadIgnite());
+        registry.Register(new Ashes());
+        registry.Register(new EternalFire());
+        registry.Register(new SoulHeat());
+        registry.Register(new FireArmor());
     }
 }

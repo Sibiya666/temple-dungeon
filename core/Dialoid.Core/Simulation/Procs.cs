@@ -53,6 +53,9 @@ internal sealed class ProcEngine
             Array.Empty<(string, string)>(), character.Class.Id);
     }
 
+    /// <summary>A slotted skill (or a registered non-slotted proc-cast copy) by id; null when unknown.</summary>
+    public SkillRuntime? Skill(string id) => _skills.GetValueOrDefault(id);
+
     /// <summary>The character evaluator with the active buffs, for resource regeneration and the like.</summary>
     public StatEvaluator Evaluator => _buffMods.Count == 0 ? _character.Evaluator : _character.Evaluator.WithExtra(ActiveBuffMods());
 

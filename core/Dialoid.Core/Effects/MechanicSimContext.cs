@@ -46,6 +46,7 @@ public sealed class MechanicSimContext
     public SourceRef Source { get; }
     public double Number(string name, double fallback) => MechanicParams.Number(Effect, name, fallback);
     public string Text(string name, string fallback) => MechanicParams.Text(Effect, name, fallback);
+    public IReadOnlyList<string> Texts(string name, params string[] fallback) => MechanicParams.Texts(Effect, name, fallback);
 
     /// <summary>Builds a modifier stamped with <see cref="Source"/> (for buffs set by the mechanic).</summary>
     public Modifier Mod(string stat, ModKind kind, double value, TagSet? tags = null) =>
@@ -113,6 +114,16 @@ public sealed class MechanicSimContext
 
     public double Counter(string key = "") => _s.MechanicCounters.GetValueOrDefault(CounterKey(key));
     public void SetCounter(string key, double value) => _s.MechanicCounters[CounterKey(key)] = value;
+    /// <summary>A per-run object of this mechanic (a queue, a set...), created on first use; keyed like the counters.</summary>
+    public T State<T>(string key) where T : class, new()
+    {
+        var k = CounterKey(key);
+        if (_s.MechanicState.TryGetValue(k, out var o)) return (T)o;
+        var created = new T();
+        _s.MechanicState[k] = created;
+        return created;
+    }
+
     // A skill/tags-scoped mechanic keeps separate counters per skill carrying it.
     private string CounterKey(string key) =>
         Effect.Scope is Scope.Global || _skill == null ? Effect.MechanicId + ":" + key : Effect.MechanicId + ":" + _skill.Id + ":" + key;
@@ -140,6 +151,17 @@ public sealed class MechanicSimContext
     {
         if (_skill == null || !_s.IsAlive(target) || !_data.Ailments.TryGetValue(ailmentId, out var def)) return false;
         return _env.Resolver.ForceAilment(_skill, target, def, Hit?.AilmentBase, $"mechanic {Effect.MechanicId}");
+    }
+
+    /// <summary>
+    /// Lands a copy of an instance that already landed elsewhere (e.g. an ignite spreading over the pack) on a living target,
+    /// by the target's stacking rule and the max stacks of the instance's source skill. No chance roll and no mechanic hooks
+    /// (the original already went through them). Returns false when the target refused it or the skill is unknown.
+    /// </summary>
+    public bool LandAilment(int target, AilmentInstance instance)
+    {
+        var skill = _skill?.Id == instance.SourceSkillId ? _skill : _procs.Skill(instance.SourceSkillId);
+        return skill != null && _env.Resolver.LandCopy(skill, target, instance, $"mechanic {Effect.MechanicId}");
     }
 
     /// <summary>Sets this mechanic's contribution (0 removes it) to a target's "damage taken" Increased bucket (spec 6.6).</summary>

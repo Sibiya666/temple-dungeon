@@ -19,16 +19,17 @@ internal static class MechanicCompiler
     }
 
     public static void CharacterPhase(MechanicRegistry registry, GameData data, Build build, ClassDefinition cls,
-        IReadOnlyList<SourcedEffect> globals, List<Modifier> mods, Dictionary<string, double> rules)
+        IReadOnlyList<SourcedEffect> globals, List<Modifier> mods, Dictionary<string, double> rules, IReadOnlyList<CompiledSkill> slotted)
     {
         foreach (var (e, src) in globals)
             if (e is MechanicEffect me && registry.TryGet(me.MechanicId, out var m))
-                m.OnCompile(new MechanicCompileContext(data, build, cls, me, src, mods, rules, null));
+                m.OnCompile(new MechanicCompileContext(data, build, cls, me, src, mods, rules, null, slotted));
     }
 
     /// <summary>Global mechanics, then the skill's own (scoped) mechanics, edit one compiled skill.</summary>
     public static CompiledSkill SkillPhase(MechanicRegistry registry, GameData data, Build build, ClassDefinition cls,
-        IReadOnlyList<SourcedEffect> globals, StatEvaluator characterEvaluator, CompiledSkill skill)
+        IReadOnlyList<SourcedEffect> globals, StatEvaluator characterEvaluator, CompiledSkill skill,
+        IReadOnlyList<CompiledSkill>? slotted = null)
     {
         var calls = new List<(IMechanic M, MechanicEffect E, SourceRef S)>();
         foreach (var (e, src) in globals)
@@ -39,7 +40,7 @@ internal static class MechanicCompiler
 
         var draft = new MechanicSkillDraft(skill, characterEvaluator, data);
         foreach (var (m, me, src) in calls)
-            m.OnCompile(new MechanicCompileContext(data, build, cls, me, src, null, null, draft));
+            m.OnCompile(new MechanicCompileContext(data, build, cls, me, src, null, null, draft, slotted));
         return draft.ToCompiled();
     }
 
