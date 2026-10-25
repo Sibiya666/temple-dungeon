@@ -69,6 +69,18 @@ public class KeystoneTests
     }
 
     [Fact]
+    public void Blood_pact_channel_limit_counts_cumulative_channel_time_across_interleaved_skills()
+    {
+        var d = Keystone("blood_pact");
+        var r = Run(d, Make("test_mage", 4, true, null, "test_bolt", "test_beam"), duration: 8);
+
+        // bolt 0-0.75 (cd 1.8); beam 0.75-2.0 (1.25 s); bolt 2.0-2.75; beam 2.75-3.5 reaches 2 s in total -> cooldown until 6.5
+        // (before the fix the bolt reset the channel and the beam never cooled down). The 6.5 channel holds the 7.4 bolt to 7.5.
+        Assert.Equal(new[] { 0, 2, 3.8, 5.6, 7.5 }, UseTimes(r, "test_bolt"));
+        Assert.Equal(new[] { 0.75, 1, 1.25, 1.5, 1.75, 2.75, 3, 3.25, 6.5, 6.75, 7, 7.25 }, UseTimes(r, "test_beam"));
+    }
+
+    [Fact]
     public void Titan_will_moves_the_damage_multiplier_from_primary_attribute_to_will()
     {
         var d = Keystone("titan_will");

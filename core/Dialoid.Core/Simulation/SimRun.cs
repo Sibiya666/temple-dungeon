@@ -141,11 +141,18 @@ internal sealed class SimRun
         _s.BusyUntil = start + skill.UseTime(_conditions, _weapon, step);
         var cd = skill.Cooldown(_conditions);
         if (cd > 0) _s.CooldownReadyAt[skill.Id] = start + cd;
-        // Channel limit (blood_pact): the tick that reaches MaxSec ends the channel and starts the cooldown when it ends.
-        if (skill.IsChannel && skill.Skill.ChannelLimit is { } limit && _s.BusyUntil - _s.ChannelStart >= limit.MaxSec - Eps)
+        // Channel limit (blood_pact): channel time adds up per skill since its last forced cooldown (other skills used in
+        // between do not reset it); the tick that reaches MaxSec ends the channel and starts the cooldown when it ends.
+        if (skill.IsChannel && skill.Skill.ChannelLimit is { } limit)
         {
-            _s.CooldownReadyAt[skill.Id] = Math.Max(_s.CooldownReadyAt.GetValueOrDefault(skill.Id), _s.BusyUntil + limit.CooldownSec);
-            _s.ChannelExhausted = true;
+            var used = _s.ChannelTimeUsed.GetValueOrDefault(skill.Id) + (_s.BusyUntil - start);
+            if (used >= limit.MaxSec - Eps)
+            {
+                _s.CooldownReadyAt[skill.Id] = Math.Max(_s.CooldownReadyAt.GetValueOrDefault(skill.Id), _s.BusyUntil + limit.CooldownSec);
+                _s.ChannelExhausted = true;
+                used = 0;
+            }
+            _s.ChannelTimeUsed[skill.Id] = used;
         }
         _s.LastUseTime[skill.Id] = t;
         _log.Add(t, "use", skill.Id);

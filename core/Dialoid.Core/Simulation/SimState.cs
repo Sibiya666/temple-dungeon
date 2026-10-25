@@ -18,6 +18,8 @@ internal sealed class SimState
     public double ChannelStart;
     /// <summary>The current channel hit its <see cref="Skills.ChannelLimit"/>: the next use of the skill starts a new channel.</summary>
     public bool ChannelExhausted;
+    /// <summary>Channel skills with a <see cref="Skills.ChannelLimit"/>: seconds channelled since the last forced cooldown, per skill.</summary>
+    public readonly Dictionary<string, double> ChannelTimeUsed = new(StringComparer.Ordinal);
 
     public readonly Dictionary<string, double> CooldownReadyAt = new(StringComparer.Ordinal);
     public readonly Dictionary<string, double> LastUseTime = new(StringComparer.Ordinal);
