@@ -55,7 +55,9 @@ public static class ModifierJson
             }
         }
 
-        int priority = e.TryGetProperty("priority", out var pr) && pr.ValueKind == JsonValueKind.Number ? pr.GetInt32() : 0;
+        int priority = 0;
+        if (e.TryGetProperty("priority", out var pr) && pr.ValueKind == JsonValueKind.Number && !pr.TryGetInt32(out priority))
+            errors.Add("«priority» должен быть целым числом в диапазоне int");
 
         if (errors.Count > before) return null;
         return new Modifier(stat!, kind, value, tags, conditions, per, source, priority);

@@ -1,0 +1,53 @@
+{
+  "primary_damage_more_per_point": 0.25,
+  "bonuses": [
+    {
+      "attribute": "str",
+      "stat": "armor",
+      "kind": "flat",
+      "per_point": 2
+    },
+    {
+      "attribute": "int",
+      "stat": "resist_fire",
+      "kind": "flat",
+      "per_point": 0.1
+    },
+    {
+      "attribute": "int",
+      "stat": "resist_cold",
+      "kind": "flat",
+      "per_point": 0.1
+    },
+    {
+      "attribute": "int",
+      "stat": "resist_lightning",
+      "kind": "flat",
+      "per_point": 0.1
+    },
+    {
+      "attribute": "int",
+      "stat": "resist_poison",
+      "kind": "flat",
+      "per_point": 0.1
+    },
+    {
+      "attribute": "will",
+      "stat": "resource_gen",
+      "kind": "increased",
+      "per_point": 0.2
+    },
+    {
+      "attribute": "will",
+      "stat": "life_regen_pct",
+      "kind": "increased",
+      "per_point": 0.2
+    },
+    {
+      "attribute": "dex",
+      "stat": "dodge_chance",
+      "kind": "flat",
+      "per_point": 0.05
+    }
+  ]
+}

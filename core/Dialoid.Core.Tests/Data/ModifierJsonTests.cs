@@ -35,4 +35,16 @@ public class ModifierJsonTests
         Assert.Null(ModifierJson.Read(doc.RootElement, Src, errors));
         Assert.Equal(2, errors.Count);
     }
+
+    [Theory]
+    [InlineData("1.5")]
+    [InlineData("1e10")]
+    public void Non_integer_or_huge_priority_reports_error_instead_of_throwing(string priority)
+    {
+        using var doc = JsonDocument.Parse("{\"stat\":\"damage\",\"kind\":\"override\",\"value\":1,\"priority\":" + priority + "}");
+        var errors = new List<string>();
+        Assert.Null(ModifierJson.Read(doc.RootElement, Src, errors));
+        var e = Assert.Single(errors);
+        Assert.Contains("priority", e);
+    }
 }

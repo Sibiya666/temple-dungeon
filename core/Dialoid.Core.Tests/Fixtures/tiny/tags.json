@@ -38,5 +38,9 @@
   {
     "id": "ailment_freeze",
     "name": "Недуг: freeze"
+  },
+  {
+    "id": "spell",
+    "name": "Заклинание"
   }
 ]

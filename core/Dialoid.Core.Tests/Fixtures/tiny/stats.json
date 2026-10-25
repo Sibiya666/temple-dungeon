@@ -118,5 +118,117 @@
     "min": 0,
     "max": 1000000000.0,
     "display": "number"
+  },
+  {
+    "id": "life_regen_pct",
+    "name": "Регенерация здоровья, % в секунду",
+    "default": 0.5,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "armor",
+    "name": "Броня",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "dodge_chance",
+    "name": "Шанс уклонения",
+    "default": 0,
+    "min": 0,
+    "max": 50,
+    "display": "percent"
+  },
+  {
+    "id": "resist_cold",
+    "name": "Сопротивление холоду",
+    "default": 0,
+    "min": -100,
+    "max": 75,
+    "display": "percent"
+  },
+  {
+    "id": "resist_lightning",
+    "name": "Сопротивление молнии",
+    "default": 0,
+    "min": -100,
+    "max": 75,
+    "display": "percent"
+  },
+  {
+    "id": "resist_poison",
+    "name": "Сопротивление яду",
+    "default": 0,
+    "min": -100,
+    "max": 75,
+    "display": "percent"
+  },
+  {
+    "id": "damage",
+    "name": "Урон",
+    "default": 0,
+    "min": -1000000000.0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "resource_max",
+    "name": "Максимум ресурса",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "resource_regen",
+    "name": "Регенерация ресурса",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "resource_gen",
+    "name": "Генерация ресурса",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
+    "id": "str",
+    "name": "Сила",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "int",
+    "name": "Интеллект",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "will",
+    "name": "Воля",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "dex",
+    "name": "Ловкость",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
   }
 ]
