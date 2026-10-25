@@ -42,5 +42,37 @@
   {
     "id": "spell",
     "name": "Заклинание"
+  },
+  {
+    "id": "melee",
+    "name": "Ближний бой"
+  },
+  {
+    "id": "area",
+    "name": "Область"
+  },
+  {
+    "id": "projectile",
+    "name": "Снаряд"
+  },
+  {
+    "id": "generator",
+    "name": "Генератор"
+  },
+  {
+    "id": "spender",
+    "name": "Тратитель"
+  },
+  {
+    "id": "lightning",
+    "name": "Молния"
+  },
+  {
+    "id": "poison",
+    "name": "Яд"
+  },
+  {
+    "id": "dot",
+    "name": "Урон со временем"
   }
 ]

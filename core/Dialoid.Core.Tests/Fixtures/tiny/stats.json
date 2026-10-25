@@ -230,5 +230,13 @@
     "min": 0,
     "max": 1000000000.0,
     "display": "number"
+  },
+  {
+    "id": "cast_speed",
+    "name": "Скорость заклинаний",
+    "default": 0,
+    "min": -100,
+    "max": 1000000000.0,
+    "display": "percent"
   }
 ]

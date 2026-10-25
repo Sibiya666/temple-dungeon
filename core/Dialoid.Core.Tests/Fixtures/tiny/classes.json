@@ -42,8 +42,13 @@
       }
     ],
     "passive_start_node": "test_start_warrior",
-    "skills": [],
-    "ascendancies": ["test_asc"]
+    "skills": [
+      "test_slash",
+      "test_slam"
+    ],
+    "ascendancies": [
+      "test_asc"
+    ]
   },
   {
     "id": "test_mage",
@@ -92,7 +97,10 @@
       }
     ],
     "passive_start_node": "test_start_mage",
-    "skills": [],
+    "skills": [
+      "test_bolt",
+      "test_spark"
+    ],
     "ascendancies": []
   }
 ]

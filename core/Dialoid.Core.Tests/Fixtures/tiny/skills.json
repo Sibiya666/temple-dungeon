@@ -1,0 +1,195 @@
+[
+  {
+    "id": "test_slash",
+    "name": "Тестовый удар",
+    "description": "Быстрая атака, дающая ярость",
+    "class_id": "test_warrior",
+    "unlock_level": 1,
+    "tags": [
+      "attack",
+      "melee",
+      "physical",
+      "generator"
+    ],
+    "weapon_effectiveness": 110,
+    "resource_gain": 12,
+    "ailment_chances": {
+      "bleed": 10
+    },
+    "weapon_types": [
+      "one_hand",
+      "two_hand"
+    ],
+    "tree": [
+      {
+        "id": "slash_depth",
+        "name": "Глубокие раны",
+        "description": "+10% к урону за очко",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 10
+          }
+        ]
+      },
+      {
+        "id": "slash_rend",
+        "name": "Рваные раны",
+        "description": "+15% к урону",
+        "max_points": 1,
+        "requires": [
+          {
+            "node": "slash_depth",
+            "points": 1
+          }
+        ],
+        "exclusive_group": "fork",
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 15
+          }
+        ]
+      },
+      {
+        "id": "slash_fury",
+        "name": "Ярость битвы",
+        "description": "+2% к шансу крита",
+        "max_points": 1,
+        "requires": [
+          {
+            "node": "slash_depth",
+            "points": 1
+          }
+        ],
+        "exclusive_group": "fork",
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "crit_chance",
+            "kind": "flat",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "slash_edge",
+        "name": "Острая кромка",
+        "description": "+1% к шансу крита за очко",
+        "max_points": 2,
+        "requires": [
+          {
+            "node": "slash_depth",
+            "points": 2
+          }
+        ],
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "crit_chance",
+            "kind": "flat",
+            "value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "test_slam",
+    "name": "Тестовый удар о землю",
+    "description": "Мощная атака по области",
+    "class_id": "test_warrior",
+    "unlock_level": 4,
+    "tags": [
+      "attack",
+      "area",
+      "physical",
+      "spender"
+    ],
+    "weapon_effectiveness": 180,
+    "resource_cost": 35,
+    "weapon_types": [
+      "two_hand"
+    ],
+    "behavior": {
+      "area_radius": 4
+    }
+  },
+  {
+    "id": "test_bolt",
+    "name": "Тестовая стрела",
+    "description": "Огненный снаряд",
+    "class_id": "test_mage",
+    "unlock_level": 1,
+    "tags": [
+      "spell",
+      "projectile",
+      "fire"
+    ],
+    "spell_damage": {
+      "fire": [
+        14,
+        20
+      ]
+    },
+    "cast_time": 0.75,
+    "resource_cost": 12,
+    "behavior": {
+      "projectile_count": 1
+    }
+  },
+  {
+    "id": "test_spark",
+    "name": "Тестовая искра",
+    "description": "Цепная молния",
+    "class_id": "test_mage",
+    "unlock_level": 1,
+    "tags": [
+      "spell",
+      "lightning",
+      "generator"
+    ],
+    "spell_damage": {
+      "lightning": [
+        3,
+        5
+      ]
+    },
+    "cast_time": 0.6,
+    "resource_gain": 3,
+    "behavior": {
+      "chain_count": 2
+    }
+  },
+  {
+    "id": "test_cloud",
+    "name": "Тестовое облако",
+    "description": "Ядовитое облако из лута",
+    "class_id": null,
+    "unlock_level": 1,
+    "tags": [
+      "spell",
+      "area",
+      "poison",
+      "dot"
+    ],
+    "spell_damage": {
+      "poison": [
+        2,
+        3
+      ]
+    },
+    "cast_time": 1.0,
+    "cooldown": 6,
+    "hits_per_use": 4,
+    "behavior": {
+      "area_radius": 3,
+      "duration": 4
+    }
+  }
+]

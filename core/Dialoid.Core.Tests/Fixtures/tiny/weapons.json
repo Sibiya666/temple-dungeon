@@ -1,0 +1,36 @@
+[
+  {
+    "id": "test_sword",
+    "name": "Тестовый меч",
+    "type": "one_hand",
+    "phys_min": 10,
+    "phys_max": 15,
+    "attacks_per_second": 1.4,
+    "crit_chance": 5
+  },
+  {
+    "id": "test_greataxe",
+    "name": "Тестовый двуручный топор",
+    "type": "two_hand",
+    "phys_min": 24,
+    "phys_max": 36,
+    "attacks_per_second": 0.9,
+    "crit_chance": 5
+  },
+  {
+    "id": "test_staff",
+    "name": "Тестовый посох",
+    "type": "staff",
+    "phys_min": 8,
+    "phys_max": 12,
+    "attacks_per_second": 1.1,
+    "crit_chance": 0,
+    "implicits": [
+      {
+        "stat": "cast_speed",
+        "kind": "increased",
+        "value": 10
+      }
+    ]
+  }
+]

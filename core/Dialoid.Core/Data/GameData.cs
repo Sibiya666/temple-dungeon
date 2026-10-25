@@ -1,6 +1,7 @@
 using Dialoid.Core.Character;
 using Dialoid.Core.Combat;
 using Dialoid.Core.Passives;
+using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Data;
@@ -20,6 +21,10 @@ public sealed class GameData
     public AttributeRules AttributeRules { get; }
     public PassiveTree Passives { get; }
     public IReadOnlyDictionary<string, Ascendancy> Ascendancies { get; }
+    public IReadOnlyDictionary<string, SkillDefinition> Skills { get; }
+    public IReadOnlyDictionary<string, WeaponStub> Weapons { get; }
+    public IReadOnlyDictionary<string, ItemStub> Items { get; }
+    public ProgressionTable Progression { get; }
 
     internal GameData(Builder b)
     {
@@ -30,6 +35,10 @@ public sealed class GameData
         AttributeRules = b.AttributeRules;
         Passives = new PassiveTree(b.PassiveNodes.Values, b.PassiveLinks);
         Ascendancies = new Dictionary<string, Ascendancy>(b.Ascendancies);
+        Skills = new Dictionary<string, SkillDefinition>(b.Skills);
+        Weapons = new Dictionary<string, WeaponStub>(b.Weapons);
+        Items = new Dictionary<string, ItemStub>(b.Items);
+        Progression = b.Progression;
     }
 
     internal sealed class Builder
@@ -42,6 +51,10 @@ public sealed class GameData
         public Dictionary<string, PassiveNode> PassiveNodes { get; } = new();
         public Dictionary<string, IReadOnlyList<string>> PassiveLinks { get; } = new();
         public Dictionary<string, Ascendancy> Ascendancies { get; } = new();
+        public Dictionary<string, SkillDefinition> Skills { get; } = new();
+        public Dictionary<string, WeaponStub> Weapons { get; } = new();
+        public Dictionary<string, ItemStub> Items { get; } = new();
+        public ProgressionTable Progression { get; set; } = ProgressionTable.Empty;
         public GameData Build() => new(this);
     }
 }

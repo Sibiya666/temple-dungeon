@@ -3,7 +3,9 @@ using System.Text.Json.Serialization;
 using Dialoid.Core.Character;
 using Dialoid.Core.Data.Json;
 using Dialoid.Core.Effects;
+using Dialoid.Core.Combat;
 using Dialoid.Core.Passives;
+using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Data;
@@ -55,6 +57,10 @@ public static class DataLoader
         LoadClasses(dataDirectory, b, errors, statsOk, tagsOk);
         LoadPassives(dataDirectory, b, errors, mechanics);
         LoadAscendancies(dataDirectory, b, errors, mechanics);
+        LoadSkills(dataDirectory, b, errors, mechanics, tagsOk);
+        LoadWeapons(dataDirectory, b, errors, mechanics);
+        LoadItems(dataDirectory, b, errors);
+        LoadProgression(dataDirectory, b, errors);
 
         if (errors.Count > 0) return new LoadResult(null, errors);
         // Cross-file checks run only on data that loaded cleanly, so they do not drown real errors in noise.
@@ -114,6 +120,147 @@ public static class DataLoader
             if (errors.Count > before) continue;
             b.Ascendancies[id] = new Ascendancy(id, a.Name!, a.ClassId!, start!, notables);
         }
+    }
+
+    private static void LoadSkills(string dir, GameData.Builder b, List<DataError> errors, MechanicRegistry mechanics, bool tagsOk)
+    {
+        const string F = "skills.json";
+        if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
+        foreach (var (id, s) in ReadCatalog<SkillJson>(dir, F, x => x.Id, errors))
+        {
+            int before = errors.Count;
+            void Err(string m) => errors.Add(new DataError(F, id, m));
+            if (string.IsNullOrWhiteSpace(s.Name)) Err("Не задано «name»");
+            if (s.ClassId is not null && string.IsNullOrWhiteSpace(s.ClassId)) Err("«class_id» не может быть пустой строкой (используйте null)");
+            if (s.UnlockLevel is < 1 or > 60) Err("«unlock_level» должен быть от 1 до 60");
+            if (s.HitsPerUse < 1) Err("«hits_per_use» должен быть не меньше 1");
+            if (s.CastTime < 0 || s.AttackTimeMultiplier < 0) Err("«cast_time» и «attack_time_multiplier» не могут быть отрицательными");
+            if (s.Cooldown < 0) Err("«cooldown» не может быть отрицательным");
+            if (s.ResourceCost < 0 || s.ResourceGain < 0) Err("«resource_cost» и «resource_gain» не могут быть отрицательными");
+            if (s.CritChance < 0) Err("«crit_chance» не может быть отрицательным");
+            if (s.WeaponEffectiveness < 0 || s.AddedDamageEffectiveness < 0) Err("Эффективность урона не может быть отрицательной");
+            if (s.AilmentChances != null && s.AilmentChances.Values.Any(v => v < 0)) Err("«ailment_chances» не могут быть отрицательными");
+
+            var tags = TagSet.Empty;
+            foreach (var t in s.Tags ?? new())
+            {
+                if (tagsOk && !b.Tags.Contains(t)) Err($"Неизвестный тег «{t}»");
+                tags = tags.With(t);
+            }
+
+            var damage = new Dictionary<DamageType, (double, double)>();
+            foreach (var (key, range) in s.SpellDamage ?? new())
+            {
+                if (!Enum.TryParse<DamageType>(key, true, out var dt) || !Enum.IsDefined(dt) || int.TryParse(key, out _))
+                    Err($"Неизвестный тип урона «{key}» в «spell_damage»");
+                else if (range.Count != 2 || range[0] < 0 || range[1] < range[0])
+                    Err($"«spell_damage.{key}» должен быть парой [мин, макс], где 0 ≤ мин ≤ макс");
+                else damage[dt] = (range[0], range[1]);
+            }
+
+            var tree = new List<SkillTreeNode>();
+            var seen = new HashSet<string>();
+            int index = 0;
+            foreach (var n in s.Tree ?? new())
+            {
+                index++;
+                int nodeBefore = errors.Count;
+                if (string.IsNullOrWhiteSpace(n.Id)) { Err($"Узел дерева №{index}: не задан «id»"); continue; }
+                if (!seen.Add(n.Id)) Err($"Повторяющийся id узла дерева «{n.Id}»");
+                if (string.IsNullOrWhiteSpace(n.Name)) Err($"Узел «{n.Id}»: не задано «name»");
+                if (n.MaxPoints is not (>= 1 and <= 5)) Err($"Узел «{n.Id}»: «max_points» должен быть от 1 до 5");
+                var requires = new List<(string, int)>();
+                foreach (var r in n.Requires ?? new())
+                {
+                    if (string.IsNullOrWhiteSpace(r.Node)) Err($"Узел «{n.Id}»: в «requires» не задан «node»");
+                    else if (r.Points is not >= 1) Err($"Узел «{n.Id}»: в «requires» для «{r.Node}» «points» должен быть не меньше 1");
+                    else requires.Add((r.Node, r.Points.Value));
+                }
+                var effects = n.Effects is { } el
+                    ? EffectJson.ParseList(el, new Scope.Skill(id), mechanics, F, id, errors)
+                    : Array.Empty<Effect>();
+                if (errors.Count > nodeBefore) continue;
+                tree.Add(new SkillTreeNode(n.Id, n.Name!, n.Description ?? "", n.MaxPoints!.Value, requires, n.ExclusiveGroup, effects));
+            }
+            if (errors.Count > before) continue;
+
+            var sb = new SkillBase(damage, s.WeaponEffectiveness, s.AddedDamageEffectiveness, s.CastTime, s.AttackTimeMultiplier,
+                s.Cooldown, s.ResourceCost, s.ResourceGain, s.CritChance, s.HitsPerUse,
+                s.Behavior ?? new Dictionary<string, double>(), s.AilmentChances ?? new Dictionary<string, double>(),
+                s.WeaponTypes ?? new List<string>());
+            b.Skills[id] = new SkillDefinition(id, s.Name!, s.Description ?? "", s.ClassId, s.UnlockLevel, tags, sb, tree, s.IsTriggeredOnly);
+        }
+    }
+
+    private static void LoadWeapons(string dir, GameData.Builder b, List<DataError> errors, MechanicRegistry mechanics)
+    {
+        const string F = "weapons.json";
+        if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
+        foreach (var (id, w) in ReadCatalog<WeaponJson>(dir, F, x => x.Id, errors))
+        {
+            int before = errors.Count;
+            void Err(string m) => errors.Add(new DataError(F, id, m));
+            if (string.IsNullOrWhiteSpace(w.Name)) Err("Не задано «name»");
+            if (string.IsNullOrWhiteSpace(w.Type)) Err("Не задан «type» (one_hand, two_hand, staff или wand)");
+            if (w.PhysMin < 0 || w.PhysMax < w.PhysMin) Err("Урон оружия должен удовлетворять 0 ≤ phys_min ≤ phys_max");
+            if (w.AttacksPerSecond <= 0) Err("«attacks_per_second» должен быть положительным");
+            if (w.CritChance < 0) Err("«crit_chance» не может быть отрицательным");
+            var implicits = new List<Modifier>();
+            var src = new SourceRef("weapon", id, w.Name ?? id);
+            int i = 0;
+            foreach (var el in w.Implicits ?? new())
+            {
+                i++;
+                var errs = new List<string>();
+                var m = ModifierJson.Read(el, src, errs);
+                foreach (var e in errs) Err($"Имплицит №{i}: {e}");
+                if (m != null) implicits.Add(m);
+            }
+            if (errors.Count > before) continue;
+            b.Weapons[id] = new WeaponStub(id, w.Name!, w.Type!, w.PhysMin, w.PhysMax, w.AttacksPerSecond, w.CritChance, implicits);
+        }
+    }
+
+    private static void LoadItems(string dir, GameData.Builder b, List<DataError> errors)
+    {
+        const string F = "items.json";
+        if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
+        foreach (var (id, it) in ReadCatalog<ItemJson>(dir, F, x => x.Id, errors))
+        {
+            int before = errors.Count;
+            void Err(string m) => errors.Add(new DataError(F, id, m));
+            if (string.IsNullOrWhiteSpace(it.Name)) Err("Не задано «name»");
+            if (string.IsNullOrWhiteSpace(it.GrantsSkill)) Err("Не задан «grants_skill»");
+            if (it.SkillLevelBonus < 0) Err("«skill_level_bonus» не может быть отрицательным");
+            if (errors.Count > before) continue;
+            b.Items[id] = new ItemStub(id, it.Name!, it.GrantsSkill!, it.SkillLevelBonus);
+        }
+    }
+
+    private static void LoadProgression(string dir, GameData.Builder b, List<DataError> errors)
+    {
+        const string F = "progression.json";
+        var path = Path.Combine(dir, F);
+        if (!File.Exists(path)) return; // optional catalog
+        ProgressionJson? file;
+        try { file = JsonSerializer.Deserialize<ProgressionJson>(File.ReadAllText(path), Options); }
+        catch (JsonException ex) { errors.Add(new DataError(F, null, $"Некорректный JSON: {ex.Message}")); return; }
+        catch (IOException ex) { errors.Add(new DataError(F, null, $"Не удалось прочитать файл: {ex.Message}")); return; }
+        if (file == null) { errors.Add(new DataError(F, null, "Файл пуст")); return; }
+
+        int before = errors.Count;
+        void Check(string name, List<double>? table, int expected)
+        {
+            if (table == null || table.Count == 0) { errors.Add(new DataError(F, null, $"Не задана таблица «{name}»")); return; }
+            if (table.Count != expected) errors.Add(new DataError(F, null, $"В «{name}» должно быть {expected} порогов, а не {table.Count}"));
+            if (table[0] != 0) errors.Add(new DataError(F, null, $"Первый порог «{name}» (уровень 1) должен быть 0"));
+            for (int i = 1; i < table.Count; i++)
+                if (table[i] <= table[i - 1]) { errors.Add(new DataError(F, null, $"Пороги «{name}» должны строго возрастать (уровень {i + 1})")); break; }
+        }
+        Check("character_levels", file.CharacterLevels, 60);
+        Check("skill_levels", file.SkillLevels, 20);
+        if (errors.Count == before)
+            b.Progression = new ProgressionTable(file.CharacterLevels!, file.SkillLevels!);
     }
 
     private static IReadOnlyList<Effect> ParseEffects(JsonElement? el, MechanicRegistry mechanics, string file, string id, List<DataError> errors) =>

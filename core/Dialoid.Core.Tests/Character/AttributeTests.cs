@@ -109,6 +109,8 @@ public class AttributeTests
         File.Delete(Path.Combine(dir, "attributes.json"));
         File.Delete(Path.Combine(dir, "passives.json"));
         File.Delete(Path.Combine(dir, "ascendancies.json"));
+        File.Delete(Path.Combine(dir, "skills.json"));
+        File.Delete(Path.Combine(dir, "items.json"));
         var r = DataLoader.Load(dir);
         Assert.True(r.Ok);
         Assert.Empty(r.Data!.Classes);

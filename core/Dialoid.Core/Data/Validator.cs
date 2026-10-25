@@ -1,6 +1,7 @@
 using Dialoid.Core.Character;
 using Dialoid.Core.Effects;
 using Dialoid.Core.Passives;
+using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Data;
@@ -19,6 +20,9 @@ public static class Validator
         CheckStartNodes(data, errors);
         CheckPassiveEdges(data, errors);
         CheckTreeConnectivity(data, errors);
+        CheckSkillReferences(data, errors);
+        CheckSkillTrees(data, errors);
+        CheckItemAndWeaponReferences(data, errors);
         CheckEffectReferences(data, mechanics, errors);
         CheckStatCycles(data, errors);
         return errors;
@@ -91,6 +95,66 @@ public static class Validator
             errors.Add(new DataError("passives.json", n.Id, "Узел недостижим ни от одного стартового узла"));
     }
 
+    private static void CheckSkillReferences(GameData data, List<DataError> errors)
+    {
+        const string F = "skills.json";
+        foreach (var sk in data.Skills.Values)
+        {
+            if (sk.ClassId != null && !data.Classes.ContainsKey(sk.ClassId))
+                errors.Add(new DataError(F, sk.Id, $"Неизвестный класс «{sk.ClassId}»"));
+            foreach (var wt in sk.Base.WeaponTypes.Where(t => !WeaponTypes.All.Contains(t)))
+                errors.Add(new DataError(F, sk.Id, $"Неизвестный тип оружия «{wt}» в «weapon_types» (ожидается one_hand, two_hand, staff или wand)"));
+            foreach (var key in sk.Base.AilmentChances.Keys.Where(k => !data.Ailments.ContainsKey(k)))
+                errors.Add(new DataError(F, sk.Id, $"Неизвестный недуг «{key}» в «ailment_chances»"));
+        }
+        foreach (var c in data.Classes.Values)
+            foreach (var skillId in c.SkillIds)
+            {
+                if (!data.Skills.TryGetValue(skillId, out var sk))
+                    errors.Add(new DataError("classes.json", c.Id, $"Неизвестный скилл «{skillId}»"));
+                else if (sk.ClassId != c.Id)
+                    errors.Add(new DataError("classes.json", c.Id, $"Скилл «{skillId}» принадлежит другому классу («{sk.ClassId ?? "null"}»)"));
+            }
+    }
+
+    private static void CheckSkillTrees(GameData data, List<DataError> errors)
+    {
+        const string F = "skills.json";
+        foreach (var sk in data.Skills.Values)
+        {
+            var nodes = sk.Tree.ToDictionary(n => n.Id);
+            foreach (var n in sk.Tree)
+                foreach (var (req, points) in n.Requires)
+                {
+                    if (!nodes.TryGetValue(req, out var target))
+                        errors.Add(new DataError(F, sk.Id, $"Узел «{n.Id}» требует неизвестный узел «{req}»"));
+                    else if (points > target.MaxPoints)
+                        errors.Add(new DataError(F, sk.Id, $"Узел «{n.Id}» требует {points} очков в «{req}», а там максимум {target.MaxPoints}"));
+                }
+            if (SkillTree.FindRequirementCycle(sk.Tree) is { } cycle)
+                errors.Add(new DataError(F, sk.Id, $"Цикл требований в дереве скилла: {string.Join(" → ", cycle)}"));
+        }
+    }
+
+    private static void CheckItemAndWeaponReferences(GameData data, List<DataError> errors)
+    {
+        foreach (var it in data.Items.Values)
+            if (!data.Skills.ContainsKey(it.GrantsSkill))
+                errors.Add(new DataError("items.json", it.Id, $"Предмет выдает неизвестный скилл «{it.GrantsSkill}»"));
+        foreach (var w in data.Weapons.Values)
+        {
+            if (!WeaponTypes.All.Contains(w.Type))
+                errors.Add(new DataError("weapons.json", w.Id, $"Неизвестный тип оружия «{w.Type}» (ожидается one_hand, two_hand, staff или wand)"));
+            foreach (var m in w.Implicits)
+            {
+                if (!data.Stats.ContainsKey(m.Stat))
+                    errors.Add(new DataError("weapons.json", w.Id, $"Имплицит: неизвестный стат «{m.Stat}»"));
+                if (m.Per is { } per && !data.Stats.ContainsKey(per.Stat))
+                    errors.Add(new DataError("weapons.json", w.Id, $"Имплицит: неизвестный стат «{per.Stat}» в «per»"));
+            }
+        }
+    }
+
     private static void CheckEffectReferences(GameData data, MechanicRegistry mechanics, List<DataError> errors)
     {
         foreach (var n in data.Passives.Nodes.Values)
@@ -98,6 +162,9 @@ public static class Validator
         foreach (var a in data.Ascendancies.Values)
             foreach (var node in a.Notables.Prepend(a.Start))
                 CheckEffects("ascendancies.json", a.Id, node.Effects, node.Id);
+        foreach (var sk in data.Skills.Values)
+            foreach (var node in sk.Tree)
+                CheckEffects("skills.json", sk.Id, node.Effects, node.Id);
 
         void CheckEffects(string file, string ownerId, IReadOnlyList<Effect> effects, string? nodeId)
         {
@@ -136,6 +203,8 @@ public static class Validator
         foreach (var b in data.AttributeRules.Bonuses)
             mods.Add(new Modifier(b.Stat, b.Kind, b.ValuePerPoint, TagSet.Empty, none,
                 new PerStat(b.Attribute.StatId(), 1, null), new SourceRef("attribute", b.Attribute.StatId(), b.Attribute.StatId())));
+        foreach (var w in data.Weapons.Values)
+            mods.AddRange(w.Implicits);
         foreach (var n in data.Passives.Nodes.Values)
             mods.AddRange(n.Effects.OfType<ModifierEffect>().Select(e => e.Modifier));
         foreach (var a in data.Ascendancies.Values)

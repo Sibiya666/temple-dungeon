@@ -70,6 +70,14 @@ public sealed class CharacterCompiler
 
         mods.AddRange(cls.ClassBonuses);
 
+        if (build.WeaponId != null)
+        {
+            if (!_data.Weapons.TryGetValue(build.WeaponId, out var weapon))
+                throw new ArgumentException($"Unknown weapon '{build.WeaponId}'.", nameof(build));
+            var weaponSrc = new SourceRef("weapon", weapon.Id, weapon.Name);
+            foreach (var m in weapon.Implicits) mods.Add(m with { Source = weaponSrc });
+        }
+
         var mechanics = new List<MechanicEffect>();
         var deferred = new List<SourcedEffect>();
         AddPassives(build, cls, mods, mechanics, deferred);

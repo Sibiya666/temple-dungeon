@@ -1,0 +1,26 @@
+[
+  {
+    "id": "test_cloud_ring",
+    "name": "Кольцо облака",
+    "grants_skill": "test_cloud",
+    "skill_level_bonus": 2
+  },
+  {
+    "id": "test_big_ring",
+    "name": "Великое кольцо облака",
+    "grants_skill": "test_cloud",
+    "skill_level_bonus": 9
+  },
+  {
+    "id": "test_bolt_charm",
+    "name": "Амулет стрелы",
+    "grants_skill": "test_bolt",
+    "skill_level_bonus": 0
+  },
+  {
+    "id": "test_spark_charm",
+    "name": "Амулет искры",
+    "grants_skill": "test_spark",
+    "skill_level_bonus": 0
+  }
+]
