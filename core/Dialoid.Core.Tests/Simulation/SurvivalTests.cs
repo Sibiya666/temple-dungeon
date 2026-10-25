@@ -138,6 +138,21 @@ public class SurvivalTests
     }
 
     [Fact]
+    public void Dps_run_regenerates_life_too()
+    {
+        // Not defensive (attacks off): warrior level 60, life 912, regen 0.5% = 4.56/s. Life set to 100 at t = 0;
+        // the observer at t = 2 s has seen 40 steps of regeneration: 100 + 4.56 x 2.
+        var seen = new Dictionary<int, double>();
+        var r = Run(Defence(), Warrior(60), attacks: false, observe: s =>
+        {
+            if (s.Time == 0) s.Life = 100;
+            seen[(int)Math.Round(s.Time * 20)] = s.Life;
+        });
+        Assert.Null(r.TimeToDeath);
+        Assert.Equal(100 + 4.56 * 2, seen[40], 6);
+    }
+
+    [Fact]
     public void Life_regen_is_capped_at_max_life()
     {
         var seen = 0.0;

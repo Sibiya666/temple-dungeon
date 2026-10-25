@@ -73,18 +73,29 @@ public class BerserkerTests
             if (s.LastUseTime.TryGetValue("test_slam", out var t) && t == s.Time) slams.Add((s.Resource, s.Life));
         }
 
-        // Slam costs 35: 2% x 384 x 3.5 = 26.88 life, Fury stays 100. Life 384 pays 14 times (7.68 left), then Fury is paid.
-        Run(d, Warrior(true, "test_greataxe", "test_slam", "test_slash"), duration: 19.5, observe: Observe);
-        Assert.True(slams.Count >= 16, $"{slams.Count} slams");
-        for (var k = 0; k < 14; k++)
+        // Slam costs 35: 2% x 384 x 3.5 = 26.88 life, Fury stays 100 (life must be above the cost, else Fury pays).
+        // Life regenerates in DPS runs too: life_regen_pct 0.5 x (1 + Will 29 x 0.2%) = 0.529% of 384 = 2.03136 life/s,
+        // applied once per 0.05 s step, so between two observed slams life gains 2.03136 x (their time difference).
+        // Slash at 0 (0.9 aps greataxe), then slam k at (k + 1) / 0.9: life 384 pays 15 times (regen buys one extra).
+        const double regen = 0.529 / 100 * 384;
+        var r = Run(d, Warrior(true, "test_greataxe", "test_slam", "test_slash"), duration: 19.5, observe: Observe);
+        var times = UseTimes(r, "test_slam");
+        Assert.Equal(Enumerable.Range(1, times.Length).Select(k => Logged(k / 0.9)).ToArray(), times);
+        Assert.True(slams.Count >= 17, $"{slams.Count} slams");
+        double life = 384, fury = 100, prev = 0;
+        int lifePaid = 0;
+        for (var k = 0; k < slams.Count; k++)
         {
-            Assert.Equal(100, slams[k].Fury, 9);
-            Assert.Equal(384 - (k + 1) * 26.88, slams[k].Life, 9);
+            life = Math.Min(384, life + regen * (times[k] - prev));
+            prev = times[k];
+            if (fury >= 100 && life > 26.88) { life -= 26.88; lifePaid++; }
+            else fury -= 35;
+            Assert.Equal(fury, slams[k].Fury, 9);
+            Assert.Equal(life, slams[k].Life, 9);
         }
-        Assert.Equal(65, slams[14].Fury, 9); // life 7.68 is not above the cost 26.88: Fury pays
-        Assert.Equal(7.68, slams[14].Life, 9);
-        Assert.Equal(30, slams[15].Fury, 9); // below 100 Fury: normal cost
-        Assert.Equal(7.68, slams[15].Life, 9);
+        Assert.Equal(15, lifePaid);
+        Assert.Equal(65, slams[15].Fury, 9); // life is no longer above the cost: Fury pays
+        Assert.Equal(30, slams[16].Fury, 9); // below 100 Fury: normal cost
 
         // Without the node the slam always pays Fury.
         var plain = new List<(double Fury, double Life)>();
@@ -108,7 +119,7 @@ public class BerserkerTests
 
         double[] Hits(bool node, double lifeFraction) =>
             HitAmounts(Run(d, Warrior(node, "test_sword", "test_slash"), duration: 3,
-                observe: s => { if (s.Time == 0) s.Life = s.LifeMax * lifeFraction; }), "test_slash");
+                observe: s => s.Life = s.LifeMax * lifeFraction), "test_slash"); // held each step: life regenerates in DPS runs
 
         var plain = Hits(false, 0.8);
         var missing20 = Hits(true, 0.8);

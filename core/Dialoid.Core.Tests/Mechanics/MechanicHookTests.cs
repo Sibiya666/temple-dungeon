@@ -64,7 +64,9 @@ public class MechanicHookTests
         var rec = new Recorder();
         var reg = new MechanicRegistry();
         reg.Register(rec);
-        var d = With("{\"type\":\"mechanic\",\"id\":\"test_recorder\",\"params\":{\"life\":50,\"self_damage\":5}}", registry: reg, kind: "small");
+        // No life regeneration (it runs in DPS runs too), so the life lost is exactly the self damage.
+        var d = With("{\"type\":\"mechanic\",\"id\":\"test_recorder\",\"params\":{\"life\":50,\"self_damage\":5}}", registry: reg, kind: "small",
+            mutate: dir => Edit(dir, "stats.json", st => Find(st, "life_regen_pct")["default"] = 0));
 
         double life = 0, lifeMax = 0;
         var b = Make("test_warrior", 2, true, "test_sword", "test_slash");

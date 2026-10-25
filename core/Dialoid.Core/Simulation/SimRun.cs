@@ -106,6 +106,7 @@ internal sealed class SimRun
             TickResource(t, step);
             TickBuffs(step);
             _mechanicHooks.Tick(step);
+            TickLife(step);
             if (_defensive && DummyAttackStep(t, step) is { } deathTime) { timeToDeath = elapsed = deathTime; break; }
             if (HandleDeaths(t + step)) { timeToKill = elapsed = t + step; break; }
         }
@@ -227,6 +228,16 @@ internal sealed class SimRun
         _s.Resource = Math.Clamp(r, 0, _s.ResourceMax);
     }
 
+    /// <summary>Life regeneration, every mode (spec 11.3): max life is re-read each step (buffs may change it).</summary>
+    private void TickLife(double dt)
+    {
+        if (!_hasLifeStat) return;
+        var ev = _procs.Evaluator;
+        _s.LifeMax = ev.Evaluate("life", default, _conditions).Value;
+        var regen = ev.Evaluate("life_regen_pct", default, _conditions).Value / 100 * _s.LifeMax;
+        _s.Life = Math.Min(_s.LifeMax, _s.Life + regen * dt);
+    }
+
     private void TickBuffs(double dt)
     {
         var expired = false;
@@ -284,21 +295,13 @@ internal sealed class SimRun
     }
 
     /// <summary>
-    /// One step of defensive mode: life regeneration, then every dummy attack falling in (t, t + dt] (the first after one interval;
+    /// One step of defensive mode: every dummy attack falling in (t, t + dt] (the first after one interval;
     /// skipped while the attacking target is frozen or dead). Returns the time of death, or null when the character survives the step.
     /// </summary>
     private double? DummyAttackStep(double t, double dt)
     {
         // Attack-time character state is read at the end of the step (at most one step of error).
         var attack = _dummy.Attack!;
-        var ev = _procs.Evaluator;
-
-        if (_hasLifeStat)
-        {
-            _s.LifeMax = ev.Evaluate("life", default, _conditions).Value;
-            var regen = ev.Evaluate("life_regen_pct", default, _conditions).Value / 100 * _s.LifeMax;
-            _s.Life = Math.Min(_s.LifeMax, _s.Life + regen * dt);
-        }
 
         var end = t + dt;
         while (_nextAttack <= end + Eps)
