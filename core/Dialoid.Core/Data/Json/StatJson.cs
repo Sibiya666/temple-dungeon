@@ -1,9 +1,17 @@
+using System.Text.Json;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Data.Json;
 
 internal sealed class StatJson
 {
+    private static readonly HashSet<string> Allowed = StrictJson.Fields("id", "name", "default", "min", "max", "display");
+
+    public static void CheckFields(JsonElement el, string file, string? id, List<DataError> errors)
+    {
+        StrictJson.RejectUnknown(el, Allowed, file, id, errors);
+    }
+
     public string? Id { get; set; }
     public string? Name { get; set; }
     public double Default { get; set; }

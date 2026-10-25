@@ -8,6 +8,26 @@ namespace Dialoid.Core.Data.Json;
 /// <summary>Parses effects from JSON. Problems become DataError entries (Russian), never exceptions.</summary>
 public static class EffectJson
 {
+    private static readonly HashSet<string> ModifierFlatExtra = StrictJson.Fields("type", "scope", "per_point");
+    private static readonly HashSet<string> ModifierNested = StrictJson.Fields("type", "scope", "per_point", "modifier");
+    private static readonly Dictionary<string, HashSet<string>> AllowedByType = new()
+    {
+        ["add_tag"] = StrictJson.Fields("type", "scope", "tag"),
+        ["remove_tag"] = StrictJson.Fields("type", "scope", "tag"),
+        ["set_behavior"] = StrictJson.Fields("type", "scope", "param", "value"),
+        ["add_behavior"] = StrictJson.Fields("type", "scope", "param", "delta", "per_point"),
+        ["add_conversion"] = StrictJson.Fields("type", "scope", "from", "to", "percent", "per_point"),
+        ["set_damage_type"] = StrictJson.Fields("type", "scope", "to"),
+        ["set_resource"] = StrictJson.Fields("type", "scope", "field", "value"),
+        ["grant_proc"] = StrictJson.Fields("type", "scope", "trigger", "action"),
+        ["mechanic"] = StrictJson.Fields("type", "scope", "id", "params"),
+    };
+    private static readonly HashSet<string> ScopeAllowed = StrictJson.Fields("tags");
+    private static readonly HashSet<string> TriggerAllowed = StrictJson.Fields("every_n_uses", "every_n_hits");
+    private static readonly HashSet<string> ActionAllowed = StrictJson.Fields("apply_ailment", "cast_skill", "apply_buff");
+    private static readonly HashSet<string> CastSkillAllowed = StrictJson.Fields("id", "damage_percent");
+    private static readonly HashSet<string> ApplyBuffAllowed = StrictJson.Fields("id", "duration", "modifiers");
+
     public static IReadOnlyList<Effect> ParseList(JsonElement el, Scope defaultScope, MechanicRegistry mechanics,
         string file, string? ownerId, List<DataError> errors)
     {
@@ -31,6 +51,12 @@ public static class EffectJson
         if (el.ValueKind != JsonValueKind.Object) { Err("Эффект должен быть объектом"); return null; }
         var type = Str(el, "type");
         if (string.IsNullOrEmpty(type)) { Err("У эффекта не задан «type»"); return null; }
+
+        // Modifier effects check their flat form inside ModifierJson.Read (they share one property list).
+        var nestedModifier = type == "modifier" && el.TryGetProperty("modifier", out _);
+        IReadOnlySet<string>? allowedFields = nestedModifier ? ModifierNested : AllowedByType.GetValueOrDefault(type);
+        if (allowedFields != null)
+            foreach (var name in StrictJson.Unknown(el, allowedFields)) Err(StrictJson.Message(name));
 
         var scope = defaultScope;
         if (el.TryGetProperty("scope", out var sc))
@@ -75,7 +101,7 @@ public static class EffectJson
                 var src = new SourceRef("effect", ownerId ?? "", ownerId ?? "");
                 var mod = el.TryGetProperty("modifier", out var inner) ? inner : el;
                 var errs = new List<string>();
-                var m = ModifierJson.Read(mod, src, errs);
+                var m = ModifierJson.Read(mod, src, errs, nestedModifier ? null : ModifierFlatExtra);
                 foreach (var e in errs) Err(e);
                 if (m != null) result = new ModifierEffect(m, scope, perPoint ?? true);
                 break;
@@ -163,6 +189,8 @@ public static class EffectJson
             err($"Неизвестная область действия «{s}» (ожидается global, skill:<id> или {{\"tags\":[...]}})");
             return null;
         }
+        if (sc.ValueKind == JsonValueKind.Object)
+            foreach (var name in StrictJson.Unknown(sc, ScopeAllowed)) err(StrictJson.Message(name));
         if (sc.ValueKind == JsonValueKind.Object && sc.TryGetProperty("tags", out var t) && t.ValueKind == JsonValueKind.Array
             && t.EnumerateArray().All(x => x.ValueKind == JsonValueKind.String))
             return new Scope.Tags(TagSet.Of(t.EnumerateArray().Select(x => x.GetString()!).ToArray()));
@@ -184,6 +212,7 @@ public static class EffectJson
         }
         else if (t.ValueKind == JsonValueKind.Object)
         {
+            foreach (var name in StrictJson.Unknown(t, TriggerAllowed)) err(StrictJson.Message(name));
             foreach (var (name, make) in new (string, Func<int, Trigger>)[] { ("every_n_uses", n => new Trigger.EveryNUses(n)), ("every_n_hits", n => new Trigger.EveryNHits(n)) })
             {
                 if (!t.TryGetProperty(name, out var n)) continue;
@@ -199,6 +228,7 @@ public static class EffectJson
     private static ProcAction? ParseAction(JsonElement a, Action<string> err, string file, string? ownerId, List<DataError> errors)
     {
         if (a.ValueKind != JsonValueKind.Object) { err("Действие должно быть объектом"); return null; }
+        foreach (var name in StrictJson.Unknown(a, ActionAllowed)) err(StrictJson.Message(name));
         if (a.TryGetProperty("apply_ailment", out var ail))
         {
             if (ail.ValueKind == JsonValueKind.String && !string.IsNullOrEmpty(ail.GetString())) return new ProcAction.ApplyAilment(ail.GetString()!);
@@ -207,6 +237,7 @@ public static class EffectJson
         }
         if (a.TryGetProperty("cast_skill", out var cs))
         {
+            foreach (var name in StrictJson.Unknown(cs, CastSkillAllowed)) err(StrictJson.Message(name));
             var id = Str(cs, "id");
             if (string.IsNullOrEmpty(id) || !cs.TryGetProperty("damage_percent", out var dp) || dp.ValueKind != JsonValueKind.Number)
             { err("«cast_skill» требует «id» и числовое «damage_percent»"); return null; }
@@ -214,6 +245,7 @@ public static class EffectJson
         }
         if (a.TryGetProperty("apply_buff", out var ab))
         {
+            foreach (var name in StrictJson.Unknown(ab, ApplyBuffAllowed)) err(StrictJson.Message(name));
             var id = Str(ab, "id");
             if (string.IsNullOrEmpty(id) || !ab.TryGetProperty("duration", out var d) || d.ValueKind != JsonValueKind.Number)
             { err("«apply_buff» требует «id» и числовое «duration»"); return null; }

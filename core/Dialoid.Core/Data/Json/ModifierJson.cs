@@ -6,10 +6,19 @@ namespace Dialoid.Core.Data.Json;
 /// <summary>Reads the short modifier form: {"stat","kind","value","tags","per","conditions","priority"}.</summary>
 public static class ModifierJson
 {
-    public static Modifier? Read(JsonElement e, SourceRef source, List<string> errors)
+    private static readonly HashSet<string> Allowed = StrictJson.Fields("stat", "kind", "value", "tags", "per", "conditions", "priority");
+    private static readonly HashSet<string> PerAllowed = StrictJson.Fields("stat", "every", "cap");
+    private static readonly HashSet<string> ConditionAllowed = StrictJson.Fields("id", "param", "ref");
+
+    public static Modifier? Read(JsonElement e, SourceRef source, List<string> errors) => Read(e, source, errors, null);
+
+    /// <param name="extraAllowed">Further property names the host object may carry (an effect's own "type", "scope", ...).</param>
+    internal static Modifier? Read(JsonElement e, SourceRef source, List<string> errors, IReadOnlySet<string>? extraAllowed)
     {
         int before = errors.Count;
         if (e.ValueKind != JsonValueKind.Object) { errors.Add("Модификатор должен быть объектом"); return null; }
+        foreach (var name in StrictJson.Unknown(e, Allowed))
+            if (extraAllowed == null || !extraAllowed.Contains(name)) errors.Add(StrictJson.Message(name));
 
         string? stat = Str(e, "stat");
         if (string.IsNullOrEmpty(stat)) errors.Add("У модификатора не задан «stat»");
@@ -35,6 +44,7 @@ public static class ModifierJson
         PerStat? per = null;
         if (e.TryGetProperty("per", out var p))
         {
+            foreach (var name in StrictJson.Unknown(p, PerAllowed)) errors.Add(StrictJson.Message(name));
             var ps = Str(p, "stat");
             if (p.ValueKind != JsonValueKind.Object || string.IsNullOrEmpty(ps) || !p.TryGetProperty("every", out var ev) || ev.ValueKind != JsonValueKind.Number || ev.GetDouble() <= 0)
                 errors.Add("«per» требует «stat» и положительное «every»");
@@ -48,6 +58,7 @@ public static class ModifierJson
             if (cs.ValueKind != JsonValueKind.Array) errors.Add("«conditions» должен быть массивом");
             else foreach (var c in cs.EnumerateArray())
             {
+                foreach (var name in StrictJson.Unknown(c, ConditionAllowed)) errors.Add(StrictJson.Message(name));
                 if (c.ValueKind == JsonValueKind.String) conditions.Add(new Condition(c.GetString()!));
                 else if (c.ValueKind == JsonValueKind.Object && Str(c, "id") is { Length: > 0 } cid)
                     conditions.Add(new Condition(cid,

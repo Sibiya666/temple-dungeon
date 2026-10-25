@@ -27,7 +27,7 @@ public static class DataLoader
         var b = new GameData.Builder();
 
         int errorsBeforeStats = errors.Count;
-        foreach (var (id, s) in ReadCatalog<StatJson>(dataDirectory, "stats.json", x => x.Id, errors))
+        foreach (var (id, s) in ReadCatalog<StatJson>(dataDirectory, "stats.json", x => x.Id, errors, StatJson.CheckFields))
         {
             if (s.Min > s.Max)
                 errors.Add(new DataError("stats.json", id, $"«min» ({s.Min}) больше «max» ({s.Max})"));
@@ -40,12 +40,12 @@ public static class DataLoader
                 errors.Add(new DataError("stats.json", required, $"Не задан обязательный стат «{required}»: движок читает его по имени"));
         bool statsOk = errors.Count == errorsBeforeStats;
         int errorsBeforeTags = errors.Count;
-        foreach (var (id, _) in ReadCatalog<TagJson>(dataDirectory, "tags.json", x => x.Id, errors))
+        foreach (var (id, _) in ReadCatalog<TagJson>(dataDirectory, "tags.json", x => x.Id, errors, TagJson.CheckFields))
             b.Tags.Add(id);
 
         bool tagsOk = errors.Count == errorsBeforeTags;
         // Cross-references are only checked against catalogs that loaded cleanly, to avoid cascading errors.
-        foreach (var (id, a) in ReadCatalog<AilmentJson>(dataDirectory, "ailments.json", x => x.Id, errors))
+        foreach (var (id, a) in ReadCatalog<AilmentJson>(dataDirectory, "ailments.json", x => x.Id, errors, AilmentJson.CheckFields))
         {
             const string F = "ailments.json";
             bool ok = true;
@@ -83,7 +83,7 @@ public static class DataLoader
     {
         const string F = "passives.json";
         if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
-        foreach (var (id, p) in ReadCatalog<PassiveJson>(dir, F, x => x.Id, errors))
+        foreach (var (id, p) in ReadCatalog<PassiveJson>(dir, F, x => x.Id, errors, PassiveJson.CheckFields))
         {
             int before = errors.Count;
             void Err(string m) => errors.Add(new DataError(F, id, m));
@@ -102,7 +102,7 @@ public static class DataLoader
     {
         const string F = "ascendancies.json";
         if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
-        foreach (var (id, a) in ReadCatalog<AscendancyJson>(dir, F, x => x.Id, errors))
+        foreach (var (id, a) in ReadCatalog<AscendancyJson>(dir, F, x => x.Id, errors, AscendancyJson.CheckFields))
         {
             int before = errors.Count;
             void Err(string m) => errors.Add(new DataError(F, id, m));
@@ -136,7 +136,7 @@ public static class DataLoader
     {
         const string F = "skills.json";
         if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
-        foreach (var (id, s) in ReadCatalog<SkillJson>(dir, F, x => x.Id, errors))
+        foreach (var (id, s) in ReadCatalog<SkillJson>(dir, F, x => x.Id, errors, SkillJson.CheckFields))
         {
             int before = errors.Count;
             void Err(string m) => errors.Add(new DataError(F, id, m));
@@ -209,7 +209,7 @@ public static class DataLoader
     {
         const string F = "weapons.json";
         if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
-        foreach (var (id, w) in ReadCatalog<WeaponJson>(dir, F, x => x.Id, errors))
+        foreach (var (id, w) in ReadCatalog<WeaponJson>(dir, F, x => x.Id, errors, WeaponJson.CheckFields))
         {
             int before = errors.Count;
             void Err(string m) => errors.Add(new DataError(F, id, m));
@@ -238,7 +238,7 @@ public static class DataLoader
     {
         const string F = "dummies.json";
         if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
-        foreach (var (id, d) in ReadCatalog<DummyJson>(dir, F, x => x.Id, errors))
+        foreach (var (id, d) in ReadCatalog<DummyJson>(dir, F, x => x.Id, errors, DummyJson.CheckFields))
             if (d.ToDefinition(id, m => errors.Add(new DataError(F, id, m))) is { } def)
                 b.Dummies[id] = def;
     }
@@ -247,7 +247,7 @@ public static class DataLoader
     {
         const string F = "items.json";
         if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
-        foreach (var (id, it) in ReadCatalog<ItemJson>(dir, F, x => x.Id, errors))
+        foreach (var (id, it) in ReadCatalog<ItemJson>(dir, F, x => x.Id, errors, ItemJson.CheckFields))
         {
             int before = errors.Count;
             void Err(string m) => errors.Add(new DataError(F, id, m));
@@ -265,7 +265,7 @@ public static class DataLoader
         var path = Path.Combine(dir, F);
         if (!File.Exists(path)) return; // optional catalog
         ProgressionJson? file;
-        try { file = JsonSerializer.Deserialize<ProgressionJson>(File.ReadAllText(path), Options); }
+        try { file = ReadObjectFile<ProgressionJson>(path, F, errors, ProgressionJson.CheckFields); }
         catch (JsonException ex) { errors.Add(new DataError(F, null, $"Некорректный JSON: {ex.Message}")); return; }
         catch (IOException ex) { errors.Add(new DataError(F, null, $"Не удалось прочитать файл: {ex.Message}")); return; }
         if (file == null) { errors.Add(new DataError(F, null, "Файл пуст")); return; }
@@ -294,7 +294,7 @@ public static class DataLoader
         var path = Path.Combine(dir, F);
         if (!File.Exists(path)) return; // optional catalog
         AttributesFileJson? file;
-        try { file = JsonSerializer.Deserialize<AttributesFileJson>(File.ReadAllText(path), Options); }
+        try { file = ReadObjectFile<AttributesFileJson>(path, F, errors, AttributesFileJson.CheckFields); }
         catch (JsonException ex) { errors.Add(new DataError(F, null, $"Некорректный JSON: {ex.Message}")); return; }
         catch (IOException ex) { errors.Add(new DataError(F, null, $"Не удалось прочитать файл: {ex.Message}")); return; }
         if (file == null) { errors.Add(new DataError(F, null, "Файл пуст")); return; }
@@ -320,7 +320,7 @@ public static class DataLoader
     {
         const string F = "classes.json";
         if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
-        foreach (var (id, c) in ReadCatalog<ClassJson>(dir, F, x => x.Id, errors))
+        foreach (var (id, c) in ReadCatalog<ClassJson>(dir, F, x => x.Id, errors, ClassJson.CheckFields))
         {
             bool ok = true;
             void Err(string m) { errors.Add(new DataError(F, id, m)); ok = false; }
@@ -384,8 +384,19 @@ public static class DataLoader
         }
     }
 
+    /// <summary>Deserializes a single-object file (attributes, progression); unknown fields are reported through <paramref name="checkFields"/>.</summary>
+    private static T? ReadObjectFile<T>(string path, string file, List<DataError> errors, Action<JsonElement, string, string?, List<DataError>> checkFields)
+        where T : class
+    {
+        var text = File.ReadAllText(path);
+        using var doc = JsonDocument.Parse(text, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+        checkFields(doc.RootElement, file, null, errors);
+        return doc.RootElement.Deserialize<T>(Options);
+    }
+
     /// <summary>Reads a JSON array file; each element is deserialized independently so one bad entry does not hide the others.</summary>
-    internal static List<(string Id, T Item)> ReadCatalog<T>(string dir, string file, Func<T, string?> idOf, List<DataError> errors)
+    internal static List<(string Id, T Item)> ReadCatalog<T>(string dir, string file, Func<T, string?> idOf, List<DataError> errors,
+        Action<JsonElement, string, string?, List<DataError>>? checkFields = null)
         where T : class
     {
         var result = new List<(string, T)>();
@@ -415,6 +426,7 @@ public static class DataLoader
                 var id = item == null ? null : idOf(item);
                 if (string.IsNullOrWhiteSpace(id)) { errors.Add(new DataError(file, null, $"Запись №{index}: не задан «id»")); continue; }
                 if (!seen.Add(id)) { errors.Add(new DataError(file, id, $"Повторяющийся id «{id}»")); continue; }
+                checkFields?.Invoke(el, file, id, errors);
                 result.Add((id, item!));
             }
         }
