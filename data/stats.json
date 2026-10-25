@@ -36,7 +36,7 @@
     "name": "Сопротивление огню",
     "default": 0,
     "min": -100,
-    "max": 75,
+    "max": 100,
     "display": "percent"
   },
   {
@@ -52,7 +52,7 @@
     "name": "Сопротивление холоду",
     "default": 0,
     "min": -100,
-    "max": 75,
+    "max": 100,
     "display": "percent"
   },
   {
@@ -68,7 +68,7 @@
     "name": "Сопротивление молнии",
     "default": 0,
     "min": -100,
-    "max": 75,
+    "max": 100,
     "display": "percent"
   },
   {
@@ -84,7 +84,7 @@
     "name": "Сопротивление яду",
     "default": 0,
     "min": -100,
-    "max": 75,
+    "max": 100,
     "display": "percent"
   },
   {
@@ -99,7 +99,7 @@
     "id": "damage",
     "name": "Урон",
     "default": 0,
-    "min": -1000000000.0,
+    "min": 0,
     "max": 1000000000.0,
     "display": "number"
   },
