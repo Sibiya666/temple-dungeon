@@ -166,7 +166,7 @@ internal sealed class UseResolver
     }
 
     /// <summary>Behavior ground_duration/ground_fraction: one zone per skill, refreshed by each use, covering the same targets as the hit.
-    /// Its base is the primary hit's total ailment base; its damage type is the largest share of that base.</summary>
+    /// Its base is the primary hit's total ailment base; its damage type is the skill's GroundDamageType, else the largest share of that base.</summary>
     private void MakeZone(SkillRuntime skill, HitResult hit, IReadOnlyList<int> targets)
     {
         var b = skill.Skill.Behavior;
@@ -180,6 +180,7 @@ internal sealed class UseResolver
             if (v > best) { best = v; type = t; }
         }
         if (total <= 0) return;
+        type = skill.Skill.GroundDamageType ?? type;
         _s.Zones[skill.Id] = new GroundZone(skill.Id, type, total, fraction, duration, targets.ToList())
         {
             Triggered = skill.IsTriggeredCopy,

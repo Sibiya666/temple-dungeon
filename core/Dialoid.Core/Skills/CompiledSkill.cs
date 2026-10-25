@@ -22,6 +22,9 @@ public sealed record CompiledSkill(string SkillId, int Level, bool IsLoot, TagSe
     /// <summary>Final damage types that deal nothing (e.g. avatar_of_fire: unconverted physical).</summary>
     public IReadOnlySet<DamageType> NullifiedDamageTypes { get; init; } = NoTypes;
 
+    /// <summary>Damage type of the skill's ground zone (null: the largest share of the creating hit), e.g. ground_type lightning.</summary>
+    public DamageType? GroundDamageType { get; init; }
+
     /// <summary>Channel skills: ticks speed up with whole seconds of continuous channelling (set by mechanics, e.g. whirl_rage).</summary>
     public ChannelRamp? ChannelRamp { get; init; }
 

@@ -106,6 +106,7 @@ public sealed class MechanicSkillDraft
         Cooldown = skill.Base.Cooldown;
         ChannelLimit = skill.ChannelLimit;
         ChannelRamp = skill.ChannelRamp;
+        GroundDamageType = skill.GroundDamageType;
         Procs = skill.Procs;
     }
 
@@ -127,6 +128,9 @@ public sealed class MechanicSkillDraft
 
     /// <summary>Channel skills only: ticks speed up with whole seconds of continuous channelling.</summary>
     public ChannelRamp? ChannelRamp { get; set; }
+
+    /// <summary>Damage type of the skill's ground zone (null: the largest share of the creating hit).</summary>
+    public DamageType? GroundDamageType { get; set; }
 
     /// <summary>The skill's procs (e.g. a cry's buff); replace the list to change them.</summary>
     public IReadOnlyList<GrantProcEffect> Procs { get; set; }
@@ -163,6 +167,7 @@ public sealed class MechanicSkillDraft
         Conversions = _conversions.ToList(),
         ChannelLimit = ChannelLimit,
         ChannelRamp = ChannelRamp,
+        GroundDamageType = GroundDamageType,
         Procs = Procs.ToList(),
         NullifiedDamageTypes = new HashSet<DamageType>(_nullified),
     };

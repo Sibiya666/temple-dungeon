@@ -23,5 +23,10 @@ public static class MechanicCatalog
         registry.Register(new FleshRend());
         registry.Register(new BattleTrance());
         registry.Register(new BloodFeast());
+
+        // Thunder (spec 10.4)
+        registry.Register(new StaticCharge());
+        registry.Register(new Grounding());
+        registry.Register(new GroundType());
     }
 }
