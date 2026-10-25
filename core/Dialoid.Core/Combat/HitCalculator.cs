@@ -8,6 +8,10 @@ public static class HitCalculator
     /// <summary>Context tag present only when the damage of a hit is evaluated (never for DoTs or zones): "+X% to hits" modifiers require it.</summary>
     public const string HitTag = "hit";
 
+    /// <summary>Context tag of the crit part of a hit: "damage" modifiers requiring it apply to crits only (brittle). In
+    /// Average mode the expected hit is (1 − c)·m + c·critMult·m_crit, where m_crit is evaluated with this tag.</summary>
+    public const string CritTag = "crit";
+
     public static HitResult Resolve(HitInput input)
     {
         var ev = input.Character.Evaluator;
@@ -44,9 +48,20 @@ public static class HitCalculator
             breakdown.Add(dmg);
             var mult = Math.Max(0, dmg.Value);
 
+            // Crit-only modifiers: evaluated with the crit tag when a crit can happen; the same multiplier keeps the plain formula.
+            var critOnly = mult;
+            if (input.IsCrit != false && (input.IsCrit == true || chance > 0))
+            {
+                var critDmg = ev.Evaluate("damage", ctx.With(CritTag), input.Conditions, 1);
+                critOnly = Math.Max(0, critDmg.Value);
+                if (critOnly != mult) breakdown.Add(critDmg);
+            }
+
             var value = input.PickInRange(p.Min, p.Max);
             var ailmentBase = value * critApplied; // after base, conversion and crit; before modifiers and defense (spec 6.1 item 7)
-            var amount = ailmentBase * mult;
+            var amount = critOnly == mult
+                ? ailmentBase * mult
+                : value * (input.IsCrit == true ? critMult * critOnly : (1 - chance / 100) * mult + chance / 100 * critMult * critOnly);
 
             if (p.Type == DamageType.Physical)
                 amount *= 1 - Mitigation.ArmorReduction(input.Target.Armor, amount);

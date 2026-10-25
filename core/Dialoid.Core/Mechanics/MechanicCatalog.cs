@@ -35,5 +35,13 @@ public static class MechanicCatalog
         registry.Register(new EternalFire());
         registry.Register(new SoulHeat());
         registry.Register(new FireArmor());
+
+        // Cryomancer (spec 10.4)
+        registry.Register(new Shatter());
+        registry.Register(new IceArmor());
+        registry.Register(new GrantSkillNode());
+        registry.Register(new AilmentSwap());
+        registry.Register(new Brittle());
+        registry.Register(new ChillSlow());
     }
 }
