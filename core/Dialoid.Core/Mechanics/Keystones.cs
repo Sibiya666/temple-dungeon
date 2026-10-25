@@ -89,7 +89,7 @@ public sealed class Inevitability : IMechanic
         ctx.AddCharacterModifier(ctx.Mod("damage", ModKind.More, ctx.Number("hit_more", 18), tags: TagSet.Of(HitCalculator.HitTag)));
         var less = ctx.Number("ailment_chance_more", -30);
         foreach (var def in ctx.Data.Ailments.Values.OrderBy(a => a.Id, StringComparer.Ordinal))
-            if (ctx.Data.Stats.TryGetValue(def.ChanceStat, out var stat) && stat.Default < 100)
+            if (ctx.Data.Stats[def.ChanceStat].Default < 100) // ailments.json only names existing stats
                 ctx.AddCharacterModifier(ctx.Mod(def.ChanceStat, ModKind.More, less));
     }
 }

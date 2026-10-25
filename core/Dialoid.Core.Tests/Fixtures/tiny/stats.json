@@ -470,5 +470,29 @@
     "min": -1000000000.0,
     "max": 1000000000.0,
     "display": "percent"
+  },
+  {
+    "id": "resist_cold_max",
+    "name": "Максимум сопротивления холоду",
+    "default": 75,
+    "min": 0,
+    "max": 100,
+    "display": "percent"
+  },
+  {
+    "id": "resist_lightning_max",
+    "name": "Максимум сопротивления молнии",
+    "default": 75,
+    "min": 0,
+    "max": 100,
+    "display": "percent"
+  },
+  {
+    "id": "resist_poison_max",
+    "name": "Максимум сопротивления яду",
+    "default": 75,
+    "min": 0,
+    "max": 100,
+    "display": "percent"
   }
 ]

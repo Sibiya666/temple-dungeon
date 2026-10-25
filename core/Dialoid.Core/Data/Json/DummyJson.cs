@@ -35,6 +35,8 @@ internal sealed class DummyJson
         if (Armor < 0) Err("«armor» не может быть отрицательной");
         if (FreezeDurationMultiplier < 0) Err("«freeze_duration_multiplier» не может быть отрицательным");
         var resists = ParseTypes(Resists, "resists", Err);
+        foreach (var (type, value) in resists.Where(r => r.Value is < -100 or > 100))
+            Err($"Сопротивление «{type.ToString().ToLowerInvariant()}» должно быть от −100 до 100 (а задано {value}): при 100+ попадания лечили бы");
 
         DummyAttack? attack = null;
         if (Attack != null)

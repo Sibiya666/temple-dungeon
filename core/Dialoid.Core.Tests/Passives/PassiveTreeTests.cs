@@ -121,7 +121,7 @@ public class PassiveTreeTests
         Assert.Equal(10, Sum(c, "life", ModKind.Flat, "passive"));
         Assert.Contains(c.GlobalModifiers, m => m.Stat == "damage" && m.Source.Kind == "keystone" && m.Source.Id == "test_keystone");
         var d = Assert.Single(c.DeferredEffects);
-        Assert.Equal(new AddBehaviorEffect("pierce", 1, new Scope.Skill("test_skill")), d.Effect);
+        Assert.Equal(new AddBehaviorEffect("pierce_count", 1, new Scope.Skill("test_bolt")), d.Effect);
         Assert.Equal("passive", d.Source.Kind);
         Assert.Equal("notable_a", d.Source.Id);
     }

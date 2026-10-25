@@ -152,7 +152,8 @@ public static class Validator
                     errors.Add(new DataError("weapons.json", w.Id, $"Имплицит: неизвестный стат «{m.Stat}»"));
                 if (m.Per is { } per && !data.Stats.ContainsKey(per.Stat))
                     errors.Add(new DataError("weapons.json", w.Id, $"Имплицит: неизвестный стат «{per.Stat}» в «per»"));
-                CheckConditions(m, "weapons.json", w.Id, "Имплицит: ", errors);
+                CheckConditions(data, m, "weapons.json", w.Id, "Имплицит: ", errors);
+                CheckTags(data, m.RequiredTags.Items, "weapons.json", w.Id, "Имплицит: ", errors);
             }
         }
     }
@@ -172,14 +173,35 @@ public static class Validator
         {
             var where = nodeId == null ? "" : $"Узел «{nodeId}»: ";
             foreach (var e in effects)
+            {
+                switch (e.Scope)
+                {
+                    case Scope.Skill sc when !data.Skills.ContainsKey(sc.SkillId):
+                        errors.Add(new DataError(file, ownerId, $"{where}область «skill:{sc.SkillId}» ссылается на неизвестный скилл"));
+                        break;
+                    case Scope.Tags tg:
+                        CheckTags(data, tg.Required.Items, file, ownerId, $"{where}область по тегам: ", errors);
+                        break;
+                }
                 switch (e)
                 {
+                    case AddTagEffect at:
+                        CheckTags(data, new[] { at.Tag }, file, ownerId, where, errors);
+                        break;
+                    case RemoveTagEffect rt:
+                        CheckTags(data, new[] { rt.Tag }, file, ownerId, where, errors);
+                        break;
                     case ModifierEffect me:
+                        CheckTags(data, me.Modifier.RequiredTags.Items, file, ownerId, where, errors);
+                        if (owner != null && me.PerPoint && me.Modifier.Kind == ModKind.More && nodeId != null
+                            && owner.Tree.FirstOrDefault(n => n.Id == nodeId) is { } node && me.Modifier.Value * node.MaxPoints < -100)
+                            errors.Add(new DataError(file, ownerId,
+                                $"{where}«more» {me.Modifier.Value} за очко при {node.MaxPoints} очках даёт меньше −100: множитель стал бы отрицательным"));
                         if (!data.Stats.ContainsKey(me.Modifier.Stat))
                             errors.Add(new DataError(file, ownerId, $"{where}неизвестный стат «{me.Modifier.Stat}»"));
                         if (me.Modifier.Per is { } per && !data.Stats.ContainsKey(per.Stat))
                             errors.Add(new DataError(file, ownerId, $"{where}неизвестный стат «{per.Stat}» в «per»"));
-                        CheckConditions(me.Modifier, file, ownerId, where, errors);
+                        CheckConditions(data, me.Modifier, file, ownerId, where, errors);
                         break;
                     case MechanicEffect mech:
                         CheckMechanic(data, mechanics, mech, file, ownerId, where, errors);
@@ -188,6 +210,7 @@ public static class Validator
                         CheckProcEffect(data, proc, file, ownerId, where, owner, errors);
                         break;
                 }
+            }
         }
     }
 
@@ -242,24 +265,73 @@ public static class Validator
                 {
                     if (!data.Stats.ContainsKey(m.Stat))
                         errors.Add(new DataError(file, ownerId, $"{where}бафф «{buff.BuffId}»: неизвестный стат «{m.Stat}»"));
-                    CheckConditions(m, file, ownerId, $"{where}бафф «{buff.BuffId}»: ", errors);
+                    CheckConditions(data, m, file, ownerId, $"{where}бафф «{buff.BuffId}»: ", errors);
+                    CheckTags(data, m.RequiredTags.Items, file, ownerId, $"{where}бафф «{buff.BuffId}»: ", errors);
                 }
                 break;
         }
     }
 
-    private static void CheckConditions(Modifier m, string file, string ownerId, string where, List<DataError> errors)
+    private static void CheckConditions(GameData data, Modifier m, string file, string ownerId, string where, List<DataError> errors)
     {
-        foreach (var c in m.Conditions.Where(c => !ConditionCatalog.IsKnown(c.Id)))
-            errors.Add(new DataError(file, ownerId,
-                $"{where}неизвестное условие «{c.Id}» (допустимы: {string.Join(", ", ConditionCatalog.Ids)})"));
+        foreach (var c in m.Conditions)
+        {
+            if (!ConditionCatalog.IsKnown(c.Id))
+            {
+                errors.Add(new DataError(file, ownerId,
+                    $"{where}неизвестное условие «{c.Id}» (допустимы: {string.Join(", ", ConditionCatalog.Ids)})"));
+                continue;
+            }
+            switch (c.Id)
+            {
+                case "recently_used_skill" when c.Ref == null || !data.Skills.ContainsKey(c.Ref):
+                    errors.Add(new DataError(file, ownerId, $"{where}условие «recently_used_skill» ссылается на неизвестный скилл «{c.Ref}»"));
+                    break;
+                case "buff_active" when c.Ref == null || !KnownBuffs(data).Contains(c.Ref):
+                    errors.Add(new DataError(file, ownerId,
+                        $"{where}условие «buff_active» ссылается на бафф «{c.Ref}», который ничто не накладывает (ни apply_buff в данных, ни механика)"));
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Buff ids something can apply: every apply_buff proc in the data, plus "mechanic:&lt;id&gt;" for each mechanic carried by
+    /// some effect (mechanics name their buffs so). Ids a mechanic builds otherwise cannot be known here: a buff_active ref to
+    /// one of them must use the mechanic:&lt;id&gt; form.
+    /// </summary>
+    private static HashSet<string> KnownBuffs(GameData data)
+    {
+        var result = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var e in AllEffects(data))
+            switch (e)
+            {
+                case GrantProcEffect { Action: ProcAction.ApplyBuff buff }: result.Add(buff.BuffId); break;
+                case MechanicEffect mech: result.Add("mechanic:" + mech.MechanicId); break;
+            }
+        return result;
+    }
+
+    private static IEnumerable<Effect> AllEffects(GameData data) =>
+        data.Passives.Nodes.Values.SelectMany(n => n.Effects)
+            .Concat(data.Ascendancies.Values.SelectMany(a => a.Notables.Prepend(a.Start)).SelectMany(n => n.Effects))
+            .Concat(data.Skills.Values.SelectMany(sk => sk.Tree).SelectMany(n => n.Effects));
+
+    /// <summary>A tag from tags.json, or the dynamic skill:&lt;id&gt; tag every skill carries.</summary>
+    public static bool IsKnownTag(IReadOnlySet<string> catalog, string tag) =>
+        catalog.Contains(tag) || (tag.StartsWith("skill:", StringComparison.Ordinal) && tag.Length > 6);
+
+    private static void CheckTags(GameData data, IEnumerable<string> tags, string file, string ownerId, string where, List<DataError> errors)
+    {
+        foreach (var t in tags.Where(t => !IsKnownTag(data.Tags, t)))
+            errors.Add(new DataError(file, ownerId, $"{where}неизвестный тег «{t}»"));
     }
 
     private static void CheckClassBonusConditions(GameData data, List<DataError> errors)
     {
         foreach (var c in data.Classes.Values)
             foreach (var m in c.ClassBonuses)
-                CheckConditions(m, "classes.json", c.Id, "Бонус класса: ", errors);
+                CheckConditions(data, m, "classes.json", c.Id, "Бонус класса: ", errors);
     }
 
     /// <summary>Per-stat dependencies ("X per Y") must be acyclic over every modifier the data can produce.</summary>

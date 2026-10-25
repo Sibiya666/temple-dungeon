@@ -142,7 +142,7 @@ internal static class MechanicTestData
 
     public static void AddTags(string dir, params string[] tags) => Edit(dir, "tags.json", t =>
     {
-        foreach (var tag in tags) t.AsArray().Add(JsonNode.Parse($"{{\"id\":\"{tag}\",\"name\":\"{tag}\"}}"));
+        foreach (var tag in tags.Where(tag => t.AsArray().All(x => x!["id"]!.GetValue<string>() != tag))) t.AsArray().Add(JsonNode.Parse($"{{\"id\":\"{tag}\",\"name\":\"{tag}\"}}"));
     });
 
     public static GameData Keystone(string mechanicId, Action<string>? mutate = null) =>

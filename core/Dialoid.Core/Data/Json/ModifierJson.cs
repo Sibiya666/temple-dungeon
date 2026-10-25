@@ -22,6 +22,8 @@ public static class ModifierJson
         double value = 0;
         if (!e.TryGetProperty("value", out var v) || v.ValueKind != JsonValueKind.Number) errors.Add("У модификатора не задано числовое «value»");
         else value = v.GetDouble();
+        if (kind == ModKind.More && value < -100)
+            errors.Add($"«more» не может быть меньше −100 (а задано {value}): множитель стал бы отрицательным");
 
         var tags = TagSet.Empty;
         if (e.TryGetProperty("tags", out var t))

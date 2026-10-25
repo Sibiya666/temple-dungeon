@@ -18,7 +18,7 @@
         "id": "asc_n3", "name": "Третья сила", "description": "+20% к урону и цепь для заклинаний",
         "effects": [
           { "type": "modifier", "stat": "damage", "kind": "more", "value": 20 },
-          { "type": "add_behavior", "param": "chain", "delta": 1, "scope": { "tags": ["spell"] } }
+          { "type": "add_behavior", "param": "chain_count", "delta": 1, "scope": { "tags": ["spell"] } }
         ]
       }
     ]

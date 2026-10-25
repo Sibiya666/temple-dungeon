@@ -85,12 +85,16 @@ public static class EffectJson
             case "set_behavior":
             {
                 var p = Req("param"); double v = Num("value");
+                if (p != null && !Skills.BehaviorKeys.IsKnown(p))
+                    Err($"Неизвестный параметр поведения «{p}» (допустимы: {string.Join(", ", Skills.BehaviorKeys.All)})");
                 if (p != null && errors.Count == before) result = new SetBehaviorEffect(p, v, scope);
                 break;
             }
             case "add_behavior":
             {
                 var p = Req("param"); double d = Num("delta");
+                if (p != null && !Skills.BehaviorKeys.IsKnown(p))
+                    Err($"Неизвестный параметр поведения «{p}» (допустимы: {string.Join(", ", Skills.BehaviorKeys.All)})");
                 if (p != null && errors.Count == before) result = new AddBehaviorEffect(p, d, scope, perPoint ?? true);
                 break;
             }

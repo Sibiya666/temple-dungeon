@@ -88,8 +88,7 @@ public sealed class Reckless : IMechanic
     {
         if (ctx.Skill != null) return;
         foreach (var stat in Resists)
-            if (ctx.Data.Stats.ContainsKey(stat))
-                ctx.AddCharacterModifier(ctx.Mod(stat, ModKind.Override, 0, priority: AscendancyPriority));
+            ctx.AddCharacterModifier(ctx.Mod(stat, ModKind.Override, 0, priority: AscendancyPriority));
     }
 
     public void OnUse(MechanicSimContext ctx) => Update(ctx);

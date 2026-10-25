@@ -149,4 +149,93 @@ public class ValidatorTests
                      "shatter", "ice_armor", "grant_skill_node", "ailment_swap", "brittle", "chill_slow" })
             Assert.NotNull(MechanicRegistry.Default.Get(id).ParamSchema);
     }
+
+    private static string Mod(string extra) =>
+        "[{\"type\":\"modifier\",\"stat\":\"damage\",\"kind\":\"increased\",\"value\":1" + extra + "}]";
+
+    [Fact]
+    public void More_below_minus_100_is_rejected()
+    {
+        var r = SmallA("[{\"type\":\"modifier\",\"stat\":\"damage\",\"kind\":\"more\",\"value\":-120}]");
+        Assert.Contains(r.Errors, e => e.File == "passives.json" && e.Id == "small_a" && e.Message.Contains("−100"));
+        Assert.Empty(SmallA("[{\"type\":\"modifier\",\"stat\":\"damage\",\"kind\":\"more\",\"value\":-100}]").Errors);
+
+        // Per point: -30 x 5 points = -150.
+        var tree = LoadMutated("skills.json", a =>
+        {
+            var node = Node(a, "test_slash")["tree"]![0]!;
+            node["max_points"] = 5;
+            node["effects"] = JsonNode.Parse("[{\"type\":\"modifier\",\"stat\":\"damage\",\"kind\":\"more\",\"value\":-30}]");
+        });
+        Assert.Contains(tree.Errors, e => e.File == "skills.json" && e.Id == "test_slash" && e.Message.Contains("−100"));
+    }
+
+    [Fact]
+    public void Stat_min_max_and_default_are_checked()
+    {
+        var minMax = LoadMutated("stats.json", a => { Node(a, "armor")["min"] = 10; Node(a, "armor")["max"] = 5; });
+        Assert.Contains(minMax.Errors, e => e.File == "stats.json" && e.Id == "armor" && e.Message.Contains("«min»"));
+        var def = LoadMutated("stats.json", a => Node(a, "crit_chance")["default"] = 150);
+        Assert.Contains(def.Errors, e => e.File == "stats.json" && e.Id == "crit_chance" && e.Message.Contains("«default»"));
+    }
+
+    [Fact]
+    public void Missing_required_stat_is_a_load_error()
+    {
+        var r = LoadMutated("stats.json", a => a.Remove(Node(a, "resist_poison_max")));
+        Assert.Null(r.Data);
+        Assert.Contains(r.Errors, e => e.File == "stats.json" && e.Id == "resist_poison_max" && e.Message.Contains("обязательный"));
+        Assert.Contains("dodge_chance_max", RequiredStats.All);
+        Assert.Contains("penetration_physical", RequiredStats.All);
+    }
+
+    [Fact]
+    public void Tag_catalog_is_enforced_on_effect_tags_and_tag_scopes()
+    {
+        Assert.Contains(SmallA(Mod(",\"tags\":[\"fiery\"]")).Errors, e => e.Id == "small_a" && e.Message.Contains("неизвестный тег «fiery»"));
+        Assert.Contains(SmallA(Mod(",\"scope\":{\"tags\":[\"magic\"]}")).Errors, e => e.Id == "small_a" && e.Message.Contains("«magic»"));
+        Assert.Contains(SmallA("[{\"type\":\"add_tag\",\"tag\":\"wet\",\"scope\":\"skill:test_slash\"}]").Errors,
+            e => e.Id == "small_a" && e.Message.Contains("«wet»"));
+        Assert.Empty(SmallA(Mod(",\"tags\":[\"hit\",\"crit\",\"skill:test_slash\"]")).Errors); // engine tags and dynamic skill:*
+    }
+
+    [Fact]
+    public void Skill_scope_must_name_an_existing_skill()
+    {
+        var r = SmallA(Mod(",\"scope\":\"skill:nope\""));
+        Assert.Contains(r.Errors, e => e.Id == "small_a" && e.Message.Contains("skill:nope"));
+    }
+
+    [Fact]
+    public void Behavior_params_must_be_known()
+    {
+        var effect = SmallA("[{\"type\":\"set_behavior\",\"param\":\"pierce\",\"value\":2,\"scope\":\"skill:test_bolt\"}]");
+        Assert.Contains(effect.Errors, e => e.Id == "small_a" && e.Message.Contains("«pierce»"));
+        var skill = LoadMutated("skills.json", a => Node(a, "test_slam")["behavior"] = JsonNode.Parse("{\"radius\":4}"));
+        Assert.Contains(skill.Errors, e => e.File == "skills.json" && e.Id == "test_slam" && e.Message.Contains("«radius»"));
+    }
+
+    [Fact]
+    public void Condition_refs_must_name_a_skill_or_a_buff()
+    {
+        var skill = SmallA(Mod(",\"conditions\":[{\"id\":\"recently_used_skill\",\"ref\":\"nope\"}]"));
+        Assert.Contains(skill.Errors, e => e.Id == "small_a" && e.Message.Contains("recently_used_skill") && e.Message.Contains("nope"));
+        Assert.Empty(SmallA(Mod(",\"conditions\":[{\"id\":\"recently_used_skill\",\"ref\":\"test_slam\"}]")).Errors);
+
+        var buff = SmallA(Mod(",\"conditions\":[{\"id\":\"buff_active\",\"ref\":\"rage\"}]"));
+        Assert.Contains(buff.Errors, e => e.Id == "small_a" && e.Message.Contains("buff_active") && e.Message.Contains("rage"));
+        // A buff some apply_buff proc applies, or a mechanic's own buff (mechanic:<id>), is known.
+        var proc = ",{\"type\":\"grant_proc\",\"scope\":\"skill:test_slash\",\"trigger\":\"on_use\",\"action\":{\"apply_buff\":{\"id\":\"rage\",\"duration\":3}}}";
+        Assert.Empty(SmallA(Mod(",\"conditions\":[{\"id\":\"buff_active\",\"ref\":\"rage\"}]")[..^1] + proc + "]").Errors);
+        Assert.Empty(SmallA(Mod(",\"conditions\":[{\"id\":\"buff_active\",\"ref\":\"mechanic:flesh_rend\"}]")[..^1]
+                            + ",{\"type\":\"mechanic\",\"id\":\"flesh_rend\"}]").Errors);
+    }
+
+    [Fact]
+    public void Dummy_resists_must_be_within_minus_100_and_100()
+    {
+        var r = LoadMutated("dummies.json", a => Node(a, "test_boss")["resists"] = JsonNode.Parse("{\"fire\":150}"));
+        Assert.Contains(r.Errors, e => e.File == "dummies.json" && e.Id == "test_boss" && e.Message.Contains("fire"));
+        Assert.Empty(LoadMutated("dummies.json", a => Node(a, "test_boss")["resists"] = JsonNode.Parse("{\"fire\":100,\"cold\":-100}")).Errors);
+    }
 }

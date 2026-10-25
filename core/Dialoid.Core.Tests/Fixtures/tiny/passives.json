@@ -38,7 +38,7 @@
     "links": ["small_b"],
     "effects": [
       { "type": "modifier", "stat": "damage", "kind": "increased", "value": 15 },
-      { "type": "add_behavior", "param": "pierce", "delta": 1, "scope": "skill:test_skill" }
+      { "type": "add_behavior", "param": "pierce_count", "delta": 1, "scope": "skill:test_bolt" }
     ]
   },
   {

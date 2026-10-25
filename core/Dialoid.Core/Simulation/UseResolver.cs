@@ -141,7 +141,7 @@ internal sealed class UseResolver
             if (ailBase <= 0) continue;
 
             // The skill's own chance is the stat's base (on top of the stat default), so Increased/More/Less scale it too.
-            var statDefault = _data.Stats.TryGetValue(def.ChanceStat, out var sd) ? sd.Default : 0;
+            var statDefault = _data.Stats[def.ChanceStat].Default; // ailments.json only names existing stats
             var chance = skill.Stat(def.ChanceStat, _conditions, skill.Skill.Base.AilmentChances.GetValueOrDefault(def.Id) + statDefault);
             if (chance <= 0 || !_random.Chance($"ail:{def.Id}:{skill.ChannelKey}:{ti}", chance / 100)) continue;
 
@@ -161,10 +161,10 @@ internal sealed class UseResolver
         return true;
     }
 
-    /// <summary>Max stacks: the stat (its data default as the base: bleed 8), 1 without the stat.</summary>
+    /// <summary>Max stacks: the stat, with its data default as the base (bleed 8).</summary>
     private int MaxStacks(SkillRuntime skill, AilmentDefinition def)
     {
-        var stackBase = _data.Stats.TryGetValue(def.MaxStacksStat, out var ms) ? ms.Default : 1;
+        var stackBase = _data.Stats[def.MaxStacksStat].Default;
         return (int)Math.Clamp(skill.Stat(def.MaxStacksStat, _conditions, stackBase), 0, int.MaxValue);
     }
 

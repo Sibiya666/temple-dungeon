@@ -18,7 +18,6 @@ internal sealed class SimRun
     private readonly CompiledCharacter _character;
     private readonly WeaponStub? _weapon;
     private readonly ResourceDefinition _resource;
-    private readonly bool _regenAvailable;
     private readonly Dictionary<string, SkillRuntime> _skills;
     private readonly Rotation _rotation;
     private readonly DummyDefinition _dummy;
@@ -34,9 +33,6 @@ internal sealed class SimRun
 
     // Defensive mode (spec 11.3): the dummy attacks the character until death or the survival cap.
     private readonly bool _defensive;
-    private readonly bool _hasLifeStat;
-    private readonly bool _hasDodgeMax;
-    private readonly GameData _data;
     private readonly SortedDictionary<DamageType, double> _damageTaken = new();
     private double _nextAttack;
 
@@ -48,14 +44,10 @@ internal sealed class SimRun
     public SimRun(GameData data, MechanicRegistry mechanics, CompiledCharacter character, WeaponStub? weapon,
         IReadOnlyList<SkillRuntime> skills, Rotation rotation, DummyDefinition dummy, SimConfig config)
     {
-        _data = data;
         _defensive = config.DummyAttacks && dummy.Attack is { IntervalSec: > 0 };
-        _hasLifeStat = data.Stats.ContainsKey("life");
-        _hasDodgeMax = data.Stats.ContainsKey("dodge_chance_max");
         _nextAttack = dummy.Attack?.IntervalSec ?? 0;
         _character = character;
         _weapon = weapon;
-        _regenAvailable = data.Stats.ContainsKey("resource_regen");
         _resource = character.Class.Resource;
         _skills = skills.ToDictionary(s => s.Id, StringComparer.Ordinal);
         _rotation = rotation;
@@ -80,7 +72,7 @@ internal sealed class SimRun
         _noDecay = character.Rules.GetValueOrDefault(CharacterRules.NoResourceDecay) != 0;
 
         var ev = character.Evaluator;
-        _s.LifeMax = _s.Life = data.Stats.ContainsKey("life") ? ev.Evaluate("life", default).Value : 0;
+        _s.LifeMax = _s.Life = ev.Evaluate("life", default).Value;
         _s.ResourceMax = ev.Evaluate("resource_max", default).Value;
         bool startsEmpty = _resource.RegenPerSec == 0 && _resource.DecayPerSec > 0; // Fury-like resources start at 0
         _s.Resource = startsEmpty ? 0 : _s.ResourceMax;
@@ -222,16 +214,16 @@ internal sealed class SimRun
     private void TickResource(double t, double dt)
     {
         var r = _s.Resource;
-        if (_regenAvailable) r += _procs.Evaluator.Evaluate("resource_regen", default, _conditions).Value * dt;
+        r += _procs.Evaluator.Evaluate("resource_regen", default, _conditions).Value * dt;
         if (_resource.DecayPerSec > 0 && !_noDecay && (_s.LastHitTime is not { } last || t - last >= _resource.DecayDelaySec - Eps))
             r -= _resource.DecayPerSec * dt;
         _s.Resource = Math.Clamp(r, 0, _s.ResourceMax);
     }
 
-    /// <summary>Life regeneration, every mode (spec 11.3): max life is re-read each step (buffs may change it).</summary>
+    /// <summary>Life regeneration, every mode (spec 11.3): max life is re-read each step (buffs may change it).
+    /// The required stats (life, life_regen_pct, ...) always exist: <see cref="RequiredStats"/> is checked at load.</summary>
     private void TickLife(double dt)
     {
-        if (!_hasLifeStat) return;
         var ev = _procs.Evaluator;
         _s.LifeMax = ev.Evaluate("life", default, _conditions).Value;
         var regen = ev.Evaluate("life_regen_pct", default, _conditions).Value / 100 * _s.LifeMax;
@@ -321,7 +313,7 @@ internal sealed class SimRun
         var gear = Growth.Gear(_character.Build.Level);
 
         var dodge = ev.Evaluate("dodge_chance", default, _conditions).Value;
-        var dodgeMax = _hasDodgeMax ? ev.Evaluate("dodge_chance_max", default, _conditions).Value : 50;
+        var dodgeMax = ev.Evaluate("dodge_chance_max", default, _conditions).Value;
         var p = Math.Clamp(Math.Min(dodge, dodgeMax), 0, 100) / 100;
         _log.Add(at, "dummy_attack", $"interval {SimLog.Num(attack.IntervalSec)}");
         if (_random.Chance("dodge", p))
@@ -331,9 +323,7 @@ internal sealed class SimRun
         }
 
         // Character damage_taken (percentage points, e.g. a risk node's +10%) applies after mitigation.
-        var takenMult = _data.Stats.ContainsKey("damage_taken")
-            ? 1 + Math.Max(-100, ev.Evaluate("damage_taken", default, _conditions).Value) / 100
-            : 1;
+        var takenMult = 1 + Math.Max(-100, ev.Evaluate("damage_taken", default, _conditions).Value) / 100;
 
         // Armor applies to physical hits; a mechanic rule can make a share of it mitigate elemental hits too (stone_skin).
         var armor = ev.Evaluate("armor", default, _conditions).Value;
@@ -351,8 +341,7 @@ internal sealed class SimRun
             {
                 var name = type.ToString().ToLowerInvariant();
                 var resist = ev.Evaluate("resist_" + name, default, _conditions).Value;
-                var capStat = "resist_" + name + "_max";
-                var cap = _data.Stats.ContainsKey(capStat) ? ev.Evaluate(capStat, default, _conditions).Value : 75;
+                var cap = ev.Evaluate("resist_" + name + "_max", default, _conditions).Value;
                 taken = hit * Mitigation.ResistMultiplier(Math.Min(resist, cap), 0);
                 if (elementalArmor > 0) taken *= 1 - Mitigation.ArmorReduction(armor * elementalArmor, hit);
             }

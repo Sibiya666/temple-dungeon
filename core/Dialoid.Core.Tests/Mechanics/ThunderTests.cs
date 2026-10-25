@@ -113,10 +113,8 @@ public class ThunderTests
     {
         var storm = "{\"type\":\"modifier\",\"stat\":\"penetration_lightning\",\"kind\":\"flat\",\"value\":15,\"tags\":[\"attack\"]}," +
                     "{\"type\":\"modifier\",\"stat\":\"resist_lightning_max\",\"kind\":\"flat\",\"value\":10}";
-        void AddCap(string dir) => Edit(dir, "stats.json", s => s.AsArray().Add(JsonNode.Parse(
-            "{\"id\":\"resist_lightning_max\",\"name\":\"Максимум сопротивления молнии\",\"default\":75,\"min\":0,\"max\":100,\"display\":\"percent\"}")));
-        var plainData = Asc(StormWeapon, AddCap);
-        var d = Asc(StormWeapon + "," + storm, AddCap);
+        var plainData = Asc(StormWeapon);
+        var d = Asc(StormWeapon + "," + storm);
 
         var ch = Compile(d, Warrior(true, "test_sword", "test_slash"));
         Assert.Equal(15, SkillStat(ch, "test_slash", "penetration_lightning"));

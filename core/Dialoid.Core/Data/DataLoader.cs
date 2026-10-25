@@ -28,7 +28,16 @@ public static class DataLoader
 
         int errorsBeforeStats = errors.Count;
         foreach (var (id, s) in ReadCatalog<StatJson>(dataDirectory, "stats.json", x => x.Id, errors))
+        {
+            if (s.Min > s.Max)
+                errors.Add(new DataError("stats.json", id, $"«min» ({s.Min}) больше «max» ({s.Max})"));
+            else if (s.Default < s.Min || s.Default > s.Max)
+                errors.Add(new DataError("stats.json", id, $"«default» ({s.Default}) вне диапазона [{s.Min}, {s.Max}]"));
             b.Stats[id] = s.ToDefinition();
+        }
+        if (errors.Count == errorsBeforeStats)
+            foreach (var required in RequiredStats.All.Where(r => !b.Stats.ContainsKey(r)))
+                errors.Add(new DataError("stats.json", required, $"Не задан обязательный стат «{required}»: движок читает его по имени"));
         bool statsOk = errors.Count == errorsBeforeStats;
         int errorsBeforeTags = errors.Count;
         foreach (var (id, _) in ReadCatalog<TagJson>(dataDirectory, "tags.json", x => x.Id, errors))
@@ -158,6 +167,9 @@ public static class DataLoader
                     Err($"«spell_damage.{key}» должен быть парой [мин, макс], где 0 ≤ мин ≤ макс");
                 else damage[dt] = (range[0], range[1]);
             }
+
+            foreach (var key in (s.Behavior ?? new()).Keys.Where(k => !BehaviorKeys.IsKnown(k)))
+                Err($"Неизвестный параметр поведения «{key}» в «behavior» (допустимы: {string.Join(", ", BehaviorKeys.All)})");
 
             var tree = new List<SkillTreeNode>();
             var seen = new HashSet<string>();
@@ -362,7 +374,7 @@ public static class DataLoader
                 if (statsOk && !b.Stats.ContainsKey(m.Stat)) Err($"Классовый бонус №{bi}: неизвестный стат «{m.Stat}»");
                 if (m.Per != null && statsOk && !b.Stats.ContainsKey(m.Per.Stat)) Err($"Классовый бонус №{bi}: неизвестный стат «{m.Per.Stat}» в «per»");
                 if (tagsOk) foreach (var t in m.RequiredTags.Items)
-                    if (!b.Tags.Contains(t)) Err($"Классовый бонус №{bi}: неизвестный тег «{t}»");
+                    if (!Validator.IsKnownTag(b.Tags, t)) Err($"Классовый бонус №{bi}: неизвестный тег «{t}»");
                 bonuses.Add(m);
             }
 
