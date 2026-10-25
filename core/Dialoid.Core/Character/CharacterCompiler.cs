@@ -1,5 +1,6 @@
 using Dialoid.Core.Data;
 using Dialoid.Core.Effects;
+using Dialoid.Core.Passives;
 using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
@@ -69,7 +70,58 @@ public sealed class CharacterCompiler
 
         mods.AddRange(cls.ClassBonuses);
 
+        var mechanics = new List<MechanicEffect>();
+        var deferred = new List<SourcedEffect>();
+        AddPassives(build, cls, mods, mechanics, deferred);
+        AddAscendancy(build, cls, mods, mechanics, deferred);
+
         return new CompiledCharacter(build, cls, new StatEvaluator(_data.Stats, mods), mods,
-            Array.Empty<CompiledSkill>(), Array.Empty<MechanicEffect>());
+            Array.Empty<CompiledSkill>(), mechanics, deferred);
+    }
+
+    private void AddPassives(Build build, ClassDefinition cls, List<Modifier> mods, List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
+    {
+        foreach (var id in build.PassiveNodes.Distinct())
+        {
+            if (!_data.Passives.Nodes.TryGetValue(id, out var node))
+                throw new ArgumentException($"Unknown passive node '{id}'.", nameof(build));
+            if (node.Kind == PassiveKind.Start) continue; // the class start is free and carries no allocation
+            var src = new SourceRef(node.Kind == PassiveKind.Keystone ? "keystone" : "passive", node.Id, node.Name);
+            if (node.Kind == PassiveKind.Attribute)
+            {
+                if (!build.AttributeChoices.TryGetValue(id, out var choice))
+                    throw new ArgumentException($"Attribute node '{id}' has no attribute choice.", nameof(build));
+                mods.Add(new Modifier(choice.StatId(), ModKind.Flat, PassiveTree.AttributeNodeBonus, TagSet.Empty,
+                    Array.Empty<Condition>(), null, src));
+            }
+            AddEffects(node.Effects, src, mods, mechanics, deferred);
+        }
+    }
+
+    private void AddAscendancy(Build build, ClassDefinition cls, List<Modifier> mods, List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
+    {
+        if (build.AscendancyId == null) return;
+        if (!_data.Ascendancies.TryGetValue(build.AscendancyId, out var asc) || asc.ClassId != cls.Id)
+            throw new ArgumentException($"Unknown ascendancy '{build.AscendancyId}' for class '{cls.Id}'.", nameof(build));
+        AddEffects(asc.Start.Effects, new SourceRef("ascendancy", asc.Start.Id, asc.Start.Name), mods, mechanics, deferred);
+        foreach (var id in build.AscendancyNodes.Distinct())
+        {
+            var node = asc.Notables.FirstOrDefault(n => n.Id == id)
+                ?? throw new ArgumentException($"Unknown ascendancy node '{id}' in '{asc.Id}'.", nameof(build));
+            AddEffects(node.Effects, new SourceRef("ascendancy", node.Id, node.Name), mods, mechanics, deferred);
+        }
+    }
+
+    /// <summary>Global modifiers go to the stat pool, mechanics to the mechanic list, everything else waits for skill compilation.</summary>
+    private static void AddEffects(IReadOnlyList<Effect> effects, SourceRef src, List<Modifier> mods,
+        List<MechanicEffect> mechanics, List<SourcedEffect> deferred)
+    {
+        foreach (var e in effects)
+            switch (e)
+            {
+                case ModifierEffect { Scope: Scope.Global } me: mods.Add(me.Modifier with { Source = src }); break;
+                case MechanicEffect mech: mechanics.Add(mech); break;
+                default: deferred.Add(new SourcedEffect(e, src)); break;
+            }
     }
 }

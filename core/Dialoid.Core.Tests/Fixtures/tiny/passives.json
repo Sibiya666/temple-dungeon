@@ -1,0 +1,53 @@
+[
+  {
+    "id": "test_start_warrior", "name": "Старт воителя", "description": "Начало пути воителя",
+    "kind": "start", "region": "test", "x": 0, "y": 0,
+    "links": ["small_a"], "start_for_class": "test_warrior"
+  },
+  {
+    "id": "test_start_mage", "name": "Старт мага", "description": "Начало пути мага",
+    "kind": "start", "region": "test", "x": 400, "y": 0,
+    "links": ["small_c"], "start_for_class": "test_mage"
+  },
+  {
+    "id": "small_a", "name": "Крепкое тело", "description": "+10 к здоровью",
+    "kind": "small", "region": "test", "x": 50, "y": 0,
+    "links": ["small_b"],
+    "effects": [ { "type": "modifier", "stat": "life", "kind": "flat", "value": 10 } ]
+  },
+  {
+    "id": "small_b", "name": "Острый глаз", "description": "+1% к шансу крита",
+    "kind": "small", "region": "test", "x": 100, "y": 0,
+    "links": ["small_c"],
+    "effects": [ { "type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 1 } ]
+  },
+  {
+    "id": "small_c", "name": "Закалка", "description": "+20 к броне",
+    "kind": "small", "region": "test", "x": 150, "y": 0,
+    "links": [],
+    "effects": [ { "type": "modifier", "stat": "armor", "kind": "flat", "value": 20 } ]
+  },
+  {
+    "id": "attr_node", "name": "Узел атрибута", "description": "+5 к выбранному атрибуту",
+    "kind": "attribute", "region": "test", "x": 50, "y": 50,
+    "links": ["small_a"]
+  },
+  {
+    "id": "notable_a", "name": "Мастер клинка", "description": "+15% к урону",
+    "kind": "notable", "region": "test", "x": 100, "y": 50,
+    "links": ["small_b"],
+    "effects": [
+      { "type": "modifier", "stat": "damage", "kind": "increased", "value": 15 },
+      { "type": "add_behavior", "param": "pierce", "delta": 1, "scope": "skill:test_skill" }
+    ]
+  },
+  {
+    "id": "test_keystone", "name": "Ключевой тест", "description": "+30% к урону, -20% к здоровью",
+    "kind": "keystone", "region": "test", "x": 150, "y": 100,
+    "links": ["notable_a"],
+    "effects": [
+      { "type": "modifier", "stat": "damage", "kind": "more", "value": 30 },
+      { "type": "modifier", "stat": "life", "kind": "more", "value": -20 }
+    ]
+  }
+]

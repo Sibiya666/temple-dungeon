@@ -2,6 +2,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Dialoid.Core.Character;
 using Dialoid.Core.Data.Json;
+using Dialoid.Core.Effects;
+using Dialoid.Core.Passives;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Data;
@@ -16,8 +18,9 @@ public static class DataLoader
         AllowTrailingCommas = true,
     };
 
-    public static LoadResult Load(string dataDirectory)
+    public static LoadResult Load(string dataDirectory, MechanicRegistry? mechanics = null)
     {
+        mechanics ??= MechanicRegistry.Default;
         var errors = new List<DataError>();
         var b = new GameData.Builder();
 
@@ -50,9 +53,71 @@ public static class DataLoader
 
         LoadAttributes(dataDirectory, b, errors, statsOk);
         LoadClasses(dataDirectory, b, errors, statsOk, tagsOk);
+        LoadPassives(dataDirectory, b, errors, mechanics);
+        LoadAscendancies(dataDirectory, b, errors, mechanics);
 
-        return new LoadResult(errors.Count == 0 ? b.Build() : null, errors);
+        if (errors.Count > 0) return new LoadResult(null, errors);
+        // Cross-file checks run only on data that loaded cleanly, so they do not drown real errors in noise.
+        var data = b.Build();
+        errors.AddRange(Validator.Validate(data, mechanics));
+        return new LoadResult(errors.Count == 0 ? data : null, errors);
     }
+
+    private static void LoadPassives(string dir, GameData.Builder b, List<DataError> errors, MechanicRegistry mechanics)
+    {
+        const string F = "passives.json";
+        if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
+        foreach (var (id, p) in ReadCatalog<PassiveJson>(dir, F, x => x.Id, errors))
+        {
+            int before = errors.Count;
+            void Err(string m) => errors.Add(new DataError(F, id, m));
+            if (string.IsNullOrWhiteSpace(p.Name)) Err("Не задано «name»");
+            if (p.Kind is null) Err("Не задан «kind» (start, small, attribute, notable или keystone)");
+            if (p.Kind == PassiveKind.Start && string.IsNullOrEmpty(p.StartForClass)) Err("У стартового узла не задан «start_for_class»");
+            if (p.Kind != PassiveKind.Start && p.Kind is not null && p.StartForClass != null) Err("«start_for_class» допустим только у узла вида start");
+            var effects = ParseEffects(p.Effects, mechanics, F, id, errors);
+            if (errors.Count > before) continue;
+            b.PassiveNodes[id] = new PassiveNode(id, p.Name!, p.Description ?? "", p.Kind!.Value, p.Region ?? "", p.X, p.Y, effects, p.StartForClass);
+            b.PassiveLinks[id] = p.Links ?? new List<string>();
+        }
+    }
+
+    private static void LoadAscendancies(string dir, GameData.Builder b, List<DataError> errors, MechanicRegistry mechanics)
+    {
+        const string F = "ascendancies.json";
+        if (!File.Exists(Path.Combine(dir, F))) return; // optional catalog
+        foreach (var (id, a) in ReadCatalog<AscendancyJson>(dir, F, x => x.Id, errors))
+        {
+            int before = errors.Count;
+            void Err(string m) => errors.Add(new DataError(F, id, m));
+            if (string.IsNullOrWhiteSpace(a.Name)) Err("Не задано «name»");
+            if (string.IsNullOrWhiteSpace(a.ClassId)) Err("Не задан «class_id»");
+            var seen = new HashSet<string>();
+            AscendancyNode? Node(AscendancyNodeJson? n, string label, int defaultCost)
+            {
+                if (n == null) { Err($"Не задан «{label}»"); return null; }
+                int nodeBefore = errors.Count;
+                if (string.IsNullOrWhiteSpace(n.Id)) Err($"У узла «{label}» не задан «id»");
+                else if (!seen.Add(n.Id)) Err($"Повторяющийся id узла «{n.Id}»");
+                if (string.IsNullOrWhiteSpace(n.Name)) Err($"У узла «{n.Id ?? label}» не задано «name»");
+                var cost = n.Cost ?? defaultCost;
+                if (label == "notables" && cost <= 0) Err($"Цена узла «{n.Id}» должна быть положительной");
+                var effects = ParseEffects(n.Effects, mechanics, F, id, errors);
+                if (errors.Count > nodeBefore) return null;
+                return new AscendancyNode(n.Id!, n.Name!, n.Description ?? "", cost, effects);
+            }
+            var start = Node(a.Start, "start", 0);
+            if (a.Start != null) start = start is null ? null : start with { Cost = 0 };
+            var notables = new List<AscendancyNode>();
+            if (a.Notables == null || a.Notables.Count == 0) Err("Не задан список «notables»");
+            else foreach (var n in a.Notables) if (Node(n, "notables", Ascendancy.DefaultNotableCost) is { } node) notables.Add(node);
+            if (errors.Count > before) continue;
+            b.Ascendancies[id] = new Ascendancy(id, a.Name!, a.ClassId!, start!, notables);
+        }
+    }
+
+    private static IReadOnlyList<Effect> ParseEffects(JsonElement? el, MechanicRegistry mechanics, string file, string id, List<DataError> errors) =>
+        el is { } e ? EffectJson.ParseList(e, new Scope.Global(), mechanics, file, id, errors) : Array.Empty<Effect>();
 
     private static void LoadAttributes(string dir, GameData.Builder b, List<DataError> errors, bool statsOk)
     {

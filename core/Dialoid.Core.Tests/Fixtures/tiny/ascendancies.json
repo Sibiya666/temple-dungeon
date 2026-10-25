@@ -1,0 +1,26 @@
+[
+  {
+    "id": "test_asc", "name": "Тестовый асцендант", "class_id": "test_warrior",
+    "start": {
+      "id": "asc_start", "name": "Начало пути", "description": "+5% к урону",
+      "effects": [ { "type": "modifier", "stat": "damage", "kind": "increased", "value": 5 } ]
+    },
+    "notables": [
+      {
+        "id": "asc_n1", "name": "Первая сила", "description": "+10% к урону",
+        "effects": [ { "type": "modifier", "stat": "damage", "kind": "increased", "value": 10 } ]
+      },
+      {
+        "id": "asc_n2", "name": "Вторая сила", "description": "+10 к здоровью",
+        "effects": [ { "type": "modifier", "stat": "life", "kind": "flat", "value": 10 } ]
+      },
+      {
+        "id": "asc_n3", "name": "Третья сила", "description": "+20% к урону и цепь для заклинаний",
+        "effects": [
+          { "type": "modifier", "stat": "damage", "kind": "more", "value": 20 },
+          { "type": "add_behavior", "param": "chain", "delta": 1, "scope": { "tags": ["spell"] } }
+        ]
+      }
+    ]
+  }
+]

@@ -107,6 +107,8 @@ public class AttributeTests
         var dir = FixturePaths.CopyTiny();
         File.Delete(Path.Combine(dir, "classes.json"));
         File.Delete(Path.Combine(dir, "attributes.json"));
+        File.Delete(Path.Combine(dir, "passives.json"));
+        File.Delete(Path.Combine(dir, "ascendancies.json"));
         var r = DataLoader.Load(dir);
         Assert.True(r.Ok);
         Assert.Empty(r.Data!.Classes);

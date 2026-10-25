@@ -1,5 +1,6 @@
 using Dialoid.Core.Character;
 using Dialoid.Core.Combat;
+using Dialoid.Core.Passives;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Data;
@@ -17,6 +18,8 @@ public sealed class GameData
     public IReadOnlyDictionary<string, AilmentDefinition> Ailments { get; }
     public IReadOnlyDictionary<string, ClassDefinition> Classes { get; }
     public AttributeRules AttributeRules { get; }
+    public PassiveTree Passives { get; }
+    public IReadOnlyDictionary<string, Ascendancy> Ascendancies { get; }
 
     internal GameData(Builder b)
     {
@@ -25,6 +28,8 @@ public sealed class GameData
         Ailments = new Dictionary<string, AilmentDefinition>(b.Ailments);
         Classes = new Dictionary<string, ClassDefinition>(b.Classes);
         AttributeRules = b.AttributeRules;
+        Passives = new PassiveTree(b.PassiveNodes.Values, b.PassiveLinks);
+        Ascendancies = new Dictionary<string, Ascendancy>(b.Ascendancies);
     }
 
     internal sealed class Builder
@@ -34,6 +39,9 @@ public sealed class GameData
         public Dictionary<string, AilmentDefinition> Ailments { get; } = new();
         public Dictionary<string, ClassDefinition> Classes { get; } = new();
         public AttributeRules AttributeRules { get; set; } = AttributeRules.Empty;
+        public Dictionary<string, PassiveNode> PassiveNodes { get; } = new();
+        public Dictionary<string, IReadOnlyList<string>> PassiveLinks { get; } = new();
+        public Dictionary<string, Ascendancy> Ascendancies { get; } = new();
         public GameData Build() => new(this);
     }
 }
