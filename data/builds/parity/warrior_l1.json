@@ -1,0 +1,22 @@
+{
+  "class_id": "warrior",
+  "level": 1,
+  "ascendancy_id": null,
+  "ascendancy_nodes": [],
+  "passive_nodes": [],
+  "attribute_choices": {},
+  "slots": [
+    {
+      "skill_id": "cleave",
+      "level": 1,
+      "node_points": {
+        "heavy_hand": 1
+      }
+    }
+  ],
+  "weapon_id": "greataxe",
+  "item_ids": [],
+  "rotation": [
+    "cleave"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "class_id": "sorcerer",
+  "level": 1,
+  "ascendancy_id": null,
+  "ascendancy_nodes": [],
+  "passive_nodes": [],
+  "attribute_choices": {},
+  "slots": [
+    {
+      "skill_id": "spark",
+      "level": 1,
+      "node_points": {
+        "crackle": 1
+      }
+    }
+  ],
+  "weapon_id": "staff",
+  "item_ids": [],
+  "rotation": [
+    "spark"
+  ]
+}
