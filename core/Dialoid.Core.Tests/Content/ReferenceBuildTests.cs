@@ -12,7 +12,7 @@ namespace Dialoid.Core.Tests.Content;
 
 /// <summary>
 /// Spec 12 (reference builds in data/builds/) and their sanity checks (spec 15.5, 15.9, 15.10 inputs). The six level-60 builds are
-/// the owner's demo builds and the balance regression set; parity/ holds the best build of each class at levels 1 and 20, and
+/// the owner's demo builds and the balance regression set; parity/ holds the strongest unconstrained build of each class at levels 1, 20 and 60, and
 /// attributes/ holds a copy of one reference build per class with its attribute nodes swapped for adjacent small nodes.
 /// </summary>
 public class ReferenceBuildTests
@@ -28,7 +28,12 @@ public class ReferenceBuildTests
         ("sorcerer_spark_hybrid", "sorcerer"),
     };
 
-    private static readonly string[] Parity = { "parity/warrior_l1", "parity/warrior_l20", "parity/sorcerer_l1", "parity/sorcerer_l20" };
+    /// <summary>The strongest build of each class found at levels 1, 20 and 60 (spec 15.10), without theme constraints or keystones.
+    /// Parity is compared on these files at every level; the themed level-60 reference builds are not the class ceiling.</summary>
+    private static readonly string[] Parity =
+    {
+        "parity/warrior_l1", "parity/warrior_l20", "parity/warrior_l60", "parity/sorcerer_l1", "parity/sorcerer_l20", "parity/sorcerer_l60",
+    };
 
     /// <summary>Attribute-test variants (spec 15.9) and the reference build each one copies.</summary>
     private static readonly Dictionary<string, string> AttributeVariants = new()
@@ -107,15 +112,48 @@ public class ReferenceBuildTests
     [InlineData("parity/warrior_l20", "warrior", 20)]
     [InlineData("parity/sorcerer_l1", "sorcerer", 1)]
     [InlineData("parity/sorcerer_l20", "sorcerer", 20)]
+    [InlineData("parity/warrior_l60", "warrior", 60)]
+    [InlineData("parity/sorcerer_l60", "sorcerer", 60)]
     public void Parity_build_uses_its_whole_level(string path, string classId, int level)
     {
         var b = ContentHarness.LoadBuild(path);
         Assert.Equal((classId, level), (b.ClassId, b.Level));
         Assert.Equal(level - 1, b.PassiveNodes.Count);
         Assert.Equal(BuildRules.SlotsUnlocked(level), b.Slots.Count);
-        Assert.Equal(level >= 20 ? 1 : 0, b.AscendancyNodes.Count);
+        Assert.Equal(Ascendancy.PointsForLevel(level) / Ascendancy.DefaultNotableCost, b.AscendancyNodes.Count);
+        Assert.DoesNotContain(b.PassiveNodes, n => ContentHarness.Data.Passives.Nodes[n].Kind == PassiveKind.Keystone);
         Assert.All(b.Slots, s => Assert.Equal(Math.Min(level, 20), s.Level));
         Assert.All(b.Slots, s => Assert.Equal(s.Level, s.NodePoints.Values.Sum()));
+    }
+
+    /// <summary>The level-60 parity build is the class ceiling: no themed reference build of its class beats it on «Тренировочный».</summary>
+    [Theory]
+    [InlineData("warrior")]
+    [InlineData("sorcerer")]
+    public void Parity_l60_is_at_least_as_strong_as_every_reference_build_of_its_class(string classId)
+    {
+        var ceiling = Training($"parity/{classId}_l60").DpsSingleTarget;
+        foreach (var m in Main.Where(m => m.ClassId == classId))
+            Assert.True(Training(m.Path).DpsSingleTarget <= ceiling, $"{m.Path} ({Training(m.Path).DpsSingleTarget:F0}) beats parity/{classId}_l60 ({ceiling:F0})");
+    }
+
+    /// <summary>Every taken ascendancy notable earns its points: removing it lowers training DPS, swarm pack DPS or survival time.</summary>
+    [Theory]
+    [MemberData(nameof(MainBuilds))]
+    public void Every_taken_ascendancy_notable_contributes(string path)
+    {
+        var b = ContentHarness.LoadBuild(path);
+        var swarm = ContentHarness.Run(b, "swarm").DpsPack;
+        var survival = ContentHarness.Survival(b).TimeToDeath ?? double.PositiveInfinity;
+        foreach (var notable in b.AscendancyNodes)
+        {
+            var without = ContentHarness.Clone(b);
+            without.AscendancyNodes.Remove(notable);
+            var lower = ContentHarness.TrainingDps(without) < Training(path).DpsSingleTarget - 1e-6
+                || ContentHarness.Run(without, "swarm").DpsPack < swarm - 1e-6
+                || (ContentHarness.Survival(without).TimeToDeath ?? double.PositiveInfinity) < survival - 1e-6;
+            Assert.True(lower, $"{path}: notable {notable} adds nothing");
+        }
     }
 
     /// <summary>

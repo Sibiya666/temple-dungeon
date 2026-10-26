@@ -6,7 +6,7 @@
     "shatter",
     "ice_armor",
     "brittle",
-    "glacier"
+    "aurora"
   ],
   "passive_nodes": [
     "will_attribute_2",
@@ -23,8 +23,6 @@
     "will_attribute_6",
     "will_storm_5",
     "will_chain_reaction",
-    "str_attribute_1",
-    "dex_attribute_2",
     "int_attribute_2",
     "int_insight_1",
     "int_insight_2",
@@ -37,11 +35,7 @@
     "will_unyielding_rhythm",
     "dex_attribute_1",
     "dex_attribute_4",
-    "will_sacrifice_4",
-    "will_endurance_2",
     "dex_evasion_1",
-    "will_slow_death",
-    "will_endurance_1",
     "will_attribute_5",
     "will_flow_3",
     "dex_phantom_step",
@@ -51,23 +45,29 @@
     "dex_assassin_2",
     "dex_assassin",
     "will_storm_3",
-    "int_insight_6",
     "dex_assassin_1",
     "str_attribute_2",
-    "will_attribute_3",
     "dex_attribute_3",
-    "will_sacrifice_5",
     "dex_volley",
-    "int_insight_3",
-    "will_flow_1",
     "will_storm_7",
-    "dex_volley_2",
     "int_attribute_1",
-    "int_flame_3",
-    "int_attribute_5",
     "int_flame_2",
+    "int_insight_7",
+    "will_flow_4",
+    "int_frost_7",
+    "int_frozen_heart",
+    "will_wellspring",
+    "int_insight_6",
+    "will_flow_1",
+    "dex_volley_2",
     "will_sacrifice_3",
-    "int_insight_7"
+    "dex_attribute_2",
+    "int_frost_1",
+    "will_iron_will",
+    "int_insight_3",
+    "int_frost_2",
+    "int_bitter_frost",
+    "will_endurance_2"
   ],
   "attribute_choices": {
     "will_attribute_2": "int",
@@ -75,8 +75,6 @@
     "int_attribute_4": "int",
     "will_attribute_4": "int",
     "will_attribute_6": "int",
-    "str_attribute_1": "int",
-    "dex_attribute_2": "int",
     "int_attribute_2": "int",
     "int_attribute_6": "int",
     "dex_attribute_1": "int",
@@ -84,10 +82,9 @@
     "will_attribute_5": "int",
     "dex_attribute_5": "int",
     "str_attribute_2": "int",
-    "will_attribute_3": "int",
     "dex_attribute_3": "int",
     "int_attribute_1": "int",
-    "int_attribute_5": "int"
+    "dex_attribute_2": "int"
   },
   "slots": [
     {
@@ -99,12 +96,11 @@
         "impulse": 1,
         "spark_trail": 1,
         "twin_spark": 1,
-        "short_step": 4,
+        "short_step": 5,
         "high_voltage": 5,
         "light_step": 3,
         "frost_wake": 1,
-        "storm_step": 1,
-        "deep_cold": 1
+        "storm_step": 1
       }
     },
     {
@@ -141,23 +137,23 @@
       "skill_id": "meteor",
       "level": 20,
       "node_points": {
-        "kindling": 3,
+        "ice_meteor": 1,
         "sky_fire": 4,
-        "falling_star": 3,
-        "fire_field": 1,
         "starfall": 1,
-        "scorched_earth": 3,
-        "crater": 1,
-        "instant_fall": 1,
+        "falling_star": 3,
         "comet_fragment": 1,
-        "core_heat": 2
+        "frost_shatter": 2,
+        "crater": 3,
+        "ash_veil": 1,
+        "instant_fall": 1,
+        "star_thrift": 3
       }
     },
     {
       "skill_id": "spark",
       "level": 20,
       "node_points": {
-        "bright_flash": 3,
+        "bright_flash": 1,
         "static": 3,
         "crackle": 4,
         "overload": 1,
@@ -165,7 +161,7 @@
         "breakdown": 3,
         "ionize": 1,
         "spark_fan": 1,
-        "storm_fan": 1
+        "mana_current": 3
       }
     }
   ],
