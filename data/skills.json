@@ -1532,7 +1532,7 @@
     "class_id": "sorcerer",
     "unlock_level": 4,
     "tags": ["spell", "projectile", "cold", "spender"],
-    "spell_damage": {"cold": [13, 20]},
+    "spell_damage": {"cold": [12, 17]},
     "added_damage_effectiveness": 80,
     "cast_time": 0.6,
     "resource_cost": 10,

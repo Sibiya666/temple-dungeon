@@ -80,8 +80,12 @@ $BO keystone --in sorcerer_spark_hybrid --ks inevitability --out "$K/inevitabili
 o keystones/inevitability_fit --type "lightning>=0.6" --slots --min-survival 20 --allow-keystones \
   --pin keystone_inevitability --ban "$VENOM|$FIRE_NODES|$CRIT|$OTHER_KS"
 $BO keystone --in warrior_fire_cleave_crit --ks inevitability --out "$K/inevitability_unfit.json"
-# Аватар пламени: the lightning/cold hybrid becomes a pure fire hit build; the ignite Pyromancer pays.
+# Аватар пламени: the lightning/cold hybrid becomes a pure fire hit build, re-searched around the keystone (pinned; it
+# then takes fire passives, which work on the converted damage only with the keystone: ×1.09 without the re-search);
+# the ignite Pyromancer pays.
 $BO keystone --in sorcerer_spark_hybrid --ks avatar_of_fire --out "$K/avatar_of_fire_fit.json"
+o keystones/avatar_of_fire_fit --slots --min-survival 20 --allow-keystones --pin keystone_avatar_of_fire \
+  --ban "$VENOM|keystone_blood|keystone_titan|keystone_inevitability|keystone_blade|keystone_stone"
 $BO keystone --in sorcerer_pyromancer_fireball --ks avatar_of_fire --out "$K/avatar_of_fire_unfit.json"
 $BO keystone --in sorcerer_pyromancer_fireball --ks blade_dance --attr dex --out "$K/blade_dance_fit.json"
 $BO keystone --in warrior_thunderer_crush --ks blade_dance --out "$K/blade_dance_unfit.json"

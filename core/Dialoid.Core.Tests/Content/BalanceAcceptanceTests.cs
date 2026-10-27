@@ -302,6 +302,36 @@ public class BalanceAcceptanceTests
         Assert.True(Math.Abs(mean / avg - 1) <= 0.10, $"{name}: Roll mean {mean:F0} vs Average {avg:F0}");
     }
 
+    // ---- Task 5 mandatory item: Ice Lance and Fireball keep distinct roles ----
+
+    /// <summary>
+    /// Spec 10.2: Fireball is the main spender, Ice Lance the piercing projectile. Bare skills (level 20, no tree, no passives,
+    /// staff) with Spark as the generator: Fireball wins on one target, Ice Lance (pierce 3) on the swarm, and neither outclasses
+    /// the other on the optimizer objective √(training × swarm) by more than 10% (Ice Lance used to win it by 14%: BALANCE_NOTES).
+    /// </summary>
+    [Fact]
+    public void Ice_lance_and_fireball_keep_distinct_roles()
+    {
+        (double Training, double Swarm) Bare(string spender)
+        {
+            var b = new Build
+            {
+                ClassId = "sorcerer", Level = 20, WeaponId = "staff",
+                Slots = { new SkillSlot { SkillId = spender, Level = 20 }, new SkillSlot { SkillId = "spark", Level = 20 } },
+                Rotation = { spender, "spark" },
+            };
+            Assert.Empty(BuildRules.Validate(b, ContentHarness.Data));
+            return (ContentHarness.TrainingDps(b), ContentHarness.Run(b, "swarm").DpsPack);
+        }
+        var fb = Bare("fireball");
+        var il = Bare("ice_lance");
+        var detail = $"fireball {fb.Training:F0}/{fb.Swarm:F0}, ice_lance {il.Training:F0}/{il.Swarm:F0}";
+        Assert.True(fb.Training > il.Training, detail);
+        Assert.True(il.Swarm > fb.Swarm, detail);
+        var ratio = Math.Sqrt(il.Training * il.Swarm) / Math.Sqrt(fb.Training * fb.Swarm);
+        Assert.True(ratio is >= 1 / 1.1 and <= 1.1, $"{detail}: objective ratio ×{ratio:F3}");
+    }
+
     // ---- spec 8.5 / 14.6: a loot skill is seasoning ----
 
     /// <summary>

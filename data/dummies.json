@@ -37,7 +37,7 @@
     "id": "boss",
     "name": "Босс",
     "pack_size": 1,
-    "life_per_target": 36000,
+    "life_per_target": 38500,
     "respawn": false,
     "armor": 1000,
     "resists": { "lightning": 30, "cold": 30, "fire": 30, "poison": 30 },

@@ -265,12 +265,13 @@ public class PassiveTreeContentTests
     /// Base crit chance 5 (weapon for attacks, skill for spells). Class dex bonus at L60: 0.04 × (base dex + 59) for the
     /// class's own hit kind — Warrior 0.04 × 69 = 2.76 for attacks, Sorcerer 0.04 × 67 = 2.68 for spells.
     /// Contexts: a fire-converted Cleave (attack, melee, area, physical, fire, hit) and Fireball (spell, projectile, area, fire, hit).
-    /// Within 20 points the tree alone must push 1 + c·d above 1.18.
+    /// Within 12 points the tree alone must push 1 + c·d above 1.18 (20 before Task 10 raised the Strength crit cluster: Warrior
+    /// crit cost ~20 points against the Sorcerer's ~11; both now need 10).
     /// </summary>
     [Theory]
     [InlineData("warrior", "attack,melee,area,physical,fire,hit")]
     [InlineData("sorcerer", "spell,projectile,area,fire,hit")]
-    public void Crit_builds_beat_inevitability_within_20_points(string classId, string tags)
+    public void Crit_builds_beat_inevitability_within_12_points(string classId, string tags)
     {
         var cls = ContentHarness.Data.Classes[classId];
         var context = TagSet.Of(tags.Split(','));
@@ -280,7 +281,7 @@ public class PassiveTreeContentTests
         Assert.True(dexBonus > 2.5, $"class dex crit bonus {dexBonus}");
         var baseDamage = ContentHarness.Data.Stats["crit_damage"].Default;
 
-        var (c, d) = BestCrit(cls.PassiveStartNodeId, context, 5 + dexBonus, baseDamage, 20);
+        var (c, d) = BestCrit(cls.PassiveStartNodeId, context, 5 + dexBonus, baseDamage, 12);
         var gain = 1 + c / 100 * d / 100;
         Assert.True(gain > 1.18, $"{classId}: crit {c:0.##}%, crit damage {d:0.##}% → ×{gain:0.###}");
     }

@@ -54,6 +54,13 @@ public class CommonDataTests
         Assert.True(wi.Stat == "damage" && wi.Kind == ModKind.Increased && wi.Value == 20 && wi.RequiredTags.Contains("spell"));
     }
 
+    /// <summary>
+    /// Spec 11.1 presets. The «Босс» life and the «Атакующий босс» blow are the spec's starting numbers calibrated in Task 10
+    /// (spec 11.1 «[Билдеру] подстроить»: boss time to kill 20–60 s, survival 20–40 s at levels 20 and 60; BALANCE_NOTES):
+    /// life 8000 → <see cref="BossLife"/> × G, blow physical 14 → 25 and fire 9 → 16 × G.
+    /// </summary>
+    private const double BossLife = 38500;
+
     [Fact]
     public void Six_dummy_presets_match_spec_11_1()
     {
@@ -81,7 +88,7 @@ public class CommonDataTests
             Assert.Equal(10, s.Resists[ty]);
 
         var b = d["boss"];
-        Assert.Equal((1, 1000.0, 8000.0, false), (b.PackSize, b.Armor, b.LifePerTarget, b.Respawn));
+        Assert.Equal((1, 1000.0, BossLife, false), (b.PackSize, b.Armor, b.LifePerTarget, b.Respawn));
         foreach (var ty in new[] { DamageType.Lightning, DamageType.Cold, DamageType.Fire, DamageType.Poison })
             Assert.Equal(30, b.Resists[ty]);
 
@@ -92,8 +99,8 @@ public class CommonDataTests
             Assert.Equal(30, ab.Resists[ty]);
         Assert.NotNull(ab.Attack);
         Assert.Equal(3.5, ab.Attack!.IntervalSec);
-        Assert.Equal(14, ab.Attack.DamagePerHit[DamageType.Physical]);
-        Assert.Equal(9, ab.Attack.DamagePerHit[DamageType.Fire]);
+        Assert.Equal(25, ab.Attack.DamagePerHit[DamageType.Physical]);
+        Assert.Equal(16, ab.Attack.DamagePerHit[DamageType.Fire]);
     }
 
     [Fact]
