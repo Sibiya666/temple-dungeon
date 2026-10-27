@@ -629,11 +629,11 @@
   },
   {
     "id": "dex_volley", "name": "Град снарядов", "kind": "notable", "region": "dex", "x": -134, "y": -536,
-    "description": "+1 снаряд, +10% к урону снарядов",
+    "description": "+1 снаряд, но урон снарядов −10% (Less): больше целей в толпе ценой урона по одной цели",
     "links": ["dex_volley_1"],
     "effects": [
       {"type": "modifier", "stat": "projectile_count", "kind": "flat", "value": 1, "tags": ["projectile"]},
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["projectile"]}
+      {"type": "modifier", "stat": "damage", "kind": "more", "value": -10, "tags": ["projectile"]}
     ]
   },
   {
@@ -878,11 +878,11 @@
   },
   {
     "id": "str_ruthless_strike", "name": "Безжалостный удар", "kind": "notable", "region": "str", "x": -530, "y": 282,
-    "description": "+5% к шансу крита атак, +25% к урону крита атак",
+    "description": "+5% к шансу крита атак, +30% к урону крита атак",
     "links": ["str_brute_5"],
     "effects": [
       {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 5, "tags": ["attack"]},
-      {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 25, "tags": ["attack"]}
+      {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 30, "tags": ["attack"]}
     ]
   },
   {
@@ -895,10 +895,10 @@
   },
   {
     "id": "str_brute_7", "name": "Добивание", "kind": "small", "region": "str", "x": -583, "y": 310,
-    "description": "+10% к урону крита атак",
+    "description": "+15% к урону крита атак",
     "links": ["str_ruthless_strike"],
     "effects": [
-      {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 10, "tags": ["attack"]}
+      {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 15, "tags": ["attack"]}
     ]
   },
   // str: мост «здоровье и регенерация»
@@ -1022,11 +1022,11 @@
   },
   {
     "id": "will_desperate_resolve", "name": "Отчаянная решимость", "kind": "notable", "region": "will", "x": -282, "y": 530,
-    "description": "+25% к урону, пока здоровья меньше 50%, +8% к скорости перезарядки",
+    "description": "+25% к урону, пока здоровья меньше 50%, +8% к здоровью",
     "links": ["will_sacrifice_5"],
     "effects": [
       {"type": "modifier", "stat": "damage", "kind": "increased", "value": 25, "conditions": [{"id": "life_below_pct", "param": 50}]},
-      {"type": "modifier", "stat": "cooldown_recovery", "kind": "increased", "value": 8}
+      {"type": "modifier", "stat": "life", "kind": "increased", "value": 8}
     ]
   },
   {

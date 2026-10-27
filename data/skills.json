@@ -196,7 +196,7 @@
     "class_id": "warrior",
     "unlock_level": 1,
     "tags": ["attack", "melee", "area", "physical", "spender"],
-    "weapon_effectiveness": 300,
+    "weapon_effectiveness": 270,
     "attack_time_multiplier": 1.25,
     "resource_cost": 35,
     "behavior": {"area_radius": 2.0},
@@ -291,10 +291,10 @@
       {
         "id": "torn_earth",
         "name": "Рваная земля",
-        "description": "+12% шанса кровотечения за очко. Не работает вместе с «Громовым молотом».",
+        "description": "+6% шанса кровотечения за очко. Не работает вместе с «Громовым молотом».",
         "max_points": 3,
         "effects": [
-          {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 12}
+          {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 6}
         ]
       },
       {
@@ -329,10 +329,10 @@
       {
         "id": "peak_fury",
         "name": "Пик ярости",
-        "description": "Стойка: если после оплаты Ярость выше 50%, удар наносит +30% More урона.",
+        "description": "Стойка: если после оплаты Ярость выше 50%, удар наносит +15% More урона.",
         "max_points": 1,
         "effects": [
-          {"type": "modifier", "stat": "damage", "kind": "more", "value": 30, "conditions": [{"id": "resource_above_pct", "param": 50}]}
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 15, "conditions": [{"id": "resource_above_pct", "param": 50}]}
         ]
       },
       {
@@ -846,22 +846,22 @@
       {
         "id": "burning_trail",
         "name": "Огненный след",
-        "description": "Рывок оставляет горящий след на 3 с: 15% базы удара огнем в секунду.",
+        "description": "Рывок оставляет горящий след на 3 с: 25% базы удара огнем в секунду.",
         "max_points": 1,
         "effects": [
           {"type": "set_behavior", "param": "ground_duration", "value": 3},
-          {"type": "set_behavior", "param": "ground_fraction", "value": 0.15},
+          {"type": "set_behavior", "param": "ground_fraction", "value": 0.25},
           {"type": "mechanic", "id": "ground_type", "params": {"type": "fire"}}
         ]
       },
       {
         "id": "embers",
         "name": "Раскаленные угли",
-        "description": "+3% базы удара в секунду для горящего следа за очко.",
+        "description": "+5% базы удара в секунду для горящего следа за очко.",
         "max_points": 3,
         "requires": [{"node": "burning_trail", "points": 1}],
         "effects": [
-          {"type": "add_behavior", "param": "ground_fraction", "delta": 0.03}
+          {"type": "add_behavior", "param": "ground_fraction", "delta": 0.05}
         ]
       },
       {
@@ -1142,7 +1142,7 @@
     "class_id": "sorcerer",
     "unlock_level": 1,
     "tags": ["spell", "projectile", "lightning", "generator"],
-    "spell_damage": {"lightning": [1, 13]},
+    "spell_damage": {"lightning": [1, 19]},
     "added_damage_effectiveness": 50,
     "cast_time": 0.5,
     "resource_gain": 3,
@@ -1319,7 +1319,7 @@
     "class_id": "sorcerer",
     "unlock_level": 1,
     "tags": ["spell", "projectile", "area", "fire", "spender"],
-    "spell_damage": {"fire": [14, 20]},
+    "spell_damage": {"fire": [20, 29]},
     "added_damage_effectiveness": 120,
     "cast_time": 0.75,
     "resource_cost": 12,
@@ -1518,7 +1518,7 @@
     "unlock_level": 1,
     "is_triggered_only": true,
     "tags": ["spell", "area", "fire", "triggered"],
-    "spell_damage": {"fire": [14, 20]},
+    "spell_damage": {"fire": [20, 29]},
     "added_damage_effectiveness": 120,
     "crit_chance": 6,
     "behavior": {"area_radius": 1.5},
@@ -1532,7 +1532,7 @@
     "class_id": "sorcerer",
     "unlock_level": 4,
     "tags": ["spell", "projectile", "cold", "spender"],
-    "spell_damage": {"cold": [9, 14]},
+    "spell_damage": {"cold": [13, 20]},
     "added_damage_effectiveness": 80,
     "cast_time": 0.6,
     "resource_cost": 10,
@@ -1702,7 +1702,7 @@
     "class_id": "sorcerer",
     "unlock_level": 8,
     "tags": ["spell", "projectile", "area", "lightning", "spender"],
-    "spell_damage": {"lightning": [2, 4]},
+    "spell_damage": {"lightning": [4, 7]},
     "added_damage_effectiveness": 15,
     "cast_time": 1.0,
     "resource_cost": 20,
@@ -1879,7 +1879,7 @@
     "class_id": "sorcerer",
     "unlock_level": 12,
     "tags": ["spell", "area", "fire", "spender"],
-    "spell_damage": {"fire": [40, 56]},
+    "spell_damage": {"fire": [64, 89]},
     "added_damage_effectiveness": 200,
     "cast_time": 1.2,
     "resource_cost": 35,
@@ -2231,7 +2231,7 @@
     "unlock_level": 16,
     "is_triggered_only": true,
     "tags": ["spell", "area", "fire", "triggered"],
-    "spell_damage": {"fire": [10, 14]},
+    "spell_damage": {"fire": [14, 20]},
     "added_damage_effectiveness": 50,
     "crit_chance": 5,
     "behavior": {"area_radius": 3.0},
@@ -2252,8 +2252,8 @@
     ],
     "spell_damage": {
       "poison": [
-        22,
-        30
+        18,
+        24
       ]
     },
     "cast_time": 0.5,

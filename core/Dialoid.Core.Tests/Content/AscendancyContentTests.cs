@@ -168,7 +168,8 @@ public class AscendancyContentTests
         var asc = Asc("cryomancer");
         Assert.Equal(25, Mech(asc.Start, "chill_slow").Params["slow"].GetDouble());
         var cold = Assert.Single(asc.Start.Effects.OfType<ModifierEffect>()).Modifier;
-        Assert.Equal(("damage", ModKind.Increased, 10.0), (cold.Stat, cold.Kind, cold.Value));
+        // Spec 10.4 «увеличивает урон холодом по цели на 10%»: More since Task 10 (was Increased; BALANCE_NOTES).
+        Assert.Equal(("damage", ModKind.More, 10.0), (cold.Stat, cold.Kind, cold.Value));
         Assert.Equal(TagSet.Of("cold"), cold.RequiredTags);
         Assert.Equal("target_chilled", Assert.Single(cold.Conditions).Id);
 
@@ -190,7 +191,7 @@ public class AscendancyContentTests
         Assert.All(glacier.Effects, e => Assert.Equal(new Scope.Skill("ice_lance"), e.Scope));
         var beh = glacier.Effects.OfType<SetBehaviorEffect>().ToDictionary(e => e.Param, e => e.Value);
         Assert.Equal(3, beh["ground_duration"]);
-        Assert.Equal(0.15, beh["ground_fraction"]);
+        Assert.Equal(0.3, beh["ground_fraction"]); // spec 15%, doubled in Task 10 (BALANCE_NOTES)
     }
 
     // ---- Temporary level-50 builds (until reference builds exist) ----
@@ -418,10 +419,16 @@ public class AscendancyContentTests
         "training" => ContentHarness.Run(b, "training").DpsSingleTarget,
         "boss" => ContentHarness.Run(b, "boss").DpsSingleTarget,
         "swarm" => ContentHarness.Run(b, "swarm").DpsPack,
-        "taken45" => 1 / DamageTakenInWindow(b, 45),
+        "taken" => 1 / DamageTakenInWindow(b, TakenWindowSec),
         "training_pack" => ContentHarness.Run(b, "training", 5).DpsPack,
         _ => throw new ArgumentException(metric),
     };
+
+    /// <summary>
+    /// Window of the «taken» metric: 20 s, the lower end of the survival corridor of spec 11.1 (45 s before Task 10 calibrated
+    /// «Атакующий босс»; a calibrated build dies within 20–40 s, so a longer window would measure a dead character).
+    /// </summary>
+    private const double TakenWindowSec = 20;
 
     /// <summary>
     /// Damage the character takes from «Атакующий босс» in the first <paramref name="seconds"/> of the fight (it must survive them).
@@ -442,8 +449,8 @@ public class AscendancyContentTests
     /// <summary>Each notable is worth its 2 points in at least one reference-style build: taking it (on top of the build's
     /// other picks) raises that build's metric by more than 5%. Metrics: DPS on «Тренировочный» (training), on «Босс» (boss), on
     /// a pack of five immortal training dummies (training_pack: a long fight against a group, where ignites pile up), pack DPS on
-    /// «Рой» (swarm), and the inverse of the damage taken from «Атакующий босс» in a fixed 45 s window (taken45). Notables below
-    /// the bar are pinned separately (<see cref="Fire_armor_is_alive_but_below_the_bar"/>) as Task 10 items.</summary>
+    /// «Рой» (swarm), and the inverse of the damage taken from «Атакующий босс» in a fixed <see cref="TakenWindowSec"/> window (taken). Огненная броня
+    /// joined the list in Task 10 (it was a tripwire below the bar).</summary>
     [Theory]
     [InlineData("whirl_rage", "whirl", "training", new[] { "battle_trance" })]
     [InlineData("battle_trance", "whirl", "training", new[] { "whirl_rage" })]
@@ -462,11 +469,12 @@ public class AscendancyContentTests
     [InlineData("eternal_fire", "pyro_fireball", "training", new string[0])]
     [InlineData("meteor_rain", "pyro_meteor", "training", new string[0])]
     [InlineData("soul_heat", "pyro_fireball_solo", "swarm", new string[0])]
+    [InlineData("fire_armor", "pyro_fireball", "taken", new string[0])]
     [InlineData("shatter", "cryo_lance", "training", new string[0])]
-    [InlineData("ice_armor", "cryo_lance", "taken45", new string[0])]
+    [InlineData("ice_armor", "cryo_lance", "taken", new string[0])]
     [InlineData("frost_orb_asc", "cryo_fireball", "training", new[] { "shatter", "brittle" })]
     [InlineData("brittle", "cryo_lance", "training", new string[0])]
-    [InlineData("aurora", "cryo_lance", "taken45", new string[0])]
+    [InlineData("aurora", "cryo_lance", "taken", new string[0])]
     [InlineData("glacier", "cryo_lance", "training", new string[0])]
     public void Every_notable_pays_off_in_a_reference_build(string notable, string build, string metric, string[] others)
     {
@@ -697,18 +705,6 @@ public class AscendancyContentTests
     }
 
     /// <summary>
-    /// Огненная броня is alive but under the ×1.05 bar (Task 10 mandatory, BALANCE_NOTES): +30% of the sorcerer's small armor cuts
-    /// about 3.5% of the boss damage in a fixed window, and the +10 fire resistance cap is never reached. Tripwire: when Task 10
-    /// lifts it over the bar, move it into <see cref="Every_notable_pays_off_in_a_reference_build"/>.
-    /// </summary>
-    [Fact]
-    public void Fire_armor_is_alive_but_below_the_bar()
-    {
-        var gain = DamageTakenInWindow(PyroFireball(), 45) / DamageTakenInWindow(PyroFireball("fire_armor"), 45);
-        Assert.True(gain is > 1.02 and <= 1.05, $"fire_armor ×{gain:0.###}");
-    }
-
-    /// <summary>
     /// Spec 10.4 example: a Pyromancer Fireball with «Вечное пламя» and «Пламя души» 2/2 has 1 + 2 + 2 + 2 = 7 ignite stacks
     /// (no passives, so nothing else adds stacks), and the sim really holds 7 on a target — never more. Holding them takes a
     /// pack: «Распространение» stacks copies of each use's ignite on the other targets, «Вечный огонь» keeps them 6 s.
@@ -735,8 +731,8 @@ public class AscendancyContentTests
 
     /// <summary>
     /// Хрупкость scales with the crit share of the damage: chill lands with the first lance hit, so every later lance crit gets
-    /// +15% More. The lance's damage grows by 0.15 × c·m / (1 − c + c·m) (crit chance c, crit multiplier m) — about ×1.054 in
-    /// the reference lance (c ≈ 21%, m = 2.05); both reference lances share the same crit nodes, hence the same gain.
+    /// the notable's More (+45% since Task 10, was +15%). The lance's damage grows by more × c·m / (1 − c + c·m) (crit chance c,
+    /// crit multiplier m); both reference lances share the same crit nodes, hence the same gain.
     /// </summary>
     [Fact]
     public void Brittle_gain_follows_the_crit_share()
@@ -746,7 +742,8 @@ public class AscendancyContentTests
         var ev = ch.Evaluator.WithExtra(lance.Modifiers);
         var c = ev.Evaluate("crit_chance", lance.Tags, null, lance.Base.CritChance).Value / 100;
         var m = 1 + ev.Evaluate("crit_damage", lance.Tags).Value / 100;
-        var expected = 1 + 0.15 * c * m / (1 - c + c * m);
+        var more = Mech(Notable("cryomancer", "brittle"), "brittle").Params["more"].GetDouble() / 100; // 45 since Task 10 (BALANCE_NOTES)
+        var expected = 1 + more * c * m / (1 - c + c * m);
         var plain = ContentHarness.Run(CryoLance(), "training").DamageBySkill["ice_lance"];
         var brittle = ContentHarness.Run(CryoLance("brittle"), "training").DamageBySkill["ice_lance"];
         Assert.Equal(expected, brittle / plain, 2);

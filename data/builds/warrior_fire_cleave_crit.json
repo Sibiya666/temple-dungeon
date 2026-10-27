@@ -58,16 +58,16 @@
     "will_flow_1",
     "will_wellspring",
     "dex_onslaught_4",
-    "int_flame_5",
     "int_flame_6",
-    "str_bleed_3",
-    "int_ignite_1",
     "str_brute_3",
     "dex_onslaught_6",
     "str_ruthless_strike",
     "dex_volley",
     "dex_onslaught_5",
-    "str_brute_7"
+    "str_brute_7",
+    "dex_assassin_1",
+    "str_brute_6",
+    "int_flame_5"
   ],
   "attribute_choices": {
     "str_attribute_2": "str",
@@ -108,16 +108,16 @@
       "level": 20,
       "node_points": {
         "momentum": 4,
-        "ram": 1,
-        "embers": 3,
+        "embers": 1,
         "true_lunge": 3,
-        "crushing_ram": 1,
         "quick_feet": 3,
-        "stunning_ram": 1,
+        "burning_trail": 1,
+        "bloody_path": 3,
+        "shoulder_bash": 1,
+        "ram": 1,
         "unstoppable": 1,
         "armored_charge": 1,
-        "burning_trail": 1,
-        "finishing_blow": 1
+        "crushing_ram": 1
       }
     },
     {
@@ -126,13 +126,14 @@
       "node_points": {
         "brute_force": 4,
         "cold_calculation": 3,
-        "concussion": 2,
         "heavy_blow": 3,
         "shockwave": 1,
-        "wide_impact": 3,
-        "torn_earth": 2,
+        "wide_impact": 1,
+        "torn_earth": 3,
         "peak_fury": 1,
-        "stun": 1
+        "stun": 1,
+        "bloody_harvest": 2,
+        "concussion": 1
       }
     },
     {
@@ -142,13 +143,13 @@
         "steel_storm": 4,
         "spin_up": 3,
         "wide_circle": 3,
-        "fanned_flames": 3,
+        "fanned_flames": 1,
         "frenzied_spin": 1,
         "fast_turns": 1,
-        "smoldering": 2,
         "fire_whirl": 1,
         "blade_hurricane": 1,
-        "steel_cocoon": 1
+        "cutting_wind": 3,
+        "thousand_cuts": 2
       }
     },
     {

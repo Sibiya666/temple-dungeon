@@ -21,7 +21,6 @@
     "int_attribute_5",
     "int_flame_4",
     "int_incineration",
-    "will_sacrifice_4",
     "int_ignite_2",
     "int_inferno",
     "int_flame_6",
@@ -42,32 +41,33 @@
     "will_flow_3",
     "will_attribute_5",
     "will_flow_4",
-    "will_attribute_3",
-    "will_sacrifice_5",
     "will_endurance_1",
     "will_slow_death",
     "str_attribute_2",
-    "dex_attribute_2",
-    "str_attribute_1",
     "dex_attribute_4",
     "dex_evasion_1",
     "dex_phantom_step",
     "dex_evasion_3",
     "dex_attribute_5",
     "dex_volley_1",
-    "dex_volley",
     "dex_assassin_2",
     "int_flame_2",
     "will_iron_will",
-    "int_insight_3",
     "dex_assassin",
     "dex_assassin_1",
-    "dex_volley_2",
     "int_ignite_1",
     "dex_attribute_1",
     "int_ward_2",
+    "str_attribute_1",
+    "will_sacrifice_3",
+    "dex_attribute_2",
+    "int_insight_3",
+    "will_sacrifice_4",
+    "will_flow_2",
+    "will_flow_5",
+    "dex_evasion_2",
     "int_ward_1",
-    "dex_evasion_2"
+    "dex_evasion_4"
   ],
   "attribute_choices": {
     "will_attribute_1": "int",
@@ -78,20 +78,18 @@
     "int_attribute_6": "int",
     "will_attribute_4": "int",
     "will_attribute_5": "int",
-    "will_attribute_3": "int",
     "str_attribute_2": "int",
-    "dex_attribute_2": "int",
-    "str_attribute_1": "int",
     "dex_attribute_4": "int",
     "dex_attribute_5": "int",
-    "dex_attribute_1": "int"
+    "dex_attribute_1": "int",
+    "str_attribute_1": "int",
+    "dex_attribute_2": "int"
   },
   "slots": [
     {
       "skill_id": "blink",
       "level": 20,
       "node_points": {
-        "ether_mend": 1,
         "blink_focus": 1,
         "impulse": 1,
         "storm_step": 1,
@@ -100,29 +98,26 @@
         "spark_trail": 1,
         "twin_spark": 1,
         "high_voltage": 1,
-        "light_step": 1,
+        "light_step": 5,
         "short_step": 5,
         "arrival_flare": 1,
-        "double_flare": 1,
-        "elusive": 1,
-        "afterimage": 1,
-        "phase_barrier": 1
+        "double_flare": 1
       }
     },
     {
       "skill_id": "meteor",
       "level": 20,
       "node_points": {
-        "kindling": 2,
-        "scorched_earth": 3,
+        "kindling": 3,
+        "scorched_earth": 2,
         "sky_fire": 4,
         "falling_star": 3,
         "comet_fragment": 1,
+        "star_thrift": 3,
+        "starfall": 1,
+        "core_heat": 1,
         "fire_field": 1,
-        "crater": 3,
-        "star_thrift": 1,
-        "ash_veil": 1,
-        "starfall": 1
+        "crater": 1
       }
     },
     {
@@ -131,13 +126,14 @@
       "node_points": {
         "storm_core": 4,
         "sun_orb": 1,
-        "quick_charge": 2,
-        "big_orb": 3,
+        "quick_charge": 1,
         "long_flight": 3,
         "bright_discharge": 3,
         "solar_corona": 2,
         "static_orb": 1,
-        "twin_orb": 1
+        "twin_orb": 1,
+        "big_orb": 3,
+        "arc_discharge": 1
       }
     },
     {
@@ -147,14 +143,14 @@
         "heat": 4,
         "compress": 1,
         "molten_core": 3,
-        "flame_mark": 1,
-        "eternal_flame": 1,
         "wide_blast": 3,
         "ring_of_fire": 1,
-        "overheat": 3,
-        "mana_focus": 1,
+        "mana_focus": 2,
         "swift_orb": 1,
-        "blast_wave": 1
+        "flame_mark": 1,
+        "soul_flame": 2,
+        "eternal_flame": 1,
+        "lingering_heat": 1
       }
     },
     {
@@ -162,14 +158,13 @@
       "level": 20,
       "node_points": {
         "crackle": 4,
-        "spark_fan": 1,
-        "overload": 1,
         "static": 3,
         "breakdown": 3,
         "quick_spark": 3,
+        "mana_current": 2,
+        "spark_fan": 1,
         "ionize": 1,
-        "storm_fan": 2,
-        "mana_current": 2
+        "bright_flash": 3
       }
     }
   ],

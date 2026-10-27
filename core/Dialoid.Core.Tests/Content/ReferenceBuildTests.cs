@@ -12,7 +12,8 @@ namespace Dialoid.Core.Tests.Content;
 
 /// <summary>
 /// Spec 12 (reference builds in data/builds/) and their sanity checks (spec 15.5, 15.9, 15.10 inputs). The six level-60 builds are
-/// the owner's demo builds and the balance regression set; parity/ holds the strongest unconstrained build of each class at levels 1, 20 and 60, and
+/// the owner's demo builds and the balance regression set; l20/ holds their level-20 versions; parity/ holds the strongest viable build of
+/// each class at levels 1, 20 and 60 (training DPS, survival ≥ 20 s at 20 and 60); keystones/ holds the keystone test builds; and
 /// attributes/ holds a copy of one reference build per class with its attribute nodes swapped for adjacent small nodes.
 /// </summary>
 public class ReferenceBuildTests
@@ -44,8 +45,16 @@ public class ReferenceBuildTests
 
     public static IEnumerable<object[]> MainBuilds() => Main.Select(m => new object[] { m.Path });
 
+    /// <summary>Level-20 versions of the six reference builds (same recipe; calibration spec 11.1 and the loot check).</summary>
+    private static IEnumerable<string> Level20 => Main.Select(m => "l20/" + m.Path);
+
+    /// <summary>Keystone test builds (spec 15.6): a fitting and an unfitting build per keystone, keystone as a leaf.</summary>
+    private static IEnumerable<string> KeystoneBuilds =>
+        new[] { "blood_pact", "titan_will", "inevitability", "avatar_of_fire", "blade_dance", "stone_skin" }
+            .SelectMany(k => new[] { $"keystones/{k}_fit", $"keystones/{k}_unfit" });
+
     public static IEnumerable<object[]> AllBuildFiles() =>
-        Main.Select(m => m.Path).Concat(Parity).Concat(AttributeVariants.Keys).Select(p => new object[] { p });
+        Main.Select(m => m.Path).Concat(Level20).Concat(Parity).Concat(AttributeVariants.Keys).Concat(KeystoneBuilds).Select(p => new object[] { p });
 
     private static string BuildsDir => Path.Combine(FixturePaths.RealData, "builds");
 
@@ -126,6 +135,21 @@ public class ReferenceBuildTests
         Assert.All(b.Slots, s => Assert.Equal(s.Level, s.NodePoints.Values.Sum()));
     }
 
+    /// <summary>A level-20 reference build is the level-60 build's archetype at level 20 and spends everything there too.</summary>
+    [Theory]
+    [MemberData(nameof(MainBuilds))]
+    public void Level_20_build_uses_its_whole_level(string path)
+    {
+        var b = ContentHarness.LoadBuild("l20/" + path);
+        var main = ContentHarness.LoadBuild(path);
+        Assert.Equal((main.ClassId, 20, main.WeaponId), (b.ClassId, b.Level, b.WeaponId));
+        Assert.Equal(19, b.PassiveNodes.Count);
+        Assert.Single(b.AscendancyNodes);
+        Assert.Equal(5, b.Slots.Count);
+        Assert.All(b.Slots, s => Assert.Equal((20, 20), (s.Level, s.NodePoints.Values.Sum())));
+        Assert.DoesNotContain(b.PassiveNodes, n => ContentHarness.Data.Passives.Nodes[n].Kind == PassiveKind.Keystone);
+    }
+
     /// <summary>The level-60 parity build is the class ceiling: no themed reference build of its class beats it on «Тренировочный».</summary>
     [Theory]
     [InlineData("warrior")]
@@ -137,22 +161,26 @@ public class ReferenceBuildTests
             Assert.True(Training(m.Path).DpsSingleTarget <= ceiling, $"{m.Path} ({Training(m.Path).DpsSingleTarget:F0}) beats parity/{classId}_l60 ({ceiling:F0})");
     }
 
-    /// <summary>Every taken ascendancy notable earns its points: removing it lowers training DPS, swarm pack DPS or survival time.</summary>
+    /// <summary>
+    /// Every taken ascendancy notable earns its points (spec 10.4: an ascendancy «changes the game»; regression floor from Task 10):
+    /// removing it lowers the optimizer objective √(training DPS × swarm pack DPS) by at least 3% or survival by at least 5 s.
+    /// </summary>
     [Theory]
     [MemberData(nameof(MainBuilds))]
     public void Every_taken_ascendancy_notable_contributes(string path)
     {
         var b = ContentHarness.LoadBuild(path);
-        var swarm = ContentHarness.Run(b, "swarm").DpsPack;
-        var survival = ContentHarness.Survival(b).TimeToDeath ?? double.PositiveInfinity;
+        double Objective(Build x) => Math.Sqrt(ContentHarness.TrainingDps(x) * ContentHarness.Run(x, "swarm").DpsPack);
+        double Survival(Build x) => ContentHarness.Survival(x).TimeToDeath ?? double.PositiveInfinity;
+        var objective = Objective(b);
+        var survival = Survival(b);
         foreach (var notable in b.AscendancyNodes)
         {
             var without = ContentHarness.Clone(b);
             without.AscendancyNodes.Remove(notable);
-            var lower = ContentHarness.TrainingDps(without) < Training(path).DpsSingleTarget - 1e-6
-                || ContentHarness.Run(without, "swarm").DpsPack < swarm - 1e-6
-                || (ContentHarness.Survival(without).TimeToDeath ?? double.PositiveInfinity) < survival - 1e-6;
-            Assert.True(lower, $"{path}: notable {notable} adds nothing");
+            var objLoss = 1 - Objective(without) / objective;
+            var survLoss = survival - Survival(without);
+            Assert.True(objLoss >= 0.03 || survLoss >= 5, $"{path}: notable {notable} adds {objLoss:P1} objective and {survLoss:F1} s survival");
         }
     }
 

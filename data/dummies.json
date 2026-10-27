@@ -37,7 +37,7 @@
     "id": "boss",
     "name": "Босс",
     "pack_size": 1,
-    "life_per_target": 8000,
+    "life_per_target": 36000,
     "respawn": false,
     "armor": 1000,
     "resists": { "lightning": 30, "cold": 30, "fire": 30, "poison": 30 },
@@ -53,7 +53,7 @@
     "resists": { "lightning": 30, "cold": 30, "fire": 30, "poison": 30 },
     "freeze_duration_multiplier": 0.5,
     "attack": {
-      "damage_per_hit": { "physical": 14, "fire": 9 },
+      "damage_per_hit": { "physical": 25, "fire": 16 },
       "interval_sec": 3.5
     }
   }

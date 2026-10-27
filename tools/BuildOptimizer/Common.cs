@@ -45,7 +45,7 @@ public static class H
         var t = Run(b, "training"); var s = Run(b, "swarm"); var d = Run(b, "attacking_boss", true); var k = Run(b, "boss");
         double tot = t.DamageBySkill.Values.Sum(); double tt = t.DamageByType.Values.Sum();
         var uses = t.Log.Where(e => e.Kind == "use").GroupBy(e => e.Text).ToDictionary(g => g.Key, g => g.Count());
-        Console.WriteLine($"{name}: train {t.DpsSingleTarget:F0}  swarm {s.DpsPack:F0}  surv {d.TimeToDeath?.ToString("F1") ?? "alive"}  bossTTK {k.TimeToKill?.ToString("F1") ?? "-"}");
+        Console.WriteLine($"{name}: hit/dot {100 * t.HitDamage / Math.Max(1e-9, t.HitDamage + t.DotDamage):F0}%/{100 * t.DotDamage / Math.Max(1e-9, t.HitDamage + t.DotDamage):F0}%  train {t.DpsSingleTarget:F0}  swarm {s.DpsPack:F0}  surv {d.TimeToDeath?.ToString("F1") ?? "alive"}  bossTTK {k.TimeToKill?.ToString("F1") ?? "-"}");
         Console.WriteLine("   skills: " + string.Join(", ", t.DamageBySkill.OrderByDescending(x => x.Value).Select(x => $"{x.Key} {100 * x.Value / tot:F0}%")));
         Console.WriteLine("   types: " + string.Join(", ", t.DamageByType.OrderByDescending(x => x.Value).Select(x => $"{x.Key} {100 * x.Value / tt:F0}%")));
         Console.WriteLine("   uses: " + string.Join(", ", b.Rotation.Select(r => $"{r} {uses.GetValueOrDefault(r)}")) + (t.Log.Any(e => e.Kind == "log_truncated") ? " [TRUNC]" : ""));

@@ -511,7 +511,8 @@ public class SkillContentTests
     public void Fireball_tree_matches_spec_10_3()
     {
         var fb = Skills["fireball"];
-        Assert.Equal((14.0, 20.0), fb.Base.SpellDamage[DamageType.Fire]);
+        // Spec 10.3 base 14–20, raised ×1.44 with every sorcerer spell in Task 10 (class parity, BALANCE_NOTES).
+        Assert.Equal((20.0, 29.0), fb.Base.SpellDamage[DamageType.Fire]);
         Assert.Single(fb.Base.SpellDamage);
         Assert.Equal(0.75, fb.Base.CastTime);
         Assert.Equal(12, fb.Base.ResourceCost);
@@ -613,15 +614,27 @@ public class SkillContentTests
     private static double Pack(Build b) => ContentHarness.Run(b, "swarm").DpsPack;
 
     /// <summary>
-    /// Survival against the attacking boss as seconds survived per point of damage taken: the boss hits in rare big blows, so time to
-    /// death alone moves in whole attacks; dividing by the damage actually taken makes every blocked or softened blow count.
+    /// Survival against the attacking boss as seconds survived per point of damage taken in a fixed 20 s window (the lower end of
+    /// the survival corridor of spec 11.1), averaged over 40 Roll-mode fights. Before Task 10 calibrated the boss this was one
+    /// Average-mode fight until death. The boss hits in rare big blows (3.5 s): a calibrated level-20 build dies after five or six,
+    /// and in Average mode the chance accumulator puts every freeze at a fixed moment, so whether a freeze happens to cover a
+    /// blow decided the fork (Ледяная глыба blocked one blow by timing, Сковывающее копье none). Rolled freezes land at random
+    /// moments, so their expected uptime counts, as do armor, resistances and damage reduction.
     /// </summary>
     private static double Survival(Build b)
     {
-        var r = ContentHarness.Survival(b);
-        Assert.Empty(r.Violations);
-        var taken = r.DamageTaken?.Values.Sum() ?? 0;
-        return taken > 0 ? (r.TimeToDeath ?? 180) / taken : double.MaxValue;
+        const double window = 20;
+        const int fights = 40;
+        var sim = new Simulator(ContentHarness.Data, MechanicRegistry.Default);
+        var total = 0.0;
+        for (var seed = 1; seed <= fights; seed++)
+        {
+            var r = sim.Run(b, new SimConfig("attacking_boss", SimMode.Roll, Seed: seed, DummyAttacks: true, SurvivalCapSec: window));
+            Assert.Empty(r.Violations);
+            var taken = r.DamageTaken?.Values.Sum() ?? 0;
+            total += taken > 0 ? (r.TimeToDeath ?? window) / taken : 1e9;
+        }
+        return total / fights;
     }
 
     /// <summary>Asserts that <paramref name="expected"/> scores strictly best among the fork options.</summary>
@@ -631,7 +644,7 @@ public class SkillContentTests
         var best = scores.OrderByDescending(kv => kv.Value).First();
         var runnerUp = scores.Where(kv => kv.Key != expected).Max(kv => kv.Value);
         Assert.True(best.Key == expected && scores[expected] > runnerUp * 1.01,
-            $"{scenario}: expected {expected} to win, got {string.Join(", ", scores.Select(kv => $"{kv.Key}={kv.Value:0.##}"))}");
+            $"{scenario}: expected {expected} to win, got {string.Join(", ", scores.Select(kv => $"{kv.Key}={kv.Value:0.####}"))}");
     }
 
     // ---- Fork scenarios at skill level 20 (fix round 1): every option of a main fork, with the best compatible allocation of the

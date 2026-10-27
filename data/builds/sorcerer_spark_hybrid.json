@@ -6,7 +6,7 @@
     "shatter",
     "ice_armor",
     "brittle",
-    "aurora"
+    "glacier"
   ],
   "passive_nodes": [
     "will_attribute_2",
@@ -41,33 +41,33 @@
     "dex_phantom_step",
     "dex_evasion_3",
     "dex_attribute_5",
-    "dex_volley_1",
     "dex_assassin_2",
     "dex_assassin",
-    "will_storm_3",
-    "dex_assassin_1",
-    "str_attribute_2",
-    "dex_attribute_3",
-    "dex_volley",
     "will_storm_7",
     "int_attribute_1",
     "int_flame_2",
-    "int_insight_7",
     "will_flow_4",
     "int_frost_7",
     "int_frozen_heart",
     "will_wellspring",
-    "int_insight_6",
     "will_flow_1",
-    "dex_volley_2",
-    "will_sacrifice_3",
-    "dex_attribute_2",
     "int_frost_1",
-    "will_iron_will",
-    "int_insight_3",
     "int_frost_2",
     "int_bitter_frost",
-    "will_endurance_2"
+    "will_storm_6",
+    "dex_volley_1",
+    "dex_assassin_1",
+    "int_frost_3",
+    "int_insight_7",
+    "will_iron_will",
+    "int_frost_5",
+    "int_frost_6",
+    "will_sacrifice_3",
+    "will_storm_3",
+    "int_insight_3",
+    "str_attribute_2",
+    "str_attribute_1",
+    "int_insight_6"
   ],
   "attribute_choices": {
     "will_attribute_2": "int",
@@ -81,10 +81,9 @@
     "dex_attribute_4": "int",
     "will_attribute_5": "int",
     "dex_attribute_5": "int",
-    "str_attribute_2": "int",
-    "dex_attribute_3": "int",
     "int_attribute_1": "int",
-    "dex_attribute_2": "int"
+    "str_attribute_2": "int",
+    "str_attribute_1": "int"
   },
   "slots": [
     {
@@ -94,13 +93,13 @@
         "blink_focus": 1,
         "lingering_focus": 1,
         "impulse": 1,
-        "spark_trail": 1,
-        "twin_spark": 1,
         "short_step": 5,
         "high_voltage": 5,
         "light_step": 3,
+        "storm_step": 1,
+        "elusive": 1,
         "frost_wake": 1,
-        "storm_step": 1
+        "deep_cold": 1
       }
     },
     {
@@ -124,12 +123,12 @@
       "node_points": {
         "frost_edge": 4,
         "glacial_block": 1,
-        "cold_poise": 1,
         "ice_sting": 3,
         "point": 3,
         "cold_precision": 2,
         "ice_wedge": 2,
-        "bitter_cold": 3,
+        "bitter_cold": 2,
+        "cold_poise": 2,
         "ice_shards": 1
       }
     },
@@ -139,21 +138,20 @@
       "node_points": {
         "ice_meteor": 1,
         "sky_fire": 4,
-        "starfall": 1,
         "falling_star": 3,
         "comet_fragment": 1,
         "frost_shatter": 2,
         "crater": 3,
         "ash_veil": 1,
         "instant_fall": 1,
-        "star_thrift": 3
+        "star_thrift": 3,
+        "comet_core": 1
       }
     },
     {
       "skill_id": "spark",
       "level": 20,
       "node_points": {
-        "bright_flash": 1,
         "static": 3,
         "crackle": 4,
         "overload": 1,
@@ -161,7 +159,8 @@
         "breakdown": 3,
         "ionize": 1,
         "spark_fan": 1,
-        "mana_current": 3
+        "mana_current": 3,
+        "storm_fan": 1
       }
     }
   ],

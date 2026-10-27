@@ -4,8 +4,8 @@
   "ascendancy_id": "cryomancer",
   "ascendancy_nodes": [
     "shatter",
+    "ice_armor",
     "brittle",
-    "aurora",
     "glacier"
   ],
   "passive_nodes": [
@@ -51,23 +51,23 @@
     "dex_attribute_5",
     "dex_assassin_2",
     "dex_assassin",
-    "dex_volley_1",
-    "dex_volley",
-    "int_insight_7",
     "dex_assassin_1",
     "will_attribute_4",
     "will_flow_1",
     "will_wellspring",
     "will_flow_2",
-    "will_storm_3",
-    "will_storm_5",
-    "will_storm_4",
-    "dex_volley_2",
-    "int_flame_2",
     "will_attribute_3",
     "will_sacrifice_5",
     "int_ward_2",
-    "will_storm_6"
+    "int_flame_2",
+    "dex_volley_1",
+    "will_storm_3",
+    "will_storm_5",
+    "will_storm_4",
+    "will_sacrifice_3",
+    "int_insight_7",
+    "will_storm_6",
+    "int_frost_6"
   ],
   "attribute_choices": {
     "int_attribute_1": "int",
@@ -91,31 +91,32 @@
         "blink_focus": 1,
         "storm_step": 1,
         "lingering_focus": 1,
-        "spark_trail": 1,
-        "light_step": 1,
         "high_voltage": 5,
-        "afterimage": 1,
-        "phase_barrier": 1,
-        "short_step": 5,
-        "elusive": 1,
+        "short_step": 4,
         "ether_mend": 1,
-        "arrival_flare": 1
+        "spark_trail": 1,
+        "twin_spark": 1,
+        "light_step": 1,
+        "arrival_flare": 1,
+        "elusive": 1,
+        "afterimage": 1,
+        "phase_barrier": 1
       }
     },
     {
       "skill_id": "meteor",
       "level": 20,
       "node_points": {
-        "fire_field": 1,
         "sky_fire": 4,
         "scorched_earth": 3,
         "falling_star": 3,
-        "instant_fall": 1,
-        "comet_fragment": 1,
         "crater": 3,
-        "ice_meteor": 1,
+        "instant_fall": 1,
+        "comet_core": 1,
+        "comet_fragment": 1,
+        "fire_field": 1,
         "frost_shatter": 2,
-        "comet_core": 1
+        "ice_meteor": 1
       }
     },
     {
@@ -125,12 +126,12 @@
         "capacitor": 2,
         "quick_charge": 2,
         "storm_core": 4,
-        "static_orb": 1,
         "long_flight": 3,
-        "bright_discharge": 3,
+        "bright_discharge": 2,
         "static_field": 3,
-        "spark_cascade": 1,
-        "twin_orb": 1
+        "spark_cascade": 2,
+        "twin_orb": 1,
+        "static_orb": 1
       }
     },
     {
@@ -143,9 +144,9 @@
         "cold_precision": 2,
         "swift_ice": 3,
         "bitter_cold": 1,
+        "ice_shards": 1,
         "cold_poise": 1,
         "piercing_cold": 1,
-        "ice_shards": 1,
         "ice_crown": 1
       }
     },
@@ -159,9 +160,10 @@
         "quick_spark": 3,
         "static": 3,
         "breakdown": 3,
+        "storm_fan": 1,
         "spark_fan": 1,
-        "bright_flash": 2,
-        "storm_fan": 1
+        "ionize": 1,
+        "bright_flash": 1
       }
     }
   ],

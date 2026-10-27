@@ -113,16 +113,17 @@
       "level": 20,
       "node_points": {
         "storm_charge": 1,
-        "momentum": 4,
+        "momentum": 2,
         "ram": 1,
         "unstoppable": 1,
-        "quick_feet": 3,
+        "quick_feet": 2,
         "crushing_ram": 1,
         "furious_charge": 3,
         "true_lunge": 3,
         "finishing_blow": 1,
         "shoulder_bash": 1,
-        "bloody_path": 1
+        "bloody_path": 3,
+        "gore": 1
       }
     },
     {

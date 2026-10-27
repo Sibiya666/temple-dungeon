@@ -51,7 +51,7 @@
         "arrival_flare": 1,
         "double_flare": 1,
         "afterimage": 1,
-        "phase_barrier": 1
+        "ether_mend": 1
       }
     },
     {
@@ -76,13 +76,14 @@
       "node_points": {
         "storm_core": 4,
         "sun_orb": 1,
-        "quick_charge": 3,
+        "quick_charge": 2,
         "long_flight": 3,
         "bright_discharge": 3,
         "solar_corona": 2,
         "twin_orb": 1,
         "dense_orb": 1,
-        "big_orb": 2
+        "big_orb": 2,
+        "capacitor": 1
       }
     },
     {

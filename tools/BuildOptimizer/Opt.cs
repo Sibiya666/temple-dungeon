@@ -25,7 +25,9 @@ public static class Opt
     public static string[] Ban = Array.Empty<string>();
     /// <summary>Survival weight w: the objective is multiplied by (min(TimeToDeath, 180) / 180)^w against «Атакующий босс».</summary>
     public static double SurvivalWeight;
-    static bool Banned(string id) => Ban.Any(p => p.Length > 0 && id.StartsWith(p));
+    /// <summary>--min-survival s: survival below s seconds against «Атакующий босс» multiplies the objective by 0.3·(survival/s)².</summary>
+    public static double MinSurvival;
+    public static bool Banned(string id) => Ban.Any(p => p.Length > 0 && id.StartsWith(p));
     static double EvalRaw(Build b)
     {
         if (b.PassiveNodes.Any(Banned) || b.Slots.Any(s => s.NodePoints.Keys.Any(Banned) || Banned("slot:" + s.SkillId))) return double.NegativeInfinity;
@@ -34,10 +36,11 @@ public static class Opt
         double obj;
         if (G.TrainOnly) obj = t.DpsSingleTarget;
         else { var s = H.Run(b, "swarm"); obj = Math.Sqrt(Math.Max(0, t.DpsSingleTarget) * Math.Max(0, s.DpsPack)); }
-        if (SurvivalWeight > 0)
+        if (SurvivalWeight > 0 || MinSurvival > 0)
         {
             var ttd = H.Run(b, "attacking_boss", true).TimeToDeath ?? 180;
-            obj *= Math.Pow(Math.Min(ttd, 180) / 180, SurvivalWeight);
+            if (SurvivalWeight > 0) obj *= Math.Pow(Math.Min(ttd, 180) / 180, SurvivalWeight);
+            if (ttd < MinSurvival) obj *= 0.3 * Math.Pow(ttd / MinSurvival, 2);
         }
         double pen = 1;
         var used = t.Log.Where(e => e.Kind == "use").Select(e => e.Text).ToHashSet();
@@ -240,6 +243,8 @@ public static class Opt
     }
 
     public static bool AllowKeystones;
+    /// <summary>--pin a|b: passive nodes the search never removes (a keystone test build keeps its keystone).</summary>
+    public static HashSet<string> Pinned = new();
 
     public static Build PassiveRefine(Build cur, int k = 6)
     {
@@ -248,7 +253,7 @@ public static class Opt
         {
             var baseV = Eval(cur);
             var alloc = cur.PassiveNodes.Append(Start(cur)).ToHashSet();
-            var removable = cur.PassiveNodes.Where(n => tree.CanDeallocate(alloc, n, Start(cur))).ToList();
+            var removable = cur.PassiveNodes.Where(n => !Pinned.Contains(n) && tree.CanDeallocate(alloc, n, Start(cur))).ToList();
             var rem = removable.Select(n => RemoveNode(cur, n)).ToList();
             var rv = EvalAll(rem);
             var order = Enumerable.Range(0, rem.Count).OrderByDescending(i => rv[i]).Take(k).ToList();
@@ -269,7 +274,7 @@ public static class Opt
             {
                 var r1 = rem[order[x]];
                 var a1 = r1.PassiveNodes.Append(Start(r1)).ToHashSet();
-                var rem2 = r1.PassiveNodes.Where(n => tree.CanDeallocate(a1, n, Start(r1))).Select(n => RemoveNode(r1, n)).ToList();
+                var rem2 = r1.PassiveNodes.Where(n => !Pinned.Contains(n) && tree.CanDeallocate(a1, n, Start(r1))).Select(n => RemoveNode(r1, n)).ToList();
                 var rv2 = EvalAll(rem2);
                 foreach (var j in Enumerable.Range(0, rem2.Count).OrderByDescending(j => rv2[j]).Take(3))
                     foreach (var p in Paths(rem2[j], 2).Values.Where(p => p.Count == 2))
@@ -321,7 +326,28 @@ public static class Opt
                 var c = H.Clone(cur); c.AscendancyId = asc; c.AscendancyNodes = combo.ToList(); cands.Add(c);
             }
         }
+        if (!AscFloor) return Best(cands).B;
+        // --asc-floor: the best combination whose every notable earns its points (ReferenceBuildTests floor: removing it costs
+        // ≥ 3% of √(training × swarm) or ≥ 5 s of survival); the plain best if no combination passes.
+        var vals = EvalAll(cands);
+        foreach (var i in Enumerable.Range(0, cands.Count).Where(i => double.IsFinite(vals[i])).OrderByDescending(i => vals[i]))
+            if (PassesAscFloor(cands[i])) return cands[i];
         return Best(cands).B;
+    }
+
+    /// <summary>--asc-floor: AscBest keeps only notable combinations that pass the ascendancy floor of ReferenceBuildTests.</summary>
+    public static bool AscFloor;
+
+    public static bool PassesAscFloor(Build b)
+    {
+        double Obj(Build x) => Math.Sqrt(Math.Max(0, H.Run(x, "training").DpsSingleTarget) * Math.Max(0, H.Run(x, "swarm").DpsPack));
+        double Surv(Build x) => H.Run(x, "attacking_boss", true).TimeToDeath ?? double.PositiveInfinity;
+        var o0 = Obj(b); var s0 = Surv(b);
+        return b.AscendancyNodes.All(n =>
+        {
+            var c = H.Clone(b); c.AscendancyNodes.Remove(n);
+            return 1 - Obj(c) / o0 >= 0.03 || s0 - Surv(c) >= 5;
+        });
     }
 
     static IEnumerable<List<string>> Combos(List<string> xs, int k)
@@ -398,7 +424,7 @@ public static class Opt
             for (int j = 0; j < r; j++)
             {
                 var alloc = c.PassiveNodes.Append(Start(c)).ToHashSet();
-                var removable = c.PassiveNodes.Where(n => tree.CanDeallocate(alloc, n, Start(c))).ToList();
+                var removable = c.PassiveNodes.Where(n => !Pinned.Contains(n) && tree.CanDeallocate(alloc, n, Start(c))).ToList();
                 if (removable.Count == 0) break;
                 var n = removable[Rng.Next(removable.Count)];
                 c = RemoveNode(c, n);
@@ -451,7 +477,10 @@ public static class Opt
         var asc = o.GetValueOrDefault("asc");
         int rounds = int.Parse(o.GetValueOrDefault("rounds", "2"));
         AllowKeystones = o.ContainsKey("allow-keystones");
+        AscFloor = o.ContainsKey("asc-floor");
+        Pinned = o.GetValueOrDefault("pin", "").Split('|', StringSplitOptions.RemoveEmptyEntries).ToHashSet();
         SurvivalWeight = Num(o.GetValueOrDefault("survival-weight", "0"));
+        MinSurvival = Num(o.GetValueOrDefault("min-survival", "0"));
         Ban = o.GetValueOrDefault("ban", "").Split('|', StringSplitOptions.RemoveEmptyEntries)
             .Concat(AllowKeystones ? Array.Empty<string>() : new[] { "keystone" }).ToArray();
         var b = H.LoadBuild(input);

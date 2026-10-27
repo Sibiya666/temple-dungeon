@@ -6,7 +6,7 @@
     "insatiable",
     "blood_feast",
     "reckless",
-    "battle_trance"
+    "flesh_rend"
   ],
   "passive_nodes": [
     "str_attribute_2",
@@ -50,24 +50,24 @@
     "will_sacrifice_7",
     "will_attribute_1",
     "will_endurance_1",
-    "str_bleed_4",
     "will_command_2",
     "will_war_herald",
     "dex_onslaught_6",
-    "str_brute_6",
     "str_brute_3",
     "dex_attribute_3",
     "dex_venom_5",
     "dex_crippling_venom",
     "will_desperate_resolve",
-    "dex_onslaught_3",
-    "dex_venom_7",
-    "str_fury_1",
     "will_slow_death",
-    "str_bleed_5",
-    "str_bleed_3",
     "dex_venom_4",
-    "dex_venomous_blades"
+    "dex_venomous_blades",
+    "str_bleed_5",
+    "dex_venom_7",
+    "will_flow_4",
+    "will_iron_will",
+    "str_brute_6",
+    "dex_venom_3",
+    "str_bleed_3"
   ],
   "attribute_choices": {
     "str_attribute_2": "str",
@@ -90,15 +90,14 @@
         "inspiration": 1,
         "war_roar": 1,
         "fury_surge": 5,
-        "thunder_roar": 1,
+        "rolling_thunder": 3,
+        "tireless": 3,
         "battle_rhythm": 1,
         "ancestral_fury": 1,
-        "rolling_thunder": 4,
-        "deafening_roar": 1,
-        "ringing_ears": 1,
-        "intimidation": 1,
-        "tireless": 1,
-        "sharp_roar": 1
+        "thunder_roar": 1,
+        "endless_rage": 1,
+        "sharp_roar": 1,
+        "intimidation": 1
       }
     },
     {
@@ -106,31 +105,33 @@
       "level": 20,
       "node_points": {
         "momentum": 2,
-        "ram": 1,
-        "crushing_ram": 1,
         "bloody_path": 3,
         "true_lunge": 3,
-        "quick_feet": 2,
-        "gore": 1,
-        "furious_charge": 3,
+        "furious_charge": 2,
         "burning_trail": 1,
         "finishing_blow": 1,
-        "embers": 2
+        "embers": 2,
+        "gore": 1,
+        "crushing_ram": 1,
+        "quick_feet": 2,
+        "ram": 1,
+        "shoulder_bash": 1
       }
     },
     {
       "skill_id": "crush",
       "level": 20,
       "node_points": {
-        "peak_fury": 1,
-        "brute_force": 4,
+        "brute_force": 2,
         "torn_earth": 3,
         "heavy_blow": 3,
         "bloody_harvest": 3,
         "earthquake": 1,
         "fissures": 1,
         "deep_tremors": 2,
-        "cold_calculation": 2
+        "cold_calculation": 3,
+        "fury_return": 1,
+        "peak_fury": 1
       }
     },
     {
@@ -141,25 +142,26 @@
         "cutting_wind": 3,
         "thousand_cuts": 2,
         "steel_storm": 4,
-        "wide_circle": 3,
-        "fast_turns": 3,
-        "frenzied_spin": 1,
-        "thrifty_spin": 1
+        "fast_turns": 2,
+        "thrifty_spin": 3,
+        "blade_hurricane": 1,
+        "wide_circle": 1,
+        "frenzied_spin": 1
       }
     },
     {
       "skill_id": "throwing_axe",
       "level": 20,
       "node_points": {
-        "returning": 1,
         "whetstone": 4,
         "keen_throw": 3,
         "headshot": 2,
-        "jagged_edge": 2,
-        "thrower_fury": 1,
+        "jagged_edge": 1,
         "quick_throw": 3,
         "poisoned_blades": 3,
-        "lethal_dose": 1
+        "lethal_dose": 1,
+        "thrower_fury": 2,
+        "boomerang": 1
       }
     }
   ],

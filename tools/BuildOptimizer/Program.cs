@@ -11,6 +11,9 @@
 //   - each rotation skill never used in the training log: × 0.3;
 //   - --skill S^m: S must deal ≥ m × the damage of every other skill (default m = 1.25), else × 0.3·ratio²;
 //     --skill S>=x: S must deal ≥ x of all damage instead;
+//   - --min-survival s: survival below s seconds × 0.3·(survival/s)²;
+//   - --asc-floor: the ascendancy step keeps the best notable combination in which every notable passes the floor of
+//     ReferenceBuildTests (removing it costs ≥ 3% of √(training × swarm) or ≥ 5 s of survival), when one exists;
 //   - --type T>=x: damage type T must be ≥ x of all damage (default x = 0.6), else × 0.3·(share/x)²;
 //   - --ban a|b|...: passive or skill-tree node ids starting with any prefix, "slot:<skill>" and "asc:<notable>" are illegal (−∞);
 //     keystones are always banned unless --allow-keystones (reference builds carry none, spec 15.6 adds them).
@@ -24,13 +27,15 @@
 //
 // Commands:
 //   opt --in <build> --out <file> [--skill S^m | --skill S>=x] [--type T>=x] [--train-only] [--asc id] [--rounds n]
-//       [--lns] [--slots] [--scratch-passives] [--scratch-trees] [--ban p1|p2] [--allow-keystones] [--survival-weight w]
+//       [--lns] [--slots] [--scratch-passives] [--scratch-trees] [--ban p1|p2] [--allow-keystones] [--survival-weight w] [--min-survival s] [--asc-floor] [--pin n1|n2]
 //   eval <build>...            metrics (training, swarm, survival, boss time-to-kill, damage shares, uses)
 //   check <build>              contribution of each notable, each removable passive leaf; skill points with no effect
 //   attrvar --in <build> --out <file> [--skill ..] [--type ..] [--ban ..]   attribute-node swap variant (spec 15.9)
 //   tolevel --in <build> --out <file> --level L                            seed for a lower-level build
 //   l1 --out-dir <dir>                                                     exhaustive level-1 parity search
 //   fmt <file>...              rewrite build files in BuildCodec.ToJson format
+//   keystone --in <build> --ks <id> --out <file> [--attr a] [--ban p1|p2]               keystone test build (spec 15.6): path + keystone leaf
+//   suite [--all]              every balance acceptance metric (BalanceAcceptanceTests) in one table; --all adds notable ablation
 // <build> is a path to a .json file or a name under data/builds/ without .json.
 // See rebuild_references.sh for the exact recipe of every reference build.
 
@@ -56,5 +61,7 @@ switch (mode)
     case "tolevel": Parity.ToLevel(Options()); break;
     case "l1": Parity.L1(Options()); break;
     case "opt": Opt.Main2(Options()); break;
+    case "suite": Suite.Run(Options()); break;
+    case "keystone": KeystoneBuild.Run(Options()); break;
     default: Console.WriteLine("usage: see the header of Program.cs"); break;
 }
