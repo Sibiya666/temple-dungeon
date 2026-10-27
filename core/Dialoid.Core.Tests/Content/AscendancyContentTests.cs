@@ -168,8 +168,8 @@ public class AscendancyContentTests
         var asc = Asc("cryomancer");
         Assert.Equal(25, Mech(asc.Start, "chill_slow").Params["slow"].GetDouble());
         var cold = Assert.Single(asc.Start.Effects.OfType<ModifierEffect>()).Modifier;
-        // Spec 10.4 «увеличивает урон холодом по цели на 10%»: More since Task 10 (was Increased; BALANCE_NOTES).
-        Assert.Equal(("damage", ModKind.More, 10.0), (cold.Stat, cold.Kind, cold.Value));
+        // Spec 10.4 «увеличивает урон холодом по цели на 10%»: More 20 since Task 10 (was Increased 10; BALANCE_NOTES).
+        Assert.Equal(("damage", ModKind.More, 20.0), (cold.Stat, cold.Kind, cold.Value));
         Assert.Equal(TagSet.Of("cold"), cold.RequiredTags);
         Assert.Equal("target_chilled", Assert.Single(cold.Conditions).Id);
 

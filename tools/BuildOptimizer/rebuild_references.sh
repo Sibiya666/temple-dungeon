@@ -90,9 +90,11 @@ $BO keystone --in sorcerer_pyromancer_fireball --ks avatar_of_fire --out "$K/ava
 $BO keystone --in sorcerer_pyromancer_fireball --ks blade_dance --attr dex --out "$K/blade_dance_fit.json"
 $BO keystone --in warrior_thunderer_crush --ks blade_dance --out "$K/blade_dance_unfit.json"
 $BO keystone --in warrior_berserker_whirlwind --ks stone_skin --attr str --out "$K/stone_skin_fit.json"
-# Каменная кожа costs an Intelligence build its resistances and evasion; the Cryomancer is no such build (Ледяная броня makes it
-# an armor build: ×1.21), the Pyromancer's survival does not move by a whole boss attack, the lightning sorcerer loses one.
-$BO keystone --in sorcerer_spark_hybrid --ks stone_skin --out "$K/stone_skin_unfit.json"
+# Каменная кожа costs an Intelligence or Dexterity build its resistances and evasion: the Pyromancer with every attribute choice
+# in Ловкость loses one boss attack (35 → 31.5 s). Survival moves in whole boss attacks (3.5 s), so the plain Intelligence
+# builds do not show it: the Pyromancer stays at 35 s, and the Cryomancers (both, since Ледяная броня +550) are armor builds
+# that gain.
+$BO keystone --in sorcerer_pyromancer_fireball --ks stone_skin --attr dex --out "$K/stone_skin_unfit.json"
 
 # Attribute-node swap variants (spec 15.9): regenerate from the sources after the sources change.
 $BO attrvar --in "$OUT/warrior_thunderer_crush.json" \

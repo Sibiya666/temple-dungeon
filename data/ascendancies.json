@@ -205,10 +205,10 @@
     "start": {
       "id": "permafrost",
       "name": "Вечная мерзлота",
-      "description": "Охлаждение от чародея замедляет цель на 25% вместо 15% (в песочнице замедление на манекен пока не влияет). Урон холодом по охлажденной цели +10% (More).",
+      "description": "Охлаждение от чародея замедляет цель на 25% вместо 15% (в песочнице замедление на манекен пока не влияет). Урон холодом по охлажденной цели +20% (More).",
       "effects": [
         { "type": "mechanic", "id": "chill_slow", "params": { "slow": 25 } },
-        { "type": "modifier", "stat": "damage", "kind": "more", "value": 10, "tags": ["cold"], "conditions": ["target_chilled"] }
+        { "type": "modifier", "stat": "damage", "kind": "more", "value": 20, "tags": ["cold"], "conditions": ["target_chilled"] }
       ]
     },
     "notables": [
@@ -223,9 +223,9 @@
       {
         "id": "ice_armor",
         "name": "Ледяная броня",
-        "description": "Каждая заморозка, наложенная чародеем, дает ему +600 брони на 4 с (новая заморозка обновляет время, но не складывается).",
+        "description": "Каждая заморозка, наложенная чародеем, дает ему +550 брони на 4 с (новая заморозка обновляет время, но не складывается).",
         "effects": [
-          { "type": "mechanic", "id": "ice_armor", "params": { "ailment": "freeze", "duration": 4, "armor": 600 } }
+          { "type": "mechanic", "id": "ice_armor", "params": { "ailment": "freeze", "duration": 4, "armor": 550 } }
         ]
       },
       {

@@ -25,7 +25,6 @@
     "int_ignite_2",
     "int_inferno",
     "int_flame_6",
-    "int_flame_5",
     "int_attribute_2",
     "int_insight_1",
     "int_insight_2",
@@ -35,6 +34,7 @@
     "int_insight_5",
     "int_piercing_thought",
     "int_insight_7",
+    "int_insight_6",
     "will_attribute_4",
     "will_flow_1",
     "will_wellspring",
@@ -65,8 +65,8 @@
     "will_sacrifice_3",
     "will_slow_death",
     "int_insight_3",
-    "will_flow_2",
     "dex_attribute_1",
+    "int_flame_5",
     "keystone_avatar_of_fire"
   ],
   "attribute_choices": {
@@ -114,15 +114,14 @@
       "level": 20,
       "node_points": {
         "kindling": 3,
-        "scorched_earth": 2,
+        "scorched_earth": 3,
         "sky_fire": 4,
         "falling_star": 3,
-        "comet_fragment": 1,
         "star_thrift": 3,
         "starfall": 1,
         "core_heat": 1,
         "fire_field": 1,
-        "crater": 1
+        "comet_fragment": 1
       }
     },
     {
@@ -130,15 +129,16 @@
       "level": 20,
       "node_points": {
         "storm_core": 4,
-        "sun_orb": 1,
-        "quick_charge": 1,
+        "quick_charge": 2,
         "long_flight": 3,
-        "bright_discharge": 3,
-        "solar_corona": 2,
         "static_orb": 1,
         "twin_orb": 1,
         "big_orb": 3,
-        "arc_discharge": 1
+        "sun_orb": 1,
+        "arc_discharge": 1,
+        "capacitor": 2,
+        "solar_corona": 1,
+        "bright_discharge": 1
       }
     },
     {
@@ -146,16 +146,15 @@
       "level": 20,
       "node_points": {
         "heat": 4,
-        "compress": 1,
         "molten_core": 3,
         "wide_blast": 3,
         "ring_of_fire": 1,
         "mana_focus": 2,
-        "swift_orb": 1,
         "flame_mark": 1,
-        "soul_flame": 2,
         "eternal_flame": 1,
-        "lingering_heat": 1
+        "overheat": 3,
+        "compress": 1,
+        "swift_orb": 1
       }
     },
     {
@@ -169,7 +168,8 @@
         "mana_current": 2,
         "spark_fan": 1,
         "ionize": 1,
-        "bright_flash": 3
+        "bright_flash": 2,
+        "overload": 1
       }
     }
   ],

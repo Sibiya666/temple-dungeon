@@ -57,7 +57,6 @@
     "will_wellspring",
     "will_flow_2",
     "will_attribute_3",
-    "will_sacrifice_5",
     "int_ward_2",
     "int_flame_2",
     "dex_volley_1",
@@ -67,7 +66,8 @@
     "will_sacrifice_3",
     "int_insight_7",
     "will_storm_6",
-    "int_frost_6"
+    "int_frost_6",
+    "int_flame_3"
   ],
   "attribute_choices": {
     "int_attribute_1": "int",
@@ -97,26 +97,26 @@
         "spark_trail": 1,
         "twin_spark": 1,
         "light_step": 1,
-        "arrival_flare": 1,
         "elusive": 1,
         "afterimage": 1,
-        "phase_barrier": 1
+        "phase_barrier": 1,
+        "arrival_flare": 1
       }
     },
     {
       "skill_id": "meteor",
       "level": 20,
       "node_points": {
-        "sky_fire": 4,
+        "sky_fire": 2,
         "scorched_earth": 3,
         "falling_star": 3,
         "crater": 3,
         "instant_fall": 1,
         "comet_core": 1,
-        "comet_fragment": 1,
         "fire_field": 1,
         "frost_shatter": 2,
-        "ice_meteor": 1
+        "ice_meteor": 1,
+        "kindling": 3
       }
     },
     {
@@ -127,11 +127,11 @@
         "quick_charge": 2,
         "storm_core": 4,
         "long_flight": 3,
-        "bright_discharge": 2,
         "static_field": 3,
         "spark_cascade": 2,
+        "static_orb": 1,
         "twin_orb": 1,
-        "static_orb": 1
+        "bright_discharge": 2
       }
     },
     {
