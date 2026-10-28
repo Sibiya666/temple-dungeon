@@ -43,4 +43,13 @@ public class DataLocatorTests
             Directory.Delete(Path.GetDirectoryName(temp)!, recursive: true);
         }
     }
+
+    [Fact]
+    public void Empty_start_directory_means_current_directory()
+    {
+        var candidates = DataLocator.Candidates("");
+        Assert.Equal(Path.Combine(Directory.GetCurrentDirectory(), "data"), candidates[0]);
+        Assert.Equal(DataLocator.Find(Directory.GetCurrentDirectory()), DataLocator.Find(""));
+        Assert.Equal(candidates, DataLocator.Candidates("   "));
+    }
 }
