@@ -1,0 +1,131 @@
+{
+  "class_id": "sorcerer",
+  "level": 20,
+  "ascendancy_id": "pyromancer",
+  "ascendancy_nodes": [
+    "eternal_fire"
+  ],
+  "passive_nodes": [
+    "int_attribute_1",
+    "int_attribute_4",
+    "int_flame_1",
+    "int_attribute_2",
+    "int_archmage",
+    "int_flame_3",
+    "int_attribute_5",
+    "int_ignite_2",
+    "int_inferno",
+    "int_insight_1",
+    "int_insight_2",
+    "int_arcane_precision",
+    "int_flame_4",
+    "int_incineration",
+    "int_insight_4",
+    "int_attribute_6",
+    "int_insight_5",
+    "int_piercing_thought",
+    "int_flame_6"
+  ],
+  "attribute_choices": {
+    "int_attribute_1": "int",
+    "int_attribute_4": "int",
+    "int_attribute_2": "int",
+    "int_attribute_5": "int",
+    "int_attribute_6": "int"
+  },
+  "slots": [
+    {
+      "skill_id": "blink",
+      "level": 20,
+      "node_points": {
+        "blink_focus": 1,
+        "impulse": 1,
+        "storm_step": 1,
+        "lingering_focus": 1,
+        "fire_exit": 1,
+        "spark_trail": 1,
+        "twin_spark": 1,
+        "high_voltage": 1,
+        "light_step": 3,
+        "short_step": 5,
+        "arrival_flare": 1,
+        "double_flare": 1,
+        "afterimage": 1,
+        "ether_mend": 1
+      }
+    },
+    {
+      "skill_id": "meteor",
+      "level": 20,
+      "node_points": {
+        "kindling": 3,
+        "scorched_earth": 3,
+        "sky_fire": 4,
+        "falling_star": 3,
+        "fire_field": 1,
+        "crater": 1,
+        "star_thrift": 1,
+        "ash_veil": 1,
+        "comet_core": 1,
+        "core_heat": 2
+      }
+    },
+    {
+      "skill_id": "ball_lightning",
+      "level": 20,
+      "node_points": {
+        "storm_core": 4,
+        "sun_orb": 1,
+        "quick_charge": 2,
+        "long_flight": 3,
+        "bright_discharge": 3,
+        "solar_corona": 2,
+        "twin_orb": 1,
+        "dense_orb": 1,
+        "big_orb": 2,
+        "capacitor": 1
+      }
+    },
+    {
+      "skill_id": "fireball",
+      "level": 20,
+      "node_points": {
+        "heat": 4,
+        "compress": 1,
+        "molten_core": 3,
+        "flame_mark": 1,
+        "wide_blast": 3,
+        "ring_of_fire": 1,
+        "overheat": 1,
+        "mana_focus": 1,
+        "swift_orb": 1,
+        "eternal_flame": 1,
+        "lingering_heat": 3
+      }
+    },
+    {
+      "skill_id": "spark",
+      "level": 20,
+      "node_points": {
+        "crackle": 4,
+        "spark_fan": 1,
+        "overload": 1,
+        "static": 3,
+        "breakdown": 3,
+        "quick_spark": 3,
+        "ionize": 1,
+        "storm_fan": 2,
+        "mana_current": 2
+      }
+    }
+  ],
+  "weapon_id": "staff",
+  "item_ids": [],
+  "rotation": [
+    "blink",
+    "meteor",
+    "ball_lightning",
+    "fireball",
+    "spark"
+  ]
+}

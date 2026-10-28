@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Dialoid.Core.Combat;
 using Dialoid.Core.Simulation;
 
@@ -5,12 +6,27 @@ namespace Dialoid.Core.Data.Json;
 
 internal sealed class DummyAttackJson
 {
+    private static readonly HashSet<string> Allowed = StrictJson.Fields("damage_per_hit", "interval_sec");
+
+    public static void CheckFields(JsonElement el, string file, string? id, List<DataError> errors)
+    {
+        StrictJson.RejectUnknown(el, Allowed, file, id, errors);
+    }
+
     public Dictionary<string, double>? DamagePerHit { get; set; }
     public double IntervalSec { get; set; }
 }
 
 internal sealed class DummyJson
 {
+    private static readonly HashSet<string> Allowed = StrictJson.Fields("id", "name", "pack_size", "pack_radius", "life_per_target", "respawn", "armor", "resists", "freeze_duration_multiplier", "attack");
+
+    public static void CheckFields(JsonElement el, string file, string? id, List<DataError> errors)
+    {
+        StrictJson.RejectUnknown(el, Allowed, file, id, errors);
+        if (StrictJson.TryObject(el, "attack", out var attack)) DummyAttackJson.CheckFields(attack, file, id, errors);
+    }
+
     public string? Id { get; set; }
     public string? Name { get; set; }
     public int PackSize { get; set; } = 1;

@@ -1,0 +1,125 @@
+{
+  "class_id": "sorcerer",
+  "level": 20,
+  "ascendancy_id": "cryomancer",
+  "ascendancy_nodes": [
+    "brittle"
+  ],
+  "passive_nodes": [
+    "will_attribute_2",
+    "will_storm_1",
+    "will_storm_2",
+    "will_storm_front",
+    "will_storm_3",
+    "will_storm_4",
+    "will_attribute_6",
+    "will_storm_5",
+    "will_chain_reaction",
+    "will_storm_7",
+    "int_attribute_1",
+    "int_attribute_4",
+    "int_flame_1",
+    "int_archmage",
+    "int_attribute_2",
+    "int_insight_1",
+    "int_insight_2",
+    "int_arcane_precision",
+    "int_insight_3"
+  ],
+  "attribute_choices": {
+    "will_attribute_2": "int",
+    "will_attribute_6": "int",
+    "int_attribute_1": "int",
+    "int_attribute_4": "int",
+    "int_attribute_2": "int"
+  },
+  "slots": [
+    {
+      "skill_id": "blink",
+      "level": 20,
+      "node_points": {
+        "spark_trail": 1,
+        "short_step": 2,
+        "frost_wake": 1,
+        "storm_step": 1,
+        "high_voltage": 5,
+        "blink_focus": 1,
+        "lingering_focus": 1,
+        "light_step": 5,
+        "twin_spark": 1,
+        "impulse": 1,
+        "deep_cold": 1
+      }
+    },
+    {
+      "skill_id": "ball_lightning",
+      "level": 20,
+      "node_points": {
+        "storm_core": 4,
+        "long_flight": 3,
+        "static_field": 3,
+        "capacitor": 2,
+        "quick_charge": 3,
+        "static_orb": 1,
+        "bright_discharge": 3,
+        "twin_orb": 1
+      }
+    },
+    {
+      "skill_id": "ice_lance",
+      "level": 20,
+      "node_points": {
+        "frost_edge": 4,
+        "glacial_block": 1,
+        "ice_sting": 3,
+        "point": 3,
+        "cold_precision": 2,
+        "bitter_cold": 2,
+        "ice_shards": 1,
+        "cold_poise": 1,
+        "ice_wedge": 2,
+        "ice_crown": 1
+      }
+    },
+    {
+      "skill_id": "meteor",
+      "level": 20,
+      "node_points": {
+        "sky_fire": 4,
+        "crater": 3,
+        "falling_star": 3,
+        "comet_fragment": 1,
+        "ash_veil": 1,
+        "star_thrift": 3,
+        "ice_meteor": 1,
+        "frost_shatter": 2,
+        "instant_fall": 1,
+        "comet_core": 1
+      }
+    },
+    {
+      "skill_id": "spark",
+      "level": 20,
+      "node_points": {
+        "static": 3,
+        "crackle": 4,
+        "overload": 1,
+        "quick_spark": 3,
+        "breakdown": 3,
+        "ionize": 1,
+        "spark_fan": 1,
+        "mana_current": 3,
+        "storm_fan": 1
+      }
+    }
+  ],
+  "weapon_id": "staff",
+  "item_ids": [],
+  "rotation": [
+    "blink",
+    "meteor",
+    "ball_lightning",
+    "ice_lance",
+    "spark"
+  ]
+}

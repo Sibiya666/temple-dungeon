@@ -119,6 +119,33 @@ public class PyromancerTests
     }
 
     [Fact]
+    public void Ashes_also_gives_new_ignites_the_pack_stack_bonus_snapshotted_when_they_land()
+    {
+        // Spec 10.4 «урон по подожженным целям»: an ignite is damage to an ignited target, so a new ignite snapshots the bonus
+        // (More = pack ignite stacks at that moment, cap 25) like any DoT modifier. The bolt ignites #0 at 0 (no bonus yet: no
+        // stacks before it); then the others get seeded stacks, and every later bolt's ignite replaces it with the bonus.
+        void Mutate(string dir) => Ignite100(dir, "test_bolt");
+        double LastIgniteDps(string effects, int otherStacks)
+        {
+            double dps = 0;
+            Run(MageAsc(effects, Mutate), Mage(true, "test_bolt"), "test_pack", duration: 3, observe: s =>
+            {
+                if (s.Time == 0)
+                    for (var i = 1; i < 5; i++)
+                        for (var k = 0; k < otherStacks; k++)
+                            s.Targets[i].Apply(Ignite(), 99, StackRule.ReplaceWeakest);
+                dps = s.Targets[0].Ailments.Where(a => a.AilmentId == "ignite").Select(a => a.DamagePerSec).DefaultIfEmpty(0).Max();
+            });
+            return dps;
+        }
+
+        var plain = LastIgniteDps("", 2);
+        Assert.True(plain > 0);
+        Assert.Equal(1.09, LastIgniteDps(Mech("ashes"), 2) / plain, 6);  // 1 own + 4 x 2 seeded = 9 stacks, steady (no loop)
+        Assert.Equal(1.25, LastIgniteDps(Mech("ashes"), 10) / plain, 6); // 41 stacks: cap 25
+    }
+
+    [Fact]
     public void Eternal_fire_makes_ignites_last_50_percent_longer_at_the_same_damage_per_second()
     {
         void Mutate(string dir)

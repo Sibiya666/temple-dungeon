@@ -1,0 +1,2589 @@
+[
+  {
+    "id": "cleave",
+    "name": "Рассекающий удар",
+    "description": "Удар по дуге: бьет основную цель и задевает соседей. Генератор: +12 Ярости за применение, если удар попал.",
+    "class_id": "warrior",
+    "unlock_level": 1,
+    "tags": ["attack", "melee", "area", "physical", "generator"],
+    "weapon_effectiveness": 110,
+    "attack_time_multiplier": 1,
+    "resource_gain": 12,
+    "behavior": {"area_radius": 1.2},
+    "ailment_chances": {"bleed": 10},
+    "weapon_types": ["one_hand", "two_hand"],
+    "tree": [
+      {
+        "id": "heavy_hand",
+        "name": "Тяжелая рука",
+        "description": "+8% урона за очко.",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "lacerate",
+        "name": "Рваные раны",
+        "description": "+10% шанса кровотечения за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 10}
+        ]
+      },
+      {
+        "id": "deep_cut",
+        "name": "Глубокий порез",
+        "description": "+20% урона кровотечения за очко.",
+        "max_points": 2,
+        "requires": [{"node": "lacerate", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "tags": ["ailment_bleed"]}
+        ]
+      },
+      {
+        "id": "bloodletting",
+        "name": "Кровопускание",
+        "description": "Если основная цель кровоточит, применение дает еще +4 Ярости.",
+        "max_points": 1,
+        "requires": [{"node": "deep_cut", "points": 2}],
+        "effects": [
+          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 4, "conditions": ["target_bleeding"]}
+        ]
+      },
+      {
+        "id": "thirst",
+        "name": "Жажда",
+        "description": "+2 Ярости за применение за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "frenzy",
+        "name": "Неистовство",
+        "description": "Каждое 3-е применение дает +15% скорости атаки на 3 с.",
+        "max_points": 1,
+        "requires": [{"node": "thirst", "points": 3}],
+        "effects": [
+          {"type": "grant_proc", "trigger": {"every_n_uses": 3}, "action": {"apply_buff": {"id": "cleave_frenzy", "duration": 3, "modifiers": [{"stat": "attack_speed", "kind": "increased", "value": 15}]}}}
+        ]
+      },
+      {
+        "id": "wide_swing",
+        "name": "Широкий замах",
+        "description": "+20% площади за очко.",
+        "max_points": 3,
+        "requires": [{"node": "heavy_hand", "points": 2}],
+        "effects": [
+          {"type": "modifier", "stat": "area", "kind": "increased", "value": 20}
+        ]
+      },
+      {
+        "id": "split",
+        "name": "Раскол",
+        "description": "Развилка. Удар бьет дважды: второй удар — триггерная копия с силой 50%.",
+        "max_points": 1,
+        "requires": [{"node": "wide_swing", "points": 3}],
+        "exclusive_group": "cleave_form",
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "cleave", "damage_percent": 50}}}
+        ]
+      },
+      {
+        "id": "precise_strike",
+        "name": "Точный удар",
+        "description": "Развилка. Удар без зоны: +50% More урона и +5% шанса крита.",
+        "max_points": 1,
+        "requires": [{"node": "wide_swing", "points": 3}],
+        "exclusive_group": "cleave_form",
+        "effects": [
+          {"type": "remove_tag", "tag": "area"},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 50},
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 5}
+        ]
+      },
+      {
+        "id": "searing_blade",
+        "name": "Раскаленный клинок",
+        "description": "20% физического урона становится огнем за очко (до 60%). Развилка с «Ударом грома».",
+        "max_points": 3,
+        "requires": [{"node": "heavy_hand", "points": 2}],
+        "exclusive_group": "cleave_element",
+        "effects": [
+          {"type": "add_conversion", "from": "physical", "to": "fire", "percent": 20}
+        ]
+      },
+      {
+        "id": "burning_wounds",
+        "name": "Пылающие раны",
+        "description": "Шанс кровотечения этого удара также дает такой же шанс поджога.",
+        "max_points": 1,
+        "requires": [{"node": "searing_blade", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 10},
+          {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 1, "per": {"stat": "bleed_chance", "every": 1}}
+        ]
+      },
+      {
+        "id": "thunder_strike",
+        "name": "Удар грома",
+        "description": "50% физического урона становится молнией, шанс шока 20%. Развилка с «Раскаленным клинком».",
+        "max_points": 1,
+        "requires": [{"node": "heavy_hand", "points": 4}],
+        "exclusive_group": "cleave_element",
+        "effects": [
+          {"type": "add_conversion", "from": "physical", "to": "lightning", "percent": 50},
+          {"type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 20}
+        ]
+      },
+      {
+        "id": "echo",
+        "name": "Эхо",
+        "description": "Каждое 4-е применение запускает копию Сокрушения с уроном 30%.",
+        "max_points": 1,
+        "requires": [{"node": "thirst", "points": 3}],
+        "effects": [
+          {"type": "grant_proc", "trigger": {"every_n_uses": 4}, "action": {"cast_skill": {"id": "crush", "damage_percent": 30}}}
+        ]
+      },
+      {
+        "id": "rolling_echo",
+        "name": "Раскатистое эхо",
+        "description": "Эхо бьет вдвое сильнее: еще одна копия Сокрушения с уроном 30% (итого 60%).",
+        "max_points": 1,
+        "requires": [{"node": "echo", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": {"every_n_uses": 4}, "action": {"cast_skill": {"id": "crush", "damage_percent": 30}}}
+        ]
+      },
+      {
+        "id": "steel_skin",
+        "name": "Стальная кожа",
+        "description": "Попадание дает +80 брони на 4 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_hit", "action": {"apply_buff": {"id": "steel_skin", "duration": 4, "modifiers": [{"stat": "armor", "kind": "flat", "value": 80}]}}}
+        ]
+      },
+      {
+        "id": "crushing_force",
+        "name": "Сокрушительная сила",
+        "description": "+10% урона по замороженным (оглушенным) целям за очко.",
+        "max_points": 3,
+        "requires": [{"node": "heavy_hand", "points": 4}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "conditions": ["target_frozen"]}
+        ]
+      },
+      {
+        "id": "edge",
+        "name": "Кромка",
+        "description": "+15% критического урона за очко.",
+        "max_points": 2,
+        "requires": [{"node": "precise_strike", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 15}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "crush",
+    "name": "Сокрушение",
+    "description": "Тяжелый удар по земле, бьет по области. Спендер: 35 Ярости.",
+    "class_id": "warrior",
+    "unlock_level": 1,
+    "tags": ["attack", "melee", "area", "physical", "spender"],
+    "weapon_effectiveness": 270,
+    "attack_time_multiplier": 1.25,
+    "resource_cost": 35,
+    "behavior": {"area_radius": 2.0},
+    "weapon_types": ["one_hand", "two_hand"],
+    "tree": [
+      {
+        "id": "brute_force",
+        "name": "Грубая сила",
+        "description": "+8% урона за очко.",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "wide_impact",
+        "name": "Широкий удар",
+        "description": "+15% площади за очко.",
+        "max_points": 3,
+        "requires": [{"node": "brute_force", "points": 2}],
+        "effects": [
+          {"type": "modifier", "stat": "area", "kind": "increased", "value": 15}
+        ]
+      },
+      {
+        "id": "shockwave",
+        "name": "Ударная волна",
+        "description": "Развилка. Зона становится линией: волна пробивает 2 цели за основной (до 3 целей подряд), урон −15% (More).",
+        "max_points": 1,
+        "requires": [{"node": "brute_force", "points": 2}],
+        "exclusive_group": "crush_form",
+        "effects": [
+          {"type": "remove_tag", "tag": "area"},
+          {"type": "add_tag", "tag": "projectile"},
+          {"type": "set_behavior", "param": "pierce_count", "value": 2},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -15}
+        ]
+      },
+      {
+        "id": "earthquake",
+        "name": "Землетрясение",
+        "description": "Развилка. Удар вызывает повторный толчок: копия Сокрушения с силой 40%.",
+        "max_points": 1,
+        "requires": [{"node": "brute_force", "points": 2}],
+        "exclusive_group": "crush_form",
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "crush", "damage_percent": 40}}}
+        ]
+      },
+      {
+        "id": "deep_tremors",
+        "name": "Глубокие толчки",
+        "description": "Повторный толчок и другие триггерные копии Сокрушения: +25% More урона за очко.",
+        "max_points": 2,
+        "requires": [{"node": "earthquake", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 25, "tags": ["triggered"]}
+        ]
+      },
+      {
+        "id": "fissures",
+        "name": "Трещины",
+        "description": "Толчок раскалывает землю: зона 3 с наносит 10% базы удара физическим уроном в секунду.",
+        "max_points": 1,
+        "requires": [{"node": "earthquake", "points": 1}],
+        "effects": [
+          {"type": "set_behavior", "param": "ground_duration", "value": 3},
+          {"type": "set_behavior", "param": "ground_fraction", "value": 0.1}
+        ]
+      },
+      {
+        "id": "thunder_hammer",
+        "name": "Громовой молот",
+        "description": "Весь урон становится молнией, шанс шока 25%. Кровотечение (физический недуг) и бонусы к физическому урону после этого не работают.",
+        "max_points": 1,
+        "requires": [{"node": "brute_force", "points": 2}],
+        "effects": [
+          {"type": "set_damage_type", "to": "lightning"},
+          {"type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 25}
+        ]
+      },
+      {
+        "id": "static_discharge",
+        "name": "Остаточный разряд",
+        "description": "+5% эффекта шока за очко.",
+        "max_points": 3,
+        "requires": [{"node": "thunder_hammer", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "shock_effect", "kind": "flat", "value": 5}
+        ]
+      },
+      {
+        "id": "torn_earth",
+        "name": "Рваная земля",
+        "description": "+6% шанса кровотечения за очко. Не работает вместе с «Громовым молотом».",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 6}
+        ]
+      },
+      {
+        "id": "bloody_harvest",
+        "name": "Кровавая жатва",
+        "description": "+8% More урона по каждой кровоточащей цели за очко.",
+        "max_points": 3,
+        "requires": [{"node": "torn_earth", "points": 2}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 8, "conditions": ["target_bleeding"]}
+        ]
+      },
+      {
+        "id": "cold_calculation",
+        "name": "Холодный расчет",
+        "description": "−2 Ярости к стоимости за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -2}
+        ]
+      },
+      {
+        "id": "fury_return",
+        "name": "Возврат ярости",
+        "description": "Часть Ярости возвращается сразу: стоимость еще −4. Не зависит от бонусов к генерации Ярости.",
+        "max_points": 1,
+        "requires": [{"node": "cold_calculation", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -4}
+        ]
+      },
+      {
+        "id": "peak_fury",
+        "name": "Пик ярости",
+        "description": "Стойка: если после оплаты Ярость выше 50%, удар наносит +15% More урона.",
+        "max_points": 1,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 15, "conditions": [{"id": "resource_above_pct", "param": 50}]}
+        ]
+      },
+      {
+        "id": "stun",
+        "name": "Оглушение",
+        "description": "Попадание оглушает основную цель на 1 с (как заморозка, без броска шанса).",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_hit", "action": {"apply_ailment": "freeze"}}
+        ]
+      },
+      {
+        "id": "concussion",
+        "name": "Сотрясение",
+        "description": "+25% длительности оглушения за очко.",
+        "max_points": 2,
+        "requires": [{"node": "stun", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "freeze_duration", "kind": "increased", "value": 25}
+        ]
+      },
+      {
+        "id": "heavy_blow",
+        "name": "Тяжкий удар",
+        "description": "+2% шанса крита за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "battle_cry",
+    "name": "Боевой клич",
+    "description": "Клич-бафф на 8 с, перезарядка 20 с, урона не наносит. Вид баффа задает корень: «Боевой рев» — +20% урона, «Железный клич» — броня.",
+    "class_id": "warrior",
+    "unlock_level": 4,
+    "tags": ["shout", "buff"],
+    "cast_time": 0.5,
+    "cooldown": 20,
+    "tree": [
+      {
+        "id": "war_roar",
+        "name": "Боевой рев",
+        "description": "Развилка клича. Бафф «Боевой клич»: +20% урона на 8 с.",
+        "max_points": 1,
+        "exclusive_group": "cry_core",
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "battle_cry", "duration": 8, "modifiers": [{"stat": "damage", "kind": "increased", "value": 20}]}}}
+        ]
+      },
+      {
+        "id": "iron_cry",
+        "name": "Железный клич",
+        "description": "Развилка клича. Вместо урона бафф «Боевой клич» дает +250 брони и −5% получаемого урона на 8 с.",
+        "max_points": 1,
+        "exclusive_group": "cry_core",
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "battle_cry", "duration": 8, "modifiers": [{"stat": "armor", "kind": "flat", "value": 250}, {"stat": "damage_taken", "kind": "flat", "value": -5}]}}}
+        ]
+      },
+      {
+        "id": "intimidation",
+        "name": "Устрашение",
+        "description": "Враги устрашены: весь урон +10% More на 8 с.",
+        "max_points": 1,
+        "requires": [{"node": "war_roar", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "intimidation", "duration": 8, "modifiers": [{"stat": "damage", "kind": "more", "value": 10}]}}}
+        ]
+      },
+      {
+        "id": "battle_rhythm",
+        "name": "Боевой ритм",
+        "description": "Клич дает +12% скорости атаки на 8 с.",
+        "max_points": 1,
+        "requires": [{"node": "war_roar", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "battle_rhythm", "duration": 8, "modifiers": [{"stat": "attack_speed", "kind": "increased", "value": 12}]}}}
+        ]
+      },
+      {
+        "id": "ancestral_fury",
+        "name": "Ярость предков",
+        "description": "Клич дает +3% шанса крита на 8 с.",
+        "max_points": 1,
+        "requires": [{"node": "battle_rhythm", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "ancestral_fury", "duration": 8, "modifiers": [{"stat": "crit_chance", "kind": "flat", "value": 3}]}}}
+        ]
+      },
+      {
+        "id": "long_roar",
+        "name": "Протяжный рев",
+        "description": "Развилка темпа. Основной бафф урона «Боевой клич» длится 12 с вместо 8 (другие баффы клича — по-прежнему 8 с).",
+        "max_points": 1,
+        "requires": [{"node": "war_roar", "points": 1}],
+        "exclusive_group": "cry_tempo",
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "battle_cry", "duration": 12, "modifiers": [{"stat": "damage", "kind": "increased", "value": 20}]}}}
+        ]
+      },
+      {
+        "id": "unyielding",
+        "name": "Несгибаемость",
+        "description": "Клич дает 1.5% регенерации здоровья в секунду на 8 с.",
+        "max_points": 1,
+        "requires": [{"node": "iron_cry", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "unyielding", "duration": 8, "modifiers": [{"stat": "life_regen_pct", "kind": "flat", "value": 1.5}]}}}
+        ]
+      },
+      {
+        "id": "steel_will",
+        "name": "Стальная воля",
+        "description": "Клич дает +15% ко всем сопротивлениям на 8 с.",
+        "max_points": 1,
+        "requires": [{"node": "iron_cry", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "steel_will", "duration": 8, "modifiers": [{"stat": "resist_fire", "kind": "flat", "value": 15}, {"stat": "resist_cold", "kind": "flat", "value": 15}, {"stat": "resist_lightning", "kind": "flat", "value": 15}, {"stat": "resist_poison", "kind": "flat", "value": 15}]}}}
+        ]
+      },
+      {
+        "id": "hardened_body",
+        "name": "Закаленное тело",
+        "description": "Клич дает +15% максимума здоровья на 8 с.",
+        "max_points": 1,
+        "requires": [{"node": "iron_cry", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "hardened_body", "duration": 8, "modifiers": [{"stat": "life", "kind": "increased", "value": 15}]}}}
+        ]
+      },
+      {
+        "id": "long_stand",
+        "name": "Долгая стойкость",
+        "description": "Развилка темпа. Основной бафф брони «Боевой клич» длится 12 с вместо 8 (другие баффы клича — по-прежнему 8 с).",
+        "max_points": 1,
+        "requires": [{"node": "iron_cry", "points": 1}],
+        "exclusive_group": "cry_tempo",
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "battle_cry", "duration": 12, "modifiers": [{"stat": "armor", "kind": "flat", "value": 250}, {"stat": "damage_taken", "kind": "flat", "value": -5}]}}}
+        ]
+      },
+      {
+        "id": "sharp_roar",
+        "name": "Отрывистый рев",
+        "description": "Развилка темпа. +40% скорости перезарядки клича.",
+        "max_points": 1,
+        "exclusive_group": "cry_tempo",
+        "effects": [
+          {"type": "modifier", "stat": "cooldown_recovery", "kind": "increased", "value": 40}
+        ]
+      },
+      {
+        "id": "blood_cry",
+        "name": "Клич крови",
+        "description": "Клич дает +30% к генерации Ярости на 8 с (отдельный бафф, с любым корнем).",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blood_cry", "duration": 8, "modifiers": [{"stat": "resource_gen", "kind": "increased", "value": 30}]}}}
+        ]
+      },
+      {
+        "id": "endless_rage",
+        "name": "Неиссякаемая ярость",
+        "description": "Клич: Ярость восстанавливается на 3 в секунду 8 с.",
+        "max_points": 1,
+        "requires": [{"node": "blood_cry", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "endless_rage", "duration": 8, "modifiers": [{"stat": "resource_regen", "kind": "flat", "value": 3}]}}}
+        ]
+      },
+      {
+        "id": "inspiration",
+        "name": "Воодушевление",
+        "description": "Клич: спендеры стоят на 20% меньше Ярости 8 с.",
+        "max_points": 1,
+        "requires": [{"node": "blood_cry", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "inspiration", "duration": 8, "modifiers": [{"stat": "resource_cost", "kind": "increased", "value": -20}]}}}
+        ]
+      },
+      {
+        "id": "fury_surge",
+        "name": "Прилив ярости",
+        "description": "Клич сразу дает +6 Ярости за очко.",
+        "max_points": 5,
+        "effects": [
+          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 6}
+        ]
+      },
+      {
+        "id": "tireless",
+        "name": "Неумолчный клич",
+        "description": "+6% скорости перезарядки клича за очко: баффы держатся большую часть боя.",
+        "max_points": 5,
+        "effects": [
+          {"type": "modifier", "stat": "cooldown_recovery", "kind": "increased", "value": 6}
+        ]
+      },
+      {
+        "id": "thunder_roar",
+        "name": "Громовой рев",
+        "description": "Клич накладывает шок на основную цель без броска шанса: цель получает больше урона 3 с (с «Заземлением» Громовержца — 5 с).",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_ailment": "shock"}}
+        ]
+      },
+      {
+        "id": "rolling_thunder",
+        "name": "Раскаты",
+        "description": "+7.5% эффекта шока от клича за очко.",
+        "max_points": 4,
+        "requires": [{"node": "thunder_roar", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "shock_effect", "kind": "flat", "value": 7.5}
+        ]
+      },
+      {
+        "id": "deafening_roar",
+        "name": "Оглушающий рев",
+        "description": "Клич оглушает основную цель на 1 с (как заморозка, без броска шанса): оглушенный враг не бьет.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_ailment": "freeze"}}
+        ]
+      },
+      {
+        "id": "ringing_ears",
+        "name": "Звон в ушах",
+        "description": "+50% длительности оглушения от клича за очко.",
+        "max_points": 4,
+        "requires": [{"node": "deafening_roar", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "freeze_duration", "kind": "increased", "value": 50}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "whirlwind",
+    "name": "Вихрь",
+    "description": "Канал: воин вращается, бьет все вокруг каждые 0.4 с. Тратит 10 Ярости в секунду. Скорость атаки канал не ускоряет: интервал задают узлы дерева.",
+    "class_id": "warrior",
+    "unlock_level": 8,
+    "tags": ["attack", "melee", "area", "channel", "physical", "spender"],
+    "weapon_effectiveness": 70,
+    "cast_time": 0.4,
+    "resource_cost": 10,
+    "behavior": {"channel_interval": 0.4, "area_radius": 2.0},
+    "weapon_types": ["one_hand", "two_hand"],
+    "tree": [
+      {
+        "id": "steel_storm",
+        "name": "Стальной смерч",
+        "description": "+8% урона за очко.",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "spin_up",
+        "name": "Раскрутка",
+        "description": "Со второго удара канала (0.4 с): +5% More урона за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 5, "conditions": [{"id": "channelling_for", "param": 0.4, "ref": "whirlwind"}]}
+        ]
+      },
+      {
+        "id": "blade_hurricane",
+        "name": "Ураган клинков",
+        "description": "С третьего удара канала (0.8 с): +25% More урона.",
+        "max_points": 1,
+        "requires": [{"node": "spin_up", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 25, "conditions": [{"id": "channelling_for", "param": 0.8, "ref": "whirlwind"}]}
+        ]
+      },
+      {
+        "id": "fast_turns",
+        "name": "Быстрые обороты",
+        "description": "Удар каждые 0.03 с чаще за очко (стоимость в секунду та же).",
+        "max_points": 3,
+        "effects": [
+          {"type": "add_behavior", "param": "channel_interval", "delta": -0.03}
+        ]
+      },
+      {
+        "id": "wide_circle",
+        "name": "Широкий круг",
+        "description": "+15% площади за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "area", "kind": "increased", "value": 15}
+        ]
+      },
+      {
+        "id": "thrifty_spin",
+        "name": "Экономное вращение",
+        "description": "−1 Ярости в секунду за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -1}
+        ]
+      },
+      {
+        "id": "grinding_spin",
+        "name": "Жернов",
+        "description": "Развилка роли. Вихрь становится генератором: не тратит Ярость, дает 2 Ярости за удар, урон −45% (More). Канал не прерывается, поэтому «Раскрутка» действует почти всегда.",
+        "max_points": 1,
+        "exclusive_group": "whirl_role",
+        "effects": [
+          {"type": "set_resource", "field": "cost", "value": 0},
+          {"type": "set_resource", "field": "gain", "value": 2},
+          {"type": "add_tag", "tag": "generator"},
+          {"type": "remove_tag", "tag": "spender"},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -45}
+        ]
+      },
+      {
+        "id": "frenzied_spin",
+        "name": "Неистовое вращение",
+        "description": "Развилка роли. 14 Ярости в секунду, урон +30% More.",
+        "max_points": 1,
+        "exclusive_group": "whirl_role",
+        "effects": [
+          {"type": "set_resource", "field": "cost", "value": 14},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 30}
+        ]
+      },
+      {
+        "id": "ice_whirl",
+        "name": "Ледяной вихрь",
+        "description": "Развилка стихии. Весь урон становится холодом (охлаждает), шанс заморозки 5%. Кровотечение и бонусы к физическому урону после этого не работают.",
+        "max_points": 1,
+        "exclusive_group": "whirl_element",
+        "effects": [
+          {"type": "set_damage_type", "to": "cold"},
+          {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 5}
+        ]
+      },
+      {
+        "id": "frostbite",
+        "name": "Обморожение",
+        "description": "+6% More урона по охлажденным целям за очко.",
+        "max_points": 3,
+        "requires": [{"node": "ice_whirl", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 6, "conditions": ["target_chilled"]}
+        ]
+      },
+      {
+        "id": "ice_crumbs",
+        "name": "Ледяная крошка",
+        "description": "+3% шанса заморозки за очко.",
+        "max_points": 2,
+        "requires": [{"node": "ice_whirl", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 3}
+        ]
+      },
+      {
+        "id": "fire_whirl",
+        "name": "Огненный смерч",
+        "description": "Развилка стихии. 50% физического урона становится огнем, шанс поджога 15%.",
+        "max_points": 1,
+        "exclusive_group": "whirl_element",
+        "effects": [
+          {"type": "add_conversion", "from": "physical", "to": "fire", "percent": 50},
+          {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 15}
+        ]
+      },
+      {
+        "id": "fanned_flames",
+        "name": "Раздувание пламени",
+        "description": "+8% шанса поджога за очко.",
+        "max_points": 3,
+        "requires": [{"node": "fire_whirl", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 8}
+        ]
+      },
+      {
+        "id": "smoldering",
+        "name": "Тлеющие угли",
+        "description": "+1 к максимуму стаков поджога за очко.",
+        "max_points": 2,
+        "requires": [{"node": "fire_whirl", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "ignite_max_stacks", "kind": "flat", "value": 1}
+        ]
+      },
+      {
+        "id": "cutting_wind",
+        "name": "Режущий ветер",
+        "description": "+12% шанса кровотечения за очко. Не работает с «Ледяным вихрем».",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 12}
+        ]
+      },
+      {
+        "id": "thousand_cuts",
+        "name": "Тысяча порезов",
+        "description": "+10% More урона по кровоточащим целям за очко.",
+        "max_points": 2,
+        "requires": [{"node": "cutting_wind", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 10, "conditions": ["target_bleeding"]}
+        ]
+      },
+      {
+        "id": "steel_cocoon",
+        "name": "Стальной кокон",
+        "description": "Пока воин вращается, он получает +120 брони (бафф на 1 с, обновляется каждым ударом).",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "steel_cocoon", "duration": 1, "modifiers": [{"stat": "armor", "kind": "flat", "value": 120}]}}}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "charge",
+    "name": "Рывок",
+    "description": "Рывок к цели с ударом. Перезарядка 8 с.",
+    "class_id": "warrior",
+    "unlock_level": 12,
+    "tags": ["attack", "melee", "movement", "physical"],
+    "weapon_effectiveness": 220,
+    "attack_time_multiplier": 1,
+    "cooldown": 8,
+    "weapon_types": ["one_hand", "two_hand"],
+    "tree": [
+      {
+        "id": "momentum",
+        "name": "Разгон",
+        "description": "+8% урона за очко.",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "ram",
+        "name": "Таран",
+        "description": "Развилка. Удар в конце рывка: +60% More урона.",
+        "max_points": 1,
+        "requires": [{"node": "momentum", "points": 2}],
+        "exclusive_group": "charge_form",
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 60}
+        ]
+      },
+      {
+        "id": "crushing_ram",
+        "name": "Сокрушающий таран",
+        "description": "Таран: +10% шанса крита.",
+        "max_points": 1,
+        "requires": [{"node": "ram", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 10}
+        ]
+      },
+      {
+        "id": "stunning_ram",
+        "name": "Оглушающий таран",
+        "description": "Таран оглушает основную цель на 1 с (как заморозка, без броска шанса).",
+        "max_points": 1,
+        "requires": [{"node": "ram", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_hit", "action": {"apply_ailment": "freeze"}}
+        ]
+      },
+      {
+        "id": "trample",
+        "name": "Сквозной натиск",
+        "description": "Развилка. Урон по пути: рывок бьет все цели на линии (зона радиуса 2.5), урон −30% (More).",
+        "max_points": 1,
+        "requires": [{"node": "momentum", "points": 2}],
+        "exclusive_group": "charge_form",
+        "effects": [
+          {"type": "add_tag", "tag": "area"},
+          {"type": "set_behavior", "param": "area_radius", "value": 2.5},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -30}
+        ]
+      },
+      {
+        "id": "long_run",
+        "name": "Дальний бросок",
+        "description": "+20% площади натиска за очко.",
+        "max_points": 2,
+        "requires": [{"node": "trample", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "area", "kind": "increased", "value": 20}
+        ]
+      },
+      {
+        "id": "unstoppable",
+        "name": "Неудержимость",
+        "description": "Убийство рывком почти сбрасывает перезарядку: следующий рывок в течение 9 с перезаряжается в 4 раза быстрее.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_kill", "action": {"apply_buff": {"id": "unstoppable", "duration": 9, "modifiers": [{"stat": "cooldown_recovery", "kind": "increased", "value": 300, "tags": ["skill:charge"]}]}}}
+        ]
+      },
+      {
+        "id": "burning_trail",
+        "name": "Огненный след",
+        "description": "Рывок оставляет горящий след на 3 с: 25% базы удара огнем в секунду.",
+        "max_points": 1,
+        "effects": [
+          {"type": "set_behavior", "param": "ground_duration", "value": 3},
+          {"type": "set_behavior", "param": "ground_fraction", "value": 0.25},
+          {"type": "mechanic", "id": "ground_type", "params": {"type": "fire"}}
+        ]
+      },
+      {
+        "id": "embers",
+        "name": "Раскаленные угли",
+        "description": "+5% базы удара в секунду для горящего следа за очко.",
+        "max_points": 3,
+        "requires": [{"node": "burning_trail", "points": 1}],
+        "effects": [
+          {"type": "add_behavior", "param": "ground_fraction", "delta": 0.05}
+        ]
+      },
+      {
+        "id": "furious_charge",
+        "name": "Яростный натиск",
+        "description": "Рывок дает +5 Ярости за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 5}
+        ]
+      },
+      {
+        "id": "quick_feet",
+        "name": "Быстрые ноги",
+        "description": "+8% скорости перезарядки за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "cooldown_recovery", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "bloody_path",
+        "name": "Кровавый путь",
+        "description": "+15% шанса кровотечения за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 15}
+        ]
+      },
+      {
+        "id": "gore",
+        "name": "Пронзание",
+        "description": "+30% More урона по кровоточащим целям.",
+        "max_points": 1,
+        "requires": [{"node": "bloody_path", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 30, "conditions": ["target_bleeding"]}
+        ]
+      },
+      {
+        "id": "shoulder_bash",
+        "name": "Удар плечом",
+        "description": "После рывка атаки на 4 с быстрее на 12%.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "shoulder_bash", "duration": 4, "modifiers": [{"stat": "attack_speed", "kind": "increased", "value": 12}]}}}
+        ]
+      },
+      {
+        "id": "armored_charge",
+        "name": "Бронированный натиск",
+        "description": "После рывка +150 брони на 4 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "armored_charge", "duration": 4, "modifiers": [{"stat": "armor", "kind": "flat", "value": 150}]}}}
+        ]
+      },
+      {
+        "id": "storm_charge",
+        "name": "Грозовой рывок",
+        "description": "50% физического урона становится молнией, шанс шока 25%.",
+        "max_points": 1,
+        "effects": [
+          {"type": "add_conversion", "from": "physical", "to": "lightning", "percent": 50},
+          {"type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 25}
+        ]
+      },
+      {
+        "id": "true_lunge",
+        "name": "Точный выпад",
+        "description": "+2% шанса крита за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "finishing_blow",
+        "name": "Добивающий удар",
+        "description": "+30% критического урона.",
+        "max_points": 1,
+        "requires": [{"node": "true_lunge", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 30}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "throwing_axe",
+    "name": "Метательный топор",
+    "description": "Бросок топора во врага. Дальний генератор: +8 Ярости за применение, если топор попал.",
+    "class_id": "warrior",
+    "unlock_level": 16,
+    "tags": ["attack", "projectile", "physical", "generator"],
+    "weapon_effectiveness": 100,
+    "attack_time_multiplier": 1,
+    "resource_gain": 8,
+    "behavior": {"projectile_count": 1},
+    "weapon_types": ["one_hand", "two_hand"],
+    "tree": [
+      {
+        "id": "whetstone",
+        "name": "Заточка",
+        "description": "+8% урона за очко.",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "returning",
+        "name": "Возвращение",
+        "description": "Развилка полета. Топор возвращается и еще раз бьет основную цель: отдельный удар 70% оружия (узлы дерева на него не действуют).",
+        "max_points": 1,
+        "exclusive_group": "axe_flight",
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "returning_axe", "damage_percent": 100}}}
+        ]
+      },
+      {
+        "id": "axe_fan",
+        "name": "Веер топоров",
+        "description": "Развилка полета. +2 топора: каждый летит в свою цель.",
+        "max_points": 1,
+        "exclusive_group": "axe_flight",
+        "effects": [
+          {"type": "add_behavior", "param": "projectile_count", "delta": 2}
+        ]
+      },
+      {
+        "id": "boomerang",
+        "name": "Бумеранг",
+        "description": "Развилка полета. Легкий топор-бумеранг: +10 Ярости за применение, +20% скорости атаки, урон −25% (More).",
+        "max_points": 1,
+        "exclusive_group": "axe_flight",
+        "effects": [
+          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 10},
+          {"type": "modifier", "stat": "attack_speed", "kind": "increased", "value": 20},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -25}
+        ]
+      },
+      {
+        "id": "catch",
+        "name": "Ловля на лету",
+        "description": "Пойманный топор дает +4 Ярости.",
+        "max_points": 1,
+        "requires": [{"node": "returning", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 4}
+        ]
+      },
+      {
+        "id": "spare_axe",
+        "name": "Запасной топор",
+        "description": "+1 топор за очко.",
+        "max_points": 2,
+        "requires": [{"node": "whetstone", "points": 2}],
+        "effects": [
+          {"type": "add_behavior", "param": "projectile_count", "delta": 1}
+        ]
+      },
+      {
+        "id": "piercing_throw",
+        "name": "Пробивной бросок",
+        "description": "Топор пробивает +1 цель за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "add_behavior", "param": "pierce_count", "delta": 1}
+        ]
+      },
+      {
+        "id": "ricochet",
+        "name": "Рикошет",
+        "description": "Топор отскакивает в еще одну цель.",
+        "max_points": 1,
+        "requires": [{"node": "piercing_throw", "points": 3}],
+        "effects": [
+          {"type": "add_behavior", "param": "chain_count", "delta": 1}
+        ]
+      },
+      {
+        "id": "poisoned_blades",
+        "name": "Отравленные лезвия",
+        "description": "15% физического урона становится ядом и +10% шанса отравления за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "add_conversion", "from": "physical", "to": "poison", "percent": 15},
+          {"type": "modifier", "stat": "poison_chance", "kind": "flat", "value": 10}
+        ]
+      },
+      {
+        "id": "lethal_dose",
+        "name": "Смертельная доза",
+        "description": "+25% More урона по отравленным целям.",
+        "max_points": 1,
+        "requires": [{"node": "poisoned_blades", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 25, "conditions": ["target_poisoned"]}
+        ]
+      },
+      {
+        "id": "thrower_fury",
+        "name": "Ярость метателя",
+        "description": "+2 Ярости за применение за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "jagged_edge",
+        "name": "Зазубренное лезвие",
+        "description": "+10% шанса кровотечения за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 10}
+        ]
+      },
+      {
+        "id": "keen_throw",
+        "name": "Меткий бросок",
+        "description": "+2% шанса крита за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "headshot",
+        "name": "В голову",
+        "description": "+20% критического урона за очко.",
+        "max_points": 2,
+        "requires": [{"node": "keen_throw", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 20}
+        ]
+      },
+      {
+        "id": "quick_throw",
+        "name": "Быстрый бросок",
+        "description": "+6% скорости атаки за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "attack_speed", "kind": "increased", "value": 6}
+        ]
+      },
+      {
+        "id": "storm_edge",
+        "name": "Грозовое лезвие",
+        "description": "40% физического урона становится молнией, шанс шока 15%.",
+        "max_points": 1,
+        "effects": [
+          {"type": "add_conversion", "from": "physical", "to": "lightning", "percent": 40},
+          {"type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 15}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "returning_axe",
+    "name": "Возвратный топор",
+    "description": "Возвращающийся Метательный топор бьет основную цель еще раз. Запускается только узлом «Возвращение».",
+    "class_id": "warrior",
+    "unlock_level": 16,
+    "is_triggered_only": true,
+    "tags": ["attack", "projectile", "physical", "triggered"],
+    "weapon_effectiveness": 70,
+    "attack_time_multiplier": 1,
+    "weapon_types": ["one_hand", "two_hand"],
+    "tree": [
+    ]
+  },
+  {
+    "id": "spark",
+    "name": "Искра",
+    "description": "Быстрая искра молнии: бьет цель и перескакивает еще на 2 (цепь 2). Генератор: 0 маны, +3 маны за применение, если искра попала.",
+    "class_id": "sorcerer",
+    "unlock_level": 1,
+    "tags": ["spell", "projectile", "lightning", "generator"],
+    "spell_damage": {"lightning": [1, 19]},
+    "added_damage_effectiveness": 50,
+    "cast_time": 0.5,
+    "resource_gain": 3,
+    "crit_chance": 7,
+    "behavior": {"projectile_count": 1, "chain_count": 2},
+    "tree": [
+      {
+        "id": "crackle",
+        "name": "Треск",
+        "description": "+8% урона за очко.",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "storm_fan",
+        "name": "Грозовой веер",
+        "description": "Веер искр чаще шокирует: +6% шанса шока за очко.",
+        "max_points": 2,
+        "requires": [{"node": "spark_fan", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 6}
+        ]
+      },
+      {
+        "id": "spark_fan",
+        "name": "Веер искр",
+        "description": "Развилка потока. +2 искры, каждая летит в свою цель и цепляет соседей. Убийство искрой разгоняет каст: +25% скорости каста на 3 с (работает только там, где враги умирают; по одной цели веер ничего не дает).",
+        "max_points": 1,
+        "requires": [{"node": "crackle", "points": 2}],
+        "exclusive_group": "spark_flow",
+        "effects": [
+          {"type": "add_behavior", "param": "projectile_count", "delta": 2},
+          {"type": "grant_proc", "trigger": "on_kill", "action": {"apply_buff": {"id": "spark_rush", "duration": 3, "modifiers": [{"stat": "cast_speed", "kind": "increased", "value": 25}]}}}
+        ]
+      },
+      {
+        "id": "focused_arc",
+        "name": "Сфокусированный разряд",
+        "description": "Развилка потока. Одна искра без цепи: число искр всегда 1 и цепь всегда 0 (бонусы к снарядам и цепи не работают), весь разряд уходит в цель — урон +45% (More).",
+        "max_points": 1,
+        "requires": [{"node": "crackle", "points": 2}],
+        "exclusive_group": "spark_flow",
+        "effects": [
+          {"type": "modifier", "stat": "projectile_count", "kind": "override", "value": 1},
+          {"type": "modifier", "stat": "chain_count", "kind": "override", "value": 0},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 45}
+        ]
+      },
+      {
+        "id": "mana_siphon",
+        "name": "Сифон маны",
+        "description": "Развилка потока. Искра вытягивает ману: +3 маны за применение, урон −25% (More).",
+        "max_points": 1,
+        "requires": [{"node": "crackle", "points": 2}],
+        "exclusive_group": "spark_flow",
+        "effects": [
+          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 3},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -25}
+        ]
+      },
+      {
+        "id": "static",
+        "name": "Статика",
+        "description": "+8% шанса шока за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 8}
+        ]
+      },
+      {
+        "id": "breakdown",
+        "name": "Пробой",
+        "description": "+5% эффекта шока за очко.",
+        "max_points": 3,
+        "requires": [{"node": "static", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "shock_effect", "kind": "flat", "value": 5}
+        ]
+      },
+      {
+        "id": "ionize",
+        "name": "Ионизация",
+        "description": "+20% More урона по шокированным целям.",
+        "max_points": 1,
+        "requires": [{"node": "static", "points": 2}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 20, "conditions": ["target_shocked"]}
+        ]
+      },
+      {
+        "id": "overload",
+        "name": "Перегрузка",
+        "description": "Каждая 10-я искра обрушивает малый Метеор: копия Метеора с уроном 30% (с его деревом, если Метеор в слоте). Если у Метеора есть «Огненное поле», копия обновляет это же поле, а не добавляет второе (зона одна на скилл).",
+        "max_points": 1,
+        "requires": [{"node": "crackle", "points": 4}],
+        "effects": [
+          {"type": "grant_proc", "trigger": {"every_n_uses": 10}, "action": {"cast_skill": {"id": "meteor", "damage_percent": 30}}}
+        ]
+      },
+      {
+        "id": "ember_spark",
+        "name": "Огненная искра",
+        "description": "Весь урон становится огнем, шанс поджога 15%. Шок от урона и бонусы к молнии после этого не работают: «Статика», «Пробой», «Ионизация» бесполезны (шок «Ослепления» остается).",
+        "max_points": 1,
+        "effects": [
+          {"type": "set_damage_type", "to": "fire"},
+          {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 15}
+        ]
+      },
+      {
+        "id": "smolder",
+        "name": "Тлеющая искра",
+        "description": "+8% шанса поджога за очко.",
+        "max_points": 3,
+        "requires": [{"node": "ember_spark", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 8}
+        ]
+      },
+      {
+        "id": "mana_current",
+        "name": "Ток маны",
+        "description": "+1 маны за применение за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "resource_gen", "kind": "flat", "value": 1}
+        ]
+      },
+      {
+        "id": "quick_spark",
+        "name": "Искромет",
+        "description": "+6% скорости каста за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 6}
+        ]
+      },
+      {
+        "id": "bright_flash",
+        "name": "Яркая вспышка",
+        "description": "+2% шанса крита за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "dazzle",
+        "name": "Ослепление",
+        "description": "Крит шокирует основную цель без броска шанса (шок 3 с).",
+        "max_points": 1,
+        "requires": [{"node": "bright_flash", "points": 3}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_crit", "action": {"apply_ailment": "shock"}}
+        ]
+      },
+      {
+        "id": "spark_ward",
+        "name": "Искровой щит",
+        "description": "Попадание искры дает −5% получаемого урона на 2 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_hit", "action": {"apply_buff": {"id": "spark_ward", "duration": 2, "modifiers": [{"stat": "damage_taken", "kind": "flat", "value": -5}]}}}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fireball",
+    "name": "Огненный шар",
+    "description": "Огненный шар взрывается при попадании (радиус 1.5 м), шанс поджога 20%. Основной спендер: 12 маны.",
+    "class_id": "sorcerer",
+    "unlock_level": 1,
+    "tags": ["spell", "projectile", "area", "fire", "spender"],
+    "spell_damage": {"fire": [20, 29]},
+    "added_damage_effectiveness": 120,
+    "cast_time": 0.75,
+    "resource_cost": 12,
+    "crit_chance": 6,
+    "behavior": {"projectile_count": 1, "explosion_radius": 1.5},
+    "ailment_chances": {"ignite": 20},
+    "tree": [
+      {
+        "id": "heat",
+        "name": "Жар",
+        "description": "+8% урона любого типа за очко (только этого скилла).",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "wide_blast",
+        "name": "Широкий взрыв",
+        "description": "+15% площади взрыва за очко.",
+        "max_points": 3,
+        "requires": [{"node": "heat", "points": 2}],
+        "effects": [
+          {"type": "modifier", "stat": "area", "kind": "increased", "value": 15}
+        ]
+      },
+      {
+        "id": "molten_core",
+        "name": "Раскаленное ядро",
+        "description": "+10% шанса поджога за очко.",
+        "max_points": 3,
+        "requires": [{"node": "heat", "points": 2}],
+        "effects": [
+          {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 10}
+        ]
+      },
+      {
+        "id": "eternal_flame",
+        "name": "Вечное пламя",
+        "description": "+2 к максимуму стаков поджога этого скилла.",
+        "max_points": 1,
+        "requires": [{"node": "molten_core", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "ignite_max_stacks", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "lingering_heat",
+        "name": "Остаточный жар",
+        "description": "+15% урона поджога за очко.",
+        "max_points": 3,
+        "requires": [{"node": "eternal_flame", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 15, "tags": ["ailment_ignite"]}
+        ]
+      },
+      {
+        "id": "ring_of_fire",
+        "name": "Пламенное кольцо",
+        "description": "Взрыв оставляет горящую землю на 2 с: 25% базы недуга удара в секунду по задетым целям (одна зона на скилл: обновляется каждым шаром, копии шара — «Огненный выход» Мерцания — обновляют ее же; бонусы к DoT действуют).",
+        "max_points": 1,
+        "requires": [{"node": "wide_blast", "points": 3}],
+        "effects": [
+          {"type": "set_behavior", "param": "ground_duration", "value": 2},
+          {"type": "set_behavior", "param": "ground_fraction", "value": 0.25}
+        ]
+      },
+      {
+        "id": "scatter",
+        "name": "Разделение",
+        "description": "Развилка формы. +2 шара, каждый летит в свою цель; урон −15% (More).",
+        "max_points": 1,
+        "requires": [{"node": "heat", "points": 4}],
+        "exclusive_group": "fireball_form",
+        "effects": [
+          {"type": "add_behavior", "param": "projectile_count", "delta": 2},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -15}
+        ]
+      },
+      {
+        "id": "compress",
+        "name": "Сжатие",
+        "description": "Развилка формы. Один сжатый шар без взрыва: снимает тег area (бонусы к площади не работают), число шаров всегда 1 (бонусы к снарядам не работают), +60% More урона, пробивает 1 цель.",
+        "max_points": 1,
+        "requires": [{"node": "heat", "points": 4}],
+        "exclusive_group": "fireball_form",
+        "effects": [
+          {"type": "remove_tag", "tag": "area"},
+          {"type": "set_behavior", "param": "explosion_radius", "value": 0},
+          {"type": "modifier", "stat": "projectile_count", "kind": "override", "value": 1},
+          {"type": "add_behavior", "param": "pierce_count", "delta": 1},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 60}
+        ]
+      },
+      {
+        "id": "frost_orb",
+        "name": "Морозный шар",
+        "description": "Развилка стихии. Базовый урон становится холодом (тег fire → cold): шар охлаждает, шанс заморозки 10%. Поджог и бонусы к огню после этого не работают: «Раскаленное ядро», «Вечное пламя», «Остаточный жар», «Метка пламени», «Пламя души» бесполезны.",
+        "max_points": 1,
+        "requires": [{"node": "heat", "points": 2}],
+        "exclusive_group": "fireball_element",
+        "effects": [
+          {"type": "set_damage_type", "to": "cold"},
+          {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 10}
+        ]
+      },
+      {
+        "id": "storm_orb",
+        "name": "Грозовой шар",
+        "description": "Развилка стихии. Базовый урон становится молнией (тег fire → lightning): шанс шока 25%, +1 цепь. Поджог и бонусы к огню после этого не работают: «Раскаленное ядро», «Вечное пламя», «Остаточный жар», «Метка пламени», «Пламя души» бесполезны.",
+        "max_points": 1,
+        "requires": [{"node": "heat", "points": 2}],
+        "exclusive_group": "fireball_element",
+        "effects": [
+          {"type": "set_damage_type", "to": "lightning"},
+          {"type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 25},
+          {"type": "add_behavior", "param": "chain_count", "delta": 1}
+        ]
+      },
+      {
+        "id": "mana_focus",
+        "name": "Концентрация маны",
+        "description": "−1 маны к стоимости за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -1}
+        ]
+      },
+      {
+        "id": "backlash",
+        "name": "Отдача",
+        "description": "Крит возвращает ману, в движке — в среднем: стоимость −0.02 маны за очко за каждый 1% шанса крита от бонусов (базовые 6% скилла не считаются), не больше −0.5 маны за применение.",
+        "max_points": 2,
+        "requires": [{"node": "mana_focus", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -0.02, "per": {"stat": "crit_chance", "every": 1, "cap": 0.5}}
+        ]
+      },
+      {
+        "id": "swift_orb",
+        "name": "Летучий шар",
+        "description": "+8% скорости каста за очко.",
+        "max_points": 2,
+        "requires": [{"node": "mana_focus", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "flame_mark",
+        "name": "Метка пламени",
+        "description": "Попадание по подожженной цели: +30% More урона.",
+        "max_points": 1,
+        "requires": [{"node": "molten_core", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 30, "conditions": ["target_ignited"]}
+        ]
+      },
+      {
+        "id": "overheat",
+        "name": "Перегрев",
+        "description": "+2% шанса крита за очко.",
+        "max_points": 3,
+        "requires": [{"node": "heat", "points": 4}],
+        "effects": [
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "blast_wave",
+        "name": "Взрывная волна",
+        "description": "Крит вызывает вторичный взрыв: триггерный скилл «Взрыв» с уроном 50% (всегда огненный, без собственного шанса поджога; узлы дерева на него не действуют).",
+        "max_points": 1,
+        "requires": [{"node": "overheat", "points": 3}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_crit", "action": {"cast_skill": {"id": "fireball_blast", "damage_percent": 50}}}
+        ]
+      },
+      {
+        "id": "soul_flame",
+        "name": "Пламя души",
+        "description": "+1 к максимуму стаков поджога за очко.",
+        "max_points": 2,
+        "requires": [{"node": "flame_mark", "points": 1}, {"node": "eternal_flame", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "ignite_max_stacks", "kind": "flat", "value": 1}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fireball_blast",
+    "name": "Взрыв",
+    "description": "Вторичный огненный взрыв вокруг цели (радиус 1.5 м). Запускается только узлом «Взрывная волна» Огненного шара; узлы дерева шара на него не действуют.",
+    "class_id": "sorcerer",
+    "unlock_level": 1,
+    "is_triggered_only": true,
+    "tags": ["spell", "area", "fire", "triggered"],
+    "spell_damage": {"fire": [20, 29]},
+    "added_damage_effectiveness": 120,
+    "crit_chance": 6,
+    "behavior": {"area_radius": 1.5},
+    "tree": [
+    ]
+  },
+  {
+    "id": "ice_lance",
+    "name": "Ледяное копье",
+    "description": "Копье льда пробивает 3 цели за основной (до 4 целей подряд) и охлаждает их. Спендер: 10 маны.",
+    "class_id": "sorcerer",
+    "unlock_level": 4,
+    "tags": ["spell", "projectile", "cold", "spender"],
+    "spell_damage": {"cold": [12, 17]},
+    "added_damage_effectiveness": 80,
+    "cast_time": 0.6,
+    "resource_cost": 10,
+    "crit_chance": 7,
+    "behavior": {"projectile_count": 1, "pierce_count": 3},
+    "tree": [
+      {
+        "id": "frost_edge",
+        "name": "Ледяная кромка",
+        "description": "+8% урона за очко.",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "glacial_block",
+        "name": "Ледяная глыба",
+        "description": "Развилка формы. Медленнее и сильнее: глыба не пробивает, стоит 16 маны, каст на 25% медленнее, урон +100% More.",
+        "max_points": 1,
+        "requires": [{"node": "frost_edge", "points": 2}],
+        "exclusive_group": "lance_form",
+        "effects": [
+          {"type": "set_resource", "field": "cost", "value": 16},
+          {"type": "set_behavior", "param": "pierce_count", "value": 0},
+          {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": -25},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 100}
+        ]
+      },
+      {
+        "id": "piercing_cold",
+        "name": "Сквозной холод",
+        "description": "Развилка формы. Копье пробивает еще 1 цель и бьет сильнее: урон +15% (More).",
+        "max_points": 1,
+        "requires": [{"node": "frost_edge", "points": 2}],
+        "exclusive_group": "lance_form",
+        "effects": [
+          {"type": "add_behavior", "param": "pierce_count", "delta": 1},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 15}
+        ]
+      },
+      {
+        "id": "binding_lance",
+        "name": "Сковывающее копье",
+        "description": "Развилка формы. Копье сковывает врага: шанс заморозки +25%, длительность заморозки +100% (замороженный враг не бьет), попадание ослабляет удары врага — −10% получаемого урона на 2 с; урон −20% (More).",
+        "max_points": 1,
+        "requires": [{"node": "frost_edge", "points": 2}],
+        "exclusive_group": "lance_form",
+        "effects": [
+          {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 25},
+          {"type": "modifier", "stat": "freeze_duration", "kind": "increased", "value": 100},
+          {"type": "grant_proc", "trigger": "on_hit", "action": {"apply_buff": {"id": "binding_lance", "duration": 2, "modifiers": [{"stat": "damage_taken", "kind": "flat", "value": -10}]}}},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -20}
+        ]
+      },
+      {
+        "id": "ice_wedge",
+        "name": "Ледяной клин",
+        "description": "Тяжелая глыба сковывает цель: +8% шанса заморозки за очко.",
+        "max_points": 2,
+        "requires": [{"node": "glacial_block", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 8}
+        ]
+      },
+      {
+        "id": "bitter_cold",
+        "name": "Стужа",
+        "description": "+4% шанса заморозки за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 4}
+        ]
+      },
+      {
+        "id": "deep_freeze",
+        "name": "Глубокая заморозка",
+        "description": "+25% длительности заморозки за очко.",
+        "max_points": 3,
+        "requires": [{"node": "bitter_cold", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "freeze_duration", "kind": "increased", "value": 25}
+        ]
+      },
+      {
+        "id": "ice_shards",
+        "name": "Осколки льда",
+        "description": "По замороженной цели копье дробится: осколки летят в 3 соседние цели (+3 цепи) и бьют саму цель сильнее (+25% More урона по замороженным).",
+        "max_points": 1,
+        "requires": [{"node": "bitter_cold", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "chain_count", "kind": "flat", "value": 3, "conditions": ["target_frozen"]},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 25, "conditions": ["target_frozen"]}
+        ]
+      },
+      {
+        "id": "point",
+        "name": "Острие",
+        "description": "+2% шанса крита за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "ice_crown",
+        "name": "Ледяной венец",
+        "description": "Крит замораживает основную цель без броска шанса.",
+        "max_points": 1,
+        "requires": [{"node": "point", "points": 3}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_crit", "action": {"apply_ailment": "freeze"}}
+        ]
+      },
+      {
+        "id": "cold_precision",
+        "name": "Холодная точность",
+        "description": "+15% критического урона за очко.",
+        "max_points": 2,
+        "requires": [{"node": "point", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 15}
+        ]
+      },
+      {
+        "id": "cold_poise",
+        "name": "Ледяная выдержка",
+        "description": "−1 маны к стоимости за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -1}
+        ]
+      },
+      {
+        "id": "swift_ice",
+        "name": "Стремительный лед",
+        "description": "+6% скорости каста за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 6}
+        ]
+      },
+      {
+        "id": "ice_sting",
+        "name": "Ледяное жало",
+        "description": "Копье пробивает 4% сопротивления холоду за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "penetration_cold", "kind": "flat", "value": 4}
+        ]
+      },
+      {
+        "id": "ice_carapace",
+        "name": "Ледяной панцирь",
+        "description": "Бросок копья дает +100 брони на 2 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "ice_carapace", "duration": 2, "modifiers": [{"stat": "armor", "kind": "flat", "value": 100}]}}}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ball_lightning",
+    "name": "Шаровая молния",
+    "description": "Медленный шар молнии летит сквозь врагов и бьет по области (радиус 2 м) каждые 0.3 с в течение 3 с: 10 разрядов по каждой задетой цели, шанс шока 5% за разряд. Спендер: 20 маны.",
+    "class_id": "sorcerer",
+    "unlock_level": 8,
+    "tags": ["spell", "projectile", "area", "lightning", "spender"],
+    "spell_damage": {"lightning": [4, 7]},
+    "added_damage_effectiveness": 15,
+    "cast_time": 1.0,
+    "resource_cost": 20,
+    "crit_chance": 5,
+    "hits_per_use": 10,
+    "behavior": {"projectile_count": 1, "area_radius": 2.0},
+    "ailment_chances": {"shock": 5},
+    "tree": [
+      {
+        "id": "storm_core",
+        "name": "Грозовое ядро",
+        "description": "+8% урона за очко.",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "long_flight",
+        "name": "Долгий полет",
+        "description": "Шар живет дольше и дает больше разрядов: в движке +8% урона за очко (число разрядов за применение фиксировано).",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "big_orb",
+        "name": "Большой шар",
+        "description": "+15% площади за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "area", "kind": "increased", "value": 15}
+        ]
+      },
+      {
+        "id": "static_orb",
+        "name": "Неподвижная сфера",
+        "description": "Развилка формы. Шар останавливается у цели и становится турелью: поле радиусом 3 м, все разряды бьют по месту — в движке +15% урона (More).",
+        "max_points": 1,
+        "requires": [{"node": "storm_core", "points": 2}],
+        "exclusive_group": "ball_form",
+        "effects": [
+          {"type": "set_behavior", "param": "area_radius", "value": 3.0},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 15}
+        ]
+      },
+      {
+        "id": "dense_orb",
+        "name": "Плотный сгусток",
+        "description": "Развилка формы. Шар сжимается: радиус 1 м, один шар без дуг (число шаров всегда 1 и цепь всегда 0; бонусы к снарядам и цепи не работают), урон +50% (More).",
+        "max_points": 1,
+        "requires": [{"node": "storm_core", "points": 2}],
+        "exclusive_group": "ball_form",
+        "effects": [
+          {"type": "set_behavior", "param": "area_radius", "value": 1.0},
+          {"type": "modifier", "stat": "projectile_count", "kind": "override", "value": 1},
+          {"type": "modifier", "stat": "chain_count", "kind": "override", "value": 0},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 50}
+        ]
+      },
+      {
+        "id": "arc_discharge",
+        "name": "Дуговой разряд",
+        "description": "Шар бьет дугой еще 1 цель (+1 цепь).",
+        "max_points": 1,
+        "requires": [{"node": "big_orb", "points": 3}],
+        "effects": [
+          {"type": "add_behavior", "param": "chain_count", "delta": 1}
+        ]
+      },
+      {
+        "id": "sun_orb",
+        "name": "Солнечный шар",
+        "description": "Весь урон становится огнем, шанс поджога 5% за разряд. Шок от урона и бонусы к молнии после этого не работают: «Статическое поле», «Искровой каскад» бесполезны.",
+        "max_points": 1,
+        "requires": [{"node": "storm_core", "points": 4}],
+        "effects": [
+          {"type": "set_damage_type", "to": "fire"},
+          {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 5}
+        ]
+      },
+      {
+        "id": "solar_corona",
+        "name": "Солнечная корона",
+        "description": "+1 к максимуму стаков поджога за очко.",
+        "max_points": 2,
+        "requires": [{"node": "sun_orb", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "ignite_max_stacks", "kind": "flat", "value": 1}
+        ]
+      },
+      {
+        "id": "static_field",
+        "name": "Статическое поле",
+        "description": "+4% шанса шока за разряд за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "shock_chance", "kind": "flat", "value": 4}
+        ]
+      },
+      {
+        "id": "spark_cascade",
+        "name": "Искровой каскад",
+        "description": "+5% эффекта шока за очко.",
+        "max_points": 2,
+        "requires": [{"node": "static_field", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "shock_effect", "kind": "flat", "value": 5}
+        ]
+      },
+      {
+        "id": "capacitor",
+        "name": "Конденсатор",
+        "description": "−2 маны к стоимости за очко.",
+        "max_points": 2,
+        "effects": [
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -2}
+        ]
+      },
+      {
+        "id": "quick_charge",
+        "name": "Быстрый заряд",
+        "description": "+6% скорости каста за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 6}
+        ]
+      },
+      {
+        "id": "bright_discharge",
+        "name": "Яркий разряд",
+        "description": "+2% шанса крита за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "flash",
+        "name": "Всполох",
+        "description": "Крит шокирует основную цель без броска шанса (шок 3 с).",
+        "max_points": 1,
+        "requires": [{"node": "bright_discharge", "points": 3}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_crit", "action": {"apply_ailment": "shock"}}
+        ]
+      },
+      {
+        "id": "ion_shield",
+        "name": "Ионный щит",
+        "description": "Каст шара дает +10% уклонения на 3 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "ion_shield", "duration": 3, "modifiers": [{"stat": "dodge_chance", "kind": "flat", "value": 10}]}}}
+        ]
+      },
+      {
+        "id": "twin_orb",
+        "name": "Двойной шар",
+        "description": "Каждый 3-й шар раздваивается: копия шара с уроном 50% (бесплатно, без проков).",
+        "max_points": 1,
+        "requires": [{"node": "storm_core", "points": 4}],
+        "effects": [
+          {"type": "grant_proc", "trigger": {"every_n_uses": 3}, "action": {"cast_skill": {"id": "ball_lightning", "damage_percent": 50}}}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "meteor",
+    "name": "Метеор",
+    "description": "Метеор падает на цель и бьет по большой области (радиус 2.5 м), шанс поджога 25%. Задержка падения 1 с движком не моделируется: урон наносится в момент каста. Спендер: 35 маны.",
+    "class_id": "sorcerer",
+    "unlock_level": 12,
+    "tags": ["spell", "area", "fire", "spender"],
+    "spell_damage": {"fire": [64, 89]},
+    "added_damage_effectiveness": 200,
+    "cast_time": 1.2,
+    "resource_cost": 35,
+    "crit_chance": 6,
+    "behavior": {"area_radius": 2.5},
+    "ailment_chances": {"ignite": 25},
+    "tree": [
+      {
+        "id": "sky_fire",
+        "name": "Небесный огонь",
+        "description": "+8% урона за очко.",
+        "max_points": 4,
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 8}
+        ]
+      },
+      {
+        "id": "comet_core",
+        "name": "Ядро кометы",
+        "description": "Развилка формы. Плотный метеор: радиус 1.2 м, урон +50% (More).",
+        "max_points": 1,
+        "requires": [{"node": "sky_fire", "points": 2}],
+        "exclusive_group": "meteor_form",
+        "effects": [
+          {"type": "set_behavior", "param": "area_radius", "value": 1.2},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": 50}
+        ]
+      },
+      {
+        "id": "starfall",
+        "name": "Звездопад",
+        "description": "Развилка формы. Вместо одного падают 3 малых метеора (тег projectile, бонусы к снарядам действуют), каждый в свою цель, взрыв 1.6 м; урон −20% (More).",
+        "max_points": 1,
+        "requires": [{"node": "sky_fire", "points": 2}],
+        "exclusive_group": "meteor_form",
+        "effects": [
+          {"type": "add_tag", "tag": "projectile"},
+          {"type": "set_behavior", "param": "projectile_count", "value": 3},
+          {"type": "set_behavior", "param": "explosion_radius", "value": 1.6},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -20}
+        ]
+      },
+      {
+        "id": "fire_field",
+        "name": "Огненное поле",
+        "description": "Место падения горит 3 с: 30% базы недуга удара в секунду по задетым целям (с «Ледяным метеором» поле холодное). Поле одно на скилл: копии Метеора («Осколок кометы», «Перегрузка» Искры) обновляют его, а не добавляют второе.",
+        "max_points": 1,
+        "effects": [
+          {"type": "set_behavior", "param": "ground_duration", "value": 3},
+          {"type": "set_behavior", "param": "ground_fraction", "value": 0.3}
+        ]
+      },
+      {
+        "id": "scorched_earth",
+        "name": "Выжженная земля",
+        "description": "Поле сильнее: +5% базы недуга в секунду за очко.",
+        "max_points": 3,
+        "requires": [{"node": "fire_field", "points": 1}],
+        "effects": [
+          {"type": "add_behavior", "param": "ground_fraction", "delta": 0.05}
+        ]
+      },
+      {
+        "id": "ice_meteor",
+        "name": "Ледяной метеор",
+        "description": "Весь урон становится холодом: охлаждает, шанс заморозки 15%. Поджог и бонусы к огню после этого не работают: «Воспламенение» и «Жар недр» бесполезны.",
+        "max_points": 1,
+        "effects": [
+          {"type": "set_damage_type", "to": "cold"},
+          {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 15}
+        ]
+      },
+      {
+        "id": "frost_shatter",
+        "name": "Ледяное крошево",
+        "description": "+25% длительности заморозки за очко.",
+        "max_points": 2,
+        "requires": [{"node": "ice_meteor", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "freeze_duration", "kind": "increased", "value": 25}
+        ]
+      },
+      {
+        "id": "instant_fall",
+        "name": "Мгновенное падение",
+        "description": "Метеор падает без замаха: в движке +30% скорости каста ценой −10% урона (More).",
+        "max_points": 1,
+        "effects": [
+          {"type": "modifier", "stat": "cast_speed", "kind": "increased", "value": 30},
+          {"type": "modifier", "stat": "damage", "kind": "more", "value": -10}
+        ]
+      },
+      {
+        "id": "crater",
+        "name": "Кратер",
+        "description": "+15% площади за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "area", "kind": "increased", "value": 15}
+        ]
+      },
+      {
+        "id": "kindling",
+        "name": "Воспламенение",
+        "description": "+10% шанса поджога за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "ignite_chance", "kind": "flat", "value": 10}
+        ]
+      },
+      {
+        "id": "core_heat",
+        "name": "Жар недр",
+        "description": "+20% урона поджога за очко.",
+        "max_points": 2,
+        "requires": [{"node": "kindling", "points": 3}],
+        "effects": [
+          {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "tags": ["ailment_ignite"]}
+        ]
+      },
+      {
+        "id": "star_thrift",
+        "name": "Звездная экономия",
+        "description": "−2 маны к стоимости за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -2}
+        ]
+      },
+      {
+        "id": "falling_star",
+        "name": "Падающая звезда",
+        "description": "+2% шанса крита за очко.",
+        "max_points": 3,
+        "effects": [
+          {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2}
+        ]
+      },
+      {
+        "id": "comet_fragment",
+        "name": "Осколок кометы",
+        "description": "Крит откалывает осколок: копия Метеора с уроном 40% (бесплатно, без проков). С «Огненным полем» копия обновляет то же поле (база недуга у копии та же), второго поля нет.",
+        "max_points": 1,
+        "requires": [{"node": "falling_star", "points": 3}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_crit", "action": {"cast_skill": {"id": "meteor", "damage_percent": 40}}}
+        ]
+      },
+      {
+        "id": "ash_veil",
+        "name": "Пепельная завеса",
+        "description": "Каст Метеора дает −8% получаемого урона на 3 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "ash_veil", "duration": 3, "modifiers": [{"stat": "damage_taken", "kind": "flat", "value": -8}]}}}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "blink",
+    "name": "Мерцание",
+    "description": "Телепорт на короткое расстояние: 10 маны, перезарядка 6 с. Урона не наносит и маны не дает. Перемещение движком не моделируется: без узлов дерева Мерцание только тратит 0.2 с каста и ману; дерево делает из него взрыв, контроль, защиту или короткое усиление (баффы держатся не больше половины минимальной перезарядки).",
+    "class_id": "sorcerer",
+    "unlock_level": 16,
+    "tags": ["spell", "movement"],
+    "cast_time": 0.2,
+    "cooldown": 6,
+    "resource_cost": 10,
+    "tree": [
+      {
+        "id": "short_step",
+        "name": "Короткий шаг",
+        "description": "+6% скорости перезарядки за очко.",
+        "max_points": 5,
+        "effects": [
+          {"type": "modifier", "stat": "cooldown_recovery", "kind": "increased", "value": 6}
+        ]
+      },
+      {
+        "id": "light_step",
+        "name": "Легкий шаг",
+        "description": "−2 маны к стоимости Мерцания за очко.",
+        "max_points": 5,
+        "effects": [
+          {"type": "modifier", "stat": "resource_cost", "kind": "flat", "value": -2}
+        ]
+      },
+      {
+        "id": "arrival_flare",
+        "name": "Вспышка прибытия",
+        "description": "Развилка взрыва. На месте прибытия вспыхивает огонь: триггерный скилл «Вспышка» (радиус 3 м; узлы дерева на нее не действуют).",
+        "max_points": 1,
+        "exclusive_group": "blink_burst",
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "blink_flare", "damage_percent": 100}}}
+        ]
+      },
+      {
+        "id": "double_flare",
+        "name": "Двойная вспышка",
+        "description": "Вспышка срабатывает дважды: еще одна «Вспышка» с тем же уроном.",
+        "max_points": 1,
+        "requires": [{"node": "arrival_flare", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "blink_flare", "damage_percent": 100}}}
+        ]
+      },
+      {
+        "id": "frost_wake",
+        "name": "Ледяной след",
+        "description": "Развилка взрыва. На месте старта остается лед: основная цель заморожена (без броска шанса), чародей получает +150 брони на 1.5 с.",
+        "max_points": 1,
+        "exclusive_group": "blink_burst",
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_ailment": "freeze"}},
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "frost_wake", "duration": 1.5, "modifiers": [{"stat": "armor", "kind": "flat", "value": 150}]}}}
+        ]
+      },
+      {
+        "id": "deep_cold",
+        "name": "Глубокий холод",
+        "description": "+25% длительности заморозки от Мерцания за очко.",
+        "max_points": 3,
+        "requires": [{"node": "frost_wake", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "freeze_duration", "kind": "increased", "value": 25}
+        ]
+      },
+      {
+        "id": "storm_step",
+        "name": "Грозовой шаг",
+        "description": "Каждое 2-е Мерцание шокирует основную цель без броска шанса (3 с); эффект шока от Мерцания +10%.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": {"every_n_uses": 2}, "action": {"apply_ailment": "shock"}},
+          {"type": "modifier", "stat": "shock_effect", "kind": "flat", "value": 10}
+        ]
+      },
+      {
+        "id": "high_voltage",
+        "name": "Высокое напряжение",
+        "description": "+3% эффекта шока от Мерцания за очко.",
+        "max_points": 5,
+        "requires": [{"node": "storm_step", "points": 1}],
+        "effects": [
+          {"type": "modifier", "stat": "shock_effect", "kind": "flat", "value": 3}
+        ]
+      },
+      {
+        "id": "blink_focus",
+        "name": "Фокус перемещения",
+        "description": "После Мерцания заклинания наносят +20% More урона 1 с (≈ следующее заклинание).",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blink_focus", "duration": 1, "modifiers": [{"stat": "damage", "kind": "more", "value": 20, "tags": ["spell"]}]}}}
+        ]
+      },
+      {
+        "id": "lingering_focus",
+        "name": "Долгий фокус",
+        "description": "«Фокус перемещения» держится 1.7 с.",
+        "max_points": 1,
+        "requires": [{"node": "blink_focus", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blink_focus", "duration": 1.7, "modifiers": [{"stat": "damage", "kind": "more", "value": 20, "tags": ["spell"]}]}}}
+        ]
+      },
+      {
+        "id": "elusive",
+        "name": "Неуловимость",
+        "description": "После Мерцания +25% уклонения на 1.5 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "elusive", "duration": 1.5, "modifiers": [{"stat": "dodge_chance", "kind": "flat", "value": 25}]}}}
+        ]
+      },
+      {
+        "id": "afterimage",
+        "name": "Остаточный образ",
+        "description": "После Мерцания −10% получаемого урона на 1.5 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "afterimage", "duration": 1.5, "modifiers": [{"stat": "damage_taken", "kind": "flat", "value": -10}]}}}
+        ]
+      },
+      {
+        "id": "phase_barrier",
+        "name": "Фазовый барьер",
+        "description": "После Мерцания +15% ко всем сопротивлениям на 1.5 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "phase_barrier", "duration": 1.5, "modifiers": [{"stat": "resist_fire", "kind": "flat", "value": 15}, {"stat": "resist_cold", "kind": "flat", "value": 15}, {"stat": "resist_lightning", "kind": "flat", "value": 15}, {"stat": "resist_poison", "kind": "flat", "value": 15}]}}}
+        ]
+      },
+      {
+        "id": "ether_mend",
+        "name": "Эфирное исцеление",
+        "description": "После Мерцания +3% регенерации здоровья в секунду на 1.5 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "ether_mend", "duration": 1.5, "modifiers": [{"stat": "life_regen_pct", "kind": "flat", "value": 3}]}}}
+        ]
+      },
+      {
+        "id": "impulse",
+        "name": "Импульс",
+        "description": "После Мерцания +15% скорости каста на 1.5 с.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "blink_impulse", "duration": 1.5, "modifiers": [{"stat": "cast_speed", "kind": "increased", "value": 15}]}}}
+        ]
+      },
+      {
+        "id": "spark_trail",
+        "name": "Искровой след",
+        "description": "Мерцание выпускает Искру: копия Искры с уроном 30% (с ее деревом, если Искра в слоте; маны не дает).",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "spark", "damage_percent": 30}}}
+        ]
+      },
+      {
+        "id": "twin_spark",
+        "name": "Двойная искра",
+        "description": "Искровой след выпускает вторую Искру: еще одна копия с уроном 30%.",
+        "max_points": 1,
+        "requires": [{"node": "spark_trail", "points": 1}],
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "spark", "damage_percent": 30}}}
+        ]
+      },
+      {
+        "id": "fire_exit",
+        "name": "Огненный выход",
+        "description": "Мерцание выпускает Огненный шар: копия шара с уроном 20% (с его деревом, если шар в слоте; маны не стоит и не дает). С «Пламенным кольцом» копия обновляет ту же горящую землю.",
+        "max_points": 1,
+        "effects": [
+          {"type": "grant_proc", "trigger": "on_use", "action": {"cast_skill": {"id": "fireball", "damage_percent": 20}}}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "blink_flare",
+    "name": "Вспышка",
+    "description": "Огненная вспышка на месте прибытия Мерцания (радиус 3 м). Запускается только узлами «Вспышка прибытия» и «Двойная вспышка»; узлы дерева Мерцания на нее не действуют.",
+    "class_id": "sorcerer",
+    "unlock_level": 16,
+    "is_triggered_only": true,
+    "tags": ["spell", "area", "fire", "triggered"],
+    "spell_damage": {"fire": [14, 20]},
+    "added_damage_effectiveness": 50,
+    "crit_chance": 5,
+    "behavior": {"area_radius": 3.0},
+    "tree": [
+    ]
+  },
+  {
+    "id": "poison_cloud",
+    "name": "Ядовитый туман",
+    "description": "Облако яда накрывает область (радиус 2.5 м) и висит 3 с: отравление гарантировано, зона отравляет всех задетых. Скилл из лута, без класса. Ни маны, ни Ярости не тратит и не дает: перезарядка 6 с.",
+    "class_id": null,
+    "unlock_level": 1,
+    "tags": [
+      "spell",
+      "area",
+      "poison",
+      "dot"
+    ],
+    "spell_damage": {
+      "poison": [
+        18,
+        24
+      ]
+    },
+    "cast_time": 0.5,
+    "cooldown": 6,
+    "resource_cost": 0,
+    "crit_chance": 5,
+    "behavior": {
+      "area_radius": 2.5,
+      "ground_duration": 3,
+      "ground_fraction": 0.25
+    },
+    "ailment_chances": {
+      "poison": 100
+    },
+    "tree": [
+      {
+        "id": "thick_mist",
+        "name": "Густой туман",
+        "description": "+15% площади за очко.",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "area",
+            "kind": "increased",
+            "value": 15
+          }
+        ]
+      },
+      {
+        "id": "expansion",
+        "name": "Расползание",
+        "description": "+20% площади за очко.",
+        "max_points": 2,
+        "requires": [
+          {
+            "node": "thick_mist",
+            "points": 3
+          }
+        ],
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "area",
+            "kind": "increased",
+            "value": 20
+          }
+        ]
+      },
+      {
+        "id": "long_haze",
+        "name": "Затяжная пелена",
+        "description": "Облако висит дольше: +0.5 с за очко к времени жизни зоны (базовые 3 с). Повторное применение обновляет облако (зона одна на скилл), а не добавляет второе.",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "add_behavior",
+            "param": "ground_duration",
+            "delta": 0.5
+          }
+        ]
+      },
+      {
+        "id": "lingering",
+        "name": "Стойкие испарения",
+        "description": "Облако ядовитее: +6% базы недуга в секунду за очко к урону зоны (базовые 25%).",
+        "max_points": 3,
+        "requires": [
+          {
+            "node": "long_haze",
+            "points": 2
+          }
+        ],
+        "effects": [
+          {
+            "type": "add_behavior",
+            "param": "ground_fraction",
+            "delta": 0.06
+          }
+        ]
+      },
+      {
+        "id": "quick_brew",
+        "name": "Быстрая варка",
+        "description": "+20% скорости перезарядки за очко: облака выходят чаще. Зона одна на скилл: новое облако заменяет старое, а яд держится 3 с, поэтому отравления накладываются друг на друга только при перезарядке короче 3 с (для этого нужны пассивные бонусы к перезарядке).",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "cooldown_recovery",
+            "kind": "increased",
+            "value": 20
+          }
+        ]
+      },
+      {
+        "id": "venom_dose",
+        "name": "Едкий состав",
+        "description": "+12% урона отравления за очко.",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 12,
+            "tags": [
+              "ailment_poison"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rot",
+        "name": "Гниение",
+        "description": "+20% урона за очко по отравленным целям.",
+        "max_points": 2,
+        "requires": [
+          {
+            "node": "venom_dose",
+            "points": 1
+          }
+        ],
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 20,
+            "conditions": [
+              "target_poisoned"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "caustic_burst",
+        "name": "Едкий выброс",
+        "description": "+3% шанса крита за очко.",
+        "max_points": 2,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "crit_chance",
+            "kind": "flat",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "id": "acrid_haze",
+        "name": "Едкая взвесь",
+        "description": "+10% урона за очко от отравления и зоны облака (урон со временем).",
+        "max_points": 2,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 10,
+            "tags": [
+              "dot"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "erosion",
+        "name": "Разъедание",
+        "description": "Яд пробивает защиту: +6% пробивания сопротивления яду за очко. Огненному туману не помогает.",
+        "max_points": 3,
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "penetration_poison",
+            "kind": "flat",
+            "value": 6
+          }
+        ]
+      },
+      {
+        "id": "plague_mist",
+        "name": "Моровой туман",
+        "description": "Развилка стихии. Остается ядом. Основная цель попадания получает вторую порцию отравления без броска шанса (прок «при попадании» срабатывает один раз за применение, на основную цель); облако шире: +30% площади; когда яд или зона облака убивает цель, облако выпускает копию с уроном 60% (бесплатно, без проков; копия обновляет ту же зону, второй зоны нет). Убийство, добитое копией, новой копии не дает.",
+        "max_points": 1,
+        "exclusive_group": "cloud_kind",
+        "effects": [
+          {
+            "type": "grant_proc",
+            "trigger": "on_hit",
+            "action": {
+              "apply_ailment": "poison"
+            }
+          },
+          {
+            "type": "modifier",
+            "stat": "area",
+            "kind": "increased",
+            "value": 30
+          },
+          {
+            "type": "grant_proc",
+            "trigger": "on_kill",
+            "action": {
+              "cast_skill": {
+                "id": "poison_cloud",
+                "damage_percent": 60
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "fire_mist",
+        "name": "Горючий туман",
+        "description": "Развилка стихии. Весь урон становится огнем: шанс поджога 50%, +25% урона (More). Отравление и бонусы к яду после этого не работают: «Едкий состав», «Гниение», «Моровой туман», «Разъедание» бесполезны.",
+        "max_points": 1,
+        "exclusive_group": "cloud_kind",
+        "effects": [
+          {
+            "type": "set_damage_type",
+            "to": "fire"
+          },
+          {
+            "type": "modifier",
+            "stat": "ignite_chance",
+            "kind": "flat",
+            "value": 50
+          },
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "more",
+            "value": 25
+          }
+        ]
+      },
+      {
+        "id": "ember_fume",
+        "name": "Тлеющий дым",
+        "description": "+20% урона поджога за очко.",
+        "max_points": 2,
+        "requires": [
+          {
+            "node": "fire_mist",
+            "points": 1
+          }
+        ],
+        "effects": [
+          {
+            "type": "modifier",
+            "stat": "damage",
+            "kind": "increased",
+            "value": 20,
+            "tags": [
+              "ailment_ignite"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ash_smoke",
+        "name": "Горячий пепел",
+        "description": "Огненная зона сильнее: +8% базы недуга в секунду за очко.",
+        "max_points": 2,
+        "requires": [
+          {
+            "node": "fire_mist",
+            "points": 1
+          }
+        ],
+        "effects": [
+          {
+            "type": "add_behavior",
+            "param": "ground_fraction",
+            "delta": 0.08
+          }
+        ]
+      },
+      {
+        "id": "mist_cloak",
+        "name": "Туманный покров",
+        "description": "Каст дает −8% получаемого урона на 1.4 с (не дольше половины самой короткой перезарядки при максимальном ее ускорении ≈ 2.9 с).",
+        "max_points": 1,
+        "effects": [
+          {
+            "type": "grant_proc",
+            "trigger": "on_use",
+            "action": {
+              "apply_buff": {
+                "id": "mist_cloak",
+                "duration": 1.4,
+                "modifiers": [
+                  {
+                    "stat": "damage_taken",
+                    "kind": "flat",
+                    "value": -8
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "toxic_echo",
+        "name": "Ядовитое эхо",
+        "description": "Каждое 2-е применение выпускает копию облака с уроном 50% (бесплатно, без проков). Копия обновляет ту же зону, второй зоны нет.",
+        "max_points": 1,
+        "requires": [
+          {
+            "node": "quick_brew",
+            "points": 2
+          }
+        ],
+        "effects": [
+          {
+            "type": "grant_proc",
+            "trigger": {
+              "every_n_uses": 2
+            },
+            "action": {
+              "cast_skill": {
+                "id": "poison_cloud",
+                "damage_percent": 50
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

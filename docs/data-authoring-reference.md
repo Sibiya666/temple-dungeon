@@ -1,6 +1,6 @@
 # Dialoid: справочник автора данных
 
-Состояние на 2026-10-25, после плана 1 (ядро `Dialoid.Core`). Справочник собран чтением кода. Если код расходится со справочником, прав код; расхождение нужно исправить здесь.
+Состояние на 2026-10-28, после плана 2 (контент и баланс; ядро `Dialoid.Core` плана 1). Справочник собран чтением кода. Если код расходится со справочником, прав код; расхождение нужно исправить здесь.
 
 Код: `core/Dialoid.Core/`. Фикстуры тестов: `core/Dialoid.Core.Tests/Fixtures/{tiny,data_only}/`. Реальные данные: `data/`. Спека: `docs/superpowers/specs/2026-10-25-dialoid-core-systems-design.md`.
 
@@ -8,7 +8,7 @@
 
 - Каталог — это JSON-массив объектов. Исключения: `attributes.json` и `progression.json` — одиночные объекты. Комментарии и висячие запятые допустимы.
 - Имена полей пишутся в snake_case. Перечисления — строки в нижнем регистре; числа вместо них отклоняются.
-- **Неизвестные поля молча игнорируются** (на момент плана 1). Опечатка в имени поля ошибки не даст.
+- **Неизвестные поля — ошибка загрузки** («Неизвестное поле «x»», с файлом и id записи): проверяются все объекты, включая вложенные. Исключение: объекты, ключи которых — данные (`spell_damage`, `behavior`, `ailment_chances`, `resists`, `base_attributes`, `damage_per_hit`, `params` механики), у них своя проверка ключей. `per_point` допустим только у эффектов `modifier`, `add_behavior`, `add_conversion`.
 - У каждой записи уникальный непустой `id` в пределах файла.
 - Плохая запись пропускается, ошибка попадает в отчет. Результат — `LoadResult(Data, Errors)`; если ошибка хоть одна, `Data == null`. Сообщения на русском: `DataError(File, Id, Message)`.
 - Перекрестная валидация (`Validator`) идет, только если все файлы загрузились чисто.
@@ -256,8 +256,10 @@
 - **Результат:** `SimResult(DpsSingleTarget, DpsPack, DamageBySkill, DamageByType, HitDamage, DotDamage, TimeToKill?, TimeToDeath?, Log, Violations, DamageTaken?)`.
 - **Проверка и кодек:**
   - `BuildRules.Validate(Build, GameData) → IReadOnlyList<RuleViolation>`;
-  - `BuildCodec.Export(Build) → "DLD1:…"`;
-  - `BuildCodec.TryImport(code, data, out build, out error)`.
+  - `BuildCodec.Export(Build) → "DLD1:…"` (код: `DLD1:` + base64url(gzip(JSON)));
+  - `BuildCodec.TryImport(code, data, out build, out error)`;
+  - `BuildCodec.ToJson(Build) → string` — тот же JSON без gzip, с отступами, для ручной правки;
+  - `BuildCodec.TryFromJson(json, data, out build, out error)` — разбор этого JSON с теми же проверками id, что у `TryImport`; не бросает исключений, ошибки на русском.
 - **Сборка персонажа:** `new CharacterCompiler(GameData, MechanicRegistry?).Compile(Build) → CompiledCharacter`; перед вызовом нужен `BuildRules.Validate`.
 - **JSON билда** (snake_case, как внутри кода билда):
   ```
@@ -269,15 +271,33 @@
 
 ## 9. Тесты и реальные данные
 
-- **Тесты на `data/`.** Сейчас `data/` читают только три теста из `Data/DataLoaderTests.cs`:
-  - `Real_data_loads_without_errors`;
-  - `Multiplier_stats_default_to_1_and_never_go_negative`;
-  - `Ailments_table_matches_spec_defaults`.
-  Остальные тесты работают на фикстуре tiny. Контент в `data/` можно называть свободно; файлы `stats`/`tags`/`ailments`/`progression` только дополнять.
+- **Тесты на `data/`.** Реальные данные читают тесты из `core/Dialoid.Core.Tests/Data/DataLoaderTests.cs` (три теста: данные загружаются без ошибок, множители по умолчанию 1 и не уходят ниже 0, таблица недугов совпадает со спекой) и тесты контента в `core/Dialoid.Core.Tests/Content/`:
+  - `CommonDataTests`, `PassiveTreeContentTests`, `SkillContentTests`, `LootContentTests`, `AscendancyContentTests` — правила спеки для каждого каталога (деревья скиллов §8.4, keystones §7.4, асценданты §10.4, лут), без голых «+X%», без мертвых узлов;
+  - `ReferenceBuildTests` — эталонные билды из `data/builds/` легальны и держат свою идею;
+  - `BalanceAcceptanceTests` — приемка баланса §15.5, §15.6, §15.9, §15.10 и коридоры §11.1 (режим `SimMode.Average`);
+  - `ContentHarness` — общие помощники.
+  Остальные тесты работают на фикстурах tiny и data_only. Файлы `stats`/`tags`/`ailments`/`progression` только дополнять.
 - **Помощники:**
   - `FixturePaths.RealData`, `FixturePaths.Tiny`, `FixturePaths.CopyTiny()`;
   - `Mechanics/MechanicTestData.cs`;
   - `Character/TestBuilds.cs`.
+
+### Формат `data/builds/`
+
+Каждый файл — один билд в виде JSON от `BuildCodec.ToJson` (тот же формат читает `BuildCodec.TryFromJson`; он описан в разделе 8). Имя файла без `.json` — идентификатор билда в тестах.
+
+- `data/builds/*.json` — шесть основных эталонов 60 уровня (тематические: идея билда, а не потолок класса);
+- `data/builds/l20/` — те же эталоны на 20 уровне (калибровка «Босса» и проверка лута);
+- `data/builds/parity/<класс>_l1|l20|l60.json` — потолок класса без темы и keystones (паритет §15.10);
+- `data/builds/keystones/<keystone>_fit|unfit.json` — пары «подходящий / неподходящий билд» для проверки §15.6;
+- `data/builds/attributes/` — билды без атрибутных узлов (§15.9);
+- `data/builds/README.md` — метрики и описание билдов; таблицы берутся из вывода `suite --all`, после пересборки эталонов их надо обновить.
+
+Билд, который не проходит `BuildRules.Validate`, тест эталонов не принимает: после правки данных (переименование узла, смена прав скилла) файлы надо пересобрать.
+
+### Как пересобрать эталоны
+
+Инструмент `tools/BuildOptimizer` лежит вне решения (`core/Dialoid.sln` его не собирает). Рецепты — `tools/BuildOptimizer/rebuild_references.sh`. Запускать только последовательно (шаги читают файлы друг друга); полная пересборка идет ≈1,5–3 часа в зависимости от машины. После нее: проверить diff, прогнать тесты контента и `dotnet tools/BuildOptimizer/bin/Release/net8.0/BuildOptimizer.dll suite --all` (все метрики приемки одной таблицей).
 
 ## 10. Факты для баланса
 

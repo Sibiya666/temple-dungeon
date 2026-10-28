@@ -1,0 +1,45 @@
+[
+  {
+    "id": "sword",
+    "name": "Меч",
+    "type": "one_hand",
+    "phys_min": 10,
+    "phys_max": 15,
+    "attacks_per_second": 1.4,
+    "crit_chance": 5
+  },
+  {
+    "id": "greataxe",
+    "name": "Двуручный топор",
+    "type": "two_hand",
+    "phys_min": 22,
+    "phys_max": 33,
+    "attacks_per_second": 0.9,
+    "crit_chance": 6
+  },
+  {
+    "id": "staff",
+    "name": "Посох",
+    "type": "staff",
+    "phys_min": 8,
+    "phys_max": 12,
+    "attacks_per_second": 1.1,
+    "crit_chance": 4,
+    "implicits": [
+      { "stat": "cast_speed", "kind": "increased", "value": 10 },
+      { "stat": "damage", "kind": "increased", "value": 15, "tags": ["spell"] }
+    ]
+  },
+  {
+    "id": "wand",
+    "name": "Жезл",
+    "type": "wand",
+    "phys_min": 5,
+    "phys_max": 8,
+    "attacks_per_second": 1.5,
+    "crit_chance": 7,
+    "implicits": [
+      { "stat": "damage", "kind": "increased", "value": 20, "tags": ["spell"] }
+    ]
+  }
+]

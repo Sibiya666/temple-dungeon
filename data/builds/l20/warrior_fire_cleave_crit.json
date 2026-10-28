@@ -1,0 +1,127 @@
+{
+  "class_id": "warrior",
+  "level": 20,
+  "ascendancy_id": "thunderer",
+  "ascendancy_nodes": [
+    "chain_strike"
+  ],
+  "passive_nodes": [
+    "str_attribute_2",
+    "str_attribute_1",
+    "str_brute_1",
+    "dex_attribute_2",
+    "str_brute_2",
+    "dex_onslaught_1",
+    "str_butcher",
+    "dex_onslaught_2",
+    "str_brute_4",
+    "str_attribute_6",
+    "str_brute_5",
+    "dex_flurry",
+    "dex_onslaught_4",
+    "dex_onslaught_3",
+    "str_ruthless_strike",
+    "str_bleed_1",
+    "str_brute_7",
+    "str_brute_3",
+    "str_fury_2"
+  ],
+  "attribute_choices": {
+    "str_attribute_2": "str",
+    "str_attribute_1": "str",
+    "dex_attribute_2": "str",
+    "str_attribute_6": "str"
+  },
+  "slots": [
+    {
+      "skill_id": "battle_cry",
+      "level": 20,
+      "node_points": {
+        "war_roar": 1,
+        "intimidation": 1,
+        "battle_rhythm": 1,
+        "fury_surge": 2,
+        "tireless": 3,
+        "thunder_roar": 1,
+        "rolling_thunder": 4,
+        "deafening_roar": 1,
+        "ringing_ears": 4,
+        "ancestral_fury": 1,
+        "sharp_roar": 1
+      }
+    },
+    {
+      "skill_id": "charge",
+      "level": 20,
+      "node_points": {
+        "burning_trail": 1,
+        "momentum": 3,
+        "embers": 3,
+        "unstoppable": 1,
+        "true_lunge": 3,
+        "shoulder_bash": 1,
+        "furious_charge": 3,
+        "finishing_blow": 1,
+        "trample": 1,
+        "long_run": 2,
+        "quick_feet": 1
+      }
+    },
+    {
+      "skill_id": "crush",
+      "level": 20,
+      "node_points": {
+        "brute_force": 4,
+        "wide_impact": 3,
+        "stun": 1,
+        "concussion": 1,
+        "heavy_blow": 2,
+        "torn_earth": 3,
+        "bloody_harvest": 1,
+        "peak_fury": 1,
+        "earthquake": 1,
+        "fissures": 1,
+        "deep_tremors": 2
+      }
+    },
+    {
+      "skill_id": "whirlwind",
+      "level": 20,
+      "node_points": {
+        "fire_whirl": 1,
+        "wide_circle": 3,
+        "fanned_flames": 2,
+        "smoldering": 1,
+        "spin_up": 3,
+        "fast_turns": 3,
+        "steel_storm": 4,
+        "frenzied_spin": 1,
+        "blade_hurricane": 1,
+        "steel_cocoon": 1
+      }
+    },
+    {
+      "skill_id": "cleave",
+      "level": 20,
+      "node_points": {
+        "heavy_hand": 4,
+        "wide_swing": 3,
+        "searing_blade": 3,
+        "burning_wounds": 1,
+        "lacerate": 3,
+        "precise_strike": 1,
+        "edge": 2,
+        "crushing_force": 3
+      }
+    }
+  ],
+  "weapon_id": "greataxe",
+  "item_ids": [],
+  "rotation": [
+    "battle_cry",
+    "charge",
+    "crush",
+    "whirlwind",
+    "cleave"
+  ]
+}

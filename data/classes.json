@@ -1,0 +1,47 @@
+[
+  {
+    "id": "warrior",
+    "name": "Воитель",
+    "primary": "str",
+    "base_attributes": { "str": 15, "dex": 10, "will": 10, "int": 7 },
+    "life_multiplier": 1.2,
+    "resource": {
+      "id": "fury",
+      "name": "Ярость",
+      "base_max": 100,
+      "regen_per_sec": 0,
+      "decay_per_sec": 5,
+      "decay_delay_sec": 3
+    },
+    "class_bonuses": [
+      { "stat": "resource_gen", "kind": "increased", "value": 0.2, "per": { "stat": "will", "every": 1 } },
+      { "stat": "crit_chance", "kind": "flat", "value": 0.04, "tags": ["attack"], "per": { "stat": "dex", "every": 1 } }
+    ],
+    "passive_start_node": "start_warrior",
+    "skills": ["cleave", "crush", "battle_cry", "whirlwind", "charge", "throwing_axe"],
+    "ascendancies": ["berserker", "thunderer"]
+  },
+  {
+    "id": "sorcerer",
+    "name": "Чародей",
+    "primary": "int",
+    "base_attributes": { "int": 15, "will": 10, "dex": 8, "str": 7 },
+    "life_multiplier": 1,
+    "resource": {
+      "id": "mana",
+      "name": "Мана",
+      "base_max": 100,
+      "regen_per_sec": 5,
+      "decay_per_sec": 0,
+      "decay_delay_sec": 0,
+      "max_per": { "stat": "int", "every": 2 }
+    },
+    "class_bonuses": [
+      { "stat": "resource_regen", "kind": "increased", "value": 0.2, "per": { "stat": "will", "every": 1 } },
+      { "stat": "crit_chance", "kind": "flat", "value": 0.04, "tags": ["spell"], "per": { "stat": "dex", "every": 1 } }
+    ],
+    "passive_start_node": "start_sorcerer",
+    "skills": ["spark", "fireball", "ice_lance", "ball_lightning", "meteor", "blink"],
+    "ascendancies": ["pyromancer", "cryomancer"]
+  }
+]

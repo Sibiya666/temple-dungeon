@@ -12,7 +12,7 @@ namespace Dialoid.Core.Builds;
 /// JSON uses public fields in snake_case (same convention as the data files), enums as snake_case strings.
 /// Import checks only that ids exist; legality (point budgets, caps) is <see cref="BuildRules"/>' job.
 /// </summary>
-public static class BuildCodec
+public static partial class BuildCodec
 {
     public const string Prefix = "DLD1:";
     private const int MaxJsonBytes = 1_000_000;
@@ -24,6 +24,31 @@ public static class BuildCodec
         DictionaryKeyPolicy = null,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower, allowIntegerValues: false) },
     };
+
+    private static readonly JsonSerializerOptions IndentedOptions = new(Options) { WriteIndented = true };
+
+    /// <summary>Plain (not gzipped) JSON of a build: the same snake_case form that sits inside <see cref="Export"/>, indented for hand editing.</summary>
+    public static string ToJson(Build build) => JsonSerializer.Serialize(build, IndentedOptions);
+
+    /// <summary>Parses <see cref="ToJson"/> output; applies the same id checks as <see cref="TryImport"/>. Never throws.</summary>
+    public static bool TryFromJson(string json, GameData data, out Build? build, out string? error)
+    {
+        build = null;
+        try
+        {
+            error = Parse(json, out var parsed, plainJson: true);
+            if (error == null) error = CheckIds(parsed!, data);
+            if (error != null) return false;
+            build = parsed;
+            return true;
+        }
+        catch (Exception)
+        {
+            build = null;
+            error = "JSON билда некорректен: не удалось разобрать содержимое";
+            return false;
+        }
+    }
 
     public static string Export(Build build)
     {
@@ -39,8 +64,7 @@ public static class BuildCodec
         try
         {
             error = Decode(code, out var parsed);
-            if (error != null) return false;
-            error = CheckIds(parsed!, data);
+            if (error == null) error = CheckIds(parsed!, data);
             if (error != null) return false;
             build = parsed;
             return true;
@@ -94,15 +118,24 @@ public static class BuildCodec
             return "Код билда повреждён или обрезан: ошибка распаковки gzip";
         }
 
+        return Parse(Encoding.UTF8.GetString(json), out build);
+    }
+
+    /// <summary>Deserializes build JSON and normalizes nulls; the error texts are shared by import codes and plain JSON.</summary>
+    private static string? Parse(string? json, out Build? build, bool plainJson = false)
+    {
+        var bad = plainJson ? "JSON билда некорректен" : "Код билда повреждён";
+        build = null;
+        if (string.IsNullOrWhiteSpace(json)) return "JSON билда пуст";
         try
         {
-            build = JsonSerializer.Deserialize<Build>(Encoding.UTF8.GetString(json), Options);
+            build = JsonSerializer.Deserialize<Build>(json, Options);
         }
         catch (Exception e) when (e is JsonException or NotSupportedException or ArgumentException)
         {
-            return "Код билда повреждён: некорректный JSON билда";
+            return $"{bad}: разбор JSON не удался";
         }
-        if (build == null) return "Код билда повреждён: пустой JSON билда";
+        if (build == null) return $"{bad}: пустой JSON билда";
         build.ClassId ??= "";
         build.AscendancyNodes ??= new();
         build.PassiveNodes ??= new();
@@ -110,12 +143,12 @@ public static class BuildCodec
         build.Slots ??= new();
         build.ItemIds ??= new();
         build.Rotation ??= new();
-        if (build.Slots.Any(s => s == null)) { build = null; return "Код билда повреждён: пустой слот скилла"; }
+        if (build.Slots.Any(s => s == null)) { build = null; return $"{bad}: пустой слот скилла"; }
         foreach (var s in build.Slots) { s.SkillId ??= ""; s.NodePoints ??= new(); }
         var hasNull = build.PassiveNodes.Any(x => x == null) || build.AscendancyNodes.Any(x => x == null)
             || build.ItemIds.Any(x => x == null) || build.Rotation.Any(x => x == null)
             || build.Slots.Any(sl => sl.NodePoints.Keys.Any(k => k == null));
-        if (hasNull) { build = null; return "Код билда повреждён: пустое значение в списке id"; }
+        if (hasNull) { build = null; return $"{bad}: пустое значение в списке id"; }
         return null;
     }
 

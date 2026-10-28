@@ -110,6 +110,9 @@ public sealed class MechanicSimContext
         return _data.Stats.ContainsKey(stat) ? _procs.Evaluator.Evaluate(stat, default, _conditions, baseValue).Value : baseValue ?? 0;
     }
 
+    /// <summary>The tag an ailment's damage carries (ailments.json <c>tag</c>, e.g. ailment_ignite); unknown id: "ailment_" + id.</summary>
+    public string AilmentTag(string ailmentId) => _data.Ailments.TryGetValue(ailmentId, out var def) ? def.Tag : "ailment_" + ailmentId;
+
     // ---- Counters (charges, stacks...): per run, namespaced by mechanic id ----
 
     public double Counter(string key = "") => _s.MechanicCounters.GetValueOrDefault(CounterKey(key));
