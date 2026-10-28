@@ -31,6 +31,14 @@ public static class H
     }
     public static SimResult Run(Build b, string dummy, bool attacks = false) =>
         new Simulator(Data, MechanicRegistry.Default).Run(b, new SimConfig(dummy, SimMode.Average, DummyAttacks: attacks));
+    /// <summary>Damage taken from «Атакующий босс» in the first 20 s, +∞ if the character dies inside the window
+    /// (the continuous survival metric of the ascendancy floor, ReferenceBuildTests).</summary>
+    public static double TakenIn20(Build b)
+    {
+        var r = new Simulator(Data, MechanicRegistry.Default).Run(b, new SimConfig("attacking_boss", SimMode.Average, DummyAttacks: true, SurvivalCapSec: 20));
+        if (r.TimeToDeath is { } t && t < 20 - 1e-9) return double.PositiveInfinity;
+        return r.DamageTaken?.Values.Sum() ?? 0;
+    }
     public static Build Clone(Build b) { BuildCodec.TryFromJson(BuildCodec.ToJson(b), Data, out var c, out _); return c!; }
     public static IReadOnlyList<RuleViolation> V(Build b) => BuildRules.Validate(b, Data);
     public static (double tr, double sw, double surv, double boss) Metrics(Build b)

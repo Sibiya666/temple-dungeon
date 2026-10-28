@@ -82,17 +82,17 @@ public static class Suite
 
         if (all)
         {
-            Console.WriteLine("--- ascendancy notables (obj %, surv s)");
+            Console.WriteLine("--- ascendancy notables (obj loss %, damage taken in 20 s +%, surv loss s)");
             foreach (var m in Main)
             {
                 var b = H.LoadBuild(m);
-                var o0 = Math.Sqrt(H.Run(b, "training").DpsSingleTarget * H.Run(b, "swarm").DpsPack); var s0 = Surv(b);
+                var o0 = Math.Sqrt(H.Run(b, "training").DpsSingleTarget * H.Run(b, "swarm").DpsPack); var s0 = Surv(b); var t0 = H.TakenIn20(b);
                 var parts = new List<string>();
                 foreach (var n in b.AscendancyNodes)
                 {
                     var c = H.Clone(b); c.AscendancyNodes.Remove(n);
                     var o1 = Math.Sqrt(H.Run(c, "training").DpsSingleTarget * H.Run(c, "swarm").DpsPack);
-                    parts.Add($"{n} {100 * (1 - o1 / o0):F1}%/{s0 - Surv(c):F1}s");
+                    parts.Add($"{n} {100 * (1 - o1 / o0):F1}%/taken+{100 * (H.TakenIn20(c) / t0 - 1):F1}%/{s0 - Surv(c):F1}s");
                 }
                 Console.WriteLine($"  {m}: {string.Join(", ", parts)}");
             }

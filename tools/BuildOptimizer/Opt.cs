@@ -328,7 +328,7 @@ public static class Opt
         }
         if (!AscFloor) return Best(cands).B;
         // --asc-floor: the best combination whose every notable earns its points (ReferenceBuildTests floor: removing it costs
-        // ≥ 3% of √(training × swarm) or ≥ 5 s of survival); the plain best if no combination passes.
+        // ≥ 3% of √(training × swarm) or ≥ 8% more damage taken in 20 s); the plain best if no combination passes.
         var vals = EvalAll(cands);
         foreach (var i in Enumerable.Range(0, cands.Count).Where(i => double.IsFinite(vals[i])).OrderByDescending(i => vals[i]))
             if (PassesAscFloor(cands[i])) return cands[i];
@@ -338,15 +338,17 @@ public static class Opt
     /// <summary>--asc-floor: AscBest keeps only notable combinations that pass the ascendancy floor of ReferenceBuildTests.</summary>
     public static bool AscFloor;
 
+    /// <summary>--asc-exempt a|b: off-theme notables exempt from the floor (ReferenceBuildTests.OffThemeNotables).</summary>
+    public static HashSet<string> AscExempt = new();
+
     public static bool PassesAscFloor(Build b)
     {
         double Obj(Build x) => Math.Sqrt(Math.Max(0, H.Run(x, "training").DpsSingleTarget) * Math.Max(0, H.Run(x, "swarm").DpsPack));
-        double Surv(Build x) => H.Run(x, "attacking_boss", true).TimeToDeath ?? double.PositiveInfinity;
-        var o0 = Obj(b); var s0 = Surv(b);
-        return b.AscendancyNodes.All(n =>
+        var o0 = Obj(b); var t0 = H.TakenIn20(b);
+        return b.AscendancyNodes.Where(n => !AscExempt.Contains(n)).All(n =>
         {
             var c = H.Clone(b); c.AscendancyNodes.Remove(n);
-            return 1 - Obj(c) / o0 >= 0.03 || s0 - Surv(c) >= 5;
+            return 1 - Obj(c) / o0 >= 0.03 || H.TakenIn20(c) / t0 - 1 >= 0.08;
         });
     }
 
@@ -478,6 +480,7 @@ public static class Opt
         int rounds = int.Parse(o.GetValueOrDefault("rounds", "2"));
         AllowKeystones = o.ContainsKey("allow-keystones");
         AscFloor = o.ContainsKey("asc-floor");
+        AscExempt = o.GetValueOrDefault("asc-exempt", "").Split('|', StringSplitOptions.RemoveEmptyEntries).ToHashSet();
         Pinned = o.GetValueOrDefault("pin", "").Split('|', StringSplitOptions.RemoveEmptyEntries).ToHashSet();
         SurvivalWeight = Num(o.GetValueOrDefault("survival-weight", "0"));
         MinSurvival = Num(o.GetValueOrDefault("min-survival", "0"));

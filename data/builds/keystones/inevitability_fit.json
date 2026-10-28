@@ -30,7 +30,6 @@
     "dex_attribute_4",
     "dex_evasion_1",
     "will_attribute_5",
-    "will_flow_3",
     "dex_phantom_step",
     "dex_evasion_3",
     "dex_attribute_5",
@@ -45,7 +44,6 @@
     "int_frost_1",
     "int_frost_2",
     "int_bitter_frost",
-    "will_storm_6",
     "dex_volley_1",
     "int_frost_3",
     "will_iron_will",
@@ -54,6 +52,8 @@
     "will_storm_3",
     "str_attribute_2",
     "str_attribute_1",
+    "will_endurance_2",
+    "will_slow_death",
     "dex_attribute_2",
     "dex_onslaught_1",
     "dex_onslaught_2",
@@ -65,9 +65,9 @@
     "dex_onslaught_7",
     "keystone_inevitability",
     "int_attribute_3",
-    "str_attribute_4",
-    "will_sacrifice_4",
-    "will_attribute_3"
+    "will_storm_6",
+    "will_endurance_1",
+    "str_attribute_4"
   ],
   "attribute_choices": {
     "will_attribute_2": "int",
@@ -86,8 +86,7 @@
     "str_attribute_1": "int",
     "dex_attribute_6": "int",
     "int_attribute_3": "int",
-    "str_attribute_4": "int",
-    "will_attribute_3": "int"
+    "str_attribute_4": "int"
   },
   "slots": [
     {
@@ -113,8 +112,8 @@
         "capacitor": 2,
         "storm_core": 4,
         "static_orb": 1,
-        "quick_charge": 2,
         "twin_orb": 1,
+        "quick_charge": 2,
         "long_flight": 3,
         "static_field": 3,
         "spark_cascade": 2,
@@ -125,15 +124,15 @@
       "skill_id": "ice_lance",
       "level": 20,
       "node_points": {
-        "bitter_cold": 3,
-        "deep_freeze": 2,
-        "ice_carapace": 1,
-        "frost_edge": 4,
-        "ice_sting": 3,
-        "ice_shards": 1,
         "swift_ice": 3,
-        "cold_poise": 2,
-        "glacial_block": 1
+        "frost_edge": 4,
+        "bitter_cold": 3,
+        "ice_shards": 1,
+        "ice_sting": 3,
+        "deep_freeze": 3,
+        "cold_poise": 1,
+        "glacial_block": 1,
+        "ice_wedge": 1
       }
     },
     {
@@ -141,13 +140,13 @@
       "level": 20,
       "node_points": {
         "ice_meteor": 1,
-        "instant_fall": 1,
         "sky_fire": 4,
         "comet_core": 1,
+        "crater": 3,
         "frost_shatter": 2,
         "ash_veil": 1,
-        "crater": 3,
-        "star_thrift": 3
+        "star_thrift": 3,
+        "instant_fall": 1
       }
     },
     {

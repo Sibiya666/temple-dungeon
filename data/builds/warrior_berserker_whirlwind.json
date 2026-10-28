@@ -57,17 +57,17 @@
     "dex_assassin",
     "dex_onslaught_3",
     "will_iron_will",
-    "will_flow_5",
     "str_relentless_fury",
-    "dex_onslaught_6",
     "will_war_herald",
     "str_brute_3",
-    "dex_assassin_1",
     "will_sacrifice_7",
     "str_fury_1",
     "str_bleed_1",
-    "will_command_1",
-    "will_desperate_resolve"
+    "will_desperate_resolve",
+    "dex_onslaught_6",
+    "dex_assassin_1",
+    "str_bleed_3",
+    "will_flow_2"
   ],
   "attribute_choices": {
     "str_attribute_2": "str",

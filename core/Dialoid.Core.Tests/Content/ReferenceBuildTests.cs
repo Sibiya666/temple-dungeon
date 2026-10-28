@@ -162,8 +162,37 @@ public class ReferenceBuildTests
     }
 
     /// <summary>
+    /// Off-theme notables a hybrid reference takes as fillers, exempt from the floor below. Each class has two ascendancies and
+    /// neither supports a lightning Sorcerer or a fire Warrior (owner questions, BALANCE_NOTES): <c>sorcerer_spark_hybrid</c> is a
+    /// lightning build on the Cryomancer, so the Cryomancer's lance and freeze notables (Ледник, Ледяная броня) pay little in it.
+    /// Every other taken notable of every reference must pass.
+    /// </summary>
+    private static readonly Dictionary<string, string[]> OffThemeNotables = new()
+    {
+        ["sorcerer_spark_hybrid"] = new[] { "glacier", "ice_armor" },
+    };
+
+    /// <summary>Window of the continuous survival metric: 20 s, the lower end of the survival corridor of spec 11.1.</summary>
+    private const double TakenWindowSec = 20;
+
+    /// <summary>
+    /// Damage taken from «Атакующий босс» in the first <see cref="TakenWindowSec"/> s (Average mode), or +∞ when the character
+    /// dies inside the window. Continuous, unlike time to death, which moves in whole boss attacks of 3.5 s.
+    /// </summary>
+    private static double TakenInWindow(Build b)
+    {
+        var r = new Simulator(ContentHarness.Data, MechanicRegistry.Default)
+            .Run(b, new SimConfig("attacking_boss", SimMode.Average, DummyAttacks: true, SurvivalCapSec: TakenWindowSec));
+        Assert.Empty(r.Violations);
+        if (r.TimeToDeath is { } t && t < TakenWindowSec - 1e-9) return double.PositiveInfinity;
+        return r.DamageTaken?.Values.Sum() ?? 0;
+    }
+
+    /// <summary>
     /// Every taken ascendancy notable earns its points (spec 10.4: an ascendancy «changes the game»; regression floor from Task 10):
-    /// removing it lowers the optimizer objective √(training DPS × swarm pack DPS) by at least 3% or survival by at least 5 s.
+    /// removing it lowers the optimizer objective √(training DPS × swarm pack DPS) by at least 3%, or raises the damage taken from
+    /// «Атакующий босс» in a fixed 20 s window by at least 8% (fix round 1: a continuous metric instead of time to death ≥ 5 s).
+    /// Off-theme fillers of hybrid builds are listed in <see cref="OffThemeNotables"/>.
     /// </summary>
     [Theory]
     [MemberData(nameof(MainBuilds))]
@@ -171,17 +200,50 @@ public class ReferenceBuildTests
     {
         var b = ContentHarness.LoadBuild(path);
         double Objective(Build x) => Math.Sqrt(ContentHarness.TrainingDps(x) * ContentHarness.Run(x, "swarm").DpsPack);
-        double Survival(Build x) => ContentHarness.Survival(x).TimeToDeath ?? double.PositiveInfinity;
         var objective = Objective(b);
-        var survival = Survival(b);
-        foreach (var notable in b.AscendancyNodes)
+        var taken = TakenInWindow(b);
+        Assert.True(double.IsFinite(taken), $"{path}: dies within {TakenWindowSec} s");
+        var exempt = OffThemeNotables.GetValueOrDefault(path, Array.Empty<string>());
+        foreach (var notable in b.AscendancyNodes.Where(n => !exempt.Contains(n)))
         {
             var without = ContentHarness.Clone(b);
             without.AscendancyNodes.Remove(notable);
             var objLoss = 1 - Objective(without) / objective;
-            var survLoss = survival - Survival(without);
-            Assert.True(objLoss >= 0.03 || survLoss >= 5, $"{path}: notable {notable} adds {objLoss:P1} objective and {survLoss:F1} s survival");
+            var moreTaken = TakenInWindow(without) / taken - 1;
+            Assert.True(objLoss >= 0.03 || moreTaken >= 0.08,
+                $"{path}: notable {notable} adds {objLoss:P1} objective and cuts damage taken in {TakenWindowSec} s by {moreTaken:P1}");
         }
+    }
+
+    /// <summary>
+    /// Fix round 1 (C1): every level-20 and level-60 reference build and every level-20/60 parity build survives at least 20 s
+    /// against «Атакующий босс» (the lower end of the survival corridor of spec 11.1; the optimizer recipe's --min-survival 20).
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(ViableBuilds))]
+    public void Viable_build_survives_at_least_20_seconds(string path)
+    {
+        var r = ContentHarness.Survival(ContentHarness.LoadBuild(path));
+        Assert.Empty(r.Violations);
+        Assert.True(r.TimeToDeath is null || r.TimeToDeath >= 20, $"{path}: dies in {r.TimeToDeath} s");
+    }
+
+    public static IEnumerable<object[]> ViableBuilds() =>
+        Main.Select(m => m.Path).Concat(Level20).Concat(Parity.Where(p => !p.EndsWith("_l1"))).Select(p => new object[] { p });
+
+    /// <summary>
+    /// Fix round 1 (D1, tightening of spec 15.5): the class ceiling is no hidden meta — the level-60 parity build's objective
+    /// √(training × swarm) is at most 1.5 times the best themed level-60 reference of its class.
+    /// </summary>
+    [Theory]
+    [InlineData("warrior")]
+    [InlineData("sorcerer")]
+    public void Class_ceiling_is_within_1_5x_of_the_best_reference(string classId)
+    {
+        double Objective(string p) { var x = ContentHarness.LoadBuild(p); return Math.Sqrt(ContentHarness.TrainingDps(x) * ContentHarness.Run(x, "swarm").DpsPack); }
+        var ceiling = Objective($"parity/{classId}_l60");
+        var best = Main.Where(m => m.ClassId == classId).Max(m => Objective(m.Path));
+        Assert.True(ceiling <= 1.5 * best, $"{classId}: parity objective {ceiling:F0} vs best reference {best:F0} (×{ceiling / best:F2})");
     }
 
     /// <summary>

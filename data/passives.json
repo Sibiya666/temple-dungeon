@@ -603,11 +603,11 @@
   },
   {
     "id": "dex_assassin", "name": "Убийца", "kind": "notable", "region": "dex", "x": 134, "y": -536,
-    "description": "+3% к шансу крита, +20% к урону крита",
+    "description": "+2% к шансу крита, +10% к урону крита",
     "links": ["dex_assassin_1"],
     "effects": [
-      {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 3},
-      {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 20}
+      {"type": "modifier", "stat": "crit_chance", "kind": "flat", "value": 2},
+      {"type": "modifier", "stat": "crit_damage", "kind": "flat", "value": 10}
     ]
   },
   {

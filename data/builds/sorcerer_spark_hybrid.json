@@ -54,20 +54,20 @@
     "int_frost_1",
     "int_frost_2",
     "int_bitter_frost",
-    "will_storm_6",
     "dex_volley_1",
     "dex_assassin_1",
     "int_frost_3",
     "int_insight_7",
     "will_iron_will",
     "int_frost_5",
-    "int_frost_6",
     "will_sacrifice_3",
     "will_storm_3",
     "int_insight_3",
     "str_attribute_2",
     "str_attribute_1",
-    "int_insight_6"
+    "int_insight_6",
+    "will_endurance_2",
+    "will_slow_death"
   ],
   "attribute_choices": {
     "will_attribute_2": "int",

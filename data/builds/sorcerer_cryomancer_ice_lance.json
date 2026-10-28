@@ -93,23 +93,23 @@
         "lingering_focus": 1,
         "high_voltage": 5,
         "short_step": 4,
-        "ether_mend": 1,
         "spark_trail": 1,
         "twin_spark": 1,
         "light_step": 1,
         "elusive": 1,
         "afterimage": 1,
         "phase_barrier": 1,
-        "arrival_flare": 1
+        "arrival_flare": 1,
+        "fire_exit": 1
       }
     },
     {
       "skill_id": "meteor",
       "level": 20,
       "node_points": {
-        "sky_fire": 2,
+        "sky_fire": 4,
         "scorched_earth": 3,
-        "falling_star": 3,
+        "falling_star": 1,
         "crater": 3,
         "instant_fall": 1,
         "comet_core": 1,
