@@ -57,9 +57,9 @@ public class CommonDataTests
     /// <summary>
     /// Spec 11.1 presets. The «Босс» life and the «Атакующий босс» blow are the spec's starting numbers calibrated in Task 10
     /// (spec 11.1 «[Билдеру] подстроить»: boss time to kill 20–60 s, survival 20–40 s at levels 20 and 60; BALANCE_NOTES):
-    /// life 8000 → <see cref="BossLife"/> × G, blow physical 14 → 25 and fire 9 → 16 × G.
+    /// life 8000 → <see cref="BossLife"/> × G (38100 before fix round 1), blow physical 14 → 25 and fire 9 → 16 × G.
     /// </summary>
-    private const double BossLife = 38100;
+    private const double BossLife = 36600;
 
     [Fact]
     public void Six_dummy_presets_match_spec_11_1()

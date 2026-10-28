@@ -84,10 +84,10 @@
   },
   {
     "id": "int_frozen_heart", "name": "Ледяное сердце", "kind": "notable", "region": "int", "x": 530, "y": 282,
-    "description": "+25% к урону по охлажденным целям, +8% к шансу заморозки",
+    "description": "+15% к урону по охлажденным целям, +8% к шансу заморозки",
     "links": ["int_frost_5"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 25, "conditions": ["target_chilled"]},
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 15, "conditions": ["target_chilled"]},
       {"type": "modifier", "stat": "freeze_chance", "kind": "flat", "value": 8}
     ]
   },
@@ -675,11 +675,11 @@
   },
   {
     "id": "str_open_wounds", "name": "Открытые раны", "kind": "notable", "region": "str", "x": -318, "y": -169,
-    "description": "+10% к шансу кровотечения, +25% к урону от кровотечения",
+    "description": "+10% к шансу кровотечения, +15% к урону от кровотечения",
     "links": ["str_bleed_2"],
     "effects": [
       {"type": "modifier", "stat": "bleed_chance", "kind": "flat", "value": 10},
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 25, "tags": ["ailment_bleed"]}
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 15, "tags": ["ailment_bleed"]}
     ]
   },
   {
@@ -713,11 +713,11 @@
   },
   {
     "id": "str_bloodbath", "name": "Кровавая баня", "kind": "notable", "region": "str", "x": -530, "y": -282,
-    "description": "+1 к максимуму стаков кровотечения, +20% к урону по кровоточащим целям",
+    "description": "+1 к максимуму стаков кровотечения, +10% к урону по кровоточащим целям",
     "links": ["str_bleed_5"],
     "effects": [
       {"type": "modifier", "stat": "bleed_max_stacks", "kind": "flat", "value": 1},
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "conditions": ["target_bleeding"]}
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "conditions": ["target_bleeding"]}
     ]
   },
   {
@@ -1263,10 +1263,10 @@
   },
   {
     "id": "will_slow_death", "name": "Медленная смерть", "kind": "notable", "region": "will", "x": 134, "y": 536,
-    "description": "+20% к урону со временем, +0.25% здоровья в секунду",
+    "description": "+10% к урону со временем, +0.25% здоровья в секунду",
     "links": ["will_endurance_1"],
     "effects": [
-      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 20, "tags": ["dot"]},
+      {"type": "modifier", "stat": "damage", "kind": "increased", "value": 10, "tags": ["dot"]},
       {"type": "modifier", "stat": "life_regen_pct", "kind": "flat", "value": 0.25}
     ]
   },

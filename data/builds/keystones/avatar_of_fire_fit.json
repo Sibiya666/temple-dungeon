@@ -1,12 +1,12 @@
 {
   "class_id": "sorcerer",
   "level": 60,
-  "ascendancy_id": "cryomancer",
+  "ascendancy_id": "pyromancer",
   "ascendancy_nodes": [
-    "shatter",
-    "ice_armor",
-    "frost_orb_asc",
-    "glacier"
+    "spread_ignite",
+    "ashes",
+    "eternal_fire",
+    "fire_armor"
   ],
   "passive_nodes": [
     "will_attribute_2",
@@ -94,9 +94,9 @@
         "blink_focus": 1,
         "lingering_focus": 1,
         "impulse": 1,
-        "short_step": 4,
+        "short_step": 5,
         "high_voltage": 3,
-        "light_step": 4,
+        "light_step": 3,
         "storm_step": 1,
         "arrival_flare": 1,
         "double_flare": 1,
@@ -121,19 +121,20 @@
       }
     },
     {
-      "skill_id": "ice_lance",
+      "skill_id": "fireball",
       "level": 20,
       "node_points": {
-        "frost_edge": 4,
-        "glacial_block": 1,
-        "ice_sting": 3,
-        "point": 3,
-        "cold_precision": 2,
-        "ice_wedge": 2,
-        "bitter_cold": 2,
-        "cold_poise": 1,
-        "ice_shards": 1,
-        "ice_crown": 1
+        "heat": 4,
+        "compress": 1,
+        "wide_blast": 3,
+        "ring_of_fire": 1,
+        "molten_core": 3,
+        "flame_mark": 1,
+        "mana_focus": 1,
+        "swift_orb": 1,
+        "overheat": 3,
+        "blast_wave": 1,
+        "storm_orb": 1
       }
     },
     {
@@ -175,7 +176,7 @@
     "blink",
     "meteor",
     "ball_lightning",
-    "ice_lance",
+    "fireball",
     "spark"
   ]
 }

@@ -33,14 +33,12 @@
     "int_insight_5",
     "int_piercing_thought",
     "int_insight_7",
-    "int_insight_6",
     "will_attribute_4",
     "will_flow_1",
     "will_wellspring",
     "will_flow_3",
     "will_attribute_5",
     "will_flow_4",
-    "will_endurance_1",
     "str_attribute_2",
     "dex_attribute_4",
     "dex_evasion_1",
@@ -49,16 +47,18 @@
     "dex_attribute_5",
     "dex_volley_1",
     "dex_assassin_2",
+    "int_flame_2",
     "will_iron_will",
     "dex_assassin",
     "dex_assassin_1",
-    "int_ignite_1",
     "str_attribute_1",
     "dex_attribute_2",
     "int_insight_3",
     "dex_attribute_1",
     "int_flame_5",
     "int_ward_2",
+    "will_command_2",
+    "will_war_herald",
     "str_attribute_4",
     "str_bulwark_1",
     "str_iron_hide",
@@ -111,15 +111,14 @@
       "level": 20,
       "node_points": {
         "kindling": 3,
-        "scorched_earth": 1,
-        "sky_fire": 4,
+        "scorched_earth": 3,
+        "sky_fire": 3,
         "falling_star": 3,
-        "comet_fragment": 1,
         "star_thrift": 3,
-        "starfall": 1,
-        "core_heat": 2,
         "fire_field": 1,
-        "crater": 1
+        "comet_fragment": 1,
+        "starfall": 1,
+        "core_heat": 2
       }
     },
     {
@@ -128,9 +127,9 @@
       "node_points": {
         "storm_core": 4,
         "sun_orb": 1,
-        "quick_charge": 2,
+        "quick_charge": 1,
         "long_flight": 3,
-        "bright_discharge": 2,
+        "bright_discharge": 3,
         "solar_corona": 2,
         "static_orb": 1,
         "twin_orb": 1,
@@ -143,16 +142,16 @@
       "level": 20,
       "node_points": {
         "heat": 4,
-        "compress": 1,
         "molten_core": 3,
         "wide_blast": 3,
-        "ring_of_fire": 1,
-        "mana_focus": 2,
-        "swift_orb": 1,
-        "flame_mark": 1,
-        "soul_flame": 2,
+        "mana_focus": 1,
+        "swift_orb": 2,
         "eternal_flame": 1,
-        "lingering_heat": 1
+        "flame_mark": 1,
+        "soul_flame": 1,
+        "compress": 1,
+        "ring_of_fire": 1,
+        "lingering_heat": 2
       }
     },
     {
@@ -162,11 +161,12 @@
         "crackle": 4,
         "static": 3,
         "breakdown": 3,
-        "quick_spark": 3,
+        "quick_spark": 2,
         "mana_current": 2,
-        "spark_fan": 1,
-        "ionize": 1,
-        "bright_flash": 3
+        "bright_flash": 3,
+        "overload": 1,
+        "dazzle": 1,
+        "ionize": 1
       }
     }
   ],

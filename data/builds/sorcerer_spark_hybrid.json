@@ -160,7 +160,7 @@
         "ionize": 1,
         "spark_fan": 1,
         "mana_current": 3,
-        "storm_fan": 1
+        "bright_flash": 1
       }
     }
   ],

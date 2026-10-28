@@ -29,7 +29,6 @@
     "dex_evasion_1",
     "dex_onslaught_2",
     "str_open_wounds",
-    "str_brute_3",
     "str_brute_4",
     "int_attribute_4",
     "will_storm_2",
@@ -53,21 +52,22 @@
     "dex_flawless_technique",
     "dex_onslaught_6",
     "will_storm_3",
-    "str_bleed_5",
-    "str_bloodbath",
     "dex_attribute_5",
     "dex_assassin_2",
     "dex_assassin",
     "dex_assassin_1",
     "str_relentless_fury",
     "str_fury_2",
-    "str_brute_6",
     "dex_attribute_3",
     "will_storm_4",
     "will_attribute_6",
     "will_storm_5",
     "will_chain_reaction",
-    "will_storm_7"
+    "will_storm_7",
+    "str_brute_3",
+    "str_brute_6",
+    "str_attribute_4",
+    "dex_attribute_1"
   ],
   "attribute_choices": {
     "str_attribute_2": "str",
@@ -85,7 +85,9 @@
     "dex_attribute_6": "str",
     "dex_attribute_5": "str",
     "dex_attribute_3": "str",
-    "will_attribute_6": "str"
+    "will_attribute_6": "str",
+    "str_attribute_4": "str",
+    "dex_attribute_1": "str"
   },
   "slots": [
     {
@@ -163,15 +165,14 @@
       "node_points": {
         "thirst": 3,
         "echo": 1,
-        "rolling_echo": 1,
         "heavy_hand": 4,
         "wide_swing": 3,
-        "lacerate": 2,
+        "lacerate": 3,
         "frenzy": 1,
         "precise_strike": 1,
         "edge": 2,
         "thunder_strike": 1,
-        "crushing_force": 1
+        "rolling_echo": 1
       }
     }
   ],

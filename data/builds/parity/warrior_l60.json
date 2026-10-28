@@ -104,17 +104,18 @@
       "skill_id": "charge",
       "level": 20,
       "node_points": {
-        "momentum": 3,
+        "momentum": 2,
         "bloody_path": 3,
         "true_lunge": 3,
         "furious_charge": 2,
         "finishing_blow": 1,
-        "embers": 3,
+        "embers": 2,
         "gore": 1,
         "crushing_ram": 1,
         "ram": 1,
         "shoulder_bash": 1,
-        "burning_trail": 1
+        "burning_trail": 1,
+        "quick_feet": 2
       }
     },
     {
@@ -122,8 +123,8 @@
       "level": 20,
       "node_points": {
         "brute_force": 4,
-        "torn_earth": 2,
-        "heavy_blow": 2,
+        "torn_earth": 3,
+        "heavy_blow": 1,
         "bloody_harvest": 3,
         "earthquake": 1,
         "fissures": 1,
@@ -141,10 +142,10 @@
         "cutting_wind": 3,
         "thousand_cuts": 2,
         "steel_storm": 4,
-        "fast_turns": 2,
+        "fast_turns": 1,
         "thrifty_spin": 3,
         "blade_hurricane": 1,
-        "wide_circle": 1,
+        "wide_circle": 2,
         "frenzied_spin": 1
       }
     },
@@ -156,11 +157,11 @@
         "keen_throw": 3,
         "headshot": 2,
         "jagged_edge": 2,
-        "quick_throw": 3,
         "poisoned_blades": 3,
         "lethal_dose": 1,
-        "thrower_fury": 1,
-        "boomerang": 1
+        "boomerang": 1,
+        "spare_axe": 2,
+        "piercing_throw": 2
       }
     }
   ],
