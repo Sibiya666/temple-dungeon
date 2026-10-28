@@ -49,8 +49,7 @@ public static class SkillSheet
         AddHits(lines, skillCh, skill, weapon, isAttack);
 
         // Crit
-        var critBase = isAttack && weapon != null ? weapon.CritChance : skill.Base.CritChance;
-        var chance = Math.Clamp(Stat("crit_chance", "Шанс крита, %", "crit_chance", critBase).Value, 0, 100);
+        var chance = Math.Clamp(Stat("crit_chance", "Шанс крита, %", "crit_chance", SkillMath.CritChanceBase(skill, weapon)).Value, 0, 100);
         var critDamage = Stat("crit_damage", "Урон крита, +%", "crit_damage").Value;
         var critMult = 1 + critDamage / 100;
         lines[^1] = lines[^1] with { Label = $"Урон крита: +{Num(critDamage)}% (×{Num(critMult)})" };
@@ -79,7 +78,8 @@ public static class SkillSheet
         }
         if (cooldown > 0) tempo += $"; перезарядка {Num(cooldown)} с";
         lines.Add(new NumberLine("uses_per_sec", "Применений в секунду", period > 0 ? 1 / period : 0, null,
-            tempo + (skill.ChannelRamp != null ? "; без разгона канала" : "")));
+            tempo + (skill.ChannelRamp != null ? "; без разгона канала" : "") +
+            "; в симуляторе применение длится не меньше одного шага (по умолчанию 0.05 с)"));
         if (skill.Base.Cooldown is > 0 and var baseCd)
             lines.Add(new NumberLine("cooldown", "Перезарядка, с", cooldown, null,
                 $"база {Num(baseCd)} с / восстановление {Num(StatValue("cooldown_recovery", 1))}"));
@@ -112,8 +112,11 @@ public static class SkillSheet
         return lines;
     }
 
-    /// <summary>Min/max/avg per final damage type and the no-crit total. A type's breakdown is the damage multiplier of its
-    /// largest portion; the note lists every portion's base range.</summary>
+    /// <summary>
+    /// Min/max/avg per final damage type, the no-crit total, one damage multiplier line per portion and the penetration of each
+    /// final type. The hit lines are derived: value = Σ over the type's portions of base × multiplier × penetration factor
+    /// (no crit, no target defense), and the note lists those parts.
+    /// </summary>
     private static void AddHits(List<NumberLine> lines, CompiledCharacter skillCh, CompiledSkill skill, WeaponStub? weapon, bool isAttack)
     {
         HitResult Hit(Func<double, double, double> pick) =>
@@ -133,17 +136,45 @@ public static class SkillSheet
 
         foreach (var (type, value) in avg.Final)
         {
+            var name = type.ToString().ToLowerInvariant();
             var mine = portions.Select((p, i) => (p, d: damage[i])).Where(x => x.p.Type == type).ToList();
             if (mine.Count == 0) continue;
-            var main = mine.OrderByDescending(x => (x.p.Min + x.p.Max) / 2 * x.d.Value).First().d;
-            var note = string.Join("; ", mine.Select(x =>
-                $"база {Num(x.p.Min)}–{Num(x.p.Max)}" +
-                (x.p.Lineage.Count > 1 ? $" (из: {string.Join(", ", x.p.Lineage.Where(t => t != type).Select(TypeName))})" : "") +
-                $" × множитель {Num(x.d.Value)}"));
-            var name = type.ToString().ToLowerInvariant();
-            lines.Add(new NumberLine($"hit_min_{name}", $"Попадание, минимум ({TypeName(type)})", min.Final.GetValueOrDefault(type), main, note));
-            lines.Add(new NumberLine($"hit_max_{name}", $"Попадание, максимум ({TypeName(type)})", max.Final.GetValueOrDefault(type), main, note));
-            lines.Add(new NumberLine($"hit_avg_{name}", $"Попадание, среднее ({TypeName(type)})", value, main, note));
+
+            // The target has no armor and no resists, so only penetration changes the hit: physical hits go through armor only.
+            var penFactor = 1.0;
+            string penNote = "";
+            if (type != DamageType.Physical)
+            {
+                var pen = skillCh.Evaluator.Evaluate($"penetration_{name}", skill.Tags, NoConditions.Instance);
+                if (pen.Value != 0)
+                {
+                    penFactor = Mitigation.ResistMultiplier(0, pen.Value);
+                    lines.Add(new NumberLine($"penetration_{name}", $"Пробивание сопротивления ({TypeName(type)}), %", pen.Value, pen));
+                    penNote = $" × пробивание {Num(penFactor)}";
+                }
+            }
+
+            var labels = new List<string>();
+            foreach (var (p, d) in mine)
+            {
+                var origins = p.Lineage.Where(t => t != type).OrderBy(t => t).ToList();
+                var key = origins.Count == 0
+                    ? $"hit_mult_{name}"
+                    : $"hit_mult_{name}_from_{string.Join("_", origins.Select(t => t.ToString().ToLowerInvariant()))}";
+                var portionName = origins.Count == 0
+                    ? TypeName(type)
+                    : $"{TypeName(type)} из: {string.Join(", ", origins.Select(TypeName))}";
+                lines.Add(new NumberLine(key, $"Множитель урона попадания ({portionName})", d.Value, d));
+                labels.Add(portionName);
+            }
+            string Note(Func<double, double, double> pick) => string.Join(" + ", mine.Select((x, i) =>
+                $"{labels[i]}: база {Num(pick(x.p.Min, x.p.Max))} × множитель {Num(Math.Max(0, x.d.Value))}{penNote}"));
+            lines.Add(new NumberLine($"hit_min_{name}", $"Попадание, минимум ({TypeName(type)})", min.Final.GetValueOrDefault(type), null,
+                Note((lo, _) => lo)));
+            lines.Add(new NumberLine($"hit_max_{name}", $"Попадание, максимум ({TypeName(type)})", max.Final.GetValueOrDefault(type), null,
+                Note((_, hi) => hi)));
+            lines.Add(new NumberLine($"hit_avg_{name}", $"Попадание, среднее ({TypeName(type)})", value, null,
+                Note((lo, hi) => (lo + hi) / 2)));
         }
         lines.Add(new NumberLine("hit_avg_total", "Среднее попадание без крита", avg.Final.Values.Sum(), null,
             avg.Final.Count == 0

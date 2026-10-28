@@ -1,4 +1,5 @@
 using Dialoid.Core.Character;
+using Dialoid.Core.Combat;
 using Dialoid.Core.Explain;
 using Dialoid.Core.Tests.Content;
 
@@ -25,7 +26,9 @@ public class SkillSheetTests
         Assert.True(avg > 0);
         Assert.InRange(avg, Line(lines, "hit_min_fire").Value, Line(lines, "hit_max_fire").Value);
         Assert.True(Line(lines, "uses_per_sec").Value > 0);
-        Assert.NotNull(Line(lines, "hit_avg_fire").Breakdown);
+        Assert.Null(Line(lines, "hit_avg_fire").Breakdown);
+        Assert.Contains(lines, l => l.Key.StartsWith("hit_mult_fire", StringComparison.Ordinal) && l.Breakdown != null);
+        Assert.Contains(lines, l => l.Key == "penetration_fire" && l.Value > 0); // int_incineration and int_flame_6
         Assert.True(Line(lines, "hit_avg_with_crit").Value > avg);
         Assert.Contains(lines, l => l.Key == "crit_chance" && l.Breakdown != null);
         Assert.Contains(lines, l => l.Key == "resource_cost");
@@ -50,8 +53,65 @@ public class SkillSheetTests
         var reduced = Line(Sheet(without, "fireball"), "hit_avg_fire");
 
         Assert.True(reduced.Value < full.Value, $"{reduced.Value} should be below {full.Value}");
-        Assert.Contains(full.Breakdown!.Lines, l => l.Source.Id == node);
-        Assert.DoesNotContain(reduced.Breakdown!.Lines, l => l.Source.Id == node);
+        static IEnumerable<Dialoid.Core.Stats.BreakdownLine> FireMultLines(IReadOnlyList<NumberLine> sheet) => sheet
+            .Where(l => l.Key.StartsWith("hit_mult_fire", StringComparison.Ordinal)).SelectMany(l => l.Breakdown!.Lines);
+        Assert.Contains(FireMultLines(Sheet(build, "fireball")), l => l.Source.Id == node);
+        Assert.DoesNotContain(FireMultLines(Sheet(without, "fireball")), l => l.Source.Id == node);
+    }
+
+    public static IEnumerable<object[]> ReferenceBuilds() => CharacterSheetTests.ReferenceBuilds();
+
+    [Theory]
+    [MemberData(nameof(ReferenceBuilds))]
+    public void Every_skill_line_with_breakdown_matches_its_value(string buildPath)
+    {
+        var build = ContentHarness.LoadBuild(buildPath);
+        foreach (var slot in build.Slots)
+        {
+            var lines = Sheet(build, slot.SkillId);
+            Assert.Equal(lines.Count, lines.Select(l => l.Key).Distinct().Count());
+            foreach (var line in lines)
+            {
+                if (line.Breakdown is { } b) Assert.Equal(b.Value, line.Value);
+                else Assert.False(string.IsNullOrWhiteSpace(line.Note), $"{slot.SkillId}: derived line {line.Key} must list its parts");
+            }
+        }
+    }
+
+    /// <summary>Every average hit is Σ over its portions of avg(base) × the portion's multiplier line × the penetration factor:
+    /// the sheet's own lines add up to the number (no hidden factor).</summary>
+    [Theory]
+    [MemberData(nameof(ReferenceBuilds))]
+    public void Hit_lines_are_the_product_of_base_multiplier_and_penetration(string buildPath)
+    {
+        var data = ContentHarness.Data;
+        var build = ContentHarness.LoadBuild(buildPath);
+        var ch = new CharacterCompiler(data).Compile(build);
+        var weapon = build.WeaponId != null ? data.Weapons[build.WeaponId] : null;
+        var checkedLines = 0;
+        foreach (var skill in ch.Skills)
+        {
+            var lines = SkillSheet.Describe(ch, skill, data, weapon);
+            var ev = ch.Evaluator.WithExtra(skill.Modifiers);
+            var portions = ConversionResolver.Apply(BaseDamage.Compute(skill, build.Level, weapon, ev, skill.Tags), skill.Conversions)
+                .Where(p => !skill.NullifiedDamageTypes.Contains(p.Type)).ToList();
+            foreach (var avg in lines.Where(l => l.Key.StartsWith("hit_avg_", StringComparison.Ordinal)
+                                                 && l.Key is not "hit_avg_total" and not "hit_avg_with_crit"))
+            {
+                var name = avg.Key["hit_avg_".Length..];
+                var pen = lines.SingleOrDefault(l => l.Key == "penetration_" + name)?.Value ?? 0;
+                var penFactor = Mitigation.ResistMultiplier(0, pen);
+                var expected = portions.Where(p => p.Type.ToString().ToLowerInvariant() == name).Sum(p =>
+                {
+                    var origins = p.Lineage.Where(t => t != p.Type).OrderBy(t => t).Select(t => t.ToString().ToLowerInvariant()).ToList();
+                    var key = origins.Count == 0 ? $"hit_mult_{name}" : $"hit_mult_{name}_from_{string.Join("_", origins)}";
+                    return (p.Min + p.Max) / 2 * Math.Max(0, Line(lines, key).Value) * penFactor;
+                });
+                Assert.Equal(expected, avg.Value, 6);
+                checkedLines++;
+            }
+        }
+        Assert.True(checkedLines > 0);
     }
 
     [Fact]

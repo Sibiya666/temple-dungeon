@@ -86,8 +86,7 @@ internal sealed class SkillRuntime
 
     public double CritChance(IConditionContext c, WeaponStub? weapon)
     {
-        var critBase = IsAttack && weapon != null ? weapon.CritChance : Skill.Base.CritChance;
-        return Math.Clamp(Character.Evaluator.Evaluate("crit_chance", Tags, c, critBase).Value, 0, 100);
+        return Math.Clamp(Character.Evaluator.Evaluate("crit_chance", Tags, c, SkillMath.CritChanceBase(Skill, weapon)).Value, 0, 100);
     }
 
     /// <summary>Expected distinct targets per use (spec 11.2), at least 1 and at most the pack size.</summary>

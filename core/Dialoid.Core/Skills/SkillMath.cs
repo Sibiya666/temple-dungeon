@@ -30,6 +30,10 @@ public static class SkillMath
         return skill.Base.CastTime / Math.Max(MinMultiplier, stat("cast_speed", 1));
     }
 
+    /// <summary>Base of the crit_chance stat: the weapon's crit chance for an attack with a weapon, else the skill's own.</summary>
+    public static double CritChanceBase(CompiledSkill skill, WeaponStub? weapon) =>
+        IsAttack(skill) && weapon != null ? weapon.CritChance : skill.Base.CritChance;
+
     /// <summary>Base cooldown / cooldown recovery; 0 for a skill without a cooldown.</summary>
     public static double Cooldown(CompiledSkill skill, Func<string, double, double> stat) =>
         skill.Base.Cooldown is > 0 and var cd ? cd / Math.Max(MinMultiplier, stat("cooldown_recovery", 1)) : 0;

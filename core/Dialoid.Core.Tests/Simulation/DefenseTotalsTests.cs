@@ -1,4 +1,7 @@
 using Dialoid.Core.Character;
+using Dialoid.Core.Combat;
+using Dialoid.Core.Effects;
+using Dialoid.Core.Simulation;
 using Dialoid.Core.Stats;
 using Dialoid.Core.Tests.Content;
 
@@ -22,6 +25,28 @@ public class DefenseTotalsTests
         Assert.True(d.LifeRegenerated >= 0);
         Assert.NotNull(r.DamageTaken);
         Assert.True(r.DamageTaken!.Values.Sum() <= d.IncomingBeforeMitigation.Values.Sum() + 1e-9);
+    }
+
+    [Fact]
+    public void Dodged_attacks_add_nothing_to_incoming_damage()
+    {
+        // Roll mode, fixed seed: this run dodges 2 of the boss's 9 attacks (the pyromancer has about 9.6% dodge).
+        var build = ContentHarness.LoadBuild("sorcerer_pyromancer_fireball");
+        var r = new Simulator(ContentHarness.Data, MechanicRegistry.Default).Run(build,
+            new SimConfig("attacking_boss", SimMode.Roll, Seed: 3, DummyAttacks: true));
+
+        var d = r.Defense!;
+        Assert.True(d.AttacksDodged > 0, "the seed should dodge at least once");
+        Assert.True(d.AttacksDodged < d.AttacksReceived);
+        Assert.Equal(r.Log.Count(e => e.Kind == "dodge"), d.AttacksDodged);
+
+        // The boss hit is constant, so incoming = landed attacks × one hit (gear-scaled) for every type.
+        var perHit = ContentHarness.Data.Dummies["attacking_boss"].Attack!.DamagePerHit;
+        var gear = Growth.Gear(build.Level);
+        var landed = d.AttacksReceived - d.AttacksDodged;
+        Assert.Equal(perHit.Keys.Where(t => perHit[t] > 0).OrderBy(t => t), d.IncomingBeforeMitigation.Keys);
+        foreach (var (type, raw) in perHit)
+            Assert.Equal(landed * raw * gear, d.IncomingBeforeMitigation[type], 6);
     }
 
     [Fact]

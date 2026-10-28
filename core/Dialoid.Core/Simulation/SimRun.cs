@@ -39,7 +39,7 @@ internal sealed class SimRun
     private readonly SortedDictionary<DamageType, double> _incoming = new();
     private double _mitigatedByArmor, _mitigatedByResist, _lifeRegenerated;
 
-    // Resource/life series for the result: time 0, every SampleIntervalSec of simulation time and the end of the run.
+    // Resource/life series for the result: time 0, the first step boundary at or after each SampleIntervalSec, and the end of the run.
     private const double SampleIntervalSec = 0.5;
     private readonly List<ResourceSample> _series = new();
     private double _nextSample = SampleIntervalSec;
