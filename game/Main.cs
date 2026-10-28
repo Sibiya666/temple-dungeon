@@ -13,6 +13,12 @@ public partial class Main : Control
     /// <summary>Environment variable that overrides the data directory search.</summary>
     public const string DataEnvVar = "DIALOID_DATA";
 
+    /// <summary>
+    /// Prefix of the log line printed when the data fails to load; tools/godot_check.sh looks for it
+    /// (exit code 3, or required with --expect-load-failure).
+    /// </summary>
+    public const string LoadFailedMarker = "DIALOID_LOAD_FAILED:";
+
     /// <summary>Class of the session created at start.</summary>
     public const string StartClassId = "warrior";
 
@@ -38,7 +44,7 @@ public partial class Main : Control
         {
             _errorLabel.Text = LoadError;
             _errorLabel.Visible = true;
-            GD.Print(LoadError);
+            GD.Print($"{LoadFailedMarker} {LoadError.ReplaceLineEndings(" | ")}");
         }
     }
 

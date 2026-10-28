@@ -85,16 +85,20 @@ brew install --cask godot-mono
 
 ```bash
 dotnet build game/Dialoid.Game.csproj
-"$GODOT" --path game
+"${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --path game
 ```
 
-Данные сцена ищет сама: ближайший `data/` с `classes.json` вверх от `game/`. Другой каталог данных задаётся переменной `DIALOID_DATA`. Если данные не найдены или не загрузились, сцена показывает ошибку и проверенные пути.
+Данные сцена ищет сама: ближайший `data/` с `classes.json` вверх от `game/`. Другой каталог данных задаётся переменной `DIALOID_DATA`. Если данные не найдены или не загрузились, сцена показывает ошибку и проверенные пути, а в лог пишет строку `DIALOID_LOAD_FAILED: <причина>`.
 
-Проверка сборки без окна (`dotnet build` → `godot --headless --import` → `godot --headless --quit`, каждый вызов Godot под таймаутом; `ERROR` в логе — код выхода 1):
+Проверка сборки без окна (`dotnet build` → `godot --headless --import` → `godot --headless --quit`, каждый шаг под лимитом времени):
 
 ```bash
 tools/godot_check.sh
+# проверка сцены без данных: ошибка загрузки обязательна, ERROR в логе — нет
+DIALOID_DATA=/nonexistent tools/godot_check.sh --expect-load-failure
 ```
+
+Коды выхода: 0 — всё в порядке; 1 — не прошла сборка или импорт, в логе Godot есть строка `ERROR:`/`SCRIPT ERROR:`, или с `--expect-load-failure` данные загрузились; 2 — Godot не найден; 3 — сцена не загрузила данные игры (строка `DIALOID_LOAD_FAILED:`); с `--selftest` — код самопроверки (он важнее проверок лога); 124 или 142 — шаг не уложился в лимит времени.
 
 `game/` не входит в `core/Dialoid.sln`: проект на Godot.NET.Sdk собирает этот скрипт.
 
