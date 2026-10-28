@@ -69,10 +69,39 @@ dotnet tools/BuildOptimizer/bin/Release/net8.0/BuildOptimizer.dll suite --all
 
 Пересборка эталонных билдов после изменения чисел: `tools/BuildOptimizer/rebuild_references.sh` (инструмент разработчика вне решения; запускать только последовательно, полная пересборка около 1,5 часа). После нее проверить diff в `data/builds/`, прогнать тесты и обновить метрики в `data/builds/README.md` (таблицы собраны из вывода `suite --all`).
 
+## Отладочная сцена
+
+Godot-проект `game/` — отладочная сцена (спека §13): тонкий слой отрисовки над `Dialoid.Sandbox`, правил игры в нём нет. Интерфейс строится кодом в `Main._Ready()`, вкладки: «Персонаж», «Пассивки», «Асцендант», «Скиллы», «Симуляция», «Разбор», «Билды».
+
+Нужен Godot 4.7 .NET (версия `Godot.NET.Sdk` в `game/Dialoid.Game.csproj` совпадает с редактором):
+
+```bash
+brew install --cask godot-mono
+```
+
+Если Godot стоит в другом месте, укажите путь к бинарю в переменной `GODOT` (по умолчанию `/Applications/Godot_mono.app/Contents/MacOS/Godot`, иначе `godot` из PATH).
+
+Запуск: открыть `game/project.godot` в редакторе Godot и нажать «Запустить» (F5) — или из корня репозитория:
+
+```bash
+dotnet build game/Dialoid.Game.csproj
+"$GODOT" --path game
+```
+
+Данные сцена ищет сама: ближайший `data/` с `classes.json` вверх от `game/`. Другой каталог данных задаётся переменной `DIALOID_DATA`. Если данные не найдены или не загрузились, сцена показывает ошибку и проверенные пути.
+
+Проверка сборки без окна (`dotnet build` → `godot --headless --import` → `godot --headless --quit`, каждый вызов Godot под таймаутом; `ERROR` в логе — код выхода 1):
+
+```bash
+tools/godot_check.sh
+```
+
+`game/` не входит в `core/Dialoid.sln`: проект на Godot.NET.Sdk собирает этот скрипт.
+
 ## Статус
 
 | План | Состояние |
 |------|-----------|
 | План 1: движок правил Dialoid.Core | выполнен |
 | План 2: контент и баланс | выполнен (открытые вопросы — `docs/superpowers/content-owner-questions.md`) |
-| План 3: Godot | впереди |
+| План 3: отладочная сцена Godot | в работе |
