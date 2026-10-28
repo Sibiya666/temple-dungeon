@@ -36,7 +36,7 @@ public static partial class BuildCodec
         build = null;
         try
         {
-            error = Parse(json, out var parsed);
+            error = Parse(json, out var parsed, plainJson: true);
             if (error == null) error = CheckIds(parsed!, data);
             if (error != null) return false;
             build = parsed;
@@ -45,7 +45,7 @@ public static partial class BuildCodec
         catch (Exception)
         {
             build = null;
-            error = "JSON билда повреждён: не удалось разобрать содержимое";
+            error = "JSON билда некорректен: не удалось разобрать содержимое";
             return false;
         }
     }
@@ -122,8 +122,9 @@ public static partial class BuildCodec
     }
 
     /// <summary>Deserializes build JSON and normalizes nulls; the error texts are shared by import codes and plain JSON.</summary>
-    private static string? Parse(string? json, out Build? build)
+    private static string? Parse(string? json, out Build? build, bool plainJson = false)
     {
+        var bad = plainJson ? "JSON билда некорректен" : "Код билда повреждён";
         build = null;
         if (string.IsNullOrWhiteSpace(json)) return "JSON билда пуст";
         try
@@ -132,9 +133,9 @@ public static partial class BuildCodec
         }
         catch (Exception e) when (e is JsonException or NotSupportedException or ArgumentException)
         {
-            return "Код билда повреждён: некорректный JSON билда";
+            return $"{bad}: разбор JSON не удался";
         }
-        if (build == null) return "Код билда повреждён: пустой JSON билда";
+        if (build == null) return $"{bad}: пустой JSON билда";
         build.ClassId ??= "";
         build.AscendancyNodes ??= new();
         build.PassiveNodes ??= new();
@@ -142,12 +143,12 @@ public static partial class BuildCodec
         build.Slots ??= new();
         build.ItemIds ??= new();
         build.Rotation ??= new();
-        if (build.Slots.Any(s => s == null)) { build = null; return "Код билда повреждён: пустой слот скилла"; }
+        if (build.Slots.Any(s => s == null)) { build = null; return $"{bad}: пустой слот скилла"; }
         foreach (var s in build.Slots) { s.SkillId ??= ""; s.NodePoints ??= new(); }
         var hasNull = build.PassiveNodes.Any(x => x == null) || build.AscendancyNodes.Any(x => x == null)
             || build.ItemIds.Any(x => x == null) || build.Rotation.Any(x => x == null)
             || build.Slots.Any(sl => sl.NodePoints.Keys.Any(k => k == null));
-        if (hasNull) { build = null; return "Код билда повреждён: пустое значение в списке id"; }
+        if (hasNull) { build = null; return $"{bad}: пустое значение в списке id"; }
         return null;
     }
 

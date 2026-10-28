@@ -77,6 +77,8 @@ public static class KeystoneBuild
                 parent[y] = x; q.Enqueue(y);
             }
         }
+        if (!parent.ContainsKey(target))
+            throw new InvalidOperationException($"Кистоун '{target}' недостижим из уже выбранных узлов при текущих запретах (--ban).");
         var path = new List<string>();
         for (string? c = target; c != null && !alloc.Contains(c); c = parent[c]) path.Add(c);
         path.Reverse();

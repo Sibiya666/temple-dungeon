@@ -297,7 +297,7 @@
 
 ### Как пересобрать эталоны
 
-Инструмент `tools/BuildOptimizer` лежит вне решения (`core/Dialoid.sln` его не собирает). Рецепты — `tools/BuildOptimizer/rebuild_references.sh`. Запускать только последовательно (шаги читают файлы друг друга); полная пересборка идет около 1,5 часа. После нее: проверить diff, прогнать тесты контента и `dotnet tools/BuildOptimizer/bin/Release/net8.0/BuildOptimizer.dll suite --all` (все метрики приемки одной таблицей).
+Инструмент `tools/BuildOptimizer` лежит вне решения (`core/Dialoid.sln` его не собирает). Рецепты — `tools/BuildOptimizer/rebuild_references.sh`. Запускать только последовательно (шаги читают файлы друг друга); полная пересборка идет ≈1,5–3 часа в зависимости от машины. После нее: проверить diff, прогнать тесты контента и `dotnet tools/BuildOptimizer/bin/Release/net8.0/BuildOptimizer.dll suite --all` (все метрики приемки одной таблицей).
 
 ## 10. Факты для баланса
 

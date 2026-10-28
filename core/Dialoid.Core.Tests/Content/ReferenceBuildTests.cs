@@ -441,6 +441,8 @@ public class ReferenceBuildTests
             Survival = ContentHarness.Survival(b).TimeToDeath ?? 0,
         };
 
+    // «Эффект» здесь — изменение скомпилированного отпечатка (Review Focus 4 плана): модификатор, чьи теги/условия
+    // никогда не совпадают, тест все равно проходит.
     [Fact]
     public void Every_skill_tree_node_has_an_effect()
     {
