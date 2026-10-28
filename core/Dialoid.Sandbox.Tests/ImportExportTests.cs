@@ -117,4 +117,62 @@ public class ImportExportTests
         Assert.True(s.Import(BuildCodec.ToJson(b)).Ok);
         Assert.NotEmpty(s.Violations);
     }
+
+    [Fact]
+    public void Foreign_ascendancy_below_unlock_level_is_refused()
+    {
+        var b = Sample().Build;
+        b.Level = 10;
+        b.AscendancyId = "pyromancer";
+        b.AscendancyNodes.Add("spread_ignite");
+        AssertImportRefused(BuildCodec.ToJson(b));
+
+        b.AscendancyId = "berserker";
+        b.AscendancyNodes.Clear();
+        b.AscendancyNodes.Add("spread_ignite"); // pyromancer's node under the warrior's ascendancy
+        AssertImportRefused(BuildCodec.ToJson(b));
+    }
+
+    [Fact]
+    public void Own_ascendancy_below_unlock_level_imports_with_violation()
+    {
+        var b = Sample().Build;
+        b.Level = 10;
+        b.AscendancyId = "berserker";
+        b.AscendancyNodes.Add("insatiable");
+        var s = SandboxSession.Create(TestData.Data, "warrior");
+        Assert.True(s.Import(BuildCodec.ToJson(b)).Ok);
+        Assert.Contains(s.Violations, v => v.Code == "ascendancy_locked");
+        Assert.NotNull(s.Compiled);
+    }
+
+    [Fact]
+    public void Skill_level_outside_native_cap_is_refused()
+    {
+        var b = Sample().Build;
+        b.Slots[0].Level = BuildRules.NativeSkillCap + 1;
+        AssertImportRefused(BuildCodec.ToJson(b));
+        b.Slots[0].Level = 0;
+        AssertImportRefused(BuildCodec.ToJson(b));
+    }
+
+    [Fact]
+    public void Slot_positions_survive_export_import_after_level_drop()
+    {
+        var s = SandboxSession.Create(TestData.Data, "warrior");
+        Assert.True(s.SetLevel(20).Ok);
+        Assert.True(s.SetSlotSkill(0, "cleave").Ok);
+        Assert.True(s.SetSlotSkill(4, "crush").Ok);
+        Assert.True(s.SetLevel(4).Ok);
+
+        Assert.Equal("cleave", s.GetSlot(0)!.SkillId);
+        Assert.Equal("crush", s.GetSlot(1)!.SkillId);
+        Assert.Null(s.GetSlot(4));
+        Assert.DoesNotContain(s.Violations, v => v.Code == "slot_locked");
+
+        var copy = SandboxSession.Create(TestData.Data, "sorcerer");
+        Assert.True(copy.Import(s.ExportCode()).Ok);
+        for (var i = 0; i < SandboxSession.SlotCount; i++)
+            Assert.Equal(s.GetSlot(i)?.SkillId, copy.GetSlot(i)?.SkillId);
+    }
 }

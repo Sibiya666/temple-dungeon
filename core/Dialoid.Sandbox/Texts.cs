@@ -48,9 +48,13 @@ internal static class Texts
     public static string UnknownItem(string id) => $"Неизвестный предмет «{id}»";
     public static string ItemSkillSlotted(string itemName, string skillName) =>
         $"Нельзя снять «{itemName}»: выданный им скилл «{skillName}» стоит в слоте";
+    public static string RotationEmptyId => "В ротации пустой id скилла";
     public static string RotationSkillNotSlotted(string name) => $"Скилла «{name}» нет в слотах, его нельзя поставить в ротацию";
 
     public static string ImportRefused(string reasons) => $"Билд не загружен: {reasons}";
+    public static string ImportUnparsed => "Билд не загружен: текст не удалось разобрать ни как код DLD1, ни как JSON билда";
+    public static string ImportSkillLevel(string skillName, int level, int max) =>
+        $"Билд не загружен: уровень скилла «{skillName}» {level} вне диапазона 1–{max}";
     public static string ImportTooManySlots(int count, int max) => $"Билд не загружен: слотов скиллов {count}, а всего их {max}";
 
     public static string ReferenceUnreadable(string title, string reason) => $"Не удалось прочитать эталон «{title}»: {reason}";

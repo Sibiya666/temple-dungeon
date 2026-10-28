@@ -249,4 +249,83 @@ public class SessionSkillTests
         if (s.Violations is IList<RuleViolation> list && !list.IsReadOnly) list.Clear();
         Assert.NotEmpty(s.Violations);
     }
+
+    [Fact]
+    public void Clear_then_undo_then_undo_empties_the_slot_again()
+    {
+        var s = NewSorcerer();
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.True(s.SetSkillLevel(0, 5).Ok);
+        Assert.True(s.SetSlotSkill(0, null).Ok);
+
+        Assert.True(s.UndoSlot(0).Ok);
+        Assert.Equal("fireball", s.GetSlot(0)!.SkillId);
+        Assert.Equal(5, s.GetSlot(0)!.Level);
+
+        var rev = s.Revision;
+        var fired = 0;
+        s.Changed += () => fired++;
+        Assert.True(s.UndoSlot(0).Ok);
+        Assert.Null(s.GetSlot(0));
+        Assert.Empty(s.Build.Slots);
+        Assert.Equal(rev + 1, s.Revision);
+        Assert.Equal(1, fired);
+    }
+
+    [Fact]
+    public void Edits_after_undo_do_not_change_undo_memory()
+    {
+        var s = NewSorcerer();
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.True(s.SetSkillLevel(0, 5).Ok);
+        Assert.True(s.SetSlotSkill(0, "spark").Ok);
+        Assert.True(s.UndoSlot(0).Ok); // fireball back, spark remembered
+        Assert.True(s.SetSkillLevel(0, 9).Ok);
+        Assert.True(s.AddSkillNodePoint(0, "heat").Ok);
+
+        Assert.True(s.UndoSlot(0).Ok); // spark back, fireball (level 9, heat 1) remembered
+        Assert.Equal("spark", s.GetSlot(0)!.SkillId);
+        Assert.True(s.UndoSlot(0).Ok);
+        Assert.Equal(9, s.GetSlot(0)!.Level);
+        Assert.Equal(new Dictionary<string, int> { ["heat"] = 1 }, s.GetSlot(0)!.NodePoints);
+
+        // Editing the live slot leaves the remembered spark untouched, and vice versa.
+        Assert.True(s.SetSlotSkill(0, "ice_lance").Ok);
+        Assert.True(s.SetSkillLevel(0, 3).Ok);
+        Assert.True(s.UndoSlot(0).Ok);
+        Assert.Equal("fireball", s.GetSlot(0)!.SkillId);
+        Assert.Equal(9, s.GetSlot(0)!.Level);
+    }
+
+    [Fact]
+    public void Level_drop_compacts_slots_and_keeps_undo_with_them()
+    {
+        var s = NewSorcerer(level: 20);
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.True(s.SetSlotSkill(2, "spark").Ok);
+        Assert.True(s.SetSlotSkill(4, "ice_lance").Ok);
+        Assert.True(s.SetSlotSkill(4, "meteor").Ok);
+
+        Assert.True(s.SetLevel(4).Ok);
+        Assert.Equal(new[] { "fireball", "spark", "meteor" },
+            Enumerable.Range(0, 3).Select(i => s.GetSlot(i)!.SkillId));
+        Assert.Null(s.GetSlot(4));
+        Assert.Contains(s.Violations, v => v.Code == "slot_locked"); // 3 skills, 2 open slots
+
+        Assert.True(s.SetLevel(20).Ok);
+        Assert.True(s.UndoSlot(2).Ok); // meteor's undo moved with it
+        Assert.Equal("ice_lance", s.GetSlot(2)!.SkillId);
+        var rev = s.Revision;
+        AssertRefused(s, s.UndoSlot(4), rev);
+    }
+
+    [Fact]
+    public void Rotation_with_null_id_is_refused()
+    {
+        var s = NewSorcerer();
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        var rev = s.Revision;
+        AssertRefused(s, s.SetRotation(new[] { "fireball", null! }), rev);
+        AssertRefused(s, s.SetRotation(new string[] { null! }), rev);
+    }
 }

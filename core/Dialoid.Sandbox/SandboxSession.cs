@@ -19,21 +19,21 @@ namespace Dialoid.Sandbox;
 public sealed class SandboxSession
 {
     /// <summary>
-    /// Violation codes the session's own commands never produce (unknown or impossible state). An imported build with any
-    /// of them is refused; budget and level violations (which lowering the level also produces) are accepted and shown.
+    /// BuildRules violation codes an imported build may carry: the over-budget and level states the session's own commands
+    /// also reach (lowering the level, switching weapons). Any other code refuses the import, so a new Core code blocks
+    /// until it is reviewed and listed here.
     /// </summary>
-    private static readonly HashSet<string> ImportBlockingCodes = new()
+    private static readonly HashSet<string> ImportAcceptedCodes = new()
     {
-        "level_out_of_range", "unknown_class", "duplicate_passive_node", "unknown_passive_node", "start_node_in_build",
-        "attribute_choice_missing", "passive_disconnected", "unknown_ascendancy_node", "ascendancy_wrong_class",
-        "unknown_weapon", "unknown_item", "duplicate_skill_in_slots", "skill_not_available", "unknown_skill_node",
-        "skill_node_over_max", "skill_node_requirement_unmet", "exclusive_group_violation", "rotation_unknown_skill",
+        "too_many_passive_points", "too_many_ascendancy_points", "too_many_skill_points", "ascendancy_locked",
+        "slot_locked", "skill_locked_by_level", "skill_level_above_cap", "weapon_type_mismatch",
     };
 
     private readonly Build _build;
     private readonly CharacterCompiler _compiler;
     private readonly SkillSlot?[] _slots = new SkillSlot?[SlotCount];
-    private readonly SkillSlot?[] _undo = new SkillSlot?[SlotCount];
+    private readonly SkillSlot?[] _undo = new SkillSlot?[SlotCount]; // copies; null with _hasUndo = "the slot was empty"
+    private readonly bool[] _hasUndo = new bool[SlotCount];
     private Derived? _derived;
 
     /// <summary>Number of skill slots at the maximum level.</summary>
@@ -82,16 +82,21 @@ public sealed class SandboxSession
         _build.AscendancyId = null;
         _build.AscendancyNodes.Clear();
         Array.Clear(_slots);
-        Array.Clear(_undo);
+        ClearUndo();
         _build.Rotation.Clear();
         return Commit();
     }
 
-    /// <summary>Level 1..MaxLevel. Taken nodes stay; spare spending shows up as violations.</summary>
+    /// <summary>
+    /// Level 1..MaxLevel. Taken nodes stay; spare spending shows up as violations. Lowering the level moves the filled
+    /// skill slots to the first positions (with their undo memory), so slot positions match the exported build and
+    /// BuildRules' slot_locked fires exactly when more skills are slotted than the level opens.
+    /// </summary>
     public CommandResult SetLevel(int level)
     {
         if (level < 1 || level > BuildRules.MaxLevel) return CommandResult.Fail(Texts.LevelOutOfRange(level, BuildRules.MaxLevel));
         if (level == _build.Level) return CommandResult.Success;
+        if (level < _build.Level) CompactSlots();
         _build.Level = level;
         return Commit();
     }
@@ -156,7 +161,8 @@ public sealed class SandboxSession
     /// Puts a skill into an open slot (null empties the slot). The replaced skill is remembered with its level and nodes for
     /// <see cref="UndoSlot"/>. A new skill starts at the highest level its cap and the character level allow, with no nodes.
     /// Refused for a slot closed by the level, an unknown or already slotted skill, or a skill that is neither the class's
-    /// nor granted by an equipped item.
+    /// nor granted by an equipped item. A class skill below its unlock level is accepted and shown as the
+    /// skill_locked_by_level violation (the same over-budget policy as passives).
     /// </summary>
     public CommandResult SetSlotSkill(int slot, string? skillId)
     {
@@ -176,15 +182,23 @@ public sealed class SandboxSession
         return Commit();
     }
 
-    /// <summary>Brings back the skill last taken out of the slot; the skill it replaces becomes the new undo.</summary>
+    /// <summary>
+    /// Brings back what the slot held before its last change (a skill with its level and nodes, or emptiness); what it
+    /// replaces becomes the new undo, so a second undo redoes.
+    /// </summary>
     public CommandResult UndoSlot(int slot)
     {
         if (!ValidSlot(slot)) return CommandResult.Fail(Texts.SlotOutOfRange(slot, SlotCount));
-        if (_undo[slot] is not { } previous) return CommandResult.Fail(Texts.NothingToUndo(slot));
-        if (slot >= SlotsOpen) return CommandResult.Fail(Texts.SlotLocked(slot, _build.Level, SlotsOpen));
-        if (!Data.Skills.TryGetValue(previous.SkillId, out var skill)) return CommandResult.Fail(Texts.UnknownSkill(previous.SkillId));
-        if (CheckSlottable(slot, skill) is { } refusal) return refusal;
-        Replace(slot, previous);
+        if (!_hasUndo[slot]) return CommandResult.Fail(Texts.NothingToUndo(slot));
+        var previous = _undo[slot];
+        if (previous != null)
+        {
+            if (slot >= SlotsOpen) return CommandResult.Fail(Texts.SlotLocked(slot, _build.Level, SlotsOpen));
+            if (!Data.Skills.TryGetValue(previous.SkillId, out var skill)) return CommandResult.Fail(Texts.UnknownSkill(previous.SkillId));
+            if (CheckSlottable(slot, skill) is { } refusal) return refusal;
+        }
+        else if (_slots[slot] == null) return CommandResult.Fail(Texts.NothingToUndo(slot));
+        Replace(slot, previous == null ? null : Copy(previous));
         return Commit();
     }
 
@@ -274,8 +288,9 @@ public sealed class SandboxSession
     /// <summary>Replaces the rotation (cast priority order). Every skill must be in a slot.</summary>
     public CommandResult SetRotation(IReadOnlyList<string> skillIds)
     {
+        if (skillIds == null || skillIds.Any(id => id == null)) return CommandResult.Fail(Texts.RotationEmptyId);
         var slotted = Filled().Select(s => s.SkillId).ToHashSet();
-        if (skillIds.FirstOrDefault(id => id == null || !slotted.Contains(id)) is { } missing)
+        if (skillIds.FirstOrDefault(id => !slotted.Contains(id)) is { } missing)
             return CommandResult.Fail(Texts.RotationSkillNotSlotted(SkillName(missing)));
         if (skillIds.SequenceEqual(_build.Rotation)) return CommandResult.Success;
         _build.Rotation.Clear();
@@ -288,7 +303,8 @@ public sealed class SandboxSession
 
     /// <summary>
     /// Replaces the build with a share code ("DLD1:...") or build JSON. Refused (build and Revision unchanged) when the text
-    /// does not parse, names unknown ids, or holds a state the session's commands cannot make (see ImportBlockingCodes).
+    /// does not parse, names unknown ids, or holds a state the session's commands cannot make (any BuildRules violation not
+    /// in ImportAcceptedCodes, skill levels outside 1..NativeSkillCap, more slots than SlotCount).
     /// Undo memory of the slots is dropped.
     /// </summary>
     public CommandResult Import(string text)
@@ -300,12 +316,19 @@ public sealed class SandboxSession
         bool ok = trimmed.StartsWith('{')
             ? BuildCodec.TryFromJson(text, Data, out parsed, out error)
             : BuildCodec.TryImport(text, Data, out parsed, out error);
-        if (!ok || parsed == null) return CommandResult.Fail(error ?? Texts.ImportRefused(""));
+        if (!ok || parsed == null) return CommandResult.Fail(error ?? Texts.ImportUnparsed);
 
         var build = BuildRules.Normalized(parsed);
         if (build.Slots.Count > SlotCount) return CommandResult.Fail(Texts.ImportTooManySlots(build.Slots.Count, SlotCount));
-        var blocking = BuildRules.Validate(build, Data).Where(v => ImportBlockingCodes.Contains(v.Code)).ToList();
-        if (blocking.Count > 0) return CommandResult.Fail(Texts.ImportRefused(string.Join("; ", blocking.Select(v => v.Message))));
+        if (build.Slots.FirstOrDefault(s => s.Level < 1 || s.Level > BuildRules.NativeSkillCap) is { } badLevel)
+            return CommandResult.Fail(Texts.ImportSkillLevel(SkillName(badLevel.SkillId), badLevel.Level, BuildRules.NativeSkillCap));
+
+        // BuildRules skips the ascendancy class/node checks below the unlock level, so validate a copy raised to it too.
+        var raised = BuildRules.Normalized(build);
+        raised.Level = Math.Max(raised.Level, BuildRules.AscendancyUnlockLevel);
+        var blocking = BuildRules.Validate(build, Data).Concat(BuildRules.Validate(raised, Data))
+            .Where(v => !ImportAcceptedCodes.Contains(v.Code)).Select(v => v.Message).Distinct().ToList();
+        if (blocking.Count > 0) return CommandResult.Fail(Texts.ImportRefused(string.Join("; ", blocking)));
 
         _build.ClassId = build.ClassId;
         _build.Level = build.Level;
@@ -317,7 +340,7 @@ public sealed class SandboxSession
         _build.ItemIds = build.ItemIds;
         _build.Rotation = build.Rotation;
         Array.Clear(_slots);
-        Array.Clear(_undo);
+        ClearUndo();
         for (int i = 0; i < build.Slots.Count; i++) _slots[i] = build.Slots[i];
         return Commit();
     }
@@ -391,13 +414,40 @@ public sealed class SandboxSession
     private static string NodeName(SkillDefinition skill, string nodeId) =>
         skill.Tree.FirstOrDefault(n => n.Id == nodeId)?.Name ?? nodeId;
 
-    /// <summary>Puts a slot value in, remembers the old one for undo and drops a removed skill from the rotation.</summary>
+    /// <summary>Puts a slot value in, remembers a copy of the old one (null: was empty) for undo, drops a removed skill from the rotation.</summary>
     private void Replace(int slot, SkillSlot? value)
     {
         var old = _slots[slot];
-        if (old != null) _undo[slot] = old;
+        _undo[slot] = old == null ? null : Copy(old);
+        _hasUndo[slot] = true;
         _slots[slot] = value;
         if (old != null && Filled().All(s => s.SkillId != old.SkillId)) _build.Rotation.RemoveAll(id => id == old.SkillId);
+    }
+
+    private void ClearUndo()
+    {
+        Array.Clear(_undo);
+        Array.Clear(_hasUndo);
+    }
+
+    /// <summary>Moves filled slots to positions 0..n-1 in order; each keeps its undo memory, empty positions lose theirs.</summary>
+    private void CompactSlots()
+    {
+        var slots = new SkillSlot?[SlotCount];
+        var undo = new SkillSlot?[SlotCount];
+        var hasUndo = new bool[SlotCount];
+        int k = 0;
+        for (int i = 0; i < SlotCount; i++)
+        {
+            if (_slots[i] == null) continue;
+            slots[k] = _slots[i];
+            undo[k] = _undo[i];
+            hasUndo[k] = _hasUndo[i];
+            k++;
+        }
+        Array.Copy(slots, _slots, SlotCount);
+        Array.Copy(undo, _undo, SlotCount);
+        Array.Copy(hasUndo, _hasUndo, SlotCount);
     }
 
     /// <summary>Refusal for putting the skill into the slot: duplicate in another slot, or not available to the build.</summary>
