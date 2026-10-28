@@ -25,6 +25,10 @@ public sealed class SimulationRunner
         _simulator = new Simulator(s.Data, MechanicRegistry.Default);
     }
 
+    /// <summary>
+    /// Starts a run on the thread pool. The token only cancels a run that has not started yet; it does not interrupt a
+    /// simulation that is already running (Simulator.Run has no cancellation hook).
+    /// </summary>
     public Task<SimOutcome> RunAsync(SimRequest r, CancellationToken ct = default)
     {
         var build = _session.Build;

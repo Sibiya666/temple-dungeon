@@ -130,7 +130,7 @@ internal static class Texts
     }
 
     public static string Base => "База";
-    public static string FlatHeader => "Плюс (Flat)";
+    public static string FlatHeader => "Плюс";
     public static string IncreasedHeader(string sum) => $"Увеличение: {sum}%";
     public static string MoreLine(string mult, string source) => $"Больше: ×{mult} — {source}";
     public static string LessLine(string mult, string source) => $"Меньше: ×{mult} — {source}";

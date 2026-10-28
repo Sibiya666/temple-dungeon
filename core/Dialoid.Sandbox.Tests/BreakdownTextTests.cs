@@ -29,9 +29,9 @@ public class BreakdownTextTests
         Assert.True(Idx("Рост") > Idx("Увеличение"));
         Assert.True(Idx("Больше") > Idx("Рост"));
         Assert.True(Idx("Бонус") > 0);
-        Assert.True(Idx("Меньше: ×0,9") > Idx("Больше"));
-        Assert.Contains("+20,0%", lines[Idx("Рост")]);
-        Assert.Contains("×1,5", lines[Idx("Больше")]);
+        Assert.True(Idx("Меньше: ×0,9 (−10%)") > Idx("Больше"));
+        Assert.Contains("+20%", lines[Idx("Рост")]);
+        Assert.Contains("×1,5 (+50%)", lines[Idx("Больше")]);
         Assert.Contains("178,2", lines[^1]);
         Assert.StartsWith("Итог", lines[^1]);
     }
@@ -42,7 +42,7 @@ public class BreakdownTextTests
         var ov = new BreakdownLine(Src("Ключ"), ModKind.Override, 75);
         var r = new StatResult("dodge_chance", 0, 120, 75, Array.Empty<BreakdownLine>(), ov);
         var lines = BreakdownText.Lines(r);
-        Assert.Contains(lines, l => l.StartsWith("Переопределение") && l.Contains("Ключ") && l.Contains("75,0"));
+        Assert.Contains(lines, l => l.StartsWith("Переопределение") && l.Contains("Ключ") && l.Contains("75"));
         Assert.Contains("120,0 → 75,0", lines[^1]);
 
         var capped = new StatResult("resist_fire", 0, 90, 75, new[] { new BreakdownLine(Src("Огонь"), ModKind.Flat, 90) }, null);
@@ -68,5 +68,46 @@ public class BreakdownTextTests
         Assert.Equal("12,5", BreakdownText.Number(12.5));
         Assert.Equal("1235", BreakdownText.Whole(1234.6));
         Assert.Equal("3,0", BreakdownText.Seconds(3));
+    }
+
+    [Fact]
+    public void More_factor_keeps_precision_so_factors_multiply_to_total()
+    {
+        var r = new StatResult("damage", 100, 0, 0, new[]
+        {
+            new BreakdownLine(Src("Малый"), ModKind.More, 5),
+            new BreakdownLine(Src("Средний"), ModKind.More, 15),
+        }, null);
+        var lines = BreakdownText.Lines(r);
+        Assert.Contains(lines, l => l.Contains("×1,05 (+5%)") && l.Contains("Малый"));
+        Assert.Contains(lines, l => l.Contains("×1,15 (+15%)") && l.Contains("Средний"));
+    }
+
+    [Fact]
+    public void Small_flat_and_increased_parts_are_shown_exactly()
+    {
+        var r = new StatResult("life", 10, 0, 0, new[]
+        {
+            new BreakdownLine(Src("А"), ModKind.Flat, 0.25),
+            new BreakdownLine(Src("Б"), ModKind.Flat, 0.25),
+            new BreakdownLine(Src("В"), ModKind.Increased, 0.25),
+            new BreakdownLine(Src("Г"), ModKind.Increased, 0.25),
+        }, null);
+        var lines = BreakdownText.Lines(r);
+        Assert.Contains("Плюс: +0,5", lines.Single(l => l.StartsWith("Плюс")));
+        Assert.Contains(lines, l => l.Contains("+0,25 — А"));
+        Assert.Contains("Увеличение: +0,5%", lines.Single(l => l.StartsWith("Увеличение")));
+        Assert.Contains(lines, l => l.Contains("+0,25% — Г"));
+    }
+
+    [Fact]
+    public void Negative_values_use_unicode_minus_and_no_negative_zero()
+    {
+        Assert.Equal("\u22122,5", BreakdownText.Number(-2.5));
+        Assert.Equal("\u22123", BreakdownText.Whole(-3));
+        Assert.Equal("0,0", BreakdownText.Number(-0.04));
+        Assert.Equal("0", BreakdownText.Whole(-0.2));
+        var r = new StatResult("x", 0, -5, 0, Array.Empty<BreakdownLine>(), null);
+        Assert.Contains("\u22125,0 → 0,0", BreakdownText.Lines(r)[^1]);
     }
 }

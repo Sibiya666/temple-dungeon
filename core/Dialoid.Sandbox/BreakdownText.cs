@@ -9,8 +9,6 @@ namespace Dialoid.Sandbox;
 /// </summary>
 public static class BreakdownText
 {
-    private static readonly CultureInfo Fmt = new("ru-RU");
-
     /// <summary>Russian title of a stat id; unknown ids are returned as is.</summary>
     public static string Title(string statId) => Texts.StatTitle(statId);
 
@@ -26,21 +24,35 @@ public static class BreakdownText
     /// <summary>The dummy's name from the data; unknown ids are returned as is.</summary>
     public static string DummyName(Dialoid.Core.Data.GameData data, string id) => Texts.DummyName(data, id);
 
-    /// <summary>One decimal, Russian comma (0,5; 12,0).</summary>
-    public static string Number(double v) => FormatFixed(v, 1);
+    /// <summary>One decimal, Russian comma (0,5; 12,0); a negative value uses the Unicode minus.</summary>
+    public static string Number(double v) => Format(v, "0.0");
 
     /// <summary>A damage or DPS figure: an integer.</summary>
-    public static string Whole(double v) => Math.Round(v, MidpointRounding.AwayFromZero).ToString("0", Fmt);
+    public static string Whole(double v) => Format(Math.Round(v, MidpointRounding.AwayFromZero), "0");
 
     /// <summary>Seconds with one decimal.</summary>
-    public static string Seconds(double v) => FormatFixed(v, 1);
+    public static string Seconds(double v) => Format(v, "0.0");
 
-    private static string FormatFixed(double v, int decimals) =>
-        v.ToString("0." + new string('0', decimals), CultureInfo.InvariantCulture).Replace('.', ',');
+    /// <summary>Breakdown contribution: up to two decimals, trailing zeros trimmed (0,25; 12; 1,5).</summary>
+    public static string Part(double v) => Format(v, "0.##");
+
+    /// <summary>More/Less factor: up to three decimals, trailing zeros trimmed (1,05; 0,9).</summary>
+    public static string Factor(double v) => Format(v, "0.###");
+
+    private static string Format(double v, string pattern)
+    {
+        var text = v.ToString(pattern, CultureInfo.InvariantCulture);
+        if (text.StartsWith('-'))
+        {
+            var body = text[1..];
+            text = body.Trim('0', '.').Length == 0 ? body : "\u2212" + body; // "-0,0" becomes "0,0"
+        }
+        return text.Replace('.', ',');
+    }
 
     public static IReadOnlyList<string> Lines(StatResult r)
     {
-        var lines = new List<string> { $"{Texts.Base}: {Number(r.Base)}" };
+        var lines = new List<string> { $"{Texts.Base}: {Part(r.Base)}" };
 
         var flat = r.Lines.Where(l => l.Kind == ModKind.Flat).ToList();
         if (flat.Count > 0)
@@ -58,15 +70,19 @@ public static class BreakdownText
 
         foreach (var l in r.Lines.Where(l => l.Kind == ModKind.More))
         {
-            var mult = Number(1 + l.Value / 100);
+            var mult = $"{Factor(1 + l.Value / 100)} ({Signed(l.Value)}%)";
             lines.Add(l.Value < 0 ? Texts.LessLine(mult, l.Source.Name) : Texts.MoreLine(mult, l.Source.Name));
         }
 
-        if (r.AppliedOverride is { } o) lines.Add(Texts.OverrideLine(Number(o.Value), o.Source.Name));
+        if (r.AppliedOverride is { } o) lines.Add(Texts.OverrideLine(Part(o.Value), o.Source.Name));
 
         lines.Add(Texts.Total(Number(r.Uncapped), Number(r.Value)));
         return lines;
     }
 
-    private static string Signed(double v) => (v >= 0 ? "+" : "−") + Number(Math.Abs(v));
+    private static string Signed(double v)
+    {
+        var t = Part(v);
+        return t.StartsWith('\u2212') || t == "0" ? t : "+" + t;
+    }
 }
