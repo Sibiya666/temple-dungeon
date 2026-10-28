@@ -64,13 +64,25 @@
 - Task 16c: minor (deferred): ailment_swap ignores character-pool ignite mods and drops Flat/Override ignite damage mods (designer call — question for owner); proc-copy SkillPhase passes SlottedSkills empty; proc copies inside OnHit inherit outer HitTarget for crit/coverage; ForceAilment returns true when Land refuses; fire_armor classifies zone by fire tag/GroundDamageType only; spread_ignite state keyed per skill when scoped (latent); SoulHeat counter relies on OnUse first
 - Task 17: minor (deferred): dead k==null node-points check; null-element tests don't isolate explicit checks from catch-all; catch-all swallows OOM (by design)
 
-## Для плана 2
+## Для плана 2 (состояние после плана 2, ветка feat/content-balance)
 
-- Сделать обязательными каталоги classes/passives/ascendancies/skills/weapons/items/dummies/progression/attributes (сейчас необязательны).
-- Добавить data/attributes.json — без него реальные данные не дают бонусов атрибутов.
-- Тест: загрузить data/ и просимулировать по билду на класс в обоих режимах.
-- Механики static_charge, reckless, blood_feast и др. — только scope Global (валидатор это проверяет).
-- Вопрос владельцу: ailment_swap переносит только модификаторы поджога самого скилла, не глобальные из пассивок.
+- [ ] Сделать обязательными каталоги classes/passives/ascendancies/skills/weapons/items/dummies/progression/attributes — **не сделано**: загрузчик по-прежнему считает их необязательными (обязательны только stats, tags, ailments); реальные данные при этом заполнены полностью, это защитная проверка на будущее.
+- [x] Добавить data/attributes.json — закрыто в плане 2, задача 2 (атрибуты, оружие, манекены; коммит 784955c).
+- [x] Тест: загрузить data/ и просимулировать по билду на класс в обоих режимах — закрыто: `ReferenceBuildTests` и `BalanceAcceptanceTests` (задачи 9–10), шесть основных эталонов и `data/builds/parity/`.
+- [x] Механики static_charge, reckless, blood_feast и др. — только scope Global — закрыто: данные соблюдают правило, валидатор проверяет, `AscendancyContentTests` страхует (задачи 7–8).
+- [x] Вопрос владельцу про ailment_swap — закрыт как вопрос: собран в `docs/superpowers/content-owner-questions.md` (вопрос 5); решение по умолчанию — не переносить.
+
+## Хвосты плана 1, закрытые планом 2
+
+- Task 5, tiny fixture и stats: `resist_*` Max 100 — в `data/stats.json` уже 100 (план 1).
+- Task 16b, «spec follow-up: blood_feast/ground_type» — описаны в README «Дополнения движка к спецификации» (план 1).
+- Task 16b: «static_charge/reckless/blood_feast корректны только с Global» — закрыто контентом: данные держат их в Global (задача 8), валидатор отклоняет иное.
+- Task 16c: механика `ashes` усиливает и поджог (единственное изменение ядра плана 2; задача 8), покрыта тестом механики.
+- Task 9: «tiny fixture lacks stats» — стат-синхронизация делается тестами загрузки реальных данных; новые поля JSON-каталогов проверяются строго (коммит e456c13: неизвестные поля — ошибка загрузки).
+- Билд как JSON: `BuildCodec.ToJson/TryFromJson` (e456c13) — нужны файлам `data/builds/`.
+- Task 16c: `ailment_swap` и глобальные модификаторы поджога — вынесено в вопросы владельцу (вопрос 5); код не менялся.
+
+Остальные minor-пункты выше **не закрыты** (по умолчанию переходят в план 3 или отменены контентом, если не названы здесь).
 
 ## Для плана 3 (первая задача)
 

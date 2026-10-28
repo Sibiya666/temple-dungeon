@@ -1,11 +1,14 @@
 # Dialoid
 
-Диаблоид (ARPG в духе Diablo/PoE2/Last Epoch). Сейчас в репозитории только `Dialoid.Core` — чистая C#-библиотека правил игры без Godot.
+Диаблоид (ARPG в духе Diablo/PoE2/Last Epoch). Сейчас в репозитории `Dialoid.Core` — чистая C#-библиотека правил игры без Godot, — и контент в `data/`.
 
 ## Документы
 
 - Спецификация: [docs/superpowers/specs/2026-10-25-dialoid-core-systems-design.md](docs/superpowers/specs/2026-10-25-dialoid-core-systems-design.md)
 - План 1 (движок правил): [docs/superpowers/plans/2026-10-25-dialoid-core-engine.md](docs/superpowers/plans/2026-10-25-dialoid-core-engine.md)
+- Справочник автора данных: [docs/data-authoring-reference.md](docs/data-authoring-reference.md)
+- Вопросы владельцу по контенту и балансу: [docs/superpowers/content-owner-questions.md](docs/superpowers/content-owner-questions.md)
+- Журнал баланса: [data/BALANCE_NOTES.md](data/BALANCE_NOTES.md)
 
 ## Ядро: как запустить тесты
 
@@ -41,10 +44,35 @@ dotnet test core/Dialoid.sln
 - песочное правило `spread_ignite`: в паке поджог, наложенный использованием, через `delay` (1 с) считается наложенным на все живые цели пака, которых он не достал (позиций в песочнице нет, поэтому «передача соседям при смерти» не моделируется);
 - песочное правило `fire_armor`: если в слотах есть скилл, создающий горящую землю (`ground_duration` и `ground_fraction` > 0, огненная зона), персонаж получает +30% брони (Increased) и +10 к максимуму сопротивления огню.
 
+## Контент
+
+Что есть в `data/`:
+
+- два класса (Воитель, Чародей), по шесть скиллов с деревьями развилок, один скилл из лута (Ядовитый туман);
+- пассивное дерево и 6 keystones, четыре асцендента (Берсерк, Громовержец, Пироман, Криомант) по 6 notables;
+- атрибуты, оружие, предметы, манекены («Тренировочный», «Рой», «Босс», «Атакующий босс»);
+- эталонные билды в `data/builds/` (шесть основных 60 уровня, версии 20 уровня, паритет, пары для keystones; сводка с метриками — `data/builds/README.md`).
+
+Как добавить контент: всё, что собирается из существующих эффектов, условий и механик, добавляется только JSON-файлами в `data/`, без правок C#. Формат каждого каталога, список стат, тегов и механик — в [справочнике автора данных](docs/data-authoring-reference.md). Загрузчик строгий: неизвестное поле или ссылка на несуществующий id — ошибка загрузки на русском (файл, id, причина). Каждое отклонение от числа спеки записывается в `data/BALANCE_NOTES.md`.
+
+Тесты контента и баланса (`core/Dialoid.Core.Tests/Content/`):
+
+```bash
+# все тесты, включая приемку баланса (режим Average)
+dotnet test core/Dialoid.sln
+# только контент и баланс
+dotnet test core/Dialoid.Core.Tests --filter "FullyQualifiedName~Dialoid.Core.Tests.Content"
+# все метрики приемки одной таблицей
+dotnet build tools/BuildOptimizer -c Release
+dotnet tools/BuildOptimizer/bin/Release/net8.0/BuildOptimizer.dll suite --all
+```
+
+Пересборка эталонных билдов после изменения чисел: `tools/BuildOptimizer/rebuild_references.sh` (инструмент разработчика вне решения; запускать только последовательно, полная пересборка около 1,5 часа). После нее проверить diff в `data/builds/`, прогнать тесты и обновить метрики в `data/builds/README.md` (таблицы собраны из вывода `suite --all`).
+
 ## Статус
 
 | План | Состояние |
 |------|-----------|
 | План 1: движок правил Dialoid.Core | выполнен |
-| План 2: контент и баланс | впереди |
+| План 2: контент и баланс | выполнен (открытые вопросы — `docs/superpowers/content-owner-questions.md`) |
 | План 3: Godot | впереди |
