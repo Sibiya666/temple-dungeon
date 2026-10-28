@@ -164,12 +164,12 @@ public class ReferenceBuildTests
     /// <summary>
     /// Off-theme notables a hybrid reference takes as fillers, exempt from the floor below. Each class has two ascendancies and
     /// neither supports a lightning Sorcerer or a fire Warrior (owner questions, BALANCE_NOTES): <c>sorcerer_spark_hybrid</c> is a
-    /// lightning build on the Cryomancer, so the Cryomancer's lance and freeze notables (Ледник, Ледяная броня) pay little in it.
-    /// Every other taken notable of every reference must pass.
+    /// lightning build on the Cryomancer, so the Cryomancer's lance trail (Ледник) pays little in it (Ледяная броня does pass
+    /// there, +11.4% damage taken without it, and stays checked). Every other taken notable of every reference must pass.
     /// </summary>
     private static readonly Dictionary<string, string[]> OffThemeNotables = new()
     {
-        ["sorcerer_spark_hybrid"] = new[] { "glacier", "ice_armor" },
+        ["sorcerer_spark_hybrid"] = new[] { "glacier" },
     };
 
     /// <summary>Window of the continuous survival metric: 20 s, the lower end of the survival corridor of spec 11.1.</summary>

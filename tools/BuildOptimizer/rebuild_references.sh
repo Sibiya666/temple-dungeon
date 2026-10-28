@@ -60,7 +60,7 @@ ref sorcerer_pyromancer_fireball --asc pyromancer --skill "fireball^1.25" --type
 ref sorcerer_cryomancer_ice_lance --asc cryomancer --skill "ice_lance^1.3" --type "cold>=0.7" --ban "$BAN_COLD_S"
 # «Грозовой Криомант»: lightning ≥ 60% (was 75% in Task 9): at 75% Ice Lance only filled the fifth slot, and only three of the
 # six Cryomancer notables (Раскол, Хрупкость, Ледник) do anything for a lightning build, so the ascendancy floor failed.
-p ref_seq sorcerer_spark_hybrid "glacier|ice_armor" --asc cryomancer --type "lightning>=0.6" --slots --ban "$VENOM|$FIRE_NODES"
+p ref_seq sorcerer_spark_hybrid "glacier" --asc cryomancer --type "lightning>=0.6" --slots --ban "$VENOM|$FIRE_NODES"
 
 # Class ceilings for parity (spec 15.10, «лучший эталонный билд» = the strongest viable build; BALANCE_NOTES): training DPS
 # only, no theme, no keystones, survival ≥ 20 s. Drop --min-survival to see the unconstrained (glass-cannon) ceilings.

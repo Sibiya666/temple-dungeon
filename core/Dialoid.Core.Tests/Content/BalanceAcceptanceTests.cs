@@ -118,6 +118,8 @@ public class BalanceAcceptanceTests
     {
         var fit = KeystoneGain(keystone, "fit");
         var gain = fit.With / fit.Without;
+        // Каменная кожа's fit build sits exactly on ×1.100 (38.5 vs 35.0 s: one boss attack). Survival moves in quantised 3.5 s
+        // steps (one «Атакующий босс» blow), so the defensive keystones gain in whole attacks (BALANCE_NOTES, known debt).
         Assert.True(gain is >= 1.10 and <= 1.50, $"{keystone}: fit build gains ×{gain:F3} ({fit.Without:F1} → {fit.With:F1}), expected ×1.10..1.50");
         var unfit = KeystoneGain(keystone, "unfit");
         Assert.True(unfit.With < unfit.Without, $"{keystone}: unfit build does not lose ({unfit.Without:F1} → {unfit.With:F1})");

@@ -18,6 +18,53 @@ public class AscendancyContentTests
 
     private static bool IsCyrillic(string s) => s.Any(c => c is >= 'А' and <= 'я' or 'ё' or 'Ё');
 
+    /// <summary>Numeric parameters a description states in other words, with the number the text shows instead.</summary>
+    private static readonly Dictionary<(string Node, string Param), Func<double, double>> DescribedAs = new()
+    {
+        [("eternal_fire", "duration_mult")] = m => 4 * m, // «вдвое дольше (4 → 8 с)»: the base ignite lasts 4 s
+        [("flesh_rend", "extra_stacks")] = _ => double.NaN, // «дополнительный стак»: one stack, said in words (NaN: not checked)
+    };
+
+    /// <summary>
+    /// Fix round 2 (Task 10): every numeric parameter of an ascendancy node (mechanic params, modifier and behavior values) is
+    /// quoted in its description, as itself or as a percent (0.3 → 30), so a balance change cannot leave a stale tooltip
+    /// (Ледяная броня once said +550 with armor 250). Values the text says in words are mapped in <see cref="DescribedAs"/>.
+    /// </summary>
+    [Fact]
+    public void Ascendancy_descriptions_quote_their_numbers()
+    {
+        var opts = new System.Text.Json.Nodes.JsonNodeOptions();
+        var doc = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(Fixtures.FixturePaths.RealData, "ascendancies.json")), opts,
+            new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true })!.AsArray();
+        var problems = new List<string>();
+        foreach (var asc in doc)
+        {
+            var nodes = asc!["notables"]!.AsArray().Append(asc["start"]);
+            foreach (var node in nodes)
+            {
+                var id = (string)node!["id"]!;
+                var text = (string)node["description"]!;
+                var quoted = System.Text.RegularExpressions.Regex.Matches(text, @"\d+(?:[.,]\d+)?")
+                    .Select(m => double.Parse(m.Value.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture)).ToHashSet();
+                foreach (var e in node["effects"]!.AsArray())
+                {
+                    var values = new List<(string Param, double Value)>();
+                    if ((string)e!["type"]! == "mechanic" && e["params"] is System.Text.Json.Nodes.JsonObject ps)
+                        values.AddRange(ps.Where(kv => kv.Value?.GetValueKind() == JsonValueKind.Number).Select(kv => (kv.Key, kv.Value!.GetValue<double>())));
+                    else if (e["value"]?.GetValueKind() == JsonValueKind.Number)
+                        values.Add(((string?)e["stat"] ?? (string?)e["param"] ?? "value", e["value"]!.GetValue<double>()));
+                    foreach (var (param, value) in values)
+                    {
+                        var shown = DescribedAs.TryGetValue((id, param), out var f) ? f(value) : Math.Abs(value);
+                        if (!double.IsNaN(shown) && !quoted.Contains(shown) && !quoted.Contains(Math.Round(shown * 100, 6)))
+                            problems.Add($"{id}: {param} = {value} not in «{text}»");
+                    }
+                }
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+    }
+
     [Theory]
     [InlineData("berserker", "warrior")]
     [InlineData("thunderer", "warrior")]
