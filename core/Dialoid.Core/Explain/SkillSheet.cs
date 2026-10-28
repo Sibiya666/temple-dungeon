@@ -1,0 +1,153 @@
+using Dialoid.Core.Character;
+using Dialoid.Core.Combat;
+using Dialoid.Core.Data;
+using Dialoid.Core.Skills;
+using Dialoid.Core.Stats;
+using static Dialoid.Core.Explain.SheetFormat;
+
+namespace Dialoid.Core.Explain;
+
+/// <summary>
+/// The numbers of one slotted skill: hit damage per final type (no target defense, no crit, no conditions), crit, tempo,
+/// cooldown, resource, ailment chances and the behavior numbers. Stats are evaluated like the simulator does: the character
+/// evaluator plus the skill's own modifiers, with the skill's tags.
+/// </summary>
+public static class SkillSheet
+{
+    private static readonly TargetDefense NoDefense = new(0, new Dictionary<DamageType, double>(), 0);
+
+    private static readonly (string Key, string Label)[] Counts =
+        { ("projectile_count", "Снарядов"), ("pierce_count", "Пробиваний"), ("chain_count", "Цепей") };
+
+    private static readonly (string Key, string Label)[] Radii =
+        { ("area_radius", "Радиус области"), ("explosion_radius", "Радиус взрыва") };
+
+    private static readonly (string Key, string Label)[] RawBehavior =
+    {
+        ("duration", "Длительность, с"), ("ground_duration", "Длительность зоны, с"), ("ground_fraction", "Доля урона зоны в секунду"),
+        ("channel_interval", "Интервал канала, с"),
+    };
+
+    public static IReadOnlyList<NumberLine> Describe(CompiledCharacter ch, CompiledSkill skill, GameData data, WeaponStub? weapon)
+    {
+        var skillCh = ch with { Evaluator = ch.Evaluator.WithExtra(skill.Modifiers) };
+        var ev = skillCh.Evaluator;
+        var c = NoConditions.Instance;
+        var lines = new List<NumberLine>();
+        StatResult Eval(string stat, double? baseValue = null) => ev.Evaluate(stat, skill.Tags, c, baseValue);
+        double StatValue(string stat, double baseValue) =>
+            data.Stats.ContainsKey(stat) ? Eval(stat, baseValue).Value : baseValue; // as the simulator: a missing stat keeps its base
+        NumberLine Stat(string key, string label, string stat, double? baseValue = null, string? note = null)
+        {
+            var r = Eval(stat, baseValue);
+            var line = new NumberLine(key, label, r.Value, r, note);
+            lines.Add(line);
+            return line;
+        }
+
+        var isAttack = SkillMath.IsAttack(skill);
+        AddHits(lines, skillCh, skill, weapon, isAttack);
+
+        // Crit
+        var critBase = isAttack && weapon != null ? weapon.CritChance : skill.Base.CritChance;
+        var chance = Math.Clamp(Stat("crit_chance", "Шанс крита, %", "crit_chance", critBase).Value, 0, 100);
+        var critDamage = Stat("crit_damage", "Урон крита, +%", "crit_damage").Value;
+        var critMult = 1 + critDamage / 100;
+        lines[^1] = lines[^1] with { Label = $"Урон крита: +{Num(critDamage)}% (×{Num(critMult)})" };
+        var expected = HitCalculator.Resolve(new HitInput(skillCh, skill, NoDefense, c, null, (min, max) => (min + max) / 2, weapon));
+        var noCrit = lines.Single(l => l.Key == "hit_avg_total").Value;
+        lines.Add(new NumberLine("hit_avg_with_crit", "Среднее попадание с учетом крита", expected.Final.Values.Sum(), null,
+            $"без крита {Num(noCrit)}; крит ×{Num(critMult)} с шансом {Num(chance)}%" +
+            (skill.Base.HitsPerUse > 1 ? $"; попаданий за применение: {skill.Base.HitsPerUse}" : "")));
+
+        // Tempo and cooldown
+        var useTime = SkillMath.UseTime(skill, weapon, StatValue);
+        var cooldown = SkillMath.Cooldown(skill, StatValue);
+        var period = Math.Max(useTime, cooldown);
+        string tempo;
+        if (SkillMath.IsChannel(skill)) tempo = $"канал: тик раз в {Num(useTime)} с";
+        else if (isAttack && weapon != null)
+        {
+            Stat("attack_speed", "Скорость атаки (множитель)", "attack_speed", 1);
+            tempo = $"атака: {Num(skill.Base.AttackTimeMultiplier)} / ({Num(weapon.AttacksPerSecond)} уд/с оружия × скорость атаки {Num(StatValue("attack_speed", 1))}) = {Num(useTime)} с";
+        }
+        else
+        {
+            Stat("cast_speed", "Скорость сотворения (множитель)", "cast_speed", 1);
+            tempo = $"заклинание: {Num(skill.Base.CastTime)} с / скорость сотворения {Num(StatValue("cast_speed", 1))} = {Num(useTime)} с" +
+                    (isAttack ? " (атака без оружия не применяется)" : "");
+        }
+        if (cooldown > 0) tempo += $"; перезарядка {Num(cooldown)} с";
+        lines.Add(new NumberLine("uses_per_sec", "Применений в секунду", period > 0 ? 1 / period : 0, null,
+            tempo + (skill.ChannelRamp != null ? "; без разгона канала" : "")));
+        if (skill.Base.Cooldown is > 0 and var baseCd)
+            lines.Add(new NumberLine("cooldown", "Перезарядка, с", cooldown, null,
+                $"база {Num(baseCd)} с / восстановление {Num(StatValue("cooldown_recovery", 1))}"));
+
+        // Resource
+        var resName = ch.Class.Resource.Name;
+        Stat("resource_cost", SkillMath.IsChannel(skill) ? $"Стоимость ({resName}) в секунду канала" : $"Стоимость ({resName})",
+            "resource_cost", skill.ResourceCost);
+        Stat("resource_gen", $"Прирост ресурса ({resName}) за применение с попаданием", "resource_gen", skill.ResourceGain);
+
+        // Ailment chances, for the ailments this hit can apply
+        foreach (var def in data.Ailments.Values.OrderBy(a => a.Id, StringComparer.Ordinal))
+        {
+            if (SkillMath.AilmentBase(expected.AilmentBase, def) <= 0) continue;
+            var r = Eval(def.ChanceStat, SkillMath.AilmentChanceBase(data, def, skill));
+            if (r.Value > 0) lines.Add(new NumberLine("ailment_chance_" + def.Id, $"Шанс недуга «{AilmentName(def.Id)}», %", r.Value, r));
+        }
+
+        // Behavior
+        var b = skill.Behavior;
+        foreach (var (key, label) in Counts)
+            if (b.TryGetValue(key, out var v)) Stat(key, label, key, v, "в симуляторе округляется вниз");
+        var radiusScale = SkillMath.RadiusScale(StatValue("area", 1));
+        foreach (var (key, label) in Radii)
+            if (b.TryGetValue(key, out var r))
+                lines.Add(new NumberLine(key, label, r * radiusScale, null,
+                    $"база {Num(r)} × √(область {Num(StatValue("area", 1))})"));
+        foreach (var (key, label) in RawBehavior)
+            if (b.TryGetValue(key, out var v)) lines.Add(new NumberLine(key, label, v, null, "значение поведения скилла"));
+        return lines;
+    }
+
+    /// <summary>Min/max/avg per final damage type and the no-crit total. A type's breakdown is the damage multiplier of its
+    /// largest portion; the note lists every portion's base range.</summary>
+    private static void AddHits(List<NumberLine> lines, CompiledCharacter skillCh, CompiledSkill skill, WeaponStub? weapon, bool isAttack)
+    {
+        HitResult Hit(Func<double, double, double> pick) =>
+            HitCalculator.Resolve(new HitInput(skillCh, skill, NoDefense, NoConditions.Instance, false, pick, weapon));
+        var min = Hit((lo, _) => lo);
+        var max = Hit((_, hi) => hi);
+        var avg = Hit((lo, hi) => (lo + hi) / 2);
+
+        // HitCalculator adds crit_chance and crit_damage first, then one "damage" result per non-nullified portion in order
+        // (IsCrit = false adds no crit-only results).
+        var portions = ConversionResolver.Apply(
+                BaseDamage.Compute(skill, skillCh.Build.Level, weapon, skillCh.Evaluator, skill.Tags), skill.Conversions)
+            .Where(p => !skill.NullifiedDamageTypes.Contains(p.Type)).ToList();
+        var damage = avg.Breakdown.Skip(2).ToList();
+        if (damage.Count != portions.Count || damage.Any(d => d.Stat != "damage"))
+            throw new InvalidOperationException("Hit breakdown does not match the damage portions.");
+
+        foreach (var (type, value) in avg.Final)
+        {
+            var mine = portions.Select((p, i) => (p, d: damage[i])).Where(x => x.p.Type == type).ToList();
+            if (mine.Count == 0) continue;
+            var main = mine.OrderByDescending(x => (x.p.Min + x.p.Max) / 2 * x.d.Value).First().d;
+            var note = string.Join("; ", mine.Select(x =>
+                $"база {Num(x.p.Min)}–{Num(x.p.Max)}" +
+                (x.p.Lineage.Count > 1 ? $" (из: {string.Join(", ", x.p.Lineage.Where(t => t != type).Select(TypeName))})" : "") +
+                $" × множитель {Num(x.d.Value)}"));
+            var name = type.ToString().ToLowerInvariant();
+            lines.Add(new NumberLine($"hit_min_{name}", $"Попадание, минимум ({TypeName(type)})", min.Final.GetValueOrDefault(type), main, note));
+            lines.Add(new NumberLine($"hit_max_{name}", $"Попадание, максимум ({TypeName(type)})", max.Final.GetValueOrDefault(type), main, note));
+            lines.Add(new NumberLine($"hit_avg_{name}", $"Попадание, среднее ({TypeName(type)})", value, main, note));
+        }
+        lines.Add(new NumberLine("hit_avg_total", "Среднее попадание без крита", avg.Final.Values.Sum(), null,
+            avg.Final.Count == 0
+                ? isAttack && weapon == null ? "атаке нужно оружие" : "у скилла нет урона попадания"
+                : string.Join(" + ", avg.Final.Select(kv => $"{TypeName(kv.Key)} {Num(kv.Value)}"))));
+    }
+}

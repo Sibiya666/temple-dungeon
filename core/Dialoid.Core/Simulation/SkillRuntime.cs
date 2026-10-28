@@ -13,8 +13,6 @@ namespace Dialoid.Core.Simulation;
 /// </summary>
 internal sealed class SkillRuntime
 {
-    private const double MinMultiplier = 1e-6;
-
     private readonly GameData _data;
 
     private readonly CompiledCharacter _baseCharacter;
@@ -31,8 +29,8 @@ internal sealed class SkillRuntime
     public IReadOnlyList<string> OwnBuffIds { get; }
     public string Id => Skill.SkillId;
     public TagSet Tags => Skill.Tags;
-    public bool IsAttack => Skill.Base.WeaponEffectiveness != null;
-    public bool IsChannel => Tags.Contains("channel");
+    public bool IsAttack => SkillMath.IsAttack(Skill);
+    public bool IsChannel => SkillMath.IsChannel(Skill);
     public bool IsGenerator => Tags.Contains("generator");
     public bool IsTriggeredOnly { get; }
 
@@ -63,22 +61,13 @@ internal sealed class SkillRuntime
     public bool WeaponFits(WeaponStub? weapon) =>
         !IsAttack || (weapon != null && (Skill.Base.WeaponTypes.Count == 0 || Skill.Base.WeaponTypes.Contains(weapon.Type)));
 
-    public double ChannelInterval =>
-        Skill.Behavior.TryGetValue("channel_interval", out var i) && i > 0 ? i : Skill.Base.CastTime;
+    public double ChannelInterval => SkillMath.ChannelInterval(Skill);
 
-    /// <summary>Spell: CastTime / cast speed; attack: AttackTimeMultiplier / (weapon APS × attack speed); channel: one interval. At least one step.</summary>
-    public double UseTime(IConditionContext c, WeaponStub? weapon, double step)
-    {
-        double t;
-        if (IsChannel) t = ChannelInterval;
-        else if (IsAttack && weapon != null)
-            t = Skill.Base.AttackTimeMultiplier / (weapon.AttacksPerSecond * Math.Max(MinMultiplier, Stat("attack_speed", c, 1)));
-        else t = Skill.Base.CastTime / Math.Max(MinMultiplier, Stat("cast_speed", c, 1));
-        return Math.Max(step, t);
-    }
+    /// <summary><see cref="SkillMath.UseTime"/>, at least one step.</summary>
+    public double UseTime(IConditionContext c, WeaponStub? weapon, double step) =>
+        Math.Max(step, SkillMath.UseTime(Skill, weapon, (stat, b) => Stat(stat, c, b)));
 
-    public double Cooldown(IConditionContext c) =>
-        Skill.Base.Cooldown is > 0 and var cd ? cd / Math.Max(MinMultiplier, Stat("cooldown_recovery", c, 1)) : 0;
+    public double Cooldown(IConditionContext c) => SkillMath.Cooldown(Skill, (stat, b) => Stat(stat, c, b));
 
     /// <summary>Resource paid per use. Channel skills state their cost per second, so one tick pays cost × interval.</summary>
     public double Cost(IConditionContext c)
@@ -105,7 +94,7 @@ internal sealed class SkillRuntime
     public double Coverage(int pack, double packRadius, IConditionContext c)
     {
         var b = Skill.Behavior;
-        var radiusScale = Math.Sqrt(Math.Max(0, Stat("area", c, 1)));
+        var radiusScale = SkillMath.RadiusScale(Stat("area", c, 1));
         int Count(string key, double def) => (int)Math.Floor(Math.Max(0, Stat(key, c, b.GetValueOrDefault(key, def))));
         double? Radius(string key) => b.TryGetValue(key, out var r) ? r * radiusScale : null;
 
