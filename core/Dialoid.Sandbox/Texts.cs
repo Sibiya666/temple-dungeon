@@ -168,7 +168,6 @@ internal static class Texts
     public static string LogHitOnTarget(int target) => $"попадание по цели {target + 1}";
     public const string LogDot = "урон со временем";
     public static string LogDotOnTarget(int target) => $"урон со временем по цели {target + 1}";
-    public const string LogCrit = "крит";
     public const string LogCritMark = "(крит)";
     public const string LogMechanic = "механика";
     public const string LogBuff = "бафф";

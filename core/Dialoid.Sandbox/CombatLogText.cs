@@ -29,8 +29,9 @@ public sealed class CombatLogText
     }
 
     /// <summary>
-    /// One core log event. Kinds the room shows: use, ailment, proc, mechanic, kill; hits and crits come from <see cref="Line(DamageEvent)"/>
-    /// (their SimEvent lines exist but carry no damage type). Any other kind gives its Russian kind name only.
+    /// One core log event. Kinds the room shows: use, ailment, proc, mechanic, kill. Hits and crits are not shown from here: the
+    /// room shows each hit as its <see cref="DamageEvent"/> (<see cref="Line(DamageEvent)"/>), which has the damage types. Any other
+    /// kind gives its Russian kind name only.
     /// </summary>
     public string Line(SimEvent e)
     {
@@ -38,13 +39,6 @@ public sealed class CombatLogText
         {
             case "use":
                 return Join(e.Time, SkillName(e.Text), Texts.EventKindName("use"));
-            case "hit" when Split(e.Text, " -> #") is (var skill, var rest):
-                var amount = rest.IndexOf(": ", StringComparison.Ordinal) is var at and >= 0
-                    && double.TryParse(rest[(at + 2)..], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v)
-                    ? BreakdownText.Whole(v) : null;
-                return amount == null ? Join(e.Time, SkillName(skill), Texts.LogHit) : Join(e.Time, SkillName(skill), Texts.LogHit, amount);
-            case "crit" when Split(e.Text, " -> #") is (var skill, _):
-                return Join(e.Time, SkillName(skill), Texts.LogCrit);
             case "ailment" when Split(e.Text, " -> #") is (var ailment, var rest):
                 // "ignite -> #0 (fireball)" or "ignite -> #1 (fireball, spread)"
                 var open = rest.IndexOf('(');
