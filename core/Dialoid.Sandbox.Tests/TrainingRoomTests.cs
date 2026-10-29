@@ -311,6 +311,39 @@ public class TrainingRoomTests
     }
 
     [Fact]
+    public void Keys_follow_the_player_slots_across_an_empty_slot()
+    {
+        // Slots 1 (Meteor) and 5 (Blink, cooldown 6 s) filled, 2–4 empty: the fight's build lists only the filled ones.
+        var s = Rooms.Fireball();
+        for (var i = 0; i <= 4; i++) Assert.True(s.SetSlotSkill(i, null).Ok);
+        Assert.True(s.SetSlotSkill(0, "meteor").Ok);
+        Assert.True(s.SetSlotSkill(4, "blink").Ok);
+        Assert.Empty(s.Violations);
+        var room = new TrainingRoom(s);
+        Assert.True(room.Running);
+
+        Assert.Null(room.CompiledTags(2));
+        Assert.NotNull(room.CompiledTags(5));
+        Assert.Equal(PressRefusal.EmptySlot, room.Press(2, 3, true).Refusal);
+        Assert.Equal("0,0 с · слот 2 · отказ: пустой слот", room.LogLines[^1]);
+        Assert.Equal(PressRefusal.EmptySlot, room.StartChannel(2, 3, true).Refusal);
+        Assert.Equal("0,0 с · слот 2 · отказ: пустой слот", room.LogLines[^1]);
+
+        Assert.True(room.Press(5, 3, true).Accepted);
+        for (var i = 0; i < 100 && !room.LogLines.Any(l => l.Contains("Мерцание · применение", StringComparison.Ordinal)); i++)
+            room.Advance(LiveFight.StepSec);
+        Assert.Contains(room.LogLines, l => l.Contains("Мерцание · применение", StringComparison.Ordinal));
+        Assert.DoesNotContain(room.LogLines, l => l.Contains("Метеор", StringComparison.Ordinal));
+
+        var cooldowns = room.State!.CooldownLeftBySlot;
+        Assert.Equal(new[] { 5 }, cooldowns.Keys); // Blink's cooldown is shown on key 5
+        var refused = room.Press(5, 3, true);
+        Assert.Equal(PressRefusal.Cooldown, refused.Refusal);
+        Assert.Equal(cooldowns[5], refused.CooldownLeft!.Value, 9);
+        Assert.Contains(" · Мерцание · отказ: перезарядка ", room.LogLines[^1]);
+    }
+
+    [Fact]
     public void Illegal_build_starts_no_fight_and_reports_violations()
     {
         var s = Rooms.Fireball();

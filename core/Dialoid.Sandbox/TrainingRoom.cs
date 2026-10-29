@@ -15,6 +15,8 @@ namespace Dialoid.Sandbox;
 /// (spec 6.2b): the current segment closes, held and queued keys are gone, and the log says so. Changing the dummy or the mode
 /// restarts it too. An illegal build or an unknown dummy starts no fight (<see cref="Running"/> is false,
 /// <see cref="Violations"/> say why) until the next edit.</para>
+/// <para>Slots are the player's (1-based, keys 1–5, as the session numbers them, gaps included): key N presses the skill in
+/// session slot N even when an earlier slot is empty. The fight's build lists only the filled slots, so the room translates.</para>
 /// </summary>
 public sealed class TrainingRoom
 {
@@ -34,6 +36,10 @@ public sealed class TrainingRoom
     private readonly List<string> _log = new();
     private LiveFight? _fight;
     private Build _build = new();
+    // Player slot (index, 1-based) → the fight's slot (1-based among the filled ones), 0 for an empty slot; and back.
+    // Taken together with the fight's build at the restart.
+    private int[] _fightSlotOf = Array.Empty<int>();
+    private int[] _playerSlotOf = Array.Empty<int>();
     private int? _heldSlot;
     private IReadOnlyList<RuleViolation> _violations = Array.Empty<RuleViolation>();
     private int _revision;
@@ -61,8 +67,18 @@ public sealed class TrainingRoom
     /// <summary>Why no fight is going on; empty while <see cref="Running"/>.</summary>
     public IReadOnlyList<RuleViolation> Violations => _violations;
 
-    /// <summary>What the HUD shows (cooldowns, resource, buffs); null without a fight.</summary>
-    public LiveState? State => _fight?.State;
+    /// <summary>What the HUD shows (cooldowns by player slot, resource, buffs); null without a fight.</summary>
+    public LiveState? State
+    {
+        get
+        {
+            if (_fight?.State is not { } s) return null;
+            var cooldowns = new SortedDictionary<int, double>();
+            foreach (var (fightSlot, left) in s.CooldownLeftBySlot)
+                if (fightSlot < _playerSlotOf.Length) cooldowns[_playerSlotOf[fightSlot]] = left;
+            return s with { CooldownLeftBySlot = cooldowns };
+        }
+    }
 
     /// <summary>Kept segments, oldest first, at most <see cref="MaxSegments"/>; the last one may be <see cref="Current"/>.</summary>
     public IReadOnlyList<FightSegment> Segments => _segments;
@@ -77,7 +93,7 @@ public sealed class TrainingRoom
     public event Action? Updated;
 
     /// <summary>Tags of the compiled skill in a slot (1-based), null for an empty slot or without a fight.</summary>
-    public TagSet? CompiledTags(int slot) => _fight?.CompiledTags(slot);
+    public TagSet? CompiledTags(int slot) => _fight?.CompiledTags(FightSlot(slot));
 
     /// <summary>Follow build edits from now on. Calling it twice is harmless.</summary>
     public void Attach()
@@ -133,26 +149,28 @@ public sealed class TrainingRoom
     public PressResult Press(int slot, double distanceTiles, bool targetOnScreen)
     {
         UpdateReach(distanceTiles, targetOnScreen);
-        var r = Reach(slot, distanceTiles, targetOnScreen) ?? _fight!.Press(slot);
+        var r = Reach(slot, distanceTiles, targetOnScreen) ?? _fight!.Press(FightSlot(slot));
         if (!r.Accepted) LogRefusal(slot, r);
         return r;
     }
 
     /// <summary>
-    /// Holds a slot's key (channel or repeat), after the reach rule. Returns the refusal (logged) when the dummy is out of reach or
-    /// there is no fight; otherwise accepted — the fight then ignores a slot it cannot hold (empty, triggered-only, wrong weapon).
+    /// Holds a slot's key (channel or repeat), after the reach rule. Returns the refusal (logged) when there is no fight, the dummy
+    /// is out of reach, or the slot cannot be held (empty, triggered-only, wrong weapon: <see cref="LiveFight.HoldRefusal"/>);
+    /// a refused hold leaves the previous one as it was. Cooldown and resource are not refusals: the held key waits for them.
     /// The hold stays under the reach rule: see <see cref="UpdateReach"/>.
     /// </summary>
     public PressResult StartChannel(int slot, double distanceTiles, bool targetOnScreen)
     {
         UpdateReach(distanceTiles, targetOnScreen);
-        var refused = Reach(slot, distanceTiles, targetOnScreen);
+        var refused = Reach(slot, distanceTiles, targetOnScreen)
+            ?? (_fight!.HoldRefusal(FightSlot(slot)) is var why and not PressRefusal.None ? new PressResult(false, false, why, null) : null);
         if (refused != null)
         {
             LogRefusal(slot, refused);
             return refused;
         }
-        _fight!.StartChannel(slot);
+        _fight!.StartChannel(FightSlot(slot));
         _heldSlot = slot;
         return new PressResult(true, false, PressRefusal.None, null);
     }
@@ -206,7 +224,8 @@ public sealed class TrainingRoom
         _pendingDt = 0;
         _heldSlot = null; // held and queued keys die with the old fight
         _build = _session.Build;
-        _fight = LiveFight.Start(_session.Data, MechanicRegistry.Default, _build,
+        MapSlots();
+        _fight =LiveFight.Start(_session.Data, MechanicRegistry.Default, _build,
             new LiveFightConfig(DummyId, Mode, Seed), out var violations);
         _violations = _fight == null ? violations : Array.Empty<RuleViolation>();
         if (line != null) AddLog(line);
@@ -283,7 +302,24 @@ public sealed class TrainingRoom
     }
 
     // The fight's build (the session may have moved on while detached); its slots are the fight's slots.
-    private string? SkillIdAt(int slot) => slot >= 1 && slot <= _build.Slots.Count ? _build.Slots[slot - 1].SkillId : null;
+    private string? SkillIdAt(int slot) => FightSlot(slot) is var k and > 0 ? _build.Slots[k - 1].SkillId : null;
+
+    /// <summary>The fight's slot of a player slot, 0 for an empty or out-of-range one (the fight refuses slot 0 as empty).</summary>
+    private int FightSlot(int slot) => slot >= 1 && slot < _fightSlotOf.Length ? _fightSlotOf[slot] : 0;
+
+    /// <summary>The session's filled slots in order are the build's slots (<see cref="SandboxSession.Build"/>): number them.</summary>
+    private void MapSlots()
+    {
+        _fightSlotOf = new int[SandboxSession.SlotCount + 1];
+        var playerSlotOf = new List<int> { 0 };
+        for (var i = 0; i < SandboxSession.SlotCount; i++)
+        {
+            if (_session.GetSlot(i) == null) continue;
+            playerSlotOf.Add(i + 1);
+            _fightSlotOf[i + 1] = playerSlotOf.Count - 1;
+        }
+        _playerSlotOf = playerSlotOf.ToArray();
+    }
 
     private void AddLog(string line)
     {
