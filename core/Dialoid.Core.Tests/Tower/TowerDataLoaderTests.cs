@@ -234,6 +234,34 @@ public class TowerDataLoaderTests
     }
 
     [Fact]
+    public void Missing_shuffle_currency_is_rejected()
+    {
+        var e = Broken("currencies.json", cs => cs.Remove(First(cs, "id", "shuffle")));
+        Assert.Contains(e, x => x.File == "currencies.json" && x.Message.Contains("обязательной валюты «shuffle»"));
+    }
+
+    [Fact]
+    public void Required_currency_with_wrong_kind_is_rejected()
+    {
+        var e = Broken("currencies.json", cs => First(cs, "id", "imbue_tower")["mod_kind"] = "general");
+        Assert.Contains(e, x => x.Id == "imbue_tower" && x.Message.Contains("tower"));
+    }
+
+    [Fact]
+    public void First_shuffle_must_be_free()
+    {
+        var dir = FixturePaths.CopyTowerFixture();
+        Edit(dir, "rules.json", n => n["shuffle_costs"] = new JsonArray(1, 2, 4));
+        var (data, errors) = TowerDataLoader.Load(dir);
+        Assert.Null(data);
+        Assert.Contains(errors, x => x.File == "rules.json" && x.Message.Contains("shuffle_costs"));
+    }
+
+    [Fact]
+    public void Level_cap_comes_from_build_rules() =>
+        Assert.Equal(Dialoid.Core.Character.BuildRules.MaxLevel, TowerDataLoader.LevelCap);
+
+    [Fact]
     public void Tower_random_pick_stays_in_range()
     {
         var rng = Dialoid.Core.Simulation.RandomSources.Create(Dialoid.Core.Simulation.SimMode.Roll, 7);

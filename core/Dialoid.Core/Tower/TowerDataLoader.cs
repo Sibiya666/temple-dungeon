@@ -9,7 +9,7 @@ public static class TowerDataLoader
     public const int RankCount = 15;
     public const int TierCount = 5;
     /// <summary>Character level cap (core spec 5.3); ranks 6–15 play at it with zone level 60 + (rank − 5).</summary>
-    public const int LevelCap = 60;
+    public const int LevelCap = Dialoid.Core.Character.BuildRules.MaxLevel;
     /// <summary>Last levelling rank (spec 6.3).</summary>
     public const int LastLevellingRank = 5;
     /// <summary>Floor type whose arena hosts the summit (tower-mod compatibility with the uber boss).</summary>
@@ -74,6 +74,7 @@ public static class TowerDataLoader
         var shuffleCosts = j.ShuffleCosts ?? new();
         if (shuffleCosts.Count == 0) Err("Не задан список «shuffle_costs»");
         if (shuffleCosts.Any(x => x < 0)) Err("Цены в «shuffle_costs» не могут быть отрицательными");
+        else if (shuffleCosts.Count > 0 && shuffleCosts[0] != 0) Err($"Первое перемешивание бесплатно: «shuffle_costs» должен начинаться с 0, а не с {shuffleCosts[0]}");
         if (ratio < 2) Err("«exchange_ratio» должен быть не меньше 2: обмен вверх всегда с потерей");
         if (minLevel < 2) Err("«exchange_min_level» должен быть не меньше 2: валюта уровня 1 не обменивается");
         if (xpPer < 0) Err("«xp_penalty_per_level» не может быть отрицательным");
@@ -243,7 +244,35 @@ public static class TowerDataLoader
             result.Add(new CurrencyDef(id, c.Name!, op, c.ModKind, c.HasLevel, c.DropsFromRank!.Value, c.DropBase!.Value, c.DropGrowth!.Value,
                 c.SummitMultiplier!.Value, c.BiasDirection, c.BiasChance));
         }
+        CheckRequiredCurrencies(result, errors, F);
         return result;
+    }
+
+    /// <summary>Currencies the tower code relies on by id: id, operation and mod kind.</summary>
+    private static readonly (string Id, CurrencyOp Op, ModKind? Kind)[] RequiredCurrencies =
+    {
+        ("shuffle", CurrencyOp.Shuffle, null),
+        ("imbue", CurrencyOp.AddMod, ModKind.General),
+        ("imbue_type", CurrencyOp.AddMod, ModKind.FloorType),
+        ("imbue_tower", CurrencyOp.AddMod, ModKind.Tower),
+    };
+
+    private static void CheckRequiredCurrencies(List<CurrencyDef> loaded, List<DataError> errors, string file)
+    {
+        foreach (var (id, op, kind) in RequiredCurrencies)
+        {
+            var c = loaded.FirstOrDefault(x => x.Id == id);
+            if (c == null)
+            {
+                // A currency that is present but broken already has its own error.
+                if (!errors.Any(e => e.File == file && e.Id == id))
+                    errors.Add(new DataError(file, null, $"Нет обязательной валюты «{id}»: на нее опирается код башни"));
+                continue;
+            }
+            if (c.Op != op || c.ModKind != kind)
+                errors.Add(new DataError(file, id, $"Обязательная валюта «{id}» должна иметь операцию «{OpName(op)}»" +
+                    (kind is { } k ? $" и вид мода «{System.Text.Json.JsonNamingPolicy.SnakeCaseLower.ConvertName(k.ToString())}»" : "")));
+        }
     }
 
     private static string OpName(CurrencyOp op) => System.Text.Json.JsonNamingPolicy.SnakeCaseLower.ConvertName(op.ToString());
