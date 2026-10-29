@@ -2,6 +2,8 @@ using Dialoid.Core.Character;
 using Dialoid.Core.Combat;
 using Dialoid.Core.Data;
 using Dialoid.Core.Effects;
+using Dialoid.Core.Explain;
+using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Simulation;
@@ -29,15 +31,52 @@ public sealed class LiveFight
     /// <summary>Undrained damage events kept (up to twice as many) for <see cref="DrainDamage"/>, so memory stays bounded.</summary>
     internal const int DamageKeep = 10_000;
 
+    /// <summary>With infinite life, a preset immortal in the data gets this preset's life per target (× G(level)) instead, so
+    /// its life bar drops and refills and "target below X %" behaves as on it (owner decision 2026-10-30).</summary>
+    public const string ImmortalStandInDummyId = "boss";
+
+    /// <summary>The mechanic counters (keys "mechanic_id:key" of global mechanics) shown as stacks in
+    /// <see cref="LiveState.HeroEffects"/>; every other counter is bookkeeping (soul_heat's use counter, static_charge's flags...).
+    /// The sandbox names each of them in Russian.</summary>
+    public static IReadOnlyList<string> ShownCounters { get; } = new[] { "static_charge:charges" };
+
+    private LiveState? _state; // cached until the next step or command
+
     internal FightSetup Setup { get; }
 
-    /// <summary>The engine's live state (tests read the busy time and adjust the resource).</summary>
-    internal SimState Sim => _engine.State;
+    /// <summary>The engine's live state (tests read the busy time and adjust the resource, so reading it drops the cached state).</summary>
+    internal SimState Sim
+    {
+        get
+        {
+            _state = null;
+            return _engine.State;
+        }
+    }
+
+    /// <summary>One entry per filled fight slot, in slot order (for the skill bar's tooltips).</summary>
+    public IReadOnlyList<SlotInfo> Slots { get; }
 
     internal LiveFight(FightSetup setup, LiveFightConfig config)
     {
         Setup = setup;
-        _engine = setup.Engine(ToSimConfig(config), config.InfiniteLife, log: SimLog.Rolling(LogKeep), damageKeep: DamageKeep);
+        var life = config.InfiniteLife && setup.Dummy.Immortal
+                   && setup.Data.Dummies.TryGetValue(ImmortalStandInDummyId, out var standIn) && !standIn.Immortal
+            ? standIn.LifePerTarget
+            : (double?)null;
+        _engine = setup.Engine(ToSimConfig(config), config.InfiniteLife, log: SimLog.Rolling(LogKeep), damageKeep: DamageKeep,
+            lifePerTarget: life);
+        Slots = setup.Skills.Select((s, i) => Describe(i + 1, s)).ToList();
+    }
+
+    private SlotInfo Describe(int slot, SkillRuntime skill)
+    {
+        var c = NoConditions.Instance;
+        double Stat(string stat, double b) => skill.Stat(stat, c, b);
+        var name = Setup.Data.Skills.TryGetValue(skill.Id, out var def) ? def.Name : skill.Id;
+        var perSec = skill.IsChannel ? Math.Max(0, Stat("resource_cost", skill.Skill.ResourceCost)) : 0;
+        return new SlotInfo(slot, skill.Id, name, skill.Tags, skill.Cost(c), perSec, skill.Cooldown(c),
+            SkillMath.UseTime(skill.Skill, _engine.Weapon, Stat), skill.IsChannel);
     }
 
     /// <summary>
@@ -66,6 +105,7 @@ public sealed class LiveFight
     /// </summary>
     public PressResult Press(int slot)
     {
+        _state = null;
         if (_engine.IsOver) return PressResult.Refuse(PressRefusal.FightOver);
         var skill = SkillAt(slot);
         if (skill == null) return PressResult.Refuse(PressRefusal.EmptySlot);
@@ -90,6 +130,7 @@ public sealed class LiveFight
     /// </summary>
     public void StartChannel(int slot)
     {
+        _state = null;
         if (SkillAt(slot) is { IsTriggeredOnly: false } skill && skill.WeaponFits(_engine.Weapon)) _commands.Hold(skill);
     }
 
@@ -107,13 +148,25 @@ public sealed class LiveFight
     }
 
     /// <summary>Releases the held key: the tick in progress finishes, no new one starts.</summary>
-    public void StopChannel() => _commands.Release();
+    public void StopChannel()
+    {
+        _state = null;
+        _commands.Release();
+    }
 
     /// <summary>One engine step of <see cref="StepSec"/>. Does nothing once the fight is over (only without infinite life).</summary>
-    public void Step() => _engine.Step(_commands);
+    public void Step()
+    {
+        _state = null;
+        _engine.Step(_commands);
+    }
 
     /// <summary>Test entry: one step with another command source (the rotation, to compare with the simulator).</summary>
-    internal void Step(ICommandSource commands) => _engine.Step(commands);
+    internal void Step(ICommandSource commands)
+    {
+        _state = null;
+        _engine.Step(commands);
+    }
 
     /// <summary>The log events since the previous call, oldest first. The live log never stops (no "log_truncated"); if the
     /// caller does not drain for a long time, only the most recent <see cref="LogKeep"/>–2×<see cref="LogKeep"/> events are kept.</summary>
@@ -124,25 +177,69 @@ public sealed class LiveFight
     /// events are kept. <see cref="Snapshot"/> carries the sums over the whole fight (<see cref="SimResult.Mitigation"/>).</summary>
     public IReadOnlyList<DamageEvent> DrainDamage() => _engine.Damage.Drain();
 
-    public LiveState State
+    /// <summary>What the combat screen shows now. The same object until the next <see cref="Step"/> or command
+    /// (<see cref="Press"/>, <see cref="StartChannel"/>, <see cref="StopChannel"/>), so reading it every frame is cheap.</summary>
+    public LiveState State => _state ??= BuildState();
+
+    private LiveState BuildState()
     {
-        get
+        var s = _engine.State;
+        var now = _engine.Time;
+        var cooldowns = new SortedDictionary<int, double>();
+        for (var slot = 1; slot <= Setup.Skills.Count; slot++)
+            if (s.CooldownReadyAt.TryGetValue(Setup.Skills[slot - 1].Id, out var ready) && ready > now + Eps)
+                cooldowns[slot] = ready - now;
+        var buffs = new SortedDictionary<string, double>(s.Buffs, StringComparer.Ordinal);
+        var ailments = new SortedSet<string>(StringComparer.Ordinal);
+        if (s.Primary is { } primary)
         {
-            var s = _engine.State;
-            var now = _engine.Time;
-            var cooldowns = new SortedDictionary<int, double>();
-            for (var slot = 1; slot <= Setup.Skills.Count; slot++)
-                if (s.CooldownReadyAt.TryGetValue(Setup.Skills[slot - 1].Id, out var ready) && ready > now + Eps)
-                    cooldowns[slot] = ready - now;
-            var buffs = new SortedDictionary<string, double>(s.Buffs, StringComparer.Ordinal);
-            var ailments = new SortedSet<string>(StringComparer.Ordinal);
-            if (s.Primary is { } target)
-            {
-                foreach (var a in target.Ailments) ailments.Add(a.AilmentId);
-                if (target.IsFrozen) ailments.Add("freeze");
-            }
-            return new LiveState(now, s.Resource, s.ResourceMax, s.Life, cooldowns, buffs, IsBusy, s.ChannelSkillId, ailments.ToList());
+            foreach (var a in primary.Ailments) ailments.Add(a.AilmentId);
+            if (primary.IsFrozen) ailments.Add("freeze");
         }
+
+        var hero = new List<TimedEffect>();
+        foreach (var (id, left) in buffs)
+            hero.Add(new TimedEffect(id, double.IsPositiveInfinity(left) ? null : left, 1) { Kind = TimedEffectKind.Buff });
+        foreach (var key in ShownCounters.Order(StringComparer.Ordinal))
+            if (s.MechanicCounters.TryGetValue(key, out var value) && (int)Math.Round(value) is var stacks and > 0)
+                hero.Add(new TimedEffect(key, null, stacks) { Kind = TimedEffectKind.MechanicStack });
+
+        var targets = new List<IReadOnlyList<TimedEffect>>(s.Targets.Count);
+        foreach (var t in s.Targets) targets.Add(TargetEffects(t));
+
+        return new LiveState(now, s.Resource, s.ResourceMax, s.Life, cooldowns, buffs, IsBusy, s.ChannelSkillId, ailments.ToList())
+        {
+            ResourceId = Setup.Character.Class.Resource.Id,
+            BusyLeft = Math.Max(0, s.BusyUntil - now),
+            QueuedSlot = SlotOf(_commands.Pressed),
+            HeldSlot = SlotOf(_commands.Held),
+            HeroEffects = hero,
+            TargetEffects = targets,
+            TargetLife = s.Targets.Select(t => t.Life).ToList(),
+            TargetLifeMax = s.Targets.Select(t => t.MaxLife).ToList(),
+        };
+    }
+
+    // Ailments (instances as stacks, the longest time left), freeze, and mechanic damage-taken contributions; ordinal id order.
+    private static IReadOnlyList<TimedEffect> TargetEffects(TargetState t)
+    {
+        var effects = new SortedDictionary<string, TimedEffect>(StringComparer.Ordinal);
+        foreach (var a in t.Ailments)
+            effects[a.AilmentId] = effects.TryGetValue(a.AilmentId, out var e)
+                ? e with { TimeLeft = Math.Max(e.TimeLeft ?? 0, a.Remaining), Stacks = e.Stacks + 1 }
+                : new TimedEffect(a.AilmentId, a.Remaining, 1) { Kind = TimedEffectKind.Ailment };
+        if (t.IsFrozen) effects["freeze"] = new TimedEffect("freeze", t.FreezeRemaining, 1) { Kind = TimedEffectKind.Ailment };
+        foreach (var key in t.DamageTakenSources.Keys)
+            effects.TryAdd(key, new TimedEffect(key, null, 1) { Kind = TimedEffectKind.Debuff });
+        return effects.Values.ToList();
+    }
+
+    private int? SlotOf(SkillRuntime? skill)
+    {
+        if (skill == null) return null;
+        for (var i = 0; i < Setup.Skills.Count; i++)
+            if (ReferenceEquals(Setup.Skills[i], skill)) return i + 1;
+        return null;
     }
 
     /// <summary>

@@ -18,7 +18,18 @@ public sealed record DamagePart(DamageType Type, double BeforeDefense, double By
 
 /// <summary>One hit or DoT tick on one target. A DoT tick is one ailment instance or ground zone over one engine step;
 /// IsCrit is set only for hits that rolled a crit (never in Average mode, where crits are an expectation).</summary>
-public sealed record DamageEvent(double Time, string SkillId, int Target, bool IsDot, bool IsCrit, IReadOnlyList<DamagePart> Parts);
+public sealed record DamageEvent(double Time, string SkillId, int Target, bool IsDot, bool IsCrit, IReadOnlyList<DamagePart> Parts)
+{
+    /// <summary>Running number of the fight's damage events, from 1, in the order they happen. A hit's "hit" (and "crit") log
+    /// event carries the same number in <see cref="Simulation.SimEvent.DamageSeq"/>. 0 for an event built by hand.</summary>
+    public long Seq { get; init; }
+
+    /// <summary>A DoT tick of an ailment instance: its ailment id (ignite, bleed...). Null for hits and zone ticks.</summary>
+    public string? AilmentId { get; init; }
+
+    /// <summary>A ground zone tick: the zone's id (one zone per skill, so the id of the skill that made it). Null otherwise.</summary>
+    public string? ZoneId { get; init; }
+}
 
 /// <summary>
 /// The damage parts of a whole fight summed over every target and damage type: per source skill and in total. The Type of these

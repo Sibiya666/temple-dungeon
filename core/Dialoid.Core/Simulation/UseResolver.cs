@@ -101,10 +101,11 @@ internal sealed class UseResolver
             _ledger.AddHit(skill.Id, ti, type, amount);
             total += amount;
         }
-        _damage.Add(_s.Time, skill.Id, ti, isDot: false, isCrit: isCrit == true, hit.Parts);
+        var seq = _damage.Add(_s.Time, skill.Id, ti, isDot: false, isCrit: isCrit == true, hit.Parts);
         if (!target.Immortal) target.Life -= total;
-        _log.Add(_s.Time, "hit", $"{skill.Id} -> #{ti}: {SimLog.Num(total)}");
-        if (isCrit == true) _log.Add(_s.Time, "crit", $"{skill.Id} -> #{ti}");
+        _log.Add(new SimEvent(_s.Time, "hit", $"{skill.Id} -> #{ti}: {SimLog.Num(total)}") { SkillId = skill.Id, Target = ti, DamageSeq = seq });
+        if (isCrit == true)
+            _log.Add(new SimEvent(_s.Time, "crit", $"{skill.Id} -> #{ti}") { SkillId = skill.Id, Target = ti, DamageSeq = seq });
 
         OnHit?.Invoke(skill, ti, hit, first);
         ApplyAilments(skill, ti, target, hit, defense);
@@ -148,7 +149,7 @@ internal sealed class UseResolver
             var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, defense, _conditions)
                 with { Triggered = skill.IsTriggeredCopy };
             Land(skill, ti, target, def, instance);
-            _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id})");
+            _log.Add(AilmentEvent(def.Id, ti, skill, $"{def.Id} -> #{ti} ({skill.Id})"));
         }
     }
 
@@ -177,9 +178,12 @@ internal sealed class UseResolver
     {
         if (!_s.IsAlive(ti) || !_data.Ailments.TryGetValue(instance.AilmentId, out var def)) return false;
         if (!_s.Targets[ti].Apply(instance, MaxStacks(skill, def), def.StackRule)) return false;
-        _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id}, {origin})");
+        _log.Add(AilmentEvent(def.Id, ti, skill, $"{def.Id} -> #{ti} ({skill.Id}, {origin})"));
         return true;
     }
+
+    private SimEvent AilmentEvent(string ailmentId, int ti, SkillRuntime skill, string text) =>
+        new(_s.Time, "ailment", text) { SkillId = skill.Id, Target = ti, AilmentId = ailmentId };
 
     /// <summary>Proc or mechanic ailment (spec 8.4): no chance roll. The base comes from the triggering hit; a damaging ailment with no base is skipped.</summary>
     public bool ForceAilment(SkillRuntime skill, int ti, AilmentDefinition def, IReadOnlyDictionary<DamageType, double>? hitBase,
@@ -198,7 +202,7 @@ internal sealed class UseResolver
             Land(skill, ti, target, def, instance);
         }
         finally { _conditions.HitTarget = outer; }
-        _log.Add(_s.Time, "ailment", $"{def.Id} -> #{ti} ({skill.Id}, {origin})");
+        _log.Add(AilmentEvent(def.Id, ti, skill, $"{def.Id} -> #{ti} ({skill.Id}, {origin})"));
         return true;
     }
 

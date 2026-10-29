@@ -35,6 +35,9 @@ public sealed class TargetState
     public double DamageTakenIncreased =>
         _ailments.Where(a => a.AilmentId == "shock").Select(a => a.Magnitude).DefaultIfEmpty(0).Max() + _damageTakenSources.Values.Sum();
 
+    /// <summary>The keyed contributions to the damage-taken bucket (key: the mechanic id that set it → increased %), ordinal order.</summary>
+    public IReadOnlyDictionary<string, double> DamageTakenSources => _damageTakenSources;
+
     /// <summary>Sets (0 removes) one keyed contribution to the damage-taken bucket; cleared on death/respawn.</summary>
     public void SetDamageTaken(string key, double increasedPercent)
     {

@@ -64,9 +64,10 @@ internal sealed class CombatEngine
     /// (no kill event, no on-kill effects, ailments stay). Damage is accounted as usual.</param>
     /// <param name="damageKeep">0 (the simulator): damage events are only summed into the result's mitigation totals; otherwise
     /// they are also queued for <see cref="Damage"/>.Drain, keeping this many undrained ones (see <see cref="DamageFeed"/>).</param>
+    /// <param name="lifePerTarget">Replaces the dummy's life per target (before G(level)); null keeps the data's value.</param>
     public CombatEngine(GameData data, MechanicRegistry mechanics, CompiledCharacter character, WeaponStub? weapon,
         IReadOnlyList<SkillRuntime> skills, DummyDefinition dummy, SimConfig config, bool infiniteLife, SimLog? log = null,
-        int damageKeep = 0)
+        int damageKeep = 0, double? lifePerTarget = null)
     {
         _log = log ?? new SimLog();
         _defensive = config.DummyAttacks && dummy.Attack is { IntervalSec: > 0 };
@@ -80,7 +81,7 @@ internal sealed class CombatEngine
         _random = RandomSources.Create(config.Mode, config.Seed);
 
         var pack = config.PackSizeOverride ?? dummy.PackSize;
-        _s = new SimState(pack, dummy.LifePerTarget * Growth.Gear(character.Build.Level));
+        _s = new SimState(pack, (lifePerTarget ?? dummy.LifePerTarget) * Growth.Gear(character.Build.Level));
         foreach (var t in _s.Targets) t.FreezeDurationMultiplier = dummy.FreezeDurationMultiplier;
         _conditions = new SimConditionContext(_s);
         _ledger = new DamageLedger(pack);
@@ -238,7 +239,7 @@ internal sealed class CombatEngine
             _s.ChannelTimeUsed[skill.Id] = used;
         }
         _s.LastUseTime[skill.Id] = t;
-        _log.Add(t, "use", skill.Id);
+        _log.Add(new SimEvent(t, "use", skill.Id) { SkillId = skill.Id, UseSec = _s.BusyUntil - start });
         OnUse(skill, paid);
 
         var outcome = _resolver.Apply(skill);
@@ -266,7 +267,7 @@ internal sealed class CombatEngine
             var dmg = target.Tick(dt, (a, share) =>
             {
                 _ledger.AddDot(a.SourceSkillId, index, a.Type, share);
-                DotEvent(a.SourceSkillId, index, a.PerSecond, a.Type, Math.Min(dt, a.Remaining), share);
+                DotEvent(a.SourceSkillId, index, a.PerSecond, a.Type, Math.Min(dt, a.Remaining), share, ailmentId: a.AilmentId);
                 _procs.NoteDamage(index, a.SourceSkillId, a.Triggered);
             });
             if (!target.Immortal) target.Life -= dmg;
@@ -287,7 +288,7 @@ internal sealed class CombatEngine
                 _conditions.HitTarget = null;
                 var share = dps * span;
                 _ledger.AddDot(zone.SkillId, i, zone.Type, share);
-                DotEvent(zone.SkillId, i, perSecond, zone.Type, span, share);
+                DotEvent(zone.SkillId, i, perSecond, zone.Type, span, share, zoneId: id);
                 _procs.NoteDamage(i, zone.SkillId, zone.Triggered);
                 if (!target.Immortal) target.Life -= share;
             }
@@ -299,12 +300,13 @@ internal sealed class CombatEngine
 
     /// <summary>One DoT tick as a damage event: the per-second breakdown over the time ticked, with Final the exact amount dealt.
     /// An instance without a breakdown (built by hand) is reported as undefended.</summary>
-    private void DotEvent(string skillId, int target, DamagePart? perSecond, DamageType type, double span, double share)
+    private void DotEvent(string skillId, int target, DamagePart? perSecond, DamageType type, double span, double share,
+        string? ailmentId = null, string? zoneId = null)
     {
         var part = perSecond != null
             ? perSecond.Scaled(span) with { Final = share }
             : new DamagePart(type, share, 0, 0, 0, 0, share);
-        _damage.Add(_s.Time, skillId, target, isDot: true, isCrit: false, new[] { part });
+        _damage.Add(_s.Time, skillId, target, isDot: true, isCrit: false, new[] { part }, ailmentId, zoneId);
     }
 
     private void TickResource(double t, double dt)
@@ -349,7 +351,7 @@ internal sealed class CombatEngine
             var target = _s.Targets[i];
             if (!_s.IsAlive(i) || target.Immortal || target.Life > 0) continue;
             if (_infiniteLife) { target.Life = target.MaxLife; continue; }
-            _log.Add(time, "kill", $"#{i}");
+            _log.Add(new SimEvent(time, "kill", $"#{i}") { Target = i, SourceSkillId = _procs.LastSource(i)?.Skill });
             OnKill(i);
             target.Reset();
             if (!_dummy.Respawn) _s.Dead[i] = true;

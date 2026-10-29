@@ -32,11 +32,13 @@ internal sealed class SimLog
 
     public IReadOnlyList<SimEvent> Events => _events;
 
-    public void Add(double time, string kind, string text)
+    public void Add(double time, string kind, string text) => Add(new SimEvent(time, kind, text));
+
+    /// <summary>One event with its structured fields (see <see cref="SimEvent"/>).</summary>
+    public void Add(SimEvent e)
     {
         if (_pending != null)
         {
-            var e = new SimEvent(time, kind, text);
             Append(_events, e);
             Append(_pending, e);
             return;
@@ -44,11 +46,11 @@ internal sealed class SimLog
         if (_truncated) return;
         if (_events.Count >= Cap)
         {
-            _events.Add(new SimEvent(time, "log_truncated", $"log capped at {Cap} events"));
+            _events.Add(new SimEvent(e.Time, "log_truncated", $"log capped at {Cap} events"));
             _truncated = true;
             return;
         }
-        _events.Add(new SimEvent(time, kind, text));
+        _events.Add(e);
     }
 
     /// <summary>Rolling log: the events since the previous call (oldest first). A capped log has nothing to drain.</summary>
