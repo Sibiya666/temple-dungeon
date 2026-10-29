@@ -48,8 +48,8 @@ public sealed class TrainingRoom
     private int _nextIndex = 1;
     private bool _attached;
 
-    /// <summary>Starts a fight with the session's current build against the training dummy (average mode, seed 1). Does not
-    /// follow build edits until <see cref="Attach"/>.</summary>
+    /// <summary>Starts a fight with the session's current build against the training dummy in roll mode, seed 1 (spec 6.2: real
+    /// crits and ailment rolls; <see cref="SetMode"/> switches to average). Does not follow build edits until <see cref="Attach"/>.</summary>
     public TrainingRoom(SandboxSession session)
     {
         _session = session;
@@ -58,7 +58,7 @@ public sealed class TrainingRoom
     }
 
     public string DummyId { get; private set; } = DefaultDummyId;
-    public SimMode Mode { get; private set; } = SimMode.Average;
+    public SimMode Mode { get; private set; } = SimMode.Roll;
     public int Seed { get; private set; } = 1;
 
     /// <summary>A fight is going on (false for an illegal build or an unknown dummy).</summary>

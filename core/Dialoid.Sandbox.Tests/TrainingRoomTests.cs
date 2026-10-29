@@ -373,6 +373,8 @@ public class TrainingRoomTests
     {
         var room = new TrainingRoom(Rooms.Fireball());
         Assert.True(room.Running);
+        Assert.Equal(SimMode.Roll, room.Mode); // spec 6.2: roll by default, seed 1
+        Assert.Equal(1, room.Seed);
 
         room.SetDummy("no_such_dummy");
         Assert.False(room.Running);
@@ -388,5 +390,9 @@ public class TrainingRoomTests
         Assert.Equal(SimMode.Roll, room.Mode);
         Assert.Equal(7, room.Seed);
         Assert.Equal("Режим «бросок» — бой начат заново", room.LogLines[^1]);
+
+        room.SetMode(SimMode.Average, 1);
+        Assert.Equal(SimMode.Average, room.Mode);
+        Assert.Equal("Режим «среднее» — бой начат заново", room.LogLines[^1]);
     }
 }
