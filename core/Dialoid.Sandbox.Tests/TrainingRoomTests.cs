@@ -289,6 +289,21 @@ public class TrainingRoomTests
     }
 
     [Fact]
+    public void Log_keeps_the_newest_lines_past_twice_the_cap()
+    {
+        var room = new TrainingRoom(Rooms.Crush());
+        var presses = 2 * TrainingRoom.MaxLogLines + 7;
+        for (var i = 0; i < presses; i++) room.Press(i % 2 == 0 ? Rooms.WhirlwindSlot : Rooms.CleaveSlot, 10, true);
+
+        var lines = room.LogLines;
+        Assert.Equal(TrainingRoom.MaxLogLines, lines.Count);
+        Assert.Equal(lines, Enumerable.Range(0, lines.Count).Select(i => lines[i]));
+        Assert.Contains("Вихрь · отказ: цель вне досягаемости", lines[^1]); // the last press (even index)
+        Assert.Contains("Рассекающий удар · отказ: цель вне досягаемости", lines[^2]);
+        Assert.Throws<ArgumentOutOfRangeException>(() => lines[TrainingRoom.MaxLogLines]);
+    }
+
+    [Fact]
     public void Combat_log_line_formats()
     {
         var text = new CombatLogText(TestData.Data);

@@ -33,7 +33,8 @@ public sealed class TrainingRoom
     private readonly SandboxSession _session;
     private readonly CombatLogText _text;
     private readonly List<FightSegment> _segments = new();
-    private readonly List<string> _log = new();
+    private readonly List<string> _log = new(); // up to 2 × MaxLogLines; trimmed in batches, shown through _logTail
+    private readonly LogTail _logTail;
     private LiveFight? _fight;
     private Build _build = new();
     // Player slot (index, 1-based) → the fight's slot (1-based among the filled ones), 0 for an empty slot; and back.
@@ -54,6 +55,7 @@ public sealed class TrainingRoom
     {
         _session = session;
         _text = new CombatLogText(session.Data);
+        _logTail = new LogTail(_log);
         Restart(null);
     }
 
@@ -87,7 +89,7 @@ public sealed class TrainingRoom
     public FightSegment? Current => _segments.Count > 0 && _segments[^1].IsOpen ? _segments[^1] : null;
 
     /// <summary>The latest Russian log lines, oldest first, at most <see cref="MaxLogLines"/>.</summary>
-    public IReadOnlyList<string> LogLines => _log;
+    public IReadOnlyList<string> LogLines => _logTail;
 
     /// <summary>Raised after anything shown changed: steps made, a restart, a logged refusal, a meter reset.</summary>
     public event Action? Updated;
@@ -324,6 +326,26 @@ public sealed class TrainingRoom
     private void AddLog(string line)
     {
         _log.Add(line);
-        if (_log.Count > MaxLogLines) _log.RemoveRange(0, _log.Count - MaxLogLines);
+        if (_log.Count >= 2 * MaxLogLines) _log.RemoveRange(0, _log.Count - MaxLogLines); // in batches: amortized O(1)
+    }
+
+    /// <summary>The newest <see cref="MaxLogLines"/> lines of the log list (which holds up to twice as many), oldest first.</summary>
+    private sealed class LogTail : IReadOnlyList<string>
+    {
+        private readonly List<string> _lines;
+
+        public LogTail(List<string> lines) => _lines = lines;
+
+        public int Count => Math.Min(_lines.Count, MaxLogLines);
+
+        public string this[int index] =>
+            (uint)index < (uint)Count ? _lines[_lines.Count - Count + index] : throw new ArgumentOutOfRangeException(nameof(index));
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            for (var i = _lines.Count - Count; i < _lines.Count; i++) yield return _lines[i];
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
