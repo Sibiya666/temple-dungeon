@@ -177,6 +177,24 @@ public class LiveFightTests
     }
 
     [Fact]
+    public void Hold_refusal_says_why_a_slot_cannot_be_held()
+    {
+        var fight = Start("warrior_berserker_whirlwind");
+        Assert.Equal(PressRefusal.None, fight.HoldRefusal(Whirlwind));
+        Assert.Equal(PressRefusal.EmptySlot, fight.HoldRefusal(0));
+        Assert.Equal(PressRefusal.EmptySlot, fight.HoldRefusal(6));
+
+        var build = ContentHarness.LoadBuild("warrior_berserker_whirlwind");
+        build.Slots[ThrowingAxe - 1] = new SkillSlot { SkillId = "returning_axe", Level = 20 };
+        build.WeaponId = null;
+        var rigged = new LiveFight(FightSetup.Unchecked(ContentHarness.Data, MechanicRegistry.Default, build, "training"),
+            new LiveFightConfig("training", SimMode.Average));
+        Assert.Equal(PressRefusal.TriggeredOnly, rigged.HoldRefusal(ThrowingAxe));
+        Assert.Equal(PressRefusal.WeaponMismatch, rigged.HoldRefusal(Whirlwind)); // an attack without a weapon
+        Assert.Equal(PressRefusal.None, rigged.HoldRefusal(BattleCry));
+    }
+
+    [Fact]
     public void Not_enough_resource_is_refused()
     {
         var fight = Start("warrior_berserker_whirlwind"); // Fury starts empty

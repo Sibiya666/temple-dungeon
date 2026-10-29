@@ -86,11 +86,24 @@ public sealed class LiveFight
     /// <summary>
     /// Holds a slot's key: whenever the character is free and the skill is usable, it is used (a channel keeps channelling; any
     /// other skill repeats). Empty slots, triggered-only skills and skills the weapon cannot use are ignored. A pressed skill
-    /// goes before the held one.
+    /// goes before the held one. <see cref="HoldRefusal"/> tells beforehand whether the slot will be held.
     /// </summary>
     public void StartChannel(int slot)
     {
         if (SkillAt(slot) is { IsTriggeredOnly: false } skill && skill.WeaponFits(_engine.Weapon)) _commands.Hold(skill);
+    }
+
+    /// <summary>
+    /// Why <see cref="StartChannel"/> would not hold the slot (1-based): <see cref="PressRefusal.FightOver"/>,
+    /// <see cref="PressRefusal.EmptySlot"/>, <see cref="PressRefusal.TriggeredOnly"/> or <see cref="PressRefusal.WeaponMismatch"/>;
+    /// <see cref="PressRefusal.None"/> when it will. Cooldown and resource are not checked: a held key waits for them.
+    /// </summary>
+    public PressRefusal HoldRefusal(int slot)
+    {
+        if (_engine.IsOver) return PressRefusal.FightOver;
+        if (SkillAt(slot) is not { } skill) return PressRefusal.EmptySlot;
+        if (skill.IsTriggeredOnly) return PressRefusal.TriggeredOnly;
+        return skill.WeaponFits(_engine.Weapon) ? PressRefusal.None : PressRefusal.WeaponMismatch;
     }
 
     /// <summary>Releases the held key: the tick in progress finishes, no new one starts.</summary>
