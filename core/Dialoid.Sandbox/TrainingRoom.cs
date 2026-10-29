@@ -213,7 +213,7 @@ public sealed class TrainingRoom
     private PressResult? Reach(int slot, double distanceTiles, bool targetOnScreen)
     {
         if (_fight == null) return new PressResult(false, false, PressRefusal.FightOver, null);
-        if (_fight.CompiledTags(slot) is not { } tags) return null; // empty slot: the fight refuses it
+        if (CompiledTags(slot) is not { } tags) return null; // empty slot (player slot, mapped): the fight refuses it
         var why = ReachRules.Check(tags, distanceTiles, targetOnScreen);
         return why == PressRefusal.None ? null : new PressResult(false, false, why, null);
     }
@@ -227,7 +227,7 @@ public sealed class TrainingRoom
         _heldSlot = null; // held and queued keys die with the old fight
         _build = _session.Build;
         MapSlots();
-        _fight =LiveFight.Start(_session.Data, MechanicRegistry.Default, _build,
+        _fight = LiveFight.Start(_session.Data, MechanicRegistry.Default, _build,
             new LiveFightConfig(DummyId, Mode, Seed), out var violations);
         _violations = _fight == null ? violations : Array.Empty<RuleViolation>();
         if (line != null) AddLog(line);

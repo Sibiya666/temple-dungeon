@@ -399,6 +399,73 @@ public class TrainingRoomTests
     }
 
     [Fact]
+    public void Reach_rule_checks_the_player_slot_skill_after_a_gap_before_melee()
+    {
+        // Battle cry and Charge removed: Crush 3, Whirlwind 4, Cleave 5 are the fight's slots 1–3.
+        var s = Rooms.Crush();
+        Assert.True(s.SetSlotSkill(0, null).Ok);
+        Assert.True(s.SetSlotSkill(1, null).Ok);
+        Assert.Empty(s.Violations);
+        var room = new TrainingRoom(s);
+        Assert.True(room.Running);
+        Assert.True(room.CompiledTags(Rooms.WhirlwindSlot)!.Value.Contains("channel"));
+
+        Assert.Equal(PressRefusal.OutOfReach, room.Press(Rooms.WhirlwindSlot, 10, true).Refusal);
+        Assert.Contains("Вихрь · отказ: цель вне досягаемости", room.LogLines[^1]);
+        Assert.Equal(PressRefusal.OutOfReach, room.Press(Rooms.CleaveSlot, 10, true).Refusal);
+        Assert.Contains("Рассекающий удар · отказ: цель вне досягаемости", room.LogLines[^1]);
+        Assert.Equal(PressRefusal.OutOfReach, room.StartChannel(Rooms.WhirlwindSlot, 10, true).Refusal);
+
+        Rooms.Hammer(room, Rooms.CleaveSlot, 3); // Fury for Whirlwind
+        Assert.True(room.StartChannel(Rooms.WhirlwindSlot, 1, true).Accepted);
+        Rooms.Steps(room, 20);
+        Assert.Equal("whirlwind", room.State!.ChannelSkillId);
+        for (var i = 0; i < 60; i++)
+        {
+            room.UpdateReach(10, true);
+            room.Advance(LiveFight.StepSec);
+        }
+        Assert.Null(room.State!.ChannelSkillId);
+        Assert.Single(room.LogLines, l => l.Contains("Вихрь · отказ: цель вне досягаемости", StringComparison.Ordinal)
+            && !l.StartsWith("0,0 с", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Reach_rule_checks_the_player_slot_skill_after_a_gap_before_a_ground_spell()
+    {
+        // Blink removed, Meteor without «Звездопад» (aimed at the ground): Meteor 2 is the fight's slot 1.
+        var s = Rooms.Fireball();
+        Assert.True(s.RemoveSkillNodePoint(Rooms.MeteorSlot - 1, "starfall").Ok);
+        Assert.True(s.SetSlotSkill(0, null).Ok);
+        Assert.Empty(s.Violations);
+        var room = new TrainingRoom(s);
+        Assert.True(room.Running);
+        Assert.False(room.CompiledTags(Rooms.MeteorSlot)!.Value.Contains("projectile"));
+
+        Assert.Equal(PressRefusal.OutOfReach, room.Press(Rooms.MeteorSlot, 20, false).Refusal);
+        Assert.Contains("Метеор · отказ: цель вне досягаемости", room.LogLines[^1]);
+        Assert.True(room.Press(Rooms.SparkSlot, 20, false).Accepted); // a projectile may fly off the screen
+
+        for (var i = 0; i < 100; i++) room.Advance(LiveFight.StepSec);
+        Assert.True(room.StartChannel(Rooms.MeteorSlot, 20, true).Accepted);
+        for (var i = 0; i < 100 && !room.LogLines.Any(l => l.Contains("Метеор · применение", StringComparison.Ordinal)); i++)
+        {
+            room.UpdateReach(20, true);
+            room.Advance(LiveFight.StepSec);
+        }
+        Assert.Contains(room.LogLines, l => l.Contains("Метеор · применение", StringComparison.Ordinal));
+        var before = room.LogLines.Count(l => l.Contains("Метеор · отказ: цель вне досягаемости", StringComparison.Ordinal));
+        for (var i = 0; i < 200; i++)
+        {
+            room.UpdateReach(20, false);
+            room.Advance(LiveFight.StepSec);
+        }
+        Assert.Equal(before + 1, room.LogLines.Count(l => l.Contains("Метеор · отказ: цель вне досягаемости", StringComparison.Ordinal)));
+        var released = room.LogLines.Select((l, i) => (l, i)).Last(x => x.l.Contains("Метеор · отказ: цель вне досягаемости", StringComparison.Ordinal)).i;
+        Assert.DoesNotContain(room.LogLines.Skip(released + 1), l => l.Contains("Метеор · применение", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Illegal_build_starts_no_fight_and_reports_violations()
     {
         var s = Rooms.Fireball();
