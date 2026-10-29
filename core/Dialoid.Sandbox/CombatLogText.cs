@@ -71,6 +71,9 @@ public sealed class CombatLogText
     /// <summary>Russian name of a meter mode.</summary>
     public static string MeterModeName(MeterMode mode) => Texts.MeterModeName(mode);
 
+    /// <summary>Russian name of a shown mechanic stack or target debuff (<see cref="TimedEffect.Id"/>); null for an unknown one.</summary>
+    public static string? MechanicStackName(string id) => Texts.MechanicStackName(id);
+
     /// <summary>The skill's name from the data; an unknown id is returned as is.</summary>
     public string SkillName(string id) => _data.Skills.TryGetValue(id, out var s) ? s.Name : id;
 

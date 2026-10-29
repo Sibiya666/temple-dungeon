@@ -310,6 +310,34 @@ public class TrainingRoomTests
             "warrior_berserker_whirlwind.json", "warrior_fire_cleave_crit.json", "warrior_thunderer_crush.json",
         }.Select(f => new object[] { f });
 
+    /// <summary>Every mechanic stack and target debuff the combat screen shows on the reference builds has a Russian name.</summary>
+    [Fact]
+    public void Every_shown_mechanic_stack_has_a_russian_name()
+    {
+        var shown = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var file in MainBuilds().Select(b => (string)b[0]))
+        {
+            var s = Rooms.Load(file);
+            var slots = Enumerable.Range(1, SandboxSession.SlotCount).Where(k => s.GetSlot(k - 1) != null).ToList();
+            var room = new TrainingRoom(s);
+            for (var i = 0; i < 600; i++) // 30 s
+            {
+                foreach (var slot in slots) room.Press(slot, 1, true);
+                room.Advance(LiveFight.StepSec);
+                var state = room.State!;
+                foreach (var e in state.HeroEffects.Concat(state.TargetEffects.SelectMany(t => t))
+                             .Where(e => e.Kind is TimedEffectKind.MechanicStack or TimedEffectKind.Debuff))
+                {
+                    var name = CombatLogText.MechanicStackName(e.Id);
+                    Assert.True(name != null && !Latin.IsMatch(name), $"{file}: {e.Id}");
+                    shown.Add(e.Id);
+                }
+            }
+        }
+        Assert.Contains("static_charge:charges", shown); // the thunderer's charges
+        Assert.All(LiveFight.ShownCounters, id => Assert.NotNull(CombatLogText.MechanicStackName(id)));
+    }
+
     /// <summary>Safety net: every reference build on every dummy, every filled slot pressed in reach, gives only Russian lines.</summary>
     [Theory]
     [MemberData(nameof(MainBuilds))]

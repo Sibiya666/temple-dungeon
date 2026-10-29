@@ -219,6 +219,16 @@ internal static class Texts
         : text.StartsWith("freeze on #", StringComparison.Ordinal) && text.EndsWith(" shattered", StringComparison.Ordinal) ? "заморозка разбита"
         : null;
 
+    // Every id of LiveFight.ShownCounters (and every mechanic debuff on a target) needs its Russian name here.
+    private static readonly Dictionary<string, string> MechanicStackNames = new(StringComparer.Ordinal)
+    {
+        ["static_charge:charges"] = "Статический заряд",
+    };
+
+    /// <summary>Russian name of a shown mechanic stack or target debuff (<see cref="Dialoid.Core.Simulation.TimedEffect.Id"/>);
+    /// null for an unknown one.</summary>
+    public static string? MechanicStackName(string id) => MechanicStackNames.GetValueOrDefault(id);
+
     public const string MitigationFinal = "дошло";
     public const string MitigationArmor = "броня";
     public const string MitigationResist = "сопротивления";
