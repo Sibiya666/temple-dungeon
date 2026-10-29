@@ -303,6 +303,46 @@ public class TrainingRoomTests
         Assert.Throws<ArgumentOutOfRangeException>(() => lines[TrainingRoom.MaxLogLines]);
     }
 
+    public static IEnumerable<object[]> MainBuilds() =>
+        new[]
+        {
+            "sorcerer_cryomancer_ice_lance.json", "sorcerer_pyromancer_fireball.json", "sorcerer_spark_hybrid.json",
+            "warrior_berserker_whirlwind.json", "warrior_fire_cleave_crit.json", "warrior_thunderer_crush.json",
+        }.Select(f => new object[] { f });
+
+    /// <summary>Safety net: every reference build on every dummy, every filled slot pressed in reach, gives only Russian lines.</summary>
+    [Theory]
+    [MemberData(nameof(MainBuilds))]
+    public void Every_log_line_is_russian_for_reference_builds_on_every_dummy(string file)
+    {
+        var bareMechanic = new Regex(@"^\d+,\d с · механика$", RegexOptions.CultureInvariant);
+        var s = Rooms.Load(file);
+        var slots = Enumerable.Range(1, SandboxSession.SlotCount).Where(k => s.GetSlot(k - 1) != null).ToList();
+        foreach (var mode in new[] { SimMode.Roll, SimMode.Average })
+        foreach (var dummy in TestData.Data.Dummies.Keys.Order(StringComparer.Ordinal))
+        {
+            var room = new TrainingRoom(s);
+            room.SetMode(mode, 1);
+            room.SetDummy(dummy);
+            var what = $"{file} {dummy} {mode}";
+            Assert.True(room.Running, what);
+            var hits = false;
+            for (var i = 1; i <= 600; i++) // 30 s
+            {
+                foreach (var slot in slots) room.Press(slot, 1, true);
+                room.Advance(LiveFight.StepSec);
+                if (i % 40 != 0) continue; // check every 2 s, well inside the log window
+                foreach (var line in room.LogLines)
+                {
+                    Assert.True(!Latin.IsMatch(line), $"{what}: {line}");
+                    Assert.True(!bareMechanic.IsMatch(line), $"{what}: {line}");
+                    hits |= line.Contains(" · попадание", StringComparison.Ordinal);
+                }
+            }
+            Assert.True(hits, $"{what}: no hits logged");
+        }
+    }
+
     [Fact]
     public void Combat_log_line_formats()
     {
