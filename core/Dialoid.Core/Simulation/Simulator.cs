@@ -46,10 +46,6 @@ public sealed class Simulator
         var character = new CharacterCompiler(_data, _mechanics).Compile(build);
         WeaponStub? weapon = build.WeaponId != null ? _data.Weapons[build.WeaponId] : null;
         var skills = character.Skills.Select(s => new SkillRuntime(_data, character, s)).ToList();
-        var run = new SimRun(_data, _mechanics, character, weapon, skills, new Rotation(build, skills), dummy!, config)
-        {
-            StepObserver = StepObserver,
-        };
-        return run.Execute();
+        return new SimRun(_data, _mechanics, character, weapon, skills, new Rotation(build, skills), dummy!, config, StepObserver).Execute();
     }
 }

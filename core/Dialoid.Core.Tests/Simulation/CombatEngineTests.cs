@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Dialoid.Core.Builds;
+using Dialoid.Core.Character;
 using Dialoid.Core.Effects;
 using Dialoid.Core.Simulation;
 using Dialoid.Core.Tests.Content;
@@ -12,7 +13,7 @@ namespace Dialoid.Core.Tests.Simulation;
 
 /// <summary>
 /// The shared step engine (training room plan, task 1). The reference results in engine-baseline.json were taken from the simulator
-/// before the step loop moved into <c>CombatEngine</c>; every build file × dummy preset × mode must still match them to the bit.
+/// before the step loop moved into <see cref="CombatEngine"/>; every build file × dummy preset × mode must still match them to the bit.
 /// Set DIALOID_WRITE_BASELINE=1 to rewrite the baseline from the current code.
 /// </summary>
 public class CombatEngineTests
@@ -43,6 +44,54 @@ public class CombatEngineTests
         foreach (var (run, fields) in expected)
             foreach (var (field, value) in fields)
                 Assert.True(value == actual[run][field], $"{run} {field}: expected {value}, got {actual[run][field]}");
+    }
+
+    [Fact]
+    public void Infinite_life_only_removes_target_death()
+    {
+        var build = ContentHarness.LoadBuild("sorcerer_pyromancer_fireball");
+        var config = new SimConfig("boss", SimMode.Average);
+        var normal = new Simulator(ContentHarness.Data, MechanicRegistry.Default).Run(build, config);
+        Assert.NotNull(normal.TimeToKill); // the boss dies within the run without the flag
+
+        // The whole run: the boss never dies, so the fight lasts every step.
+        var (endless, endlessRotation) = Engine(build, config, infiniteLife: true);
+        var steps = (int)Math.Round(config.DurationSec / config.StepSec);
+        for (var i = 0; i < steps; i++) Assert.True(endless.Step(endlessRotation), $"the fight ended at step {i}");
+        var full = endless.Result();
+        Assert.Null(full.TimeToKill);
+        Assert.Equal(config.DurationSec, endless.Time, 9);
+        Assert.DoesNotContain(full.Log, e => e.Kind == "kill");
+        Assert.True(full.HitDamage + full.DotDamage > normal.HitDamage + normal.DotDamage);
+
+        // Until the boss would die, both engines deal the same damage to the bit.
+        var beforeDeath = (int)Math.Floor(normal.TimeToKill!.Value / config.StepSec) - 1;
+        var (mortal, mortalRotation) = Engine(build, config, infiniteLife: false);
+        var (immortal, immortalRotation) = Engine(build, config, infiniteLife: true);
+        for (var i = 0; i < beforeDeath; i++)
+        {
+            Assert.True(mortal.Step(mortalRotation));
+            Assert.True(immortal.Step(immortalRotation));
+        }
+        var a = mortal.Result();
+        var b = immortal.Result();
+        Assert.True(a.HitDamage + a.DotDamage > 0);
+        Assert.Equal(a.DamageBySkill, b.DamageBySkill);
+        Assert.Equal(a.DamageByType, b.DamageByType);
+        Assert.Equal(a.HitDamage, b.HitDamage);
+        Assert.Equal(a.DotDamage, b.DotDamage);
+    }
+
+    /// <summary>The engine for a build, set up the way <see cref="Simulator.Run"/> sets up its run.</summary>
+    private static (CombatEngine Engine, Rotation Rotation) Engine(Build build, SimConfig config, bool infiniteLife)
+    {
+        var data = ContentHarness.Data;
+        build = BuildRules.Normalized(build);
+        var character = new CharacterCompiler(data, MechanicRegistry.Default).Compile(build);
+        var weapon = build.WeaponId != null ? data.Weapons[build.WeaponId] : null;
+        var skills = character.Skills.Select(s => new SkillRuntime(data, character, s)).ToList();
+        var engine = new CombatEngine(data, MechanicRegistry.Default, character, weapon, skills, data.Dummies[config.DummyId], config, infiniteLife);
+        return (engine, new Rotation(build, skills));
     }
 
     /// <summary>Every build file × dummy preset × (Average, Roll seed 1, Roll seed 7). Presets with an attack run in defensive mode.</summary>

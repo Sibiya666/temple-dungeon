@@ -8,7 +8,7 @@ namespace Dialoid.Core.Simulation;
 /// Priority rotation (spec 11.3): Build.Rotation order (fallback: slot order), all non-generators first, then generators,
 /// so a generator is used only when every spender is blocked. Triggered-only skills never enter the rotation.
 /// </summary>
-internal sealed class Rotation
+internal sealed class Rotation : ICommandSource
 {
     private const double Eps = 1e-9;
 
@@ -23,6 +23,11 @@ internal sealed class Rotation
     }
 
     public bool IsEmpty => Order.Count == 0;
+
+    /// <summary>A non-empty rotation with nothing usable is starved (logged as no_resource).</summary>
+    public bool WantsToAct => !IsEmpty;
+
+    public SkillRuntime? Next(SimState s, IConditionContext c, WeaponStub? weapon) => Pick(s, c, weapon);
 
     /// <summary>First skill whose cooldown is ready, whose cost is affordable and whose weapon requirement is met.</summary>
     public SkillRuntime? Pick(SimState s, IConditionContext c, WeaponStub? weapon)
