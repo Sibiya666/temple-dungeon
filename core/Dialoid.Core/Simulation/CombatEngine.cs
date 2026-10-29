@@ -3,6 +3,7 @@ using Dialoid.Core.Combat;
 using Dialoid.Core.Data;
 using Dialoid.Core.Effects;
 using Dialoid.Core.Skills;
+using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Simulation;
 
@@ -101,6 +102,20 @@ internal sealed class CombatEngine
 
     /// <summary>Simulated time: the steps taken so far, or the moment the fight ended.</summary>
     public double Time => _over ? _elapsed : _stepsDone * _config.StepSec;
+
+    /// <summary>True once the fight ended (every target dead for good, or the character dead).</summary>
+    public bool IsOver => _over;
+
+    /// <summary>The live state (live play reads cooldowns, buffs and the busy time from it; tests may adjust it).</summary>
+    public SimState State => _s;
+
+    /// <summary>Condition context of the fight, for checks made between steps.</summary>
+    public IConditionContext Conditions => _conditions;
+
+    public WeaponStub? Weapon => _weapon;
+
+    /// <summary>The event log so far (capped at <see cref="SimLog.Cap"/> events).</summary>
+    public IReadOnlyList<SimEvent> Events => _log.Events;
 
     /// <summary>Length of a full offline run: the survival cap in defensive mode (the dummy attacks), DurationSec otherwise.</summary>
     public double SpanSec => _defensive ? _config.SurvivalCapSec : _config.DurationSec;

@@ -33,13 +33,21 @@ internal sealed class Rotation : ICommandSource
     public SkillRuntime? Pick(SimState s, IConditionContext c, WeaponStub? weapon)
     {
         foreach (var skill in Order)
-        {
-            if (s.CooldownReadyAt.TryGetValue(skill.Id, out var ready) && ready > s.Time + Eps) continue;
-            if (!skill.WeaponFits(weapon)) continue;
-            if (skill.OwnBuffIds.Any(id => s.Buffs.TryGetValue(id, out var left) && left > 0)) continue; // buff still running
-            if (skill.Cost(c) / skill.TickSpeed(s, s.Time) > s.Resource + Eps) continue;
-            return skill;
-        }
+            if (Refusal(skill, s, c, weapon, s.Time) == PressRefusal.None) return skill;
         return null;
+    }
+
+    /// <summary>
+    /// Why <paramref name="skill"/> cannot be used now (None when it can): the checks of <see cref="Pick"/>, shared with live
+    /// key presses. Order: weapon, own buff still running, cooldown (ready by <paramref name="readyBy"/>, the time the use would
+    /// start), resource.
+    /// </summary>
+    public static PressRefusal Refusal(SkillRuntime skill, SimState s, IConditionContext c, WeaponStub? weapon, double readyBy)
+    {
+        if (!skill.WeaponFits(weapon)) return PressRefusal.WeaponMismatch;
+        if (skill.OwnBuffIds.Any(id => s.Buffs.TryGetValue(id, out var left) && left > 0)) return PressRefusal.BuffActive;
+        if (s.CooldownReadyAt.TryGetValue(skill.Id, out var ready) && ready > readyBy + Eps) return PressRefusal.Cooldown;
+        if (skill.Cost(c) / skill.TickSpeed(s, s.Time) > s.Resource + Eps) return PressRefusal.NotEnoughResource;
+        return PressRefusal.None;
     }
 }
