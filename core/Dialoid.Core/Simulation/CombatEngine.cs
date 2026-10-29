@@ -358,7 +358,7 @@ internal sealed class CombatEngine
         return !_dummy.Respawn && _s.PrimaryIndex < 0;
     }
 
-    // ---- Hook points. Procs are handled by ProcEngine (Task 14); the dummy's attacks (defensive mode) come in Task 15. ----
+    // ---- Hook points: mechanics, then procs (ProcEngine). The dummy's attacks (defensive mode) are in DummyAttackStep. ----
 
     /// <summary>Mechanic OnUse, then on_use / every_n_uses procs.</summary>
     private void OnUse(SkillRuntime skill, double resourcePaid)
