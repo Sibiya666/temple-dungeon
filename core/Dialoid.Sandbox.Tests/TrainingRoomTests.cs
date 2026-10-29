@@ -159,9 +159,20 @@ public class TrainingRoomTests
         Rooms.Steps(room, 20);
         Assert.NotNull(room.Current);
         Assert.Equal("whirlwind", room.State!.ChannelSkillId);
-        room.Press(Rooms.CleaveSlot, 1, true); // queued behind the channel tick (or refused busy)
+
+        // Queue Cleave behind a channel tick: press only while busy, step until the press is taken as queued.
+        PressResult? queued = null;
+        for (var i = 0; i < 40 && queued is not { Queued: true }; i++)
+        {
+            if (room.State!.Busy) queued = room.Press(Rooms.CleaveSlot, 1, true);
+            if (queued is not { Queued: true }) room.Advance(LiveFight.StepSec);
+        }
+        Assert.NotNull(queued);
+        Assert.True(queued!.Accepted);
+        Assert.True(queued.Queued);
 
         Assert.True(s.SetRotation(Enumerable.Reverse(s.Build.Rotation).ToList()).Ok);
+        var restartAt = room.LogLines.Count;
 
         var state = room.State!;
         Assert.Equal(0, state.Time, 9);
@@ -175,7 +186,62 @@ public class TrainingRoomTests
         Assert.Null(room.Current);
         Assert.Single(room.Segments);
         Assert.Null(room.State!.ChannelSkillId);
+        var after = room.LogLines.Skip(restartAt).ToList();
+        Assert.DoesNotContain(after, l => l.Contains("Рассекающий удар", StringComparison.Ordinal));
+        Assert.DoesNotContain(after, l => l.Contains("Вихрь", StringComparison.Ordinal));
         room.Detach();
+    }
+
+    [Fact]
+    public void Held_whirlwind_stops_when_the_hero_walks_out_of_melee_reach()
+    {
+        var room = new TrainingRoom(Rooms.Crush());
+        Rooms.Hammer(room, Rooms.CleaveSlot, 3); // Fury for Whirlwind
+        Assert.True(room.StartChannel(Rooms.WhirlwindSlot, 1, true).Accepted);
+        for (var i = 0; i < 20; i++)
+        {
+            room.UpdateReach(ReachRules.MeleeTiles, true); // still in reach: nothing happens
+            room.Advance(LiveFight.StepSec);
+        }
+        Assert.Equal("whirlwind", room.State!.ChannelSkillId);
+        Assert.DoesNotContain(room.LogLines, l => l.Contains("вне досягаемости", StringComparison.Ordinal));
+
+        for (var i = 0; i < 60; i++)
+        {
+            room.UpdateReach(10, true);
+            room.Advance(LiveFight.StepSec);
+        }
+
+        var refusals = room.LogLines.Select((l, i) => (l, i)).Where(x => x.l.Contains("Вихрь · отказ: цель вне досягаемости", StringComparison.Ordinal)).ToList();
+        var single = Assert.Single(refusals); // logged once, not every step
+        Assert.DoesNotContain(room.LogLines.Skip(single.i + 1), l => l.Contains("Вихрь · применение", StringComparison.Ordinal));
+        Assert.Null(room.State!.ChannelSkillId);
+    }
+
+    [Fact]
+    public void Held_ground_spell_stops_when_the_dummy_leaves_the_screen()
+    {
+        var s = Rooms.Fireball();
+        Assert.True(s.RemoveSkillNodePoint(Rooms.MeteorSlot - 1, "starfall").Ok);
+        var room = new TrainingRoom(s);
+
+        Assert.True(room.StartChannel(Rooms.MeteorSlot, 20, true).Accepted);
+        for (var i = 0; i < 400 && !room.LogLines.Any(l => l.Contains("Метеор · применение", StringComparison.Ordinal)); i++)
+        {
+            room.UpdateReach(20, true);
+            room.Advance(LiveFight.StepSec);
+        }
+        Assert.Contains(room.LogLines, l => l.Contains("Метеор · применение", StringComparison.Ordinal));
+
+        for (var i = 0; i < 400; i++) // 20 s: several Meteor cooldowns
+        {
+            room.UpdateReach(20, false);
+            room.Advance(LiveFight.StepSec);
+        }
+
+        var refusals = room.LogLines.Select((l, i) => (l, i)).Where(x => x.l.Contains("Метеор · отказ: цель вне досягаемости", StringComparison.Ordinal)).ToList();
+        var single = Assert.Single(refusals);
+        Assert.DoesNotContain(room.LogLines.Skip(single.i + 1), l => l.Contains("Метеор · применение", StringComparison.Ordinal));
     }
 
     [Fact]

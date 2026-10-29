@@ -34,6 +34,7 @@ public sealed class TrainingRoom
     private readonly List<string> _log = new();
     private LiveFight? _fight;
     private Build _build = new();
+    private int? _heldSlot;
     private IReadOnlyList<RuleViolation> _violations = Array.Empty<RuleViolation>();
     private int _revision;
     private long _steps;
@@ -131,6 +132,7 @@ public sealed class TrainingRoom
     /// fight's own checks. Every refusal is logged.</summary>
     public PressResult Press(int slot, double distanceTiles, bool targetOnScreen)
     {
+        UpdateReach(distanceTiles, targetOnScreen);
         var r = Reach(slot, distanceTiles, targetOnScreen) ?? _fight!.Press(slot);
         if (!r.Accepted) LogRefusal(slot, r);
         return r;
@@ -139,10 +141,11 @@ public sealed class TrainingRoom
     /// <summary>
     /// Holds a slot's key (channel or repeat), after the reach rule. Returns the refusal (logged) when the dummy is out of reach or
     /// there is no fight; otherwise accepted — the fight then ignores a slot it cannot hold (empty, triggered-only, wrong weapon).
-    /// The reach is checked at the start only: the game layer calls <see cref="StopChannel"/> when the hero leaves the reach.
+    /// The hold stays under the reach rule: see <see cref="UpdateReach"/>.
     /// </summary>
     public PressResult StartChannel(int slot, double distanceTiles, bool targetOnScreen)
     {
+        UpdateReach(distanceTiles, targetOnScreen);
         var refused = Reach(slot, distanceTiles, targetOnScreen);
         if (refused != null)
         {
@@ -150,10 +153,28 @@ public sealed class TrainingRoom
             return refused;
         }
         _fight!.StartChannel(slot);
+        _heldSlot = slot;
         return new PressResult(true, false, PressRefusal.None, null);
     }
 
-    public void StopChannel() => _fight?.StopChannel();
+    /// <summary>Releases the held key.</summary>
+    public void StopChannel()
+    {
+        _heldSlot = null;
+        _fight?.StopChannel();
+    }
+
+    /// <summary>
+    /// Where the hero is now relative to the dummy (the game layer reports it every frame, or whenever it changes; presses report it
+    /// too). A held key whose skill is no longer in reach (Whirlwind once the hero walks past <see cref="ReachRules.MeleeTiles"/>,
+    /// Meteor once the dummy leaves the screen) is released, with one «вне досягаемости» refusal in the log.
+    /// </summary>
+    public void UpdateReach(double distanceTiles, bool targetOnScreen)
+    {
+        if (_heldSlot is not { } slot || Reach(slot, distanceTiles, targetOnScreen) is not { } refused) return;
+        StopChannel();
+        LogRefusal(slot, refused);
+    }
 
     /// <summary>The meter's «Сбросить»: forgets every segment; the next damage starts a new one. The log stays.</summary>
     public void ResetMeter()
@@ -183,6 +204,7 @@ public sealed class TrainingRoom
         _revision = _session.Revision;
         _steps = 0;
         _pendingDt = 0;
+        _heldSlot = null; // held and queued keys die with the old fight
         _build = _session.Build;
         _fight = LiveFight.Start(_session.Data, MechanicRegistry.Default, _build,
             new LiveFightConfig(DummyId, Mode, Seed), out var violations);
