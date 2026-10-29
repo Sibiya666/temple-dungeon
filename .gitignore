@@ -5,3 +5,8 @@ obj/
 .DS_Store
 TestResults/
 .superpowers/
+
+# local assets and 3D prototype, not in git (licenses)
+assets/
+spike-3d/
+.claude/settings.local.json
