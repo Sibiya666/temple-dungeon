@@ -47,6 +47,8 @@ public partial class Main : Control
     public BreakdownPanel? Breakdown { get; private set; }
     public CharacterPanel? Character { get; private set; }
     public BuildsPanel? Builds { get; private set; }
+    public PassivePanel? Passives { get; private set; }
+    public AscendancyPanel? AscendancyView { get; private set; }
 
     private Label _errorLabel = null!;
     private TabContainer _tabs = null!;
@@ -102,6 +104,14 @@ public partial class Main : Control
         Character = new CharacterPanel { Name = "CharacterPanel" };
         Character.Setup(session, ShowBreakdown);
         AddPanel("Персонаж", Character);
+
+        Passives = new PassivePanel { Name = "PassivePanel" };
+        Passives.Setup(session);
+        AddPanel("Пассивки", Passives);
+
+        AscendancyView = new AscendancyPanel { Name = "AscendancyPanel" };
+        AscendancyView.Setup(session);
+        AddPanel("Асцендант", AscendancyView);
 
         Builds = new BuildsPanel { Name = "BuildsPanel" };
         Builds.Setup(session, DataDirectory);
