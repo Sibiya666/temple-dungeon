@@ -34,6 +34,8 @@ public sealed class SandboxSession
     private readonly SkillSlot?[] _slots = new SkillSlot?[SlotCount];
     private readonly SkillSlot?[] _undo = new SkillSlot?[SlotCount]; // copies; null with _hasUndo = "the slot was empty"
     private readonly bool[] _hasUndo = new bool[SlotCount];
+    // Position the undo skill had in an explicit Build.Rotation when it left the slot (and the rotation); -1 = none.
+    private readonly int[] _undoRotationIndex = NoRotationIndices();
     private Derived? _derived;
 
     /// <summary>Number of skill slots at the maximum level.</summary>
@@ -184,7 +186,8 @@ public sealed class SandboxSession
 
     /// <summary>
     /// Brings back what the slot held before its last change (a skill with its level and nodes, or emptiness); what it
-    /// replaces becomes the new undo, so a second undo redoes.
+    /// replaces becomes the new undo, so a second undo redoes. A skill that left an explicit rotation with the change goes
+    /// back to its old place in it (a rotation emptied meanwhile stays the slot order).
     /// </summary>
     public CommandResult UndoSlot(int slot)
     {
@@ -198,7 +201,11 @@ public sealed class SandboxSession
             if (CheckSlottable(slot, skill) is { } refusal) return refusal;
         }
         else if (_slots[slot] == null) return CommandResult.Fail(Texts.NothingToUndo(slot));
+        int rotationIndex = _undoRotationIndex[slot];
         Replace(slot, previous == null ? null : Copy(previous));
+        // Back into an explicit rotation at its old place, when it was there before it left the slot.
+        if (previous != null && rotationIndex >= 0 && _build.Rotation.Count > 0 && !_build.Rotation.Contains(previous.SkillId))
+            _build.Rotation.Insert(Math.Min(rotationIndex, _build.Rotation.Count), previous.SkillId);
         return Commit();
     }
 
@@ -391,6 +398,17 @@ public sealed class SandboxSession
     /// <summary>Tree points of the slotted skill not spent yet (0 for an empty slot or when overspent).</summary>
     public int SkillPointsFree(int slot) => Math.Max(0, SkillPointsTotal(slot) - SkillPointsSpent(slot));
 
+    /// <summary>
+    /// True for a skill tagged "generator": the simulator's rotation uses generators only when every other skill is blocked,
+    /// whatever their place in <see cref="Build.Rotation"/>. A slotted skill is judged by its compiled tags (tree nodes may
+    /// add or remove the tag), otherwise by the data. Unknown ids are false.
+    /// </summary>
+    public bool IsGeneratorSkill(string skillId)
+    {
+        if (Compiled?.Skills.FirstOrDefault(k => k.SkillId == skillId) is { } compiled) return compiled.Tags.Contains("generator");
+        return Data.Skills.TryGetValue(skillId, out var s) && s.Tags.Contains("generator");
+    }
+
     /// <summary>True when <see cref="UndoSlot"/> would succeed now.</summary>
     public bool CanUndoSlot(int slot)
     {
@@ -442,13 +460,26 @@ public sealed class SandboxSession
         _undo[slot] = old == null ? null : Copy(old);
         _hasUndo[slot] = true;
         _slots[slot] = value;
-        if (old != null && Filled().All(s => s.SkillId != old.SkillId)) _build.Rotation.RemoveAll(id => id == old.SkillId);
+        _undoRotationIndex[slot] = -1;
+        if (old != null && Filled().All(s => s.SkillId != old.SkillId))
+        {
+            _undoRotationIndex[slot] = _build.Rotation.IndexOf(old.SkillId);
+            _build.Rotation.RemoveAll(id => id == old.SkillId);
+        }
     }
 
     private void ClearUndo()
     {
         Array.Clear(_undo);
         Array.Clear(_hasUndo);
+        Array.Fill(_undoRotationIndex, -1);
+    }
+
+    private static int[] NoRotationIndices()
+    {
+        var indices = new int[SlotCount];
+        Array.Fill(indices, -1);
+        return indices;
     }
 
     /// <summary>Moves filled slots to positions 0..n-1 in order; each keeps its undo memory, empty positions lose theirs.</summary>
@@ -457,6 +488,7 @@ public sealed class SandboxSession
         var slots = new SkillSlot?[SlotCount];
         var undo = new SkillSlot?[SlotCount];
         var hasUndo = new bool[SlotCount];
+        var rotationIndex = NoRotationIndices();
         int k = 0;
         for (int i = 0; i < SlotCount; i++)
         {
@@ -464,11 +496,13 @@ public sealed class SandboxSession
             slots[k] = _slots[i];
             undo[k] = _undo[i];
             hasUndo[k] = _hasUndo[i];
+            rotationIndex[k] = _undoRotationIndex[i];
             k++;
         }
         Array.Copy(slots, _slots, SlotCount);
         Array.Copy(undo, _undo, SlotCount);
         Array.Copy(hasUndo, _hasUndo, SlotCount);
+        Array.Copy(rotationIndex, _undoRotationIndex, SlotCount);
     }
 
     /// <summary>Refusal for putting the skill into the slot: duplicate in another slot, or not available to the build.</summary>

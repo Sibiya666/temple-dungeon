@@ -423,4 +423,55 @@ public class SessionSkillTests
         AssertRefused(s, s.SetRotation(new[] { "fireball", null! }), rev);
         AssertRefused(s, s.SetRotation(new string[] { null! }), rev);
     }
+
+    [Fact]
+    public void Undo_slot_puts_the_skill_back_into_its_rotation_place()
+    {
+        var s = NewSorcerer();
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.True(s.SetSlotSkill(1, "spark").Ok);
+        Assert.True(s.SetSlotSkill(2, "ice_lance").Ok);
+        Assert.True(s.SetRotation(new[] { "spark", "fireball", "ice_lance" }).Ok);
+
+        Assert.True(s.SetSlotSkill(0, null).Ok);
+        Assert.Equal(new[] { "spark", "ice_lance" }, s.Build.Rotation);
+        Assert.True(s.UndoSlot(0).Ok);
+        Assert.Equal(new[] { "spark", "fireball", "ice_lance" }, s.Build.Rotation);
+
+        // Redo (undo again) takes it out again; a replaced skill comes back the same way.
+        Assert.True(s.UndoSlot(0).Ok);
+        Assert.Equal(new[] { "spark", "ice_lance" }, s.Build.Rotation);
+        Assert.True(s.UndoSlot(0).Ok);
+        Assert.True(s.SetSlotSkill(2, "meteor").Ok);
+        Assert.Equal(new[] { "spark", "fireball" }, s.Build.Rotation);
+        Assert.True(s.UndoSlot(2).Ok);
+        Assert.Equal(new[] { "spark", "fireball", "ice_lance" }, s.Build.Rotation);
+    }
+
+    [Fact]
+    public void Undo_slot_leaves_a_slot_order_rotation_alone()
+    {
+        var s = NewSorcerer();
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.True(s.SetSlotSkill(1, "spark").Ok);
+        Assert.True(s.SetSlotSkill(0, null).Ok);
+        Assert.True(s.UndoSlot(0).Ok);
+        Assert.Empty(s.Build.Rotation);
+
+        // A skill that was not in the explicit rotation is not added to it.
+        Assert.True(s.SetSlotSkill(2, "ice_lance").Ok);
+        Assert.True(s.SetRotation(new[] { "spark", "fireball" }).Ok);
+        Assert.True(s.SetSlotSkill(2, null).Ok);
+        Assert.True(s.UndoSlot(2).Ok);
+        Assert.Equal(new[] { "spark", "fireball" }, s.Build.Rotation);
+    }
+
+    [Fact]
+    public void Generator_skills_are_told_by_tags()
+    {
+        var s = NewSorcerer();
+        Assert.True(s.IsGeneratorSkill("spark"));
+        Assert.False(s.IsGeneratorSkill("fireball"));
+        Assert.False(s.IsGeneratorSkill("no_such_skill"));
+    }
 }

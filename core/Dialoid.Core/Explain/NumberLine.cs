@@ -1,4 +1,3 @@
-using System.Globalization;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Explain;
@@ -17,12 +16,7 @@ internal static class SheetFormat
     /// A number in a label or note: at most two decimals, trailing zeros trimmed, Russian decimal comma and the Unicode minus
     /// (45; 0,5; 12,34; −3), the same convention as the sandbox breakdown text.
     /// </summary>
-    public static string Num(double v)
-    {
-        var text = v.ToString("0.##", CultureInfo.InvariantCulture);
-        if (text.StartsWith('-')) text = text == "-0" ? "0" : "\u2212" + text[1..];
-        return text.Replace('.', ',');
-    }
+    public static string Num(double v) => RuNumber.Format(v, "0.##");
 
     public static string TypeName(Combat.DamageType t) => t switch
     {

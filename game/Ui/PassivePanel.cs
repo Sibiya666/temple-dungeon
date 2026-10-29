@@ -1,3 +1,4 @@
+using Dialoid.Core.Character;
 using Dialoid.Core.Passives;
 using Dialoid.Sandbox;
 using Godot;
@@ -77,7 +78,7 @@ public partial class PassivePanel : SessionPanel
         AddChild(_violations);
 
         AttributeMenu = new PopupMenu();
-        foreach (var a in AttributeOrder) AttributeMenu.AddItem(AttributeTitle(a));
+        foreach (var a in AttributeOrder) AttributeMenu.AddItem(a.RussianName());
         AttributeMenu.IndexPressed += i => ChooseFromMenu((int)i);
         AddChild(AttributeMenu);
 
@@ -176,7 +177,7 @@ public partial class PassivePanel : SessionPanel
             Attribute? choice = n.Kind == PassiveKind.Attribute && choices.TryGetValue(n.Id, out var a) ? a : null;
             return new TreeViewNode(n.Id, new Vector2((float)n.X, (float)n.Y), RadiusOf(n.Kind),
                 n.Kind is PassiveKind.Notable or PassiveKind.Keystone or PassiveKind.Start ? n.Name : null,
-                choice is { } c ? AttributeTitle(c)[..1] : null,
+                choice is { } c ? c.RussianName()[..1] : null,
                 TooltipOf(n, choice));
         }).ToList();
     }
@@ -205,7 +206,7 @@ public partial class PassivePanel : SessionPanel
     {
         var text = $"{n.Name} ({KindTitle(n.Kind)})\n{n.Description}";
         if (n.Kind == PassiveKind.Attribute)
-            text += choice is { } c ? $"\nАтрибут: {AttributeTitle(c)}" : "\nАтрибут не выбран (ПКМ — выбрать)";
+            text += choice is { } c ? $"\nАтрибут: {c.RussianName()}" : "\nАтрибут не выбран (ПКМ — выбрать)";
         return text;
     }
 
@@ -220,15 +221,6 @@ public partial class PassivePanel : SessionPanel
     private static bool IsPassiveViolation(string code) =>
         code.Contains("passive", StringComparison.Ordinal) || code.Contains("attribute", StringComparison.Ordinal)
         || code == "start_node_in_build";
-
-    public static string AttributeTitle(Attribute a) => a switch
-    {
-        Attribute.Str => "Сила",
-        Attribute.Int => "Интеллект",
-        Attribute.Will => "Воля",
-        Attribute.Dex => "Ловкость",
-        _ => a.ToString(),
-    };
 
     private static string KindTitle(PassiveKind kind) => kind switch
     {

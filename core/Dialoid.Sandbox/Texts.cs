@@ -68,6 +68,29 @@ internal static class Texts
         _ => mode.ToString(),
     };
 
+    /// <summary>Russian name of a simulation log event kind; an unknown kind is returned as is.</summary>
+    public static string EventKindName(string kind) => kind switch
+    {
+        "use" => "применение",
+        "hit" => "попадание",
+        "crit" => "крит",
+        "ailment" => "недуг",
+        "kill" => "убийство",
+        "no_resource" => "нет ресурса",
+        "dummy_attack" => "атака манекена",
+        "dodge" => "уклонение",
+        "death" => "смерть",
+        "proc" => "прок",
+        "proc_blocked" => "прок заблокирован",
+        "mechanic" => "механика",
+        "log_truncated" => "лог обрезан",
+        _ => kind,
+    };
+
+    public const string TimeToDeathSurvived = "Время до смерти: персонаж выжил";
+    public const string TimeToDeathNotAttacking = "Время до смерти: манекен не бьет";
+    public const string TimeToDeathDummyHasNoAttack = "Время до смерти: этот манекен не атакует";
+
     public static string DamageTypeName(Dialoid.Core.Combat.DamageType t) => t switch
     {
         Dialoid.Core.Combat.DamageType.Physical => "физический",

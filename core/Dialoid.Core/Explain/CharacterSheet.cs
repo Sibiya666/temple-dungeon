@@ -8,8 +8,8 @@ namespace Dialoid.Core.Explain;
 /// <summary>The character's own numbers with their breakdowns (no skill tags, no conditions).</summary>
 public static class CharacterSheet
 {
-    private static readonly (string Stat, string Label)[] Attributes =
-        { ("str", "Сила"), ("int", "Интеллект"), ("will", "Воля"), ("dex", "Ловкость") };
+    private static readonly Character.Attribute[] Attributes =
+        { Character.Attribute.Str, Character.Attribute.Int, Character.Attribute.Will, Character.Attribute.Dex };
 
     private static readonly (string Element, string Label)[] Resists =
         { ("fire", "огню"), ("cold", "холоду"), ("lightning", "молнии"), ("poison", "яду") };
@@ -26,7 +26,7 @@ public static class CharacterSheet
             return line;
         }
 
-        foreach (var (stat, label) in Attributes) Stat(stat, label);
+        foreach (var a in Attributes) Stat(a.StatId(), a.RussianName());
 
         var life = Stat("life", "Здоровье").Value;
         var regenPct = Stat("life_regen_pct", "Регенерация здоровья, % в секунду").Value;
@@ -61,7 +61,7 @@ public static class CharacterSheet
 
         var rules = data.AttributeRules;
         var primary = ch.Class.Primary.StatId();
-        var primaryName = Attributes.First(a => a.Stat == primary).Label;
+        var primaryName = ch.Class.Primary.RussianName();
         var primaryValue = Eval(primary).Value;
         lines.Add(new NumberLine("primary_damage_more", $"Бонус основного атрибута ({primaryName}) к урону, % «больше»",
             rules.PrimaryDamageMorePerPoint * primaryValue, null,

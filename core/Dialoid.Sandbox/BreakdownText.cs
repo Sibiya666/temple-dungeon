@@ -1,4 +1,3 @@
-using System.Globalization;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Sandbox;
@@ -24,6 +23,19 @@ public static class BreakdownText
     /// <summary>Russian name of a damage type.</summary>
     public static string DamageTypeName(Dialoid.Core.Combat.DamageType t) => Texts.DamageTypeName(t);
 
+    /// <summary>Russian name of a simulation log event kind (SimEvent.Kind); an unknown kind is returned as is.</summary>
+    public static string EventKindName(string kind) => Texts.EventKindName(kind);
+
+    /// <summary>
+    /// Why a run has no time to death: the dummy was not asked to attack («манекен не бьет»), it was asked but has no attack
+    /// so no defense was simulated (<see cref="Dialoid.Core.Simulation.SimResult.Defense"/> is null: «этот манекен не
+    /// атакует»), or the character survived.
+    /// </summary>
+    public static string NoTimeToDeath(bool dummyAttacksRequested, Dialoid.Core.Simulation.SimResult result) =>
+        !dummyAttacksRequested ? Texts.TimeToDeathNotAttacking
+        : result.Defense == null ? Texts.TimeToDeathDummyHasNoAttack
+        : Texts.TimeToDeathSurvived;
+
     /// <summary>The dummy's name from the data; unknown ids are returned as is.</summary>
     public static string DummyName(Dialoid.Core.Data.GameData data, string id) => Texts.DummyName(data, id);
 
@@ -48,16 +60,7 @@ public static class BreakdownText
     /// <summary>More/Less factor: up to three decimals, trailing zeros trimmed (1,05; 0,9).</summary>
     public static string Factor(double v) => Format(v, "0.###");
 
-    private static string Format(double v, string pattern)
-    {
-        var text = v.ToString(pattern, CultureInfo.InvariantCulture);
-        if (text.StartsWith('-'))
-        {
-            var body = text[1..];
-            text = body.Trim('0', '.').Length == 0 ? body : "\u2212" + body; // "-0,0" becomes "0,0"
-        }
-        return text.Replace('.', ',');
-    }
+    private static string Format(double v, string pattern) => Dialoid.Core.Explain.RuNumber.Format(v, pattern);
 
     public static IReadOnlyList<string> Lines(StatResult r)
     {

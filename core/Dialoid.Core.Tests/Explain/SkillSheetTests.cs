@@ -2,6 +2,7 @@ using Dialoid.Core.Character;
 using Dialoid.Core.Combat;
 using Dialoid.Core.Explain;
 using Dialoid.Core.Tests.Content;
+using Dialoid.Core.Tests.Fixtures;
 
 namespace Dialoid.Core.Tests.Explain;
 
@@ -75,6 +76,34 @@ public class SkillSheetTests
                 if (line.Breakdown is { } b) Assert.Equal(b.Value, line.Value);
                 else Assert.False(string.IsNullOrWhiteSpace(line.Note), $"{slot.SkillId}: derived line {line.Key} must list its parts");
             }
+        }
+    }
+
+    /// <summary>Every reference build file of the main, l20 and parity groups (and any other folder under data/builds).</summary>
+    public static IEnumerable<object[]> AllReferenceBuilds()
+    {
+        var root = Path.Combine(FixturePaths.RealData, "builds");
+        return Directory.EnumerateFiles(root, "*.json", SearchOption.AllDirectories)
+            .Select(f => Path.GetRelativePath(root, f)[..^".json".Length].Replace('\\', '/'))
+            .OrderBy(f => f, StringComparer.Ordinal)
+            .Select(f => new object[] { f });
+    }
+
+    /// <summary>NumberLine keys (hit_mult_*, hit_avg_*, penetration_* and the rest) never repeat within one skill sheet.</summary>
+    [Theory]
+    [MemberData(nameof(AllReferenceBuilds))]
+    public void Skill_sheet_keys_are_unique_for_every_slotted_skill(string buildPath)
+    {
+        var build = ContentHarness.LoadBuild(buildPath);
+        var data = ContentHarness.Data;
+        var ch = new CharacterCompiler(data).Compile(build);
+        var weapon = build.WeaponId != null ? data.Weapons[build.WeaponId] : null;
+        Assert.All(build.Slots, slot => Assert.Contains(ch.Skills, s => s.SkillId == slot.SkillId));
+        foreach (var skill in ch.Skills)
+        {
+            var keys = SkillSheet.Describe(ch, skill, data, weapon).Select(l => l.Key).ToList();
+            var repeated = keys.GroupBy(k => k).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+            Assert.True(repeated.Count == 0, $"{buildPath}/{skill.SkillId}: repeated keys {string.Join(", ", repeated)}");
         }
     }
 

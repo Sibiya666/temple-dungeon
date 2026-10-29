@@ -634,10 +634,24 @@ public sealed class SelfTest
         panel.ToggleLog();
         await Settle();
         Check(panel.Log != null && panel.Log.GetParsedText().Length > 0, "лог не показан");
+        Check(panel.Log!.GetParsedText().Contains("] " + BreakdownText.EventKindName("use") + ":", StringComparison.Ordinal)
+              && !panel.Log.GetParsedText().Contains("] use:", StringComparison.Ordinal), "виды событий в логе не по-русски");
 
         dps.Open();
         Check(_main.CurrentTab == Main.BreakdownTab && _main.Breakdown!.Current?.Line.Key == "sim_dps_single", "DPS не открылся в «Разборе»");
         _main.SelectTab("Симуляция");
+
+        // «Манекен бьет» on a dummy without an attack: no defense run, the panel says the dummy does not attack.
+        Check(_main.Session!.Data.Dummies["training"].Attack == null, "у манекена training появилась атака");
+        panel.DummyAttacks.ButtonPressed = true;
+        await WithTimeout(panel.Simulate(), 60000, "симуляция с галкой на неатакующем манекене");
+        await Settle();
+        var noAttack = panel.LastOutcome!.Result;
+        Check(noAttack.Defense == null && noAttack.TimeToDeath == null, "у неатакующего манекена есть защитные итоги");
+        Check(panel.TimeToDeathText == BreakdownText.NoTimeToDeath(true, noAttack)
+              && panel.TimeToDeathText!.Contains("не атакует", StringComparison.Ordinal),
+            $"строка времени до смерти «{panel.TimeToDeathText}»");
+        panel.DummyAttacks.ButtonPressed = false;
 
         // Defensive mode on the attacking dummy.
         var attacking = panel.DummyIds.ToList().IndexOf("attacking_boss");

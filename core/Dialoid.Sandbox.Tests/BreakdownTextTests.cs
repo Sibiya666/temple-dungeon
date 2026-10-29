@@ -119,4 +119,50 @@ public class BreakdownTextTests
         var r = new StatResult("x", 0, -5, 0, Array.Empty<BreakdownLine>(), null);
         Assert.Contains("\u22125,0 → 0,0", BreakdownText.Lines(r)[^1]);
     }
+
+    [Theory]
+    [InlineData("use", "применение")]
+    [InlineData("hit", "попадание")]
+    [InlineData("crit", "крит")]
+    [InlineData("ailment", "недуг")]
+    [InlineData("kill", "убийство")]
+    [InlineData("no_resource", "нет ресурса")]
+    [InlineData("dummy_attack", "атака манекена")]
+    [InlineData("dodge", "уклонение")]
+    [InlineData("death", "смерть")]
+    [InlineData("proc", "прок")]
+    [InlineData("proc_blocked", "прок заблокирован")]
+    [InlineData("mechanic", "механика")]
+    [InlineData("log_truncated", "лог обрезан")]
+    [InlineData("something_new", "something_new")]
+    public void Event_kinds_are_russian_with_raw_fallback(string kind, string expected) =>
+        Assert.Equal(expected, BreakdownText.EventKindName(kind));
+
+    [Fact]
+    public async Task Every_event_kind_of_reference_runs_has_a_russian_name()
+    {
+        var dir = DataLocator.Find(AppContext.BaseDirectory)!;
+        var kinds = new HashSet<string>();
+        foreach (var info in ReferenceBuilds.List(dir).Where(i => i.Group == "main"))
+        {
+            var s = SandboxSession.Create(TestData.Data, "warrior");
+            Assert.True(ReferenceBuilds.Load(s, info).Ok);
+            var attacking = TestData.Data.Dummies.Values.First(d => d.Attack != null).Id;
+            foreach (var request in new[] { new SimRequest("training", SimMode.Roll, 1, null, false), new SimRequest(attacking, SimMode.Roll, 1, null, true) })
+                foreach (var e in (await new SimulationRunner(s).RunAsync(request)).Result.Log) kinds.Add(e.Kind);
+        }
+        Assert.Contains("use", kinds);
+        foreach (var kind in kinds) Assert.Matches("^[а-яё ]+$", BreakdownText.EventKindName(kind));
+    }
+
+    [Fact]
+    public void No_time_to_death_text_tells_apart_no_attack_and_survival()
+    {
+        var plain = new SimResult(0, 0, new Dictionary<string, double>(), new Dictionary<Dialoid.Core.Combat.DamageType, double>(),
+            0, 0, null, null, Array.Empty<SimEvent>(), Array.Empty<Dialoid.Core.Character.RuleViolation>());
+        Assert.Equal("Время до смерти: манекен не бьет", BreakdownText.NoTimeToDeath(false, plain));
+        Assert.Equal("Время до смерти: этот манекен не атакует", BreakdownText.NoTimeToDeath(true, plain));
+        var defended = plain with { Defense = new DefenseTotals(1, 0, new Dictionary<Dialoid.Core.Combat.DamageType, double>(), 0, 0, 0) };
+        Assert.Equal("Время до смерти: персонаж выжил", BreakdownText.NoTimeToDeath(true, defended));
+    }
 }

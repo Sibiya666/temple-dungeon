@@ -298,6 +298,13 @@ public partial class SkillsPanel : SessionPanel
         }
     }
 
+    /// <summary>Caption under the rotation: the simulator always tries every non-generator first (core Rotation).</summary>
+    public const string GeneratorsNote =
+        "Генераторы применяются только когда все остальные скиллы заблокированы (откат, ресурс, оружие), где бы они ни стояли в списке.";
+
+    /// <summary>Appended to a generator's rotation entry.</summary>
+    public const string GeneratorMark = " (генератор)";
+
     private void DrawRotation(Build build)
     {
         AddText("Ротация (порядок приоритета применения):");
@@ -309,12 +316,14 @@ public partial class SkillsPanel : SessionPanel
             return;
         }
         if (build.Rotation.Count == 0) AddText("Своя ротация не задана: используется порядок слотов. Сдвиг создаст ротацию.", Grey);
+        if (order.Any(Session.IsGeneratorSkill)) AddText(GeneratorsNote, Grey);
 
         for (int i = 0; i < order.Count; i++)
         {
             int index = i;
             var row = new HBoxContainer();
-            row.AddChild(new Label { Text = $"{i + 1}. {SkillName(order[i])}", CustomMinimumSize = new Vector2(320, 0) });
+            var mark = Session.IsGeneratorSkill(order[i]) ? GeneratorMark : "";
+            row.AddChild(new Label { Text = $"{i + 1}. {SkillName(order[i])}{mark}", CustomMinimumSize = new Vector2(320, 0) });
             var up = new Button { Text = "вверх", Disabled = i == 0 };
             up.Pressed += () => MoveInRotation(index, -1);
             row.AddChild(up);

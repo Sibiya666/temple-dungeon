@@ -76,6 +76,9 @@ public partial class SimulationPanel : SessionPanel
     /// <summary>The resource series graph of the shown result, or null.</summary>
     public SeriesGraph? Graph { get; private set; }
 
+    /// <summary>The «Время до смерти» line when the run has no time to death (null otherwise).</summary>
+    public string? TimeToDeathText { get; private set; }
+
     public void Setup(SandboxSession session, Action<NumberLine, string?> open)
     {
         _open = open;
@@ -215,6 +218,7 @@ public partial class SimulationPanel : SessionPanel
         ShownViolations = Array.Empty<string>();
         Log = null;
         Graph = null;
+        TimeToDeathText = null;
 
         if (_runError != null) AddText("Симуляция упала: " + _runError, Red);
         if (Running)
@@ -282,7 +286,11 @@ public partial class SimulationPanel : SessionPanel
         if (result.TimeToKill is { } ttk) Number("sim_ttk", "Время убийства, с", ttk, BreakdownText.Seconds, note);
         else AddText("Время убийства: манекен не убит (бессмертен или не успели)");
         if (result.TimeToDeath is { } ttd) Number("sim_ttd", "Время до смерти, с", ttd, BreakdownText.Seconds, note);
-        else AddText(r.DummyAttacks ? "Время до смерти: персонаж выжил" : "Время до смерти: манекен не бьет");
+        else
+        {
+            TimeToDeathText = BreakdownText.NoTimeToDeath(r.DummyAttacks, result);
+            AddText(TimeToDeathText);
+        }
 
         if (result.Defense is { } d)
         {
@@ -334,7 +342,7 @@ public partial class SimulationPanel : SessionPanel
                 CustomMinimumSize = new Vector2(0, 320),
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
             };
-            Log.AddText(string.Join("\n", result.Log.Select(e => $"[{BreakdownText.Seconds(e.Time)} с] {e.Kind}: {e.Text}")));
+            Log.AddText(string.Join("\n", result.Log.Select(e => $"[{BreakdownText.Seconds(e.Time)} с] {BreakdownText.EventKindName(e.Kind)}: {e.Text}")));
             Content.AddChild(Log);
         }
     }
