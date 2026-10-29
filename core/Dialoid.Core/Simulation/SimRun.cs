@@ -1,8 +1,3 @@
-using Dialoid.Core.Character;
-using Dialoid.Core.Data;
-using Dialoid.Core.Effects;
-using Dialoid.Core.Skills;
-
 namespace Dialoid.Core.Simulation;
 
 /// <summary>
@@ -15,15 +10,10 @@ internal sealed class SimRun
     private readonly Rotation _rotation;
     private readonly double _stepSec;
 
-    public SimRun(GameData data, MechanicRegistry mechanics, CompiledCharacter character, WeaponStub? weapon,
-        IReadOnlyList<SkillRuntime> skills, Rotation rotation, DummyDefinition dummy, SimConfig config,
-        Action<SimState>? stepObserver = null)
+    public SimRun(FightSetup setup, SimConfig config, Action<SimState>? stepObserver = null)
     {
-        _engine = new CombatEngine(data, mechanics, character, weapon, skills, dummy, config, infiniteLife: false)
-        {
-            StepObserver = stepObserver,
-        };
-        _rotation = rotation;
+        _engine = setup.Engine(config, infiniteLife: false, stepObserver);
+        _rotation = setup.Rotation();
         _stepSec = config.StepSec;
     }
 

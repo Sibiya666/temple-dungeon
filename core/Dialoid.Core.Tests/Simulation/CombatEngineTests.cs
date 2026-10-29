@@ -82,16 +82,12 @@ public class CombatEngineTests
         Assert.Equal(a.DotDamage, b.DotDamage);
     }
 
-    /// <summary>The engine for a build, set up the way <see cref="Simulator.Run"/> sets up its run.</summary>
+    /// <summary>The engine for a build, set up by the same factory as <see cref="Simulator.Run"/>.</summary>
     private static (CombatEngine Engine, Rotation Rotation) Engine(Build build, SimConfig config, bool infiniteLife)
     {
-        var data = ContentHarness.Data;
-        build = BuildRules.Normalized(build);
-        var character = new CharacterCompiler(data, MechanicRegistry.Default).Compile(build);
-        var weapon = build.WeaponId != null ? data.Weapons[build.WeaponId] : null;
-        var skills = character.Skills.Select(s => new SkillRuntime(data, character, s)).ToList();
-        var engine = new CombatEngine(data, MechanicRegistry.Default, character, weapon, skills, data.Dummies[config.DummyId], config, infiniteLife);
-        return (engine, new Rotation(build, skills));
+        var setup = FightSetup.Prepare(ContentHarness.Data, MechanicRegistry.Default, build, config, out var violations);
+        Assert.True(setup != null, string.Join("; ", violations.Select(v => v.Message)));
+        return (setup.Engine(config, infiniteLife), setup.Rotation());
     }
 
     /// <summary>Every build file × dummy preset × (Average, Roll seed 1, Roll seed 7). Presets with an attack run in defensive mode.</summary>
