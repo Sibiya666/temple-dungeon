@@ -126,6 +126,10 @@ public partial class Main : Control
         Builds = new BuildsPanel { Name = "BuildsPanel" };
         Builds.Setup(session, DataDirectory);
         AddPanel("Билды", Builds);
+
+        // A replaced build makes the old breakdown history meaningless (spec §13.6 history is per build).
+        Builds.BuildReplaced += Breakdown.ClearHistory;
+        Character.BuildReplaced += Breakdown.ClearHistory;
     }
 
     private void AddPanel(string tab, Control panel)

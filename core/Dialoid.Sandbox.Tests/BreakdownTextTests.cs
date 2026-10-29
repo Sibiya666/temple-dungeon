@@ -32,8 +32,17 @@ public class BreakdownTextTests
         Assert.True(Idx("Меньше: ×0,9 (−10%)") > Idx("Больше"));
         Assert.Contains("+20%", lines[Idx("Рост")]);
         Assert.Contains("×1,5 (+50%)", lines[Idx("Больше")]);
-        Assert.Contains("178,2", lines[^1]);
-        Assert.StartsWith("Итог", lines[^1]);
+        Assert.Equal("Итог: 178,2", lines[^1]); // not capped: no «до капа → после капа»
+    }
+
+    [Fact]
+    public void Value_is_whole_when_integral()
+    {
+        Assert.Equal("912", BreakdownText.Value(912));
+        Assert.Equal("0", BreakdownText.Value(-0.0));
+        Assert.Equal("\u221212", BreakdownText.Value(-12));
+        Assert.Equal("22,8", BreakdownText.Value(22.8));
+        Assert.Equal("0,5", BreakdownText.Value(0.5));
     }
 
     [Fact]
@@ -46,7 +55,7 @@ public class BreakdownTextTests
         Assert.Contains("120,0 → 75,0", lines[^1]);
 
         var capped = new StatResult("resist_fire", 0, 90, 75, new[] { new BreakdownLine(Src("Огонь"), ModKind.Flat, 90) }, null);
-        Assert.Contains("90,0 → 75,0", BreakdownText.Lines(capped)[^1]);
+        Assert.Equal("Итог (до капа → после капа): 90,0 → 75,0", BreakdownText.Lines(capped)[^1]);
     }
 
     [Fact]

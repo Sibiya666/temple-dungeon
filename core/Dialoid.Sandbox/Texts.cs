@@ -135,5 +135,6 @@ internal static class Texts
     public static string MoreLine(string mult, string source) => $"Больше: ×{mult} — {source}";
     public static string LessLine(string mult, string source) => $"Меньше: ×{mult} — {source}";
     public static string OverrideLine(string value, string source) => $"Переопределение: {value} — {source}";
-    public static string Total(string uncapped, string capped) => $"Итог (до капа → после капа): {uncapped} → {capped}";
+    public static string Total(string value) => $"Итог: {value}";
+    public static string TotalCapped(string uncapped, string capped) => $"Итог (до капа → после капа): {uncapped} → {capped}";
 }

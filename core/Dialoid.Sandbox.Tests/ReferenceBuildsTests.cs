@@ -21,8 +21,9 @@ public class ReferenceBuildsTests
         Assert.Equal("main", list[0].Group);
 
         var whirl = list.Single(i => i.Group == "main" && Path.GetFileName(i.Path) == "warrior_berserker_whirlwind.json");
-        Assert.DoesNotContain("_", whirl.Title);
-        Assert.DoesNotContain(".json", whirl.Title);
+        Assert.Equal("Воитель, Берсерк — Вихрь", whirl.Title);
+        foreach (var info in list)
+            Assert.True(info.Title.Any(c => c is >= 'А' and <= 'я'), $"{info.Path}: title «{info.Title}» is not Russian");
         Assert.Equal(list.Count, list.Select(i => i.Path).Distinct().Count());
     }
 

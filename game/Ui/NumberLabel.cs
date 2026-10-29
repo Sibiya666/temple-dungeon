@@ -9,7 +9,8 @@ namespace Dialoid.Game.Ui;
 /// A flat button showing one number. Pressing it opens the number's breakdown on the «Разбор» tab (spec §13.6); a number
 /// without a breakdown shows its Note there. Every number of the debug scene goes through it.
 /// Text rule (<see cref="TextOf"/>): a core Label that already holds digits (e.g. «Сопротивление огню: 40 / кап 75») shows
-/// its value itself and is printed as is; any other Label is printed as «Label: value» (one decimal, Russian comma).
+/// its value itself and is printed as is; any other Label is printed as «Label: value» (<see cref="BreakdownText.Value"/>:
+/// whole when integral, else one decimal, Russian comma).
 /// </summary>
 public partial class NumberLabel : Button
 {
@@ -48,7 +49,7 @@ public partial class NumberLabel : Button
     /// <summary>Text of a line: «[context — ]Label» when the Label holds digits, else «[context — ]Label: value».</summary>
     public static string TextOf(NumberLine line, string? context = null)
     {
-        var body = Digit.IsMatch(line.Label) ? line.Label : $"{line.Label}: {BreakdownText.Number(line.Value)}";
+        var body = Digit.IsMatch(line.Label) ? line.Label : $"{line.Label}: {BreakdownText.Value(line.Value)}";
         return context == null ? body : context + " — " + body;
     }
 

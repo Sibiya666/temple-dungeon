@@ -78,6 +78,23 @@ public class SkillSheetTests
         }
     }
 
+    /// <summary>Labels and notes use the Russian decimal comma and the Unicode minus (no «22.8», no ASCII «-3»).</summary>
+    [Theory]
+    [MemberData(nameof(ReferenceBuilds))]
+    public void Sheet_texts_use_decimal_comma(string buildPath)
+    {
+        var build = ContentHarness.LoadBuild(buildPath);
+        var data = ContentHarness.Data;
+        var lines = CharacterSheet.Describe(new CharacterCompiler(data).Compile(build), data)
+            .Concat(build.Slots.SelectMany(slot => Sheet(build, slot.SkillId)));
+        var invariant = new System.Text.RegularExpressions.Regex(@"\d\.\d|(^|[\s(×/])-\d");
+        foreach (var line in lines)
+        {
+            Assert.DoesNotMatch(invariant, line.Label);
+            if (line.Note != null) Assert.DoesNotMatch(invariant, line.Note);
+        }
+    }
+
     /// <summary>Every average hit is Σ over its portions of avg(base) × the portion's multiplier line × the penetration factor:
     /// the sheet's own lines add up to the number (no hidden factor).</summary>
     [Theory]

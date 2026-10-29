@@ -79,7 +79,7 @@ public static class SkillSheet
         if (cooldown > 0) tempo += $"; перезарядка {Num(cooldown)} с";
         lines.Add(new NumberLine("uses_per_sec", "Применений в секунду", period > 0 ? 1 / period : 0, null,
             tempo + (skill.ChannelRamp != null ? "; без разгона канала" : "") +
-            "; в симуляторе применение длится не меньше одного шага (по умолчанию 0.05 с)"));
+            "; в симуляторе применение длится не меньше одного шага (по умолчанию 0,05 с)"));
         if (skill.Base.Cooldown is > 0 and var baseCd)
             lines.Add(new NumberLine("cooldown", "Перезарядка, с", cooldown, null,
                 $"база {Num(baseCd)} с / восстановление {Num(StatValue("cooldown_recovery", 1))}"));

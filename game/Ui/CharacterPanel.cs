@@ -53,7 +53,15 @@ public partial class CharacterPanel : SessionPanel
 
     // ---- handlers (the controls and the self-test call these) -------------------------------------------------------
 
-    public CommandResult SelectClass(string classId) => Run(Session.SetClass(classId));
+    /// <summary>Raised after an accepted class change (the build is reset; Main clears the breakdown history).</summary>
+    public event Action? BuildReplaced;
+
+    public CommandResult SelectClass(string classId)
+    {
+        var result = Run(Session.SetClass(classId));
+        if (result.Ok) BuildReplaced?.Invoke();
+        return result;
+    }
     public CommandResult SelectLevel(int level) => Run(Session.SetLevel(level));
     public CommandResult SelectAscendancy(string? ascendancyId) => Run(Session.SetAscendancy(ascendancyId));
     public CommandResult SelectWeapon(string? weaponId) => Run(Session.SetWeapon(weaponId));
@@ -136,7 +144,7 @@ public partial class CharacterPanel : SessionPanel
         // Weapon: any class may take any weapon stub (spec §8); a type the attacks cannot use shows up as a violation.
         var weaponIds = new List<string?> { null };
         weaponIds.AddRange(data.Weapons.Keys.OrderBy(k => k, StringComparer.Ordinal).Select(k => (string?)k));
-        var weaponBox = Options(weaponIds.Select(id => id == null ? "(нет)" : $"{data.Weapons[id].Name} ({data.Weapons[id].Type})"),
+        var weaponBox = Options(weaponIds.Select(id => id == null ? "(нет)" : data.Weapons[id].Name),
             weaponIds.IndexOf(build.WeaponId));
         weaponBox.ItemSelected += i => SelectWeapon(weaponIds[(int)i]);
         WeaponOptions = weaponBox;

@@ -7,7 +7,8 @@ namespace Dialoid.Sandbox;
 /// Russian breakdown of one stat evaluation, in the formula order (base + Σflat) × (1 + Σincreased/100) × Π(1 + more/100).
 /// Numbers use the Russian decimal comma and the Unicode minus: contributions (base, flat, increased) up to two decimals and
 /// More/Less factors up to three, trailing zeros trimmed (<see cref="Part"/>, <see cref="Factor"/>); totals one decimal
-/// (<see cref="Number"/>); damage and DPS whole (<see cref="Whole"/>).
+/// (<see cref="Number"/>), shown only with the cap when the cap changed the value; damage and DPS whole (<see cref="Whole"/>);
+/// shown values whole when integral, else one decimal (<see cref="Value"/>).
 /// </summary>
 public static class BreakdownText
 {
@@ -28,6 +29,12 @@ public static class BreakdownText
 
     /// <summary>One decimal, Russian comma (0,5; 12,0); a negative value uses the Unicode minus.</summary>
     public static string Number(double v) => Format(v, "0.0");
+
+    /// <summary>
+    /// A shown value (NumberLabel): a whole number when the value is integral (attributes, level, life 912), else one decimal
+    /// (<see cref="Number"/>). The rule is by value, not by key, so any integral number reads without «,0».
+    /// </summary>
+    public static string Value(double v) => v == Math.Round(v) ? Format(v, "0") : Number(v);
 
     /// <summary>A damage or DPS figure: an integer.</summary>
     public static string Whole(double v) => Format(Math.Round(v, MidpointRounding.AwayFromZero), "0");
@@ -78,7 +85,8 @@ public static class BreakdownText
 
         if (r.AppliedOverride is { } o) lines.Add(Texts.OverrideLine(Part(o.Value), o.Source.Name));
 
-        lines.Add(Texts.Total(Number(r.Uncapped), Number(r.Value)));
+        // The cap part only when the cap (or a clamp) actually changed the value.
+        lines.Add(r.Uncapped == r.Value ? Texts.Total(Number(r.Value)) : Texts.TotalCapped(Number(r.Uncapped), Number(r.Value)));
         return lines;
     }
 

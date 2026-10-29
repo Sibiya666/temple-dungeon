@@ -42,10 +42,46 @@ public static class ReferenceBuilds
         return r.Ok ? r : CommandResult.Fail(Texts.ReferenceRefused(info.Title, r.Error ?? ""));
     }
 
-    /// <summary>"warrior_berserker_whirlwind.json" → "Warrior berserker whirlwind".</summary>
+    /// <summary>
+    /// Russian titles of the known reference files by file name (the build JSON stays unchanged; the group is shown by the
+    /// tree, so main and l20 versions share a title).
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, string> Titles = new Dictionary<string, string>
+    {
+        ["warrior_berserker_whirlwind"] = "Воитель, Берсерк — Вихрь",
+        ["warrior_thunderer_crush"] = "Воитель, Громовержец — Сокрушение",
+        ["warrior_fire_cleave_crit"] = "Воитель, Громовержец — огненный Рассекающий удар с критом",
+        ["sorcerer_pyromancer_fireball"] = "Чародей, Пироман — Огненный шар",
+        ["sorcerer_cryomancer_ice_lance"] = "Чародей, Криомант — Ледяное копье",
+        ["sorcerer_spark_hybrid"] = "Чародей, Криомант — Искра (гибрид)",
+        ["warrior_l1"] = "Воитель, 1 уровень",
+        ["warrior_l20"] = "Воитель, 20 уровень",
+        ["warrior_l60"] = "Воитель, 60 уровень",
+        ["sorcerer_l1"] = "Чародей, 1 уровень",
+        ["sorcerer_l20"] = "Чародей, 20 уровень",
+        ["sorcerer_l60"] = "Чародей, 60 уровень",
+        ["avatar_of_fire_fit"] = "Аватар пламени — подходящий билд",
+        ["avatar_of_fire_unfit"] = "Аватар пламени — неподходящий билд",
+        ["blade_dance_fit"] = "Танец клинков — подходящий билд",
+        ["blade_dance_unfit"] = "Танец клинков — неподходящий билд",
+        ["blood_pact_fit"] = "Кровавый договор — подходящий билд",
+        ["blood_pact_unfit"] = "Кровавый договор — неподходящий билд",
+        ["inevitability_fit"] = "Неотвратимость — подходящий билд",
+        ["inevitability_unfit"] = "Неотвратимость — неподходящий билд",
+        ["stone_skin_fit"] = "Каменная кожа — подходящий билд",
+        ["stone_skin_unfit"] = "Каменная кожа — неподходящий билд",
+        ["titan_will_fit"] = "Воля титана — подходящий билд",
+        ["titan_will_unfit"] = "Воля титана — неподходящий билд",
+        ["warrior_no_attribute_nodes"] = "Воитель без атрибутных узлов",
+        ["sorcerer_no_attribute_nodes"] = "Чародей без атрибутных узлов",
+    };
+
+    /// <summary>The Russian title of a known file; an unknown file falls back to its name ("my_build.json" → "My build").</summary>
     private static string Title(string path)
     {
-        var name = System.IO.Path.GetFileNameWithoutExtension(path).Replace('_', ' ').Trim();
+        var file = System.IO.Path.GetFileNameWithoutExtension(path);
+        if (Titles.TryGetValue(file, out var title)) return title;
+        var name = file.Replace('_', ' ').Trim();
         return name.Length == 0 ? name : char.ToUpperInvariant(name[0]) + name[1..];
     }
 }

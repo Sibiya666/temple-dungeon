@@ -17,7 +17,12 @@ public class CharacterSheetTests
     private static CompiledCharacter Compile(string build) =>
         new CharacterCompiler(ContentHarness.Data).Compile(ContentHarness.LoadBuild(build));
 
-    private static string Fmt(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+    private static string Fmt(double v)
+    {
+        var text = v.ToString("0.##", CultureInfo.InvariantCulture);
+        if (text.StartsWith('-')) text = text == "-0" ? "0" : "\u2212" + text[1..];
+        return text.Replace('.', ',');
+    }
 
     [Fact]
     public void Describe_lists_life_armor_resists_and_attributes()

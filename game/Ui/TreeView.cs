@@ -41,6 +41,9 @@ public partial class TreeView : Control
     /// <summary>Captions show only on nodes drawn at least this large, so a zoomed-out tree stays readable.</summary>
     public const float CaptionMinPixels = 7f;
 
+    /// <summary>Font scale of the second caption pass (captions that found no place at the full size).</summary>
+    public const float SmallCaptionScale = 0.8f;
+
     public static readonly Color TakenColor = new(1f, 0.78f, 0.25f);
     public static readonly Color AvailableColor = new(0.35f, 0.85f, 0.45f);
     public static readonly Color UnavailableColor = new(0.38f, 0.38f, 0.42f);
@@ -311,9 +314,71 @@ public partial class TreeView : Control
                 DrawString(font, center + new Vector2(-size.X / 2, size.Y / 4), n.Badge, HorizontalAlignment.Left, -1,
                     badgeSize, Colors.Black);
             }
-            if (n.Caption != null && r >= CaptionMinPixels)
-                DrawString(font, center + new Vector2(r + 4f, fontSize / 3f), n.Caption, HorizontalAlignment.Left, -1,
-                    fontSize, CaptionColor);
         }
+
+        foreach (var (id, rect, size) in LayoutCaptions())
+            DrawString(font, rect.Position + new Vector2(0, font.GetAscent(size)), _byId[id].Caption!, HorizontalAlignment.Left, -1,
+                size, CaptionColor);
+    }
+
+    /// <summary>
+    /// Where each caption goes now, in this control's coordinates. Captions are placed in a fixed order (bigger nodes first,
+    /// taken before the rest, then by id) at the first of the candidate positions around the node (right, left, above,
+    /// below, the diagonals, then the same sides slid along the node) whose rectangle overlaps neither an already placed
+    /// caption nor any drawn node. Captions that found no place get a second pass in a smaller font
+    /// (<see cref="SmallCaptionScale"/>); one with no free position even then is left out (its text stays in the hover line
+    /// and tooltip). Deterministic: the same graph, states, zoom and pan give the same layout.
+    /// </summary>
+    public IReadOnlyList<(string Id, Rect2 Rect, int FontSize)> LayoutCaptions()
+    {
+        var placed = new List<(string Id, Rect2 Rect, int FontSize)>();
+        if (_nodes.Count == 0) return placed;
+        var font = GetThemeDefaultFont();
+        int fontSize = GetThemeDefaultFontSize();
+        var circles = _nodes.Select(n => (Center: WorldToLocal(n.Position), R: Mathf.Max(n.Radius * Zoom, 3f))).ToList();
+        const float gap = 3f;
+
+        var order = _nodes.Where(n => n.Caption != null)
+            .OrderByDescending(n => n.Radius)
+            .ThenBy(n => StateOf(n.Id) == TreeNodeState.Taken ? 0 : 1)
+            .ThenBy(n => n.Id, StringComparer.Ordinal).ToList();
+        foreach (var size in new[] { fontSize, Mathf.Max(8, (int)(fontSize * SmallCaptionScale)) })
+        foreach (var n in order)
+        {
+            if (placed.Any(p => p.Id == n.Id)) continue;
+            var c = WorldToLocal(n.Position);
+            float r = Mathf.Max(n.Radius * Zoom, 3f);
+            if (r < CaptionMinPixels) continue;
+            var extent = font.GetStringSize(n.Caption, HorizontalAlignment.Left, -1, size);
+            float w = extent.X, h = extent.Y;
+            float d = r * 0.7071f + gap;
+            float right = c.X + r + gap, left = c.X - r - gap - w, above = c.Y - r - gap - h, below = c.Y + r + gap;
+            float midX = c.X - w / 2, midY = c.Y - h / 2;
+            Vector2[] corners =
+            {
+                new(right, midY), new(left, midY), new(midX, above), new(midX, below),
+                new(c.X + d, c.Y - d - h), new(c.X + d, c.Y + d), new(c.X - d - w, c.Y - d - h), new(c.X - d - w, c.Y + d),
+                new(right, midY - h), new(right, midY + h), new(left, midY - h), new(left, midY + h),
+                new(midX + w / 3, above), new(midX - w / 3, above), new(midX + w / 3, below), new(midX - w / 3, below),
+                new(midX, above - h), new(midX, below + h),
+            };
+            foreach (var corner in corners)
+            {
+                var rect = new Rect2(corner, w, h);
+                var padded = rect.Grow(1f);
+                if (placed.Any(p => p.Rect.Intersects(padded))) continue;
+                if (circles.Any(o => CircleHitsRect(o.Center, o.R, padded))) continue;
+                placed.Add((n.Id, rect, size));
+                break;
+            }
+        }
+        return placed;
+    }
+
+    /// <summary>True when the circle and the rectangle overlap.</summary>
+    public static bool CircleHitsRect(Vector2 center, float radius, Rect2 rect)
+    {
+        var nearest = new Vector2(Mathf.Clamp(center.X, rect.Position.X, rect.End.X), Mathf.Clamp(center.Y, rect.Position.Y, rect.End.Y));
+        return nearest.DistanceSquaredTo(center) < radius * radius;
     }
 }

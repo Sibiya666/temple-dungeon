@@ -13,8 +13,16 @@ public sealed record NumberLine(string Key, string Label, double Value, StatResu
 
 internal static class SheetFormat
 {
-    /// <summary>Invariant number with at most two decimals (45, 0.5, 12.34).</summary>
-    public static string Num(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+    /// <summary>
+    /// A number in a label or note: at most two decimals, trailing zeros trimmed, Russian decimal comma and the Unicode minus
+    /// (45; 0,5; 12,34; −3), the same convention as the sandbox breakdown text.
+    /// </summary>
+    public static string Num(double v)
+    {
+        var text = v.ToString("0.##", CultureInfo.InvariantCulture);
+        if (text.StartsWith('-')) text = text == "-0" ? "0" : "\u2212" + text[1..];
+        return text.Replace('.', ',');
+    }
 
     public static string TypeName(Combat.DamageType t) => t switch
     {

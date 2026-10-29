@@ -17,7 +17,7 @@ public partial class BuildsPanel : SessionPanel
         [ReferenceBuilds.MainGroup] = "Основные (60 уровень)",
         ["l20"] = "Версии 20 уровня",
         ["parity"] = "Паритет классов",
-        ["keystones"] = "Keystones",
+        ["keystones"] = "Ключевые узлы",
         ["attributes"] = "Без атрибутных узлов",
     };
 
@@ -100,11 +100,15 @@ public partial class BuildsPanel : SessionPanel
 
     // ---- handlers (the buttons and the self-test call these) --------------------------------------------------------
 
+    /// <summary>Raised after an accepted load or import (Main clears the breakdown history).</summary>
+    public event Action? BuildReplaced;
+
     /// <summary>Loads a reference build into the session and shows the result.</summary>
     public CommandResult Load(ReferenceBuildInfo info)
     {
         var result = ReferenceBuilds.Load(Session, info);
         SetStatus(_loadStatus, result.Ok ? $"Загружен: {info.Title}" : result.Error ?? "", result.Ok);
+        if (result.Ok) BuildReplaced?.Invoke();
         return result;
     }
 
@@ -120,6 +124,7 @@ public partial class BuildsPanel : SessionPanel
     {
         var result = Session.Import(text);
         SetStatus(_importStatus, result.Ok ? "Билд импортирован." : "Импорт отклонен: " + result.Error, result.Ok);
+        if (result.Ok) BuildReplaced?.Invoke();
         return result;
     }
 

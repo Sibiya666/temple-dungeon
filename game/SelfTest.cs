@@ -95,7 +95,7 @@ public sealed class SelfTest
         }
         if (_table.Count > 0)
         {
-            GD.Print("SELFTEST TABLE билд | DPS до | DPS после | узел | DPS после возврата");
+            GD.Print("SELFTEST TABLE билд | главный скилл | DPS до | узел скилла «−»: DPS после, строка множителя, DPS после «+» | notable: DPS после, строка, DPS после возврата");
             foreach (var row in _table) GD.Print("SELFTEST TABLE " + row);
         }
         GD.Print($"SELFTEST {steps.Count - failed}/{steps.Count}");
@@ -143,6 +143,7 @@ public sealed class SelfTest
         }
         foreach (var info in mains) steps.Add(new($"acceptance {info.Title}", () => Acceptance(info)));
         if (mains.Count > 0) steps.Add(new("class-change-resets", () => ClassChangeResets(mains[^1])));
+        if (mains.Count > 0) steps.Add(new("passives.captions-no-overlap", () => PassiveCaptions(mains[0])));
         if (_screenshotDir != null)
         {
             var pyro = mains.FirstOrDefault(m => m.Path.EndsWith("sorcerer_pyromancer_fireball.json", StringComparison.Ordinal));
@@ -763,13 +764,16 @@ public sealed class SelfTest
 
     /// <summary>
     /// Spec §15.4 on one main reference: load it via BuildsPanel, simulate «Тренировочный» in mode «среднее» via
-    /// SimulationPanel, compare with Simulator.Run on the same file (exact), drop a taken notable that the main skill's
-    /// breakdown names via a PassivePanel click (DPS changes, the breakdown loses the node's line), take it back (DPS returns).
+    /// SimulationPanel and compare with Simulator.Run on the same file (exact). Then two node changes on the main skill:
+    /// a skill-tree point named in its hit multiplier breakdown taken out with the SkillsPanel «−» (DPS changes, the node's
+    /// line in that breakdown changes or goes; «+» brings DPS back exactly), and a taken passive notable named in the
+    /// skill's breakdown dropped by a PassivePanel click (same checks; reported when every notable holds the path).
     /// </summary>
     private async Task Acceptance(ReferenceBuildInfo info)
     {
         var session = _main.Session!;
         Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        Check(_main.Breakdown!.History.Count == 0 && _main.Breakdown.Current == null, "история «Разбора» не очищена после загрузки");
         await Settle();
         var before = await SimulateTraining();
         var dpsBefore = before.Result.DpsSingleTarget;
@@ -784,6 +788,76 @@ public sealed class SelfTest
 
         var slot = MainSkillSlot(before);
         var skillName = session.Data.Skills[session.GetSlot(slot)!.SkillId].Name;
+        var skillColumn = await SkillNodeChange(slot, skillName, dpsBefore);
+        var notableColumn = await NotableChange(slot, skillName, dpsBefore, fileBuild!);
+        _table.Add($"{info.Title} | «{skillName}» | {BreakdownText.Whole(dpsBefore)} | {skillColumn} | {notableColumn}");
+        _main.SelectTab(Main.TabTitles[0]);
+    }
+
+    /// <summary>
+    /// A point of the main skill's tree named in a hit multiplier breakdown: «−» through SkillsPanel, DPS changes and the
+    /// node's line in that breakdown changes or goes, «+» brings DPS back exactly. Fails when no such node exists.
+    /// </summary>
+    private async Task<string> SkillNodeChange(int slot, string skillName, double dpsBefore)
+    {
+        var session = _main.Session!;
+        var skills = _main.Skills!;
+        var current = session.GetSlot(slot)!;
+        var labels = await ShowSkill(slot);
+        // Hit multipliers first; when every node they name holds a dependent node (the session refuses «−»), the other
+        // damage numbers of the hit: crit chance and damage, penetration. The table names the refused ones.
+        static int Rank(string key) => key.StartsWith("hit_mult_", StringComparison.Ordinal) ? 0
+            : key.StartsWith("crit_", StringComparison.Ordinal) || key.StartsWith("penetration_", StringComparison.Ordinal) ? 1 : 2;
+        var damage = labels.Where(l => Rank(l.Line.Key) < 2).OrderBy(l => Rank(l.Line.Key)).ToList();
+        Check(damage.Any(l => Rank(l.Line.Key) == 0), $"у «{skillName}» нет множителя урона попадания");
+        var candidates = session.Data.Skills[current.SkillId].Tree
+            .Where(n => current.NodePoints.GetValueOrDefault(n.Id) > 0)
+            .Select(n => (Node: n, Label: damage.FirstOrDefault(l => BreakdownPanel.LinesOf(l.Line).Any(x => NamesNode(x, n.Name)))))
+            .Where(x => x.Label != null)
+            .OrderBy(x => Rank(x.Label!.Line.Key)).ThenBy(x => x.Node.Id, StringComparer.Ordinal).ToList();
+        Check(candidates.Any(x => Rank(x.Label!.Line.Key) == 0), $"ни один взятый узел дерева «{skillName}» не назван в разборе множителя урона попадания");
+
+        var refused = new List<string>();
+        foreach (var (node, label) in candidates)
+        {
+            var key = label!.Line.Key;
+            var named = OpenBreakdown(label).Where(x => NamesNode(x, node.Name)).ToList();
+            await ShowSkill(slot);
+            var points = session.GetSlot(slot)!.NodePoints[node.Id];
+            if (!skills.RemovePoint(slot, node.Id).Ok)
+            {
+                Check(skills.CommandError != null, "отказ «−» без причины");
+                refused.Add($"{node.Name}: {skills.CommandError}");
+                continue;
+            }
+            Check(session.GetSlot(slot)!.NodePoints.GetValueOrDefault(node.Id) == points - 1, "очко узла не снято");
+            var dpsAfter = (await SimulateTraining()).Result.DpsSingleTarget;
+            Check(dpsAfter != dpsBefore, $"без очка в «{node.Name}» DPS не изменился ({dpsBefore:R})");
+
+            var after = (await ShowSkill(slot)).FirstOrDefault(l => l.Line.Key == key);
+            Check(after != null, $"после «−» нет числа {key}");
+            var namedAfter = OpenBreakdown(after!).Where(x => NamesNode(x, node.Name)).ToList();
+            Check(!named.SequenceEqual(namedAfter), $"строка «{node.Name}» в разборе {key} не изменилась");
+
+            await ShowSkill(slot);
+            Check(skills.AddPoint(slot, node.Id).Ok, $"очко в «{node.Name}» не вернулось: {skills.CommandError}");
+            var dpsBack = (await SimulateTraining()).Result.DpsSingleTarget;
+            Check(dpsBack == dpsBefore, $"DPS после «+» {dpsBack:R}, был {dpsBefore:R}");
+            var change = $"«{named[0].Trim()}» → {(namedAfter.Count == 0 ? "нет строки" : $"«{namedAfter[0].Trim()}»")}";
+            return $"{node.Name} ({points}→{points - 1}): {BreakdownText.Whole(dpsAfter)}, {change} в {key}, после «+» {BreakdownText.Whole(dpsBack)}" +
+                   (refused.Count > 0 ? $" (из hit_mult «−» отклонен: {string.Join("; ", refused)})" : "");
+        }
+        throw new Failure($"«−» отклонен у всех узлов «{skillName}» из разбора урона попадания: {string.Join("; ", refused)}");
+    }
+
+    /// <summary>
+    /// A taken passive notable named in the main skill's breakdown dropped by a PassivePanel click: DPS changes, the
+    /// breakdown loses the node's line, a second click brings DPS back exactly. When every notable holds the path to the
+    /// start the session refuses each one; that is reported («—»), not faked with another node.
+    /// </summary>
+    private async Task<string> NotableChange(int slot, string skillName, double dpsBefore, Dialoid.Core.Character.Build fileBuild)
+    {
+        var session = _main.Session!;
         var labels = await ShowSkill(slot);
         var notables = session.Build.PassiveNodes
             .Select(id => session.Data.Passives.Nodes[id])
@@ -828,13 +902,10 @@ public sealed class SelfTest
             Check(await ClickPassive(node.Id), $"«{node.Name}» не взят обратно: {_main.Passives!.StatusText}");
             var dpsBack = (await SimulateTraining()).Result.DpsSingleTarget;
             Check(dpsBack == dpsBefore, $"DPS после возврата {dpsBack:R}, был {dpsBefore:R}");
-
-            _table.Add($"{info.Title} | {BreakdownText.Whole(dpsBefore)} | {BreakdownText.Whole(dpsAfter)} | {node.Name} ({node.Id}), " +
-                       $"скилл «{skillName}», строка «{gone[0].Trim()}» в {key} | {BreakdownText.Whole(dpsBack)}" +
-                       (refused.Count > 0 ? $" (не снимаются без разрыва: {string.Join(", ", refused)})" : ""));
-            _main.SelectTab(Main.TabTitles[0]);
-            return;
+            return $"{node.Name}: {BreakdownText.Whole(dpsAfter)}, ушла «{gone[0].Trim()}» из {key}, после возврата {BreakdownText.Whole(dpsBack)}" +
+                   (refused.Count > 0 ? $" (держат путь: {string.Join(", ", refused)})" : "");
         }
+
         // No named notable can go. If some other notable can, the check is broken; if none can, the build's tree has no
         // removable notable at all: that is reported in the table, not faked with a different node.
         foreach (var node in notables.Where(n => !refused.Contains(n.Name)))
@@ -843,10 +914,38 @@ public sealed class SelfTest
             Check(await ClickPassive(node.Id), $"«{node.Name}» не взят обратно");
             throw new Failure($"notables из разбора «{skillName}» держат путь к старту ({string.Join(", ", refused)}), а «{node.Name}» снимается, но не назван в разборе");
         }
-        Check(session.Build.PassiveNodes.ToHashSet().SetEquals(fileBuild!.PassiveNodes), "после отказов билд изменился");
-        _table.Add($"{info.Title} | {BreakdownText.Whole(dpsBefore)} | — | нет: все {notables.Count} notables держат путь к старту, " +
-                   $"сессия отклоняет снятие ({string.Join(", ", refused)}) | —");
-        _main.SelectTab(Main.TabTitles[0]);
+        Check(session.Build.PassiveNodes.ToHashSet().SetEquals(fileBuild.PassiveNodes), "после отказов билд изменился");
+        return $"— (все {notables.Count} notables держат путь к старту, сессия отклоняет снятие)";
+    }
+
+    /// <summary>
+    /// Passive tree captions on a full reference, fitted: no two placed captions overlap and no caption covers a node.
+    /// </summary>
+    private async Task PassiveCaptions(ReferenceBuildInfo info)
+    {
+        var view = _main.Passives!.View;
+        Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        _main.SelectTab("Пассивки");
+        await Settle();
+        view.FitToView();
+        // The headless window is small: zoom in (around the centre) until a notable is drawn 11 px wide, as in a 1600×1000 window.
+        var notableRadius = view.Nodes.Where(n => n.Caption != null).Min(n => n.Radius);
+        if (notableRadius * view.Zoom < 11f) view.ZoomAt(view.Size / 2, 11f / (notableRadius * view.Zoom));
+        await Settle();
+        var placed = view.LayoutCaptions();
+        var captions = view.Nodes.Count(n => n.Caption != null);
+        Check(placed.Count > captions / 2, $"подписано {placed.Count} из {captions} узлов (TreeView {view.Size}, масштаб {view.Zoom})");
+        for (int i = 0; i < placed.Count; i++)
+        {
+            for (int j = i + 1; j < placed.Count; j++)
+                Check(!placed[i].Rect.Intersects(placed[j].Rect), $"подписи {placed[i].Id} и {placed[j].Id} перекрываются");
+            foreach (var n in view.Nodes)
+                Check(!TreeView.CircleHitsRect(view.NodeLocalPosition(n.Id)!.Value, Mathf.Max(n.Radius * view.Zoom, 3f), placed[i].Rect),
+                    $"подпись {placed[i].Id} закрывает узел {n.Id}");
+        }
+        Check(view.LayoutCaptions().SequenceEqual(placed), "раскладка подписей не детерминирована");
+        GD.Print($"SELFTEST NOTE подписи дерева: {placed.Count} из {captions} при масштабе {view.Zoom}");
+        view.FitToView();
     }
 
     /// <summary>Review Focus: switching the class after a reference resets the build; the panels redraw without errors.</summary>
@@ -857,7 +956,9 @@ public sealed class SelfTest
         await SimulateTraining();
         var other = session.Data.Classes.Keys.OrderBy(k => k, StringComparer.Ordinal).First(k => k != session.Build.ClassId);
         var level = session.Build.Level;
-        Check(_main.Character!.SelectClass(other).Ok, $"смена класса на {other} отклонена");
+        _main.Character!.NumberFor("life")!.Open();
+        Check(_main.Character.SelectClass(other).Ok, $"смена класса на {other} отклонена");
+        Check(_main.Breakdown!.History.Count == 0 && _main.Breakdown.Current == null, "история «Разбора» не очищена после смены класса");
         var build = session.Build;
         Check(build.ClassId == other && build.Level == level, "класс не сменился или уровень сбросился");
         Check(build.PassiveNodes.Count == 0 && build.AttributeChoices.Count == 0, "пассивки не сброшены");

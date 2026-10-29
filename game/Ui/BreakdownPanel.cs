@@ -8,6 +8,7 @@ namespace Dialoid.Game.Ui;
 /// The «Разбор» tab (spec §13.6): the title of the opened number, its <see cref="BreakdownText.Lines"/>, its Note whenever
 /// it has one (resists and dodge carry the capped value there), and buttons for the last <see cref="HistorySize"/> opened
 /// numbers. The shown line is a snapshot taken when the number was pressed; after a build change the panel says so.
+/// Loading, importing or a class change replaces the build: <see cref="ClearHistory"/> then drops the old build's numbers.
 /// </summary>
 public partial class BreakdownPanel : SessionPanel
 {
@@ -40,6 +41,14 @@ public partial class BreakdownPanel : SessionPanel
         _history.Insert(0, entry);
         if (_history.Count > HistorySize) _history.RemoveRange(HistorySize, _history.Count - HistorySize);
         Current = entry;
+        RequestRedraw();
+    }
+
+    /// <summary>Forgets the shown number and the history (the build was replaced).</summary>
+    public void ClearHistory()
+    {
+        _history.Clear();
+        Current = null;
         RequestRedraw();
     }
 
