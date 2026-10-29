@@ -179,9 +179,11 @@ game/Main.cs, game/SelfTest.cs                 переделка корня; с
 **Interfaces:**
 - Consumes: `SandboxSession` (Build, Revision, Changed, Data), `LiveFight` (задача 2), `DamageEvent` (задача 3).
 - Produces:
-  - `public static class ReachRules { public const double MeleeTiles = 2; public static bool InReach(SkillDefinition skill, double distanceTiles); }`.
-    - Тег `melee` → ≤ `MeleeTiles` (Рассекающий удар, Сокрушение, Вихрь, Рывок).
-    - Иначе всегда true: снаряды, заклинания (в том числе Метеор и Ядовитый туман — наводятся на манекен), клич (бафф на себя).
+  - `public static class ReachRules { public const double MeleeTiles = 2; public static PressRefusal Check(TagSet compiledTags, double distanceTiles, bool targetOnScreen); }` — по тегам **скомпилированного** скилла (спецификация §6.3):
+    - `projectile` → всегда можно (снаряд может улететь за экран); важнее `melee`;
+    - `melee` без `projectile` → ≤ `MeleeTiles`, иначе `OutOfReach`;
+    - заклинание без `projectile` (наведение на цель/землю: Метеор, Ядовитый туман) → только если `targetOnScreen`, иначе `OutOfReach`;
+    - клич/бафф на себя → всегда.
   - `public sealed record MeterRow(string Key, string Label, double Value, double Share)`.
   - `public sealed class FightSegment`:
     - `int Index`, `double Start`, `double End`, `double Duration`;
@@ -192,8 +194,8 @@ game/Main.cs, game/SelfTest.cs                 переделка корня; с
     - `public const double SegmentIdleSec = 5`, `public const int MaxSegments = 10`, `public const int MaxCatchUpSteps = 20`;
     - `TrainingRoom(SandboxSession session)`; выбирает пресет `SetDummy(string dummyId)`, `SetMode(SimMode mode, int seed)`;
     - `void Advance(double realDt)` — накапливает время и делает ≤ `MaxCatchUpSteps` шагов `LiveFight` (остаток отбрасывается);
-    - `PressResult Press(int slot, double distanceTiles)` — сначала досягаемость (иначе отказ `OutOfReach` и строка журнала), потом `LiveFight.Press`;
-    - `StartChannel(int slot, double distanceTiles)`, `StopChannel()`;
+    - `PressResult Press(int slot, double distanceTiles, bool targetOnScreen)` — сначала досягаемость (иначе отказ `OutOfReach` и строка журнала), потом `LiveFight.Press`;
+    - `StartChannel(int slot, double distanceTiles, bool targetOnScreen)`, `StopChannel()`;
     - `IReadOnlyList<FightSegment> Segments`, `FightSegment? Current`, `void ResetMeter()`;
     - `IReadOnlyList<string> LogLines` — последние строки журнала по-русски (ограничение 2000);
     - `event Action? Updated`.
@@ -208,7 +210,7 @@ game/Main.cs, game/SelfTest.cs                 переделка корня; с
   - `Build_change_restarts_fight_closes_segment_and_logs_line`.
   - `Build_change_during_channel_and_queued_press_is_clean`.
   - `Huge_dt_is_capped_to_max_catch_up_steps`.
-  - `Out_of_reach_melee_is_refused_and_logged`, `Projectile_reaches_any_distance`.
+  - `Out_of_reach_melee_is_refused_and_logged`, `Projectile_reaches_any_distance_even_off_screen`, `Ground_spell_needs_target_on_screen` (Метеор), `Meteor_with_starfall_becomes_projectile_and_ignores_screen`, `Shockwave_crush_counts_as_projectile`.
   - `Mitigation_rows_add_up_to_before_defense`.
   - `Log_lines_are_russian_and_capped`.
   - `Illegal_build_starts_no_fight_and_reports_violations`.
@@ -279,7 +281,7 @@ game/Main.cs, game/SelfTest.cs                 переделка корня; с
 - Consumes: `TrainingRoom` (задача 4), `RoomView.DistanceTiles`, `HeroView.PlayAttack`.
 - Produces:
   - `CombatDriver : Node`. Каждый кадр вызывает `TrainingRoom.Advance(delta)`.
-    - Клавиши 1–5 — `Press(slot, distance)`; удержание клавиши канального скилла — `StartChannel`/`StopChannel`.
+    - Клавиши 1–5 — `Press(slot, distance, targetOnScreen)` (`targetOnScreen` — манекен внутри видимого прямоугольника `Camera2D`); удержание клавиши канального скилла — `StartChannel`/`StopChannel`.
     - По событию `use` из журнала запускается анимация атаки нужного вида (таблица «скилл → Slice/Crush/Pierce» в `game/Room/SkillAnimations.cs`: `crush`, `charge` → Crush; `cleave`, `whirlwind` → Slice; остальные → Pierce; для скилла не из таблицы — по тегам: `melee` → Slice, иначе Pierce).
     - Для снарядов — визуальный кружок по типу урона от героя к манекену.
     - По `DamageEvent` — вспышка манекена и всплывающее число урона (крит крупнее).
@@ -295,6 +297,7 @@ game/Main.cs, game/SelfTest.cs                 переделка корня; с
   - Загрузить эталон, поставить героя рядом с манекеном, нажать клавиши скиллов через синтетический ввод на 5 с игрового времени: журнал не пуст, DPS текущего сегмента > 0.
   - Нажать скилл на перезарядке: строка отказа «перезарядка».
   - Отойти на 8 тайлов и нажать ближний скилл: отказ «вне досягаемости».
+  - Увести манекен за край экрана (герой отходит так, чтобы манекен вышел из камеры): Метеор — отказ «цель за пределами экрана», снаряд (Искра или Метательный топор) — применяется.
   - Фокус в поле сида: цифра 1 уходит в поле, а не в бой (Review Focus 3).
 - [ ] **Step 3:** `tools/godot_check.sh --selftest` — 0. **Step 4: Commit** `feat(game): live combat and combat log`.
 
