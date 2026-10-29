@@ -1,3 +1,7 @@
+using Dialoid.Core.Builds;
+using Dialoid.Core.Effects;
+using Dialoid.Core.Passives;
+using Dialoid.Core.Simulation;
 using Dialoid.Game.Ui;
 using Dialoid.Sandbox;
 using Godot;
@@ -10,6 +14,8 @@ namespace Dialoid.Game;
 /// Then it quits with 0 when every step passed, else 1.
 /// To add a check, add a step in <see cref="Steps"/>: a name and an async body that throws <see cref="Failure"/> (via
 /// <see cref="Check"/>) when the check fails; <see cref="NextFrame"/> lets the scene process a frame.
+/// The acceptance steps (spec §15.4) print the table «билд → DPS до/после, узел» after the results.
+/// With <c>-- --selftest --screenshots DIR</c> in a real window (not headless) it also saves one PNG per tab into DIR.
 /// </summary>
 public sealed class SelfTest
 {
@@ -19,9 +25,26 @@ public sealed class SelfTest
     /// <summary>One named check.</summary>
     public sealed record Step(string Name, Func<Task> Run);
 
-    private readonly Main _main;
+    /// <summary>User argument (after "--selftest") followed by the directory for the tab screenshots.</summary>
+    public const string ScreenshotsArg = "--screenshots";
 
-    public SelfTest(Main main) => _main = main;
+    /// <summary>Window size of the screenshot run.</summary>
+    public static readonly Vector2I ScreenshotWindow = new(1600, 1000);
+
+    private const string TrainingDummy = "training";
+    private const int AcceptanceSeed = 1;
+
+    private readonly Main _main;
+    private readonly List<string> _table = new();
+    private readonly string? _screenshotDir;
+
+    public SelfTest(Main main)
+    {
+        _main = main;
+        var args = OS.GetCmdlineUserArgs();
+        var at = Array.IndexOf(args, ScreenshotsArg);
+        if (at >= 0) _screenshotDir = at + 1 < args.Length ? Path.GetFullPath(args[at + 1]) : "";
+    }
 
     /// <summary>Runs every step after the first frame, prints the results and quits the scene.</summary>
     public async void Start()
@@ -48,6 +71,11 @@ public sealed class SelfTest
             return 1;
         }
 
+        if (_screenshotDir != null && DisplayServer.GetName() != "headless")
+        {
+            DisplayServer.WindowSetSize(ScreenshotWindow);
+            await Settle();
+        }
         await NextFrame();
         var steps = Steps();
         int failed = 0;
@@ -64,6 +92,11 @@ public sealed class SelfTest
                 var why = e is Failure ? e.Message : $"{e.GetType().Name}: {e.Message}";
                 GD.Print($"SELFTEST FAIL {step.Name}: {why.ReplaceLineEndings(" | ")}");
             }
+        }
+        if (_table.Count > 0)
+        {
+            GD.Print("SELFTEST TABLE билд | DPS до | DPS после | узел | DPS после возврата");
+            foreach (var row in _table) GD.Print("SELFTEST TABLE " + row);
         }
         GD.Print($"SELFTEST {steps.Count - failed}/{steps.Count}");
         return failed;
@@ -108,6 +141,13 @@ public sealed class SelfTest
             steps.Add(new("simulation.stale", () => SimulationStale(reference)));
             steps.Add(new("simulation.violations", () => SimulationViolations(reference)));
         }
+        foreach (var info in mains) steps.Add(new($"acceptance {info.Title}", () => Acceptance(info)));
+        if (mains.Count > 0) steps.Add(new("class-change-resets", () => ClassChangeResets(mains[^1])));
+        if (_screenshotDir != null)
+        {
+            var pyro = mains.FirstOrDefault(m => m.Path.EndsWith("sorcerer_pyromancer_fireball.json", StringComparison.Ordinal));
+            steps.Add(new("screenshots", () => Screenshots(pyro)));
+        }
         if (mains.Count > 0)
             steps.Add(new("restore-reference", async () =>
             {
@@ -140,9 +180,11 @@ public sealed class SelfTest
         var session = _main.Session!;
         var builds = _main.Builds!;
         var revision = session.Revision;
+        var code = session.ExportCode();
         var result = builds.ImportText("мусор");
         Check(!result.Ok, "импорт мусора принят");
         Check(session.Revision == revision, $"ревизия {revision} → {session.Revision}");
+        Check(session.ExportCode() == code, "импорт мусора изменил код билда");
         Check(builds.ImportStatus.StartsWith("Импорт отклонен", StringComparison.Ordinal), $"статус «{builds.ImportStatus}»");
         Check(builds.ImportStatus.Any(c => c is >= 'а' and <= 'я'), "статус не на русском");
         await Settle();
@@ -646,6 +688,237 @@ public sealed class SelfTest
         Check(_main.Builds.Load(info).Ok, "эталон не перезагрузился");
         await Settle();
         Check(panel.StatusText == SimulationPanel.StaleText, "после смены билда результат не помечен устаревшим");
+    }
+
+    /// <summary>
+    /// Runs «Тренировочный», mode «среднее», seed 1, pack from the dummy, no dummy attack, through the SimulationPanel and
+    /// returns the applied, current outcome.
+    /// </summary>
+    private async Task<SimOutcome> SimulateTraining()
+    {
+        var panel = _main.Simulation!;
+        _main.SelectTab("Симуляция");
+        var training = panel.DummyIds.ToList().IndexOf(TrainingDummy);
+        Check(training >= 0, "нет манекена training");
+        panel.DummyOptions.Selected = training;
+        panel.SelectDummy(training);
+        panel.ModeOptions.Selected = 0;
+        panel.Seed.Value = AcceptanceSeed;
+        panel.DummyAttacks.ButtonPressed = false;
+        await WithTimeout(panel.Simulate(), 60000, "симуляция");
+        await Settle();
+        var outcome = panel.LastOutcome;
+        Check(outcome != null && outcome.Revision == _main.Session!.Revision, $"нет свежего результата; статус «{panel.StatusText}»");
+        Check(outcome!.Request.Mode == SimMode.Average && outcome.Request.DummyId == TrainingDummy, "запрос не «Тренировочный», «среднее»");
+        Check(outcome.Result.Violations.Count == 0, "нарушения: " + string.Join("; ", outcome.Result.Violations.Select(v => v.Message)));
+        var dps = panel.NumberFor("sim_dps_single");
+        Check(dps != null && dps.Line.Value == outcome.Result.DpsSingleTarget, "DPS панели не из SimResult");
+        return outcome;
+    }
+
+    /// <summary>The slot of the build's main skill: the slotted skill with the highest DPS in the outcome.</summary>
+    private int MainSkillSlot(SimOutcome outcome)
+    {
+        var session = _main.Session!;
+        var slots = Enumerable.Range(0, SandboxSession.SlotCount).Where(i => session.GetSlot(i) != null).ToList();
+        Check(slots.Count > 0, "в билде нет скиллов");
+        return slots.OrderByDescending(i => outcome.Result.DpsBySkill.GetValueOrDefault(session.GetSlot(i)!.SkillId)).First();
+    }
+
+    /// <summary>The main skill's SkillLines labels as shown on the «Скиллы» tab.</summary>
+    private async Task<IReadOnlyList<NumberLabel>> ShowSkill(int slot)
+    {
+        var panel = _main.Skills!;
+        _main.SelectTab("Скиллы");
+        panel.ShowTree(slot);
+        await Settle();
+        Check(panel.TreeSlot == slot, "дерево главного скилла не открылось");
+        return panel.SkillNumbers;
+    }
+
+    /// <summary>Opens a label (as its press does) and returns the «Разбор» lines.</summary>
+    private List<string> OpenBreakdown(NumberLabel label)
+    {
+        label.Open();
+        Check(_main.CurrentTab == Main.BreakdownTab && _main.Breakdown!.Current?.Line.Key == label.Line.Key, $"«{label.Line.Key}» не открылся в «Разборе»");
+        return _main.Breakdown!.ShownLines.ToList();
+    }
+
+    private static bool NamesNode(string line, string name) => line.EndsWith("— " + name, StringComparison.Ordinal);
+
+    /// <summary>Clicks a passive node by its TreeView coordinates on the «Пассивки» tab; returns whether the build changed.</summary>
+    private async Task<bool> ClickPassive(string id)
+    {
+        var panel = _main.Passives!;
+        var session = _main.Session!;
+        _main.SelectTab("Пассивки");
+        await Settle();
+        panel.View.FitToView();
+        var revision = session.Revision;
+        var hit = panel.View.ClickAt(NodePoint(panel.View, id));
+        Check(hit == id, $"клик попал в {hit ?? "пустоту"}, а не в {id}");
+        await Settle();
+        return session.Revision != revision;
+    }
+
+    /// <summary>
+    /// Spec §15.4 on one main reference: load it via BuildsPanel, simulate «Тренировочный» in mode «среднее» via
+    /// SimulationPanel, compare with Simulator.Run on the same file (exact), drop a taken notable that the main skill's
+    /// breakdown names via a PassivePanel click (DPS changes, the breakdown loses the node's line), take it back (DPS returns).
+    /// </summary>
+    private async Task Acceptance(ReferenceBuildInfo info)
+    {
+        var session = _main.Session!;
+        Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        await Settle();
+        var before = await SimulateTraining();
+        var dpsBefore = before.Result.DpsSingleTarget;
+
+        // Review Focus 5: the panel's DPS is Simulator.Run's on the same file, to the last bit.
+        Check(BuildCodec.TryFromJson(File.ReadAllText(info.Path), session.Data, out var fileBuild, out var parseError), $"файл не читается: {parseError}");
+        var config = new SimConfig(TrainingDummy, SimMode.Average, AcceptanceSeed,
+            PackSizeOverride: session.Data.Dummies[TrainingDummy].PackSize, DummyAttacks: false);
+        var reference = new Simulator(session.Data, MechanicRegistry.Default).Run(fileBuild!, config);
+        Check(reference.DpsSingleTarget == dpsBefore, $"DPS панели {dpsBefore:R}, Simulator.Run {reference.DpsSingleTarget:R}");
+        Check(reference.DpsPack == before.Result.DpsPack, $"DPS по паку панели {before.Result.DpsPack:R}, Simulator.Run {reference.DpsPack:R}");
+
+        var slot = MainSkillSlot(before);
+        var skillName = session.Data.Skills[session.GetSlot(slot)!.SkillId].Name;
+        var labels = await ShowSkill(slot);
+        var notables = session.Build.PassiveNodes
+            .Select(id => session.Data.Passives.Nodes[id])
+            .Where(n => n.Kind == PassiveKind.Notable)
+            .OrderBy(n => n.Id, StringComparer.Ordinal).ToList();
+        Check(notables.Count > 0, "в билде нет notables");
+        // Damage numbers first (hit multipliers, then crit and penetration), then any other SkillLine naming the node.
+        static int Rank(NumberLabel l) => l.Line.Key.StartsWith("hit_mult_", StringComparison.Ordinal) ? 0
+            : l.Line.Key.Contains("crit", StringComparison.Ordinal) || l.Line.Key.StartsWith("penetration_", StringComparison.Ordinal) ? 1 : 2;
+        var named = notables
+            .Select(n => (Node: n, Label: labels.Where(l => BreakdownPanel.LinesOf(l.Line).Any(x => NamesNode(x, n.Name)))
+                .OrderBy(Rank).FirstOrDefault()))
+            .Where(x => x.Label != null)
+            .OrderBy(x => Rank(x.Label!)).ThenBy(x => x.Node.Id, StringComparer.Ordinal).ToList();
+        Check(named.Count > 0, $"ни один из {notables.Count} notables не назван в разборе скилла «{skillName}»");
+
+        var refused = new List<string>();
+        foreach (var (node, label) in named)
+        {
+            var key = label!.Line.Key;
+            var linesBefore = OpenBreakdown(label);
+            Check(linesBefore.Any(x => NamesNode(x, node.Name)), $"в «Разборе» {key} нет строки «{node.Name}»");
+
+            if (!await ClickPassive(node.Id))
+            {
+                // Dropping it would break the path to the start: the session refuses, try the next notable.
+                Check(_main.Passives!.StatusText.Contains(node.Name), $"отказ без причины: «{_main.Passives.StatusText}»");
+                refused.Add(node.Name);
+                continue;
+            }
+            Check(!session.Build.PassiveNodes.Contains(node.Id), "узел не снят");
+
+            var dpsAfter = (await SimulateTraining()).Result.DpsSingleTarget;
+            Check(dpsAfter != dpsBefore, $"без «{node.Name}» DPS не изменился ({dpsBefore:R})");
+
+            var after = (await ShowSkill(slot)).FirstOrDefault(l => l.Line.Key == key);
+            Check(after != null, $"после снятия нет числа {key}");
+            var linesAfter = OpenBreakdown(after!);
+            var gone = linesBefore.Except(linesAfter).Where(x => NamesNode(x, node.Name)).ToList();
+            Check(gone.Count > 0 && !linesAfter.Any(x => NamesNode(x, node.Name)), $"разбор {key} не потерял строку «{node.Name}»");
+
+            Check(await ClickPassive(node.Id), $"«{node.Name}» не взят обратно: {_main.Passives!.StatusText}");
+            var dpsBack = (await SimulateTraining()).Result.DpsSingleTarget;
+            Check(dpsBack == dpsBefore, $"DPS после возврата {dpsBack:R}, был {dpsBefore:R}");
+
+            _table.Add($"{info.Title} | {BreakdownText.Whole(dpsBefore)} | {BreakdownText.Whole(dpsAfter)} | {node.Name} ({node.Id}), " +
+                       $"скилл «{skillName}», строка «{gone[0].Trim()}» в {key} | {BreakdownText.Whole(dpsBack)}" +
+                       (refused.Count > 0 ? $" (не снимаются без разрыва: {string.Join(", ", refused)})" : ""));
+            _main.SelectTab(Main.TabTitles[0]);
+            return;
+        }
+        // No named notable can go. If some other notable can, the check is broken; if none can, the build's tree has no
+        // removable notable at all: that is reported in the table, not faked with a different node.
+        foreach (var node in notables.Where(n => !refused.Contains(n.Name)))
+        {
+            if (!await ClickPassive(node.Id)) { refused.Add(node.Name); continue; }
+            Check(await ClickPassive(node.Id), $"«{node.Name}» не взят обратно");
+            throw new Failure($"notables из разбора «{skillName}» держат путь к старту ({string.Join(", ", refused)}), а «{node.Name}» снимается, но не назван в разборе");
+        }
+        Check(session.Build.PassiveNodes.ToHashSet().SetEquals(fileBuild!.PassiveNodes), "после отказов билд изменился");
+        _table.Add($"{info.Title} | {BreakdownText.Whole(dpsBefore)} | — | нет: все {notables.Count} notables держат путь к старту, " +
+                   $"сессия отклоняет снятие ({string.Join(", ", refused)}) | —");
+        _main.SelectTab(Main.TabTitles[0]);
+    }
+
+    /// <summary>Review Focus: switching the class after a reference resets the build; the panels redraw without errors.</summary>
+    private async Task ClassChangeResets(ReferenceBuildInfo info)
+    {
+        var session = _main.Session!;
+        Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        await SimulateTraining();
+        var other = session.Data.Classes.Keys.OrderBy(k => k, StringComparer.Ordinal).First(k => k != session.Build.ClassId);
+        var level = session.Build.Level;
+        Check(_main.Character!.SelectClass(other).Ok, $"смена класса на {other} отклонена");
+        var build = session.Build;
+        Check(build.ClassId == other && build.Level == level, "класс не сменился или уровень сбросился");
+        Check(build.PassiveNodes.Count == 0 && build.AttributeChoices.Count == 0, "пассивки не сброшены");
+        Check(build.AscendancyId == null && build.AscendancyNodes.Count == 0, "асцендант не сброшен");
+        Check(build.Slots.Count == 0 && build.Rotation.Count == 0, "скиллы или ротация не сброшены");
+        foreach (var tab in Main.TabTitles)
+        {
+            _main.SelectTab(tab);
+            await Settle();
+        }
+        Check(_main.Passives!.PointsText == $"Очки: 0/{session.PassivePointsTotal}", $"счетчик «{_main.Passives.PointsText}»");
+        Check(_main.Skills!.TreeSlot == -1, "после сброса показано дерево скилла");
+        Check(_main.Simulation!.StatusText == SimulationPanel.StaleText, $"статус симуляции «{_main.Simulation.StatusText}»");
+        Check(!_main.Character.RedrawPending && !_main.Skills.RedrawPending && !_main.Passives.RedrawPending, "панели не перерисовались");
+    }
+
+    /// <summary>
+    /// Screenshot run (real window only): the pyromancer reference after a training simulation, one PNG per tab, plus the
+    /// «Разбор» of the main skill's hit multiplier opened by its NumberLabel.
+    /// </summary>
+    private async Task Screenshots(ReferenceBuildInfo? pyro)
+    {
+        Check(DisplayServer.GetName() != "headless", "скриншоты нужны в окне, а не в --headless");
+        Check(!string.IsNullOrEmpty(_screenshotDir), $"после {ScreenshotsArg} нет каталога");
+        Check(pyro != null, "нет эталона sorcerer_pyromancer_fireball");
+        Directory.CreateDirectory(_screenshotDir!);
+        Check(_main.Builds!.Load(pyro!).Ok, "эталон не загрузился");
+        await Settle();
+        var outcome = await SimulateTraining();
+        var slot = MainSkillSlot(outcome);
+
+        _main.Passives!.View.FitToView();
+        _main.Character!.NumberFor("life")!.Open(); // the plain «Разбор» shot shows the life breakdown
+        var names = new[] { "01-character", "02-passives", "03-ascendancy", "04-skills", "05-simulation", "06-breakdown", "07-builds" };
+        for (int i = 0; i < Main.TabTitles.Count; i++)
+        {
+            if (Main.TabTitles[i] == "Скиллы") await ShowSkill(slot);
+            _main.SelectTab(Main.TabTitles[i]);
+            await Shot(names[i]);
+        }
+
+        var labels = await ShowSkill(slot);
+        var mult = labels.FirstOrDefault(l => l.Line.Key.StartsWith("hit_mult_", StringComparison.Ordinal));
+        Check(mult != null, "у главного скилла нет множителя урона попадания");
+        OpenBreakdown(mult!);
+        await Shot("08-breakdown-hit-multiplier");
+        _main.SelectTab(Main.TabTitles[0]);
+    }
+
+    /// <summary>Waits until the current tab is drawn and saves the viewport as DIR/name.png (downscaled to the window width).</summary>
+    private async Task Shot(string name)
+    {
+        await Settle();
+        await _main.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        var image = _main.GetViewport().GetTexture().GetImage();
+        Check(image != null && image.GetWidth() > 0, "пустой кадр");
+        if (image!.GetWidth() > ScreenshotWindow.X)
+            image.Resize(ScreenshotWindow.X, image.GetHeight() * ScreenshotWindow.X / image.GetWidth(), Image.Interpolation.Lanczos);
+        var path = Path.Combine(_screenshotDir!, name + ".png");
+        Check(image.SavePng(path) == Error.Ok, $"не сохранен {path}");
+        GD.Print($"SELFTEST SCREENSHOT {path} {image.GetWidth()}x{image.GetHeight()}");
     }
 
     /// <summary>Throws a <see cref="Failure"/> with <paramref name="why"/> when the condition is false.</summary>

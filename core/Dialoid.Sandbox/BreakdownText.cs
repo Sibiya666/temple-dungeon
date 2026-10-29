@@ -5,7 +5,9 @@ namespace Dialoid.Sandbox;
 
 /// <summary>
 /// Russian breakdown of one stat evaluation, in the formula order (base + Σflat) × (1 + Σincreased/100) × Π(1 + more/100).
-/// Numbers use the Russian decimal comma; percents and multipliers have one decimal.
+/// Numbers use the Russian decimal comma and the Unicode minus: contributions (base, flat, increased) up to two decimals and
+/// More/Less factors up to three, trailing zeros trimmed (<see cref="Part"/>, <see cref="Factor"/>); totals one decimal
+/// (<see cref="Number"/>); damage and DPS whole (<see cref="Whole"/>).
 /// </summary>
 public static class BreakdownText
 {

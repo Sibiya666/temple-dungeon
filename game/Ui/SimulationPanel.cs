@@ -256,12 +256,12 @@ public partial class SimulationPanel : SessionPanel
         string SkillTitle(string id) => data.Skills.TryGetValue(id, out var s) ? s.Name : id;
         var dpsNote = note + "; DPS по всем целям, в сумме дает DPS по паку";
 
-        Header("DPS по скиллам");
+        Header("DPS по скиллам (по всем целям)");
         if (result.DpsBySkill.Count == 0) AddText("нет урона");
         foreach (var (id, dps) in result.DpsBySkill.OrderByDescending(kv => kv.Value))
             Number("sim_dps_skill_" + id, SkillTitle(id), dps, BreakdownText.Whole, dpsNote);
 
-        Header("DPS по типам урона");
+        Header("DPS по типам урона (по всем целям)");
         if (result.DpsByType.Count == 0) AddText("нет урона");
         foreach (var (type, dps) in result.DpsByType.OrderByDescending(kv => kv.Value))
             Number("sim_dps_type_" + type.ToString().ToLowerInvariant(), BreakdownText.DamageTypeName(type), dps, BreakdownText.Whole, dpsNote);
