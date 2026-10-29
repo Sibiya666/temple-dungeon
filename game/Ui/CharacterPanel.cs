@@ -8,21 +8,24 @@ namespace Dialoid.Game.Ui;
 /// <summary>
 /// The «Персонаж» tab (spec §13.1): class, level, ascendancy (from level 20), weapon, items, every CharacterLine through a
 /// <see cref="NumberLabel"/> and the build's violations in red. Every change is a <see cref="SandboxSession"/> command;
-/// the panel redraws itself whole on <see cref="SandboxSession.Changed"/>.
+/// the panel redraws itself whole (deferred, see <see cref="SessionPanel"/>) on every change.
 /// </summary>
-public partial class CharacterPanel : VBoxContainer
+public partial class CharacterPanel : SessionPanel
 {
-    private static readonly Color Red = new(1f, 0.45f, 0.45f);
+    /// <summary>Key of the level number (an owner-set <see cref="NumberLabel.InputLine"/>).</summary>
+    public const string LevelKey = NumberLabel.InputKeyPrefix + "level";
 
-    private SandboxSession _session = null!;
     private Action<NumberLine, string?> _open = null!;
-    private VBoxContainer _content = null!;
     private string? _commandError;
     private readonly List<NumberLabel> _numbers = new();
     private readonly List<string> _violations = new();
+    private readonly List<CheckBox> _itemBoxes = new();
 
-    /// <summary>The number labels shown now (level and CharacterLines).</summary>
+    /// <summary>The number labels shown now: the level first, then one per CharacterLine in order.</summary>
     public IReadOnlyList<NumberLabel> Numbers => _numbers;
+
+    /// <summary>The CharacterLine labels shown now (without the level).</summary>
+    public IReadOnlyList<NumberLabel> LineNumbers => _numbers.Where(n => !NumberLabel.IsInput(n.Line)).ToList();
 
     /// <summary>The violation messages shown now.</summary>
     public IReadOnlyList<string> ShownViolations => _violations;
@@ -30,37 +33,31 @@ public partial class CharacterPanel : VBoxContainer
     /// <summary>The last refused command's error shown now, or null.</summary>
     public string? CommandError => _commandError;
 
-    /// <summary>The shown label of a CharacterLine key (life, armor...), or null.</summary>
+    /// <summary>The weapon selector shown now (the self-test fires its signal like a click).</summary>
+    public OptionButton? WeaponOptions { get; private set; }
+
+    /// <summary>Weapon id of each <see cref="WeaponOptions"/> item (null: none).</summary>
+    public IReadOnlyList<string?> WeaponChoices { get; private set; } = Array.Empty<string?>();
+
+    /// <summary>The item check boxes shown now, by item id order.</summary>
+    public IReadOnlyList<CheckBox> ItemBoxes => _itemBoxes;
+
+    /// <summary>The shown label of a key (life, armor..., <see cref="LevelKey"/>), or null.</summary>
     public NumberLabel? NumberFor(string key) => _numbers.FirstOrDefault(n => n.Line.Key == key);
 
     public void Setup(SandboxSession session, Action<NumberLine, string?> open)
     {
-        _session = session;
+        InitSession(session);
         _open = open;
-        var scroll = new ScrollContainer
-        {
-            SizeFlagsVertical = SizeFlags.ExpandFill,
-            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
-        };
-        AddChild(scroll);
-        _content = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        scroll.AddChild(_content);
-        _session.Changed += OnChanged;
-        Redraw();
-    }
-
-    public override void _ExitTree()
-    {
-        if (_session != null) _session.Changed -= OnChanged;
     }
 
     // ---- handlers (the controls and the self-test call these) -------------------------------------------------------
 
-    public CommandResult SelectClass(string classId) => Run(_session.SetClass(classId));
-    public CommandResult SelectLevel(int level) => Run(_session.SetLevel(level));
-    public CommandResult SelectAscendancy(string? ascendancyId) => Run(_session.SetAscendancy(ascendancyId));
-    public CommandResult SelectWeapon(string? weaponId) => Run(_session.SetWeapon(weaponId));
-    public CommandResult ToggleItem(string itemId) => Run(_session.ToggleItem(itemId));
+    public CommandResult SelectClass(string classId) => Run(Session.SetClass(classId));
+    public CommandResult SelectLevel(int level) => Run(Session.SetLevel(level));
+    public CommandResult SelectAscendancy(string? ascendancyId) => Run(Session.SetAscendancy(ascendancyId));
+    public CommandResult SelectWeapon(string? weaponId) => Run(Session.SetWeapon(weaponId));
+    public CommandResult ToggleItem(string itemId) => Run(Session.ToggleItem(itemId));
 
     /// <summary>Remembers a refused command's error and redraws (a refusal does not raise Changed, but controls must reset).</summary>
     private CommandResult Run(CommandResult result)
@@ -68,31 +65,27 @@ public partial class CharacterPanel : VBoxContainer
         if (!result.Ok)
         {
             _commandError = result.Error;
-            Redraw();
+            RequestRedraw();
         }
         return result;
     }
 
-    private void OnChanged()
+    protected override void OnSessionChanged()
     {
         _commandError = null;
-        Redraw();
+        RequestRedraw();
     }
 
     // ---- drawing ------------------------------------------------------------------------------------------------------
 
-    private void Redraw()
+    protected override void DrawContent()
     {
-        foreach (var child in _content.GetChildren())
-        {
-            _content.RemoveChild(child);
-            child.QueueFree();
-        }
         _numbers.Clear();
         _violations.Clear();
+        _itemBoxes.Clear();
 
-        var build = _session.Build;
-        var data = _session.Data;
+        var build = Session.Build;
+        var data = Session.Data;
 
         if (_commandError != null) AddText("Команда отклонена: " + _commandError, Red);
 
@@ -102,7 +95,8 @@ public partial class CharacterPanel : VBoxContainer
         classBox.ItemSelected += i => SelectClass(classIds[(int)i]);
         Row("Класс (смена сбрасывает билд)", classBox);
 
-        // Level: the slider applies on release (or on a click/keyboard step) so dragging does not rebuild the panel.
+        // Level: the slider applies on release (or on a click/keyboard step) so dragging does not rebuild the panel;
+        // the mouse wheel does not change it (scrolling the page over it must not edit the build).
         var levelNumber = NumberLabel.For(LevelLine(build.Level), _open);
         var slider = new HSlider
         {
@@ -110,6 +104,7 @@ public partial class CharacterPanel : VBoxContainer
             MaxValue = BuildRules.MaxLevel,
             Step = 1,
             Value = build.Level,
+            Scrollable = false,
             CustomMinimumSize = new Vector2(400, 0),
             SizeFlagsVertical = SizeFlags.ShrinkCenter,
         };
@@ -144,6 +139,8 @@ public partial class CharacterPanel : VBoxContainer
         var weaponBox = Options(weaponIds.Select(id => id == null ? "(нет)" : $"{data.Weapons[id].Name} ({data.Weapons[id].Type})"),
             weaponIds.IndexOf(build.WeaponId));
         weaponBox.ItemSelected += i => SelectWeapon(weaponIds[(int)i]);
+        WeaponOptions = weaponBox;
+        WeaponChoices = weaponIds;
         Row("Оружие", weaponBox);
 
         // Items.
@@ -153,12 +150,13 @@ public partial class CharacterPanel : VBoxContainer
             var id = item.Id;
             var box = new CheckBox { Text = item.Name, ButtonPressed = build.ItemIds.Contains(id) };
             box.Toggled += _ => ToggleItem(id);
-            _content.AddChild(box);
+            _itemBoxes.Add(box);
+            Content!.AddChild(box);
         }
 
         // Violations.
-        _content.AddChild(new HSeparator());
-        var violations = _session.Violations;
+        Content!.AddChild(new HSeparator());
+        var violations = Session.Violations;
         if (violations.Count == 0) AddText("Нарушений нет.");
         else
         {
@@ -171,25 +169,24 @@ public partial class CharacterPanel : VBoxContainer
         }
 
         // Numbers.
-        _content.AddChild(new HSeparator());
-        var lines = _session.CharacterLines;
+        Content.AddChild(new HSeparator());
+        var lines = Session.CharacterLines;
         if (lines.Count == 0) AddText("Показатели не посчитаны: исправьте нарушения.", Red);
         foreach (var line in lines)
         {
             var label = NumberLabel.For(line, _open);
             _numbers.Add(label);
-            _content.AddChild(label);
+            Content.AddChild(label);
         }
     }
 
     private void ApplyLevel(int level)
     {
-        if (level != _session.Build.Level) SelectLevel(level);
+        if (level != Session.Build.Level) SelectLevel(level);
     }
 
-    /// <summary>The level is the owner's input, not a computed number: a line without a breakdown.</summary>
     private static NumberLine LevelLine(int level) =>
-        new("level", "Уровень", level, null, "уровень билда — ввод владельца (ползунок)");
+        NumberLabel.InputLine("level", "Уровень", level, "уровень билда, ползунок на вкладке «Персонаж»");
 
     private static OptionButton Options(IEnumerable<string> texts, int selected)
     {
@@ -205,14 +202,6 @@ public partial class CharacterPanel : VBoxContainer
         row.AddChild(new Label { Text = caption + ":", CustomMinimumSize = new Vector2(240, 0) });
         foreach (var c in controls)
             if (c != null) row.AddChild(c);
-        _content.AddChild(row);
-    }
-
-    private Label AddText(string text, Color? color = null)
-    {
-        var label = new Label { Text = text, AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        if (color is { } c) label.AddThemeColorOverride("font_color", c);
-        _content.AddChild(label);
-        return label;
+        Content!.AddChild(row);
     }
 }

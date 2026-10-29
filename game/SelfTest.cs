@@ -1,3 +1,4 @@
+using Dialoid.Game.Ui;
 using Dialoid.Sandbox;
 using Godot;
 
@@ -87,7 +88,93 @@ public sealed class SelfTest
             return Task.CompletedTask;
         }));
         foreach (var info in mains) steps.Add(new($"builds.load {info.Title}", () => LoadReference(info)));
+        steps.Add(new("character.lines-match", CharacterLinesMatch));
+        steps.Add(new("builds.import-garbage", ImportGarbage));
+        if (mains.Count > 0) steps.Add(new("character.illegal-level", () => IllegalLevel(mains[0])));
+        if (mains.Count > 0) steps.Add(new("character.signal-redraw", () => SignalRedraw(mains[0])));
         return steps;
+    }
+
+    /// <summary>The shown CharacterLine labels are the session's lines one to one, with the NumberLabel text rule.</summary>
+    private async Task CharacterLinesMatch()
+    {
+        await Settle();
+        var shown = _main.Character!.LineNumbers;
+        var lines = _main.Session!.CharacterLines;
+        Check(lines.Count > 0, "у сессии нет CharacterLines");
+        Check(shown.Count == lines.Count, $"показано {shown.Count} чисел, в сессии {lines.Count}");
+        for (int i = 0; i < lines.Count; i++)
+        {
+            var (label, line) = (shown[i], lines[i]);
+            Check(label.Line.Key == line.Key && label.Line.Value == line.Value, $"№{i}: {label.Line.Key} вместо {line.Key}");
+            Check(label.Text == NumberLabel.TextOf(line), $"№{i}: текст «{label.Text}»");
+        }
+    }
+
+    /// <summary>A garbage import is refused with a Russian status and leaves the build alone.</summary>
+    private async Task ImportGarbage()
+    {
+        var session = _main.Session!;
+        var builds = _main.Builds!;
+        var revision = session.Revision;
+        var result = builds.ImportText("мусор");
+        Check(!result.Ok, "импорт мусора принят");
+        Check(session.Revision == revision, $"ревизия {revision} → {session.Revision}");
+        Check(builds.ImportStatus.StartsWith("Импорт отклонен", StringComparison.Ordinal), $"статус «{builds.ImportStatus}»");
+        Check(builds.ImportStatus.Any(c => c is >= 'а' and <= 'я'), "статус не на русском");
+        await Settle();
+    }
+
+    /// <summary>Level 1 on a level-60 reference: no exception, violations shown, the panel still draws.</summary>
+    private async Task IllegalLevel(ReferenceBuildInfo info)
+    {
+        var character = _main.Character!;
+        Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        await Settle();
+        var result = character.SelectLevel(1);
+        Check(result.Ok, $"уровень 1 отклонен: {result.Error}");
+        await Settle();
+        Check(character.ShownViolations.Count > 0, "нарушений не показано");
+        Check(character.NumberFor(CharacterPanel.LevelKey)?.Line.Value == 1, "число уровня не 1");
+        Check(character.Numbers.Count > 0 && !character.RedrawPending, "панель не перерисовалась");
+        Check(_main.Builds.Load(info).Ok, "эталон не перезагрузился");
+        await Settle();
+        Check(character.ShownViolations.Count == 0, "после перезагрузки остались нарушения");
+    }
+
+    /// <summary>
+    /// Fires the controls' own signals (as a click does) on controls the resulting redraw frees: weapon ItemSelected and
+    /// an item's Toggled. The redraw must be deferred and land on the next frame.
+    /// </summary>
+    private async Task SignalRedraw(ReferenceBuildInfo info)
+    {
+        var character = _main.Character!;
+        var session = _main.Session!;
+        Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        await Settle();
+
+        var weapons = character.WeaponOptions!;
+        var choices = character.WeaponChoices;
+        var target = Enumerable.Range(0, choices.Count).First(i => choices[i] != session.Build.WeaponId);
+        var revision = session.Revision;
+        weapons.EmitSignal(OptionButton.SignalName.ItemSelected, target);
+        Check(session.Revision == revision + 1, "оружие не сменилось");
+        Check(character.RedrawPending, "перерисовка не отложена");
+        Check(GodotObject.IsInstanceValid(weapons) && weapons.IsInsideTree(), "OptionButton удален во время сигнала");
+        await Settle();
+        Check(session.Build.WeaponId == choices[target] && character.WeaponOptions != weapons, "панель не перерисовалась после оружия");
+
+        var box = character.ItemBoxes.FirstOrDefault(b => !b.ButtonPressed);
+        if (box != null)
+        {
+            revision = session.Revision;
+            box.ButtonPressed = true; // emits Toggled
+            Check(session.Revision == revision + 1, "предмет не надет");
+            Check(GodotObject.IsInstanceValid(box) && box.IsInsideTree(), "CheckBox удален во время сигнала");
+            await Settle();
+        }
+        Check(_main.Builds.Load(info).Ok, "эталон не перезагрузился");
+        await Settle();
     }
 
     /// <summary>Loads a main reference via BuildsPanel; CharacterPanel shows 0 violations; life opens its breakdown.</summary>
@@ -98,7 +185,7 @@ public sealed class SelfTest
         var result = builds.Load(info);
         Check(result.Ok, $"загрузка отклонена: {result.Error}");
         Check(builds.LoadStatus.Contains(info.Title), $"статус загрузки «{builds.LoadStatus}»");
-        await NextFrame();
+        await Settle();
 
         Check(character.ShownViolations.Count == 0, "нарушения: " + string.Join("; ", character.ShownViolations));
         var life = character.NumberFor("life");
@@ -122,4 +209,11 @@ public sealed class SelfTest
 
     /// <summary>Waits for the next processed frame.</summary>
     public async Task NextFrame() => await _main.ToSignal(_main.GetTree(), SceneTree.SignalName.ProcessFrame);
+
+    /// <summary>Waits two frames so deferred redraws (<see cref="Ui.SessionPanel.RequestRedraw"/>) have run.</summary>
+    public async Task Settle()
+    {
+        await NextFrame();
+        await NextFrame();
+    }
 }

@@ -7,13 +7,11 @@ namespace Dialoid.Game.Ui;
 /// The «Билды» tab (spec §13.7): the reference builds grouped as in data/builds with a «Загрузить» button, and a text
 /// field with «Экспорт» (fills it with the build code) and «Импорт» (errors under the field). Loading and import are
 /// <see cref="ReferenceBuilds.Load"/> / <see cref="SandboxSession.Import"/>; the other panels redraw on Changed.
-/// The panel itself shows nothing derived from the build, so it does not listen to Changed.
+/// The panel is built once; it listens to Changed only to clear its status lines, which a later change makes stale
+/// (its own load/import sets the status right after the synchronous Changed).
 /// </summary>
-public partial class BuildsPanel : VBoxContainer
+public partial class BuildsPanel : SessionPanel
 {
-    private static readonly Color Red = new(1f, 0.45f, 0.45f);
-    private static readonly Color Green = new(0.55f, 0.9f, 0.55f);
-
     private static readonly IReadOnlyDictionary<string, string> GroupTitles = new Dictionary<string, string>
     {
         [ReferenceBuilds.MainGroup] = "Основные (60 уровень)",
@@ -23,7 +21,6 @@ public partial class BuildsPanel : VBoxContainer
         ["attributes"] = "Без атрибутных узлов",
     };
 
-    private SandboxSession _session = null!;
     private Tree _tree = null!;
     private Label _loadStatus = null!;
     private TextEdit _code = null!;
@@ -43,7 +40,7 @@ public partial class BuildsPanel : VBoxContainer
 
     public void Setup(SandboxSession session, string? dataDirectory)
     {
-        _session = session;
+        InitSession(session, withContent: false);
         References = dataDirectory == null ? Array.Empty<ReferenceBuildInfo>() : ReferenceBuilds.List(dataDirectory);
 
         AddChild(new Label { Text = "Эталонные билды (data/builds). Двойной щелчок или «Загрузить»:" });
@@ -106,7 +103,7 @@ public partial class BuildsPanel : VBoxContainer
     /// <summary>Loads a reference build into the session and shows the result.</summary>
     public CommandResult Load(ReferenceBuildInfo info)
     {
-        var result = ReferenceBuilds.Load(_session, info);
+        var result = ReferenceBuilds.Load(Session, info);
         SetStatus(_loadStatus, result.Ok ? $"Загружен: {info.Title}" : result.Error ?? "", result.Ok);
         return result;
     }
@@ -114,16 +111,23 @@ public partial class BuildsPanel : VBoxContainer
     /// <summary>Puts the current build's code into the field.</summary>
     public void ExportCode()
     {
-        _code.Text = _session.ExportCode();
+        _code.Text = Session.ExportCode();
         SetStatus(_importStatus, "Код билда в поле выше.", true);
     }
 
     /// <summary>Replaces the build with a code or JSON; a refusal shows its reason.</summary>
     public CommandResult ImportText(string text)
     {
-        var result = _session.Import(text);
+        var result = Session.Import(text);
         SetStatus(_importStatus, result.Ok ? "Билд импортирован." : "Импорт отклонен: " + result.Error, result.Ok);
         return result;
+    }
+
+    /// <summary>Clears both status lines synchronously (labels only, nothing is freed); no redraw needed.</summary>
+    protected override void OnSessionChanged()
+    {
+        _loadStatus.Text = "";
+        _importStatus.Text = "";
     }
 
     private void LoadSelected()
