@@ -16,28 +16,47 @@ public static class AilmentCalculator
         TagSet.Of("dot", def.SourceType.ToString().ToLowerInvariant(), $"skill:{skill.SkillId}", def.Tag);
 
     public static double DotDps(double ailmentBase, AilmentDefinition def, CompiledCharacter ch, CompiledSkill skill, TargetDefense t,
-        IConditionContext? conditions = null)
+        IConditionContext? conditions = null) =>
+        DotDpsParts(ailmentBase, def, ch, skill, t, conditions).Dps;
+
+    /// <summary><see cref="DotDps"/> plus its defense breakdown per second (Final = the dps).</summary>
+    internal static (double Dps, DamagePart PerSecond) DotDpsParts(double ailmentBase, AilmentDefinition def, CompiledCharacter ch,
+        CompiledSkill skill, TargetDefense t, IConditionContext? conditions = null)
     {
-        if (def.DurationSec <= 0) return 0;
+        if (def.DurationSec <= 0) return (0, new DamagePart(def.SourceType, 0, 0, 0, 0, 0, 0));
         var ctx = DotContext(def, skill);
         var mult = Math.Max(0, ch.Evaluator.Evaluate("damage", ctx, conditions, 1).Value);
         var dps = ailmentBase * def.DamageFraction / def.DurationSec * mult;
+        var before = dps;
         dps *= Defense(def.SourceType, ch, ctx, t, conditions); // resist path only: bleed (physical) ignores armor
-        return dps * t.DamageTakenMultiplier;
+        var afterDefense = dps;
+        var final = dps * t.DamageTakenMultiplier;
+        return (final, new DamagePart(def.SourceType, before, 0, before - afterDefense, afterDefense - final, 0, final));
     }
 
     /// <summary>Ground zone (burning ground etc.): fraction of the ailment base per second, with the skill's own tags plus dot.</summary>
     public static double GroundZoneDps(double ailmentBase, double fractionPerSec, CompiledCharacter ch, CompiledSkill skill,
-        TargetDefense t, DamageType zoneType = DamageType.Fire, IConditionContext? conditions = null)
+        TargetDefense t, DamageType zoneType = DamageType.Fire, IConditionContext? conditions = null) =>
+        GroundZoneDpsParts(ailmentBase, fractionPerSec, ch, skill, t, zoneType, conditions).Dps;
+
+    /// <summary><see cref="GroundZoneDps"/> plus its defense breakdown per second (Final = the dps).</summary>
+    internal static (double Dps, DamagePart PerSecond) GroundZoneDpsParts(double ailmentBase, double fractionPerSec, CompiledCharacter ch,
+        CompiledSkill skill, TargetDefense t, DamageType zoneType = DamageType.Fire, IConditionContext? conditions = null)
     {
         var ctx = skill.Tags.With("dot");
         var mult = Math.Max(0, ch.Evaluator.Evaluate("damage", ctx, conditions, 1).Value);
         var dps = ailmentBase * fractionPerSec * mult;
+        var before = dps;
         if (zoneType == DamageType.Physical)
             dps *= 1 - Mitigation.ArmorReduction(t.Armor, dps);
         else
             dps *= Defense(zoneType, ch, ctx, t, conditions);
-        return dps * t.DamageTakenMultiplier;
+        var afterDefense = dps;
+        var final = dps * t.DamageTakenMultiplier;
+        var cut = before - afterDefense;
+        return (final, zoneType == DamageType.Physical
+            ? new DamagePart(zoneType, before, cut, 0, afterDefense - final, 0, final)
+            : new DamagePart(zoneType, before, 0, cut, afterDefense - final, 0, final));
     }
 
     // Resist (with penetration) path; bleed and other DoTs never use armor.
@@ -60,15 +79,16 @@ public static class AilmentCalculator
     {
         var duration = def.DurationSec;
         double dps = 0, magnitude = 0;
+        DamagePart? perSecond = null;
         switch (def.Id)
         {
             case "shock": magnitude = ShockMagnitude(ch, skill, conditions); break;
             case "chill": magnitude = ChillSlowPercent; break;
             case "freeze": duration = FreezeDuration(def, ch, skill, conditions); break;
             default:
-                if (def.DamageFraction > 0) dps = DotDps(ailmentBase, def, ch, skill, t, conditions);
+                if (def.DamageFraction > 0) (dps, perSecond) = DotDpsParts(ailmentBase, def, ch, skill, t, conditions);
                 break;
         }
-        return new AilmentInstance(def.Id, def.SourceType, dps, duration, skill.SkillId) { Magnitude = magnitude };
+        return new AilmentInstance(def.Id, def.SourceType, dps, duration, skill.SkillId) { Magnitude = magnitude, PerSecond = perSecond };
     }
 }

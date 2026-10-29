@@ -232,7 +232,7 @@ public class LiveFightTests
         Assert.DoesNotContain(full.Log, e => e.Kind == "kill");
         Assert.True(full.HitDamage + full.DotDamage > dead.HitDamage + dead.DotDamage); // more than the boss's whole life
         Assert.True(endless.Press(Spark).Refusal is PressRefusal.None or PressRefusal.Busy or PressRefusal.NotEnoughResource);
-        Assert.Empty(endless.DrainDamage());
+        Assert.NotEmpty(endless.DrainDamage()); // task 3: every hit and DoT tick of the endless fight is a damage event
     }
 
     [Fact]

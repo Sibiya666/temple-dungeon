@@ -26,6 +26,9 @@ public sealed class LiveFight
     /// and as many undrained ones for <see cref="DrainEvents"/>, so an endless fight uses bounded memory.</summary>
     internal const int LogKeep = SimLog.Cap;
 
+    /// <summary>Undrained damage events kept (up to twice as many) for <see cref="DrainDamage"/>, so memory stays bounded.</summary>
+    internal const int DamageKeep = 10_000;
+
     internal FightSetup Setup { get; }
 
     /// <summary>The engine's live state (tests read the busy time and adjust the resource).</summary>
@@ -34,7 +37,7 @@ public sealed class LiveFight
     internal LiveFight(FightSetup setup, LiveFightConfig config)
     {
         Setup = setup;
-        _engine = setup.Engine(ToSimConfig(config), config.InfiniteLife, log: SimLog.Rolling(LogKeep));
+        _engine = setup.Engine(ToSimConfig(config), config.InfiniteLife, log: SimLog.Rolling(LogKeep), damageKeep: DamageKeep);
     }
 
     /// <summary>
@@ -103,8 +106,10 @@ public sealed class LiveFight
     /// caller does not drain for a long time, only the most recent <see cref="LogKeep"/>–2×<see cref="LogKeep"/> events are kept.</summary>
     public IReadOnlyList<SimEvent> DrainEvents() => _engine.Log.Drain();
 
-    /// <summary>Damage events since the previous call. Always empty until the engine emits them (training room plan, task 3).</summary>
-    public IReadOnlyList<DamageEvent> DrainDamage() => Array.Empty<DamageEvent>();
+    /// <summary>Every hit and DoT tick since the previous call (oldest first), with what the dummy's defense took off it. Never
+    /// stops; if the caller does not drain for a long time, only the most recent <see cref="DamageKeep"/>–2×<see cref="DamageKeep"/>
+    /// events are kept. <see cref="Snapshot"/> carries the sums over the whole fight (<see cref="SimResult.Mitigation"/>).</summary>
+    public IReadOnlyList<DamageEvent> DrainDamage() => _engine.Damage.Drain();
 
     public LiveState State
     {

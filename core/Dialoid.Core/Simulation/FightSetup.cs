@@ -64,8 +64,9 @@ internal sealed class FightSetup
 
     /// <summary>The engine over this setup's character and skills. One engine per setup: the skill runtimes carry the fight's
     /// active buffs.</summary>
-    public CombatEngine Engine(SimConfig config, bool infiniteLife, Action<SimState>? stepObserver = null, SimLog? log = null) =>
-        new(_data, _mechanics, Character, Weapon, Skills, Dummy, config, infiniteLife, log) { StepObserver = stepObserver };
+    public CombatEngine Engine(SimConfig config, bool infiniteLife, Action<SimState>? stepObserver = null, SimLog? log = null,
+        int damageKeep = 0) =>
+        new(_data, _mechanics, Character, Weapon, Skills, Dummy, config, infiniteLife, log, damageKeep) { StepObserver = stepObserver };
 
     /// <summary>The build's priority rotation over this setup's skills.</summary>
     public Rotation Rotation() => new(Build, Skills);

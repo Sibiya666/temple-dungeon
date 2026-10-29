@@ -38,10 +38,19 @@ public class CombatEngineTests
     public void Engine_extraction_keeps_every_reference_result_identical()
     {
         if (Writing) return; // the baseline is being rewritten by the test above
+        AssertMatchesBaseline(_ => true);
+    }
+
+    /// <summary>The build files the filter keeps (path relative to data/builds, e.g. "keystones/x.json") still give their baseline
+    /// results to the bit; every baseline run of those builds must be present.</summary>
+    internal static void AssertMatchesBaseline(Func<string, bool> buildFilter)
+    {
         var expected = JsonSerializer.Deserialize<SortedDictionary<string, SortedDictionary<string, string>>>(File.ReadAllText(BaselinePath))!;
-        var actual = Fingerprints();
-        Assert.Equal(expected.Keys, actual.Keys);
-        foreach (var (run, fields) in expected)
+        var actual = Fingerprints(buildFilter);
+        var kept = expected.Where(kv => buildFilter(kv.Key[..kv.Key.IndexOf('|')])).ToList();
+        Assert.NotEmpty(kept);
+        Assert.Equal(kept.Select(kv => kv.Key), actual.Keys);
+        foreach (var (run, fields) in kept)
             foreach (var (field, value) in fields)
                 Assert.True(value == actual[run][field], $"{run} {field}: expected {value}, got {actual[run][field]}");
     }
@@ -91,7 +100,7 @@ public class CombatEngineTests
     }
 
     /// <summary>Every build file × dummy preset × (Average, Roll seed 1, Roll seed 7). Presets with an attack run in defensive mode.</summary>
-    private static SortedDictionary<string, SortedDictionary<string, string>> Fingerprints()
+    private static SortedDictionary<string, SortedDictionary<string, string>> Fingerprints(Func<string, bool>? buildFilter = null)
     {
         var data = ContentHarness.Data;
         var sim = new Simulator(data, MechanicRegistry.Default);
@@ -100,6 +109,7 @@ public class CombatEngineTests
         foreach (var file in Directory.GetFiles(buildsDir, "*.json", SearchOption.AllDirectories).OrderBy(f => f, StringComparer.Ordinal))
         {
             var name = Path.GetRelativePath(buildsDir, file).Replace('\\', '/');
+            if (buildFilter != null && !buildFilter(name)) continue;
             Assert.True(BuildCodec.TryFromJson(File.ReadAllText(file), data, out var build, out var error), $"{name}: {error}");
             foreach (var dummy in data.Dummies.Values.OrderBy(d => d.Id, StringComparer.Ordinal))
             {

@@ -27,6 +27,7 @@ internal sealed class CombatEngine
     private readonly SimConditionContext _conditions;
     private readonly SimLog _log;
     private readonly DamageLedger _ledger;
+    private readonly DamageFeed _damage;
     private readonly UseResolver _resolver;
     private readonly ProcEngine _procs;
     private bool _idle;
@@ -61,8 +62,11 @@ internal sealed class CombatEngine
     /// <param name="log">Where events go: the simulator's capped log by default, a rolling log for live fights.</param>
     /// <param name="infiniteLife">Targets never die: a target brought to 0 life is refilled to its max life without a kill
     /// (no kill event, no on-kill effects, ailments stay). Damage is accounted as usual.</param>
+    /// <param name="damageKeep">0 (the simulator): damage events are only summed into the result's mitigation totals; otherwise
+    /// they are also queued for <see cref="Damage"/>.Drain, keeping this many undrained ones (see <see cref="DamageFeed"/>).</param>
     public CombatEngine(GameData data, MechanicRegistry mechanics, CompiledCharacter character, WeaponStub? weapon,
-        IReadOnlyList<SkillRuntime> skills, DummyDefinition dummy, SimConfig config, bool infiniteLife, SimLog? log = null)
+        IReadOnlyList<SkillRuntime> skills, DummyDefinition dummy, SimConfig config, bool infiniteLife, SimLog? log = null,
+        int damageKeep = 0)
     {
         _log = log ?? new SimLog();
         _defensive = config.DummyAttacks && dummy.Attack is { IntervalSec: > 0 };
@@ -80,7 +84,8 @@ internal sealed class CombatEngine
         foreach (var t in _s.Targets) t.FreezeDurationMultiplier = dummy.FreezeDurationMultiplier;
         _conditions = new SimConditionContext(_s);
         _ledger = new DamageLedger(pack);
-        _resolver = new UseResolver(_s, dummy, weapon, _random, _conditions, _ledger, _log, data, config.Mode == SimMode.Roll)
+        _damage = new DamageFeed(damageKeep);
+        _resolver = new UseResolver(_s, dummy, weapon, _random, _conditions, _ledger, _damage, _log, data, config.Mode == SimMode.Roll)
         {
             OnHit = OnHit,
         };
@@ -118,6 +123,9 @@ internal sealed class CombatEngine
 
     /// <summary>The event log (capped or rolling, see the constructor).</summary>
     public SimLog Log => _log;
+
+    /// <summary>Every hit and DoT tick with its defense breakdown (queued only with a damage keep, see the constructor).</summary>
+    public DamageFeed Damage => _damage;
 
     /// <summary>Length of a full offline run: the survival cap in defensive mode (the dummy attacks), DurationSec otherwise.</summary>
     public double SpanSec => _defensive ? _config.SurvivalCapSec : _config.DurationSec;
@@ -176,7 +184,8 @@ internal sealed class CombatEngine
             ? new DefenseTotals(_attacksReceived, _attacksDodged, new SortedDictionary<DamageType, double>(_incoming),
                 _mitigatedByArmor, _mitigatedByResist, _lifeRegenerated)
             : null;
-        return ResultBuilder.Build(_ledger, _log, Math.Max(elapsed, step), _timeToKill, _timeToDeath, _damageTaken, defense, series);
+        return ResultBuilder.Build(_ledger, _log, Math.Max(elapsed, step), _timeToKill, _timeToDeath, _damageTaken, defense, series)
+            with { Mitigation = _damage.Totals() };
     }
 
     private void Sample(double time) => _series.Add(new ResourceSample(time, _s.Resource, _s.Life));
@@ -257,6 +266,7 @@ internal sealed class CombatEngine
             var dmg = target.Tick(dt, (a, share) =>
             {
                 _ledger.AddDot(a.SourceSkillId, index, a.Type, share);
+                DotEvent(a.SourceSkillId, index, a.PerSecond, a.Type, Math.Min(dt, a.Remaining), share);
                 _procs.NoteDamage(index, a.SourceSkillId, a.Triggered);
             });
             if (!target.Immortal) target.Life -= dmg;
@@ -272,11 +282,12 @@ internal sealed class CombatEngine
                 if (!_s.IsAlive(i)) continue;
                 var target = _s.Targets[i];
                 _conditions.HitTarget = i; // target_* conditions refer to the target in the zone
-                var dps = AilmentCalculator.GroundZoneDps(zone.AilmentBase, zone.FractionPerSec, skill.Character, skill.Skill,
-                    _resolver.DefenseOf(target), zone.Type, _conditions);
+                var (dps, perSecond) = AilmentCalculator.GroundZoneDpsParts(zone.AilmentBase, zone.FractionPerSec, skill.Character,
+                    skill.Skill, _resolver.DefenseOf(target), zone.Type, _conditions);
                 _conditions.HitTarget = null;
                 var share = dps * span;
                 _ledger.AddDot(zone.SkillId, i, zone.Type, share);
+                DotEvent(zone.SkillId, i, perSecond, zone.Type, span, share);
                 _procs.NoteDamage(i, zone.SkillId, zone.Triggered);
                 if (!target.Immortal) target.Life -= share;
             }
@@ -284,6 +295,16 @@ internal sealed class CombatEngine
             if (left <= Eps) _s.Zones.Remove(id);
             else _s.Zones[id] = zone with { Remaining = left };
         }
+    }
+
+    /// <summary>One DoT tick as a damage event: the per-second breakdown over the time ticked, with Final the exact amount dealt.
+    /// An instance without a breakdown (built by hand) is reported as undefended.</summary>
+    private void DotEvent(string skillId, int target, DamagePart? perSecond, DamageType type, double span, double share)
+    {
+        var part = perSecond != null
+            ? perSecond.Scaled(span) with { Final = share }
+            : new DamagePart(type, share, 0, 0, 0, 0, share);
+        _damage.Add(_s.Time, skillId, target, isDot: true, isCrit: false, new[] { part });
     }
 
     private void TickResource(double t, double dt)

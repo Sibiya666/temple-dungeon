@@ -20,6 +20,7 @@ internal sealed class UseResolver
     private readonly IRandomSource _random;
     private readonly SimConditionContext _conditions;
     private readonly DamageLedger _ledger;
+    private readonly DamageFeed _damage;
     private readonly SimLog _log;
     private readonly IReadOnlyList<AilmentDefinition> _ailments;
     private readonly GameData _data;
@@ -36,8 +37,9 @@ internal sealed class UseResolver
     public Action<SkillRuntime, int, AilmentInstance>? OnAilmentLanded;
 
     public UseResolver(SimState s, DummyDefinition dummy, WeaponStub? weapon, IRandomSource random, SimConditionContext conditions,
-        DamageLedger ledger, SimLog log, GameData data, bool rollMode)
+        DamageLedger ledger, DamageFeed damage, SimLog log, GameData data, bool rollMode)
     {
+        _damage = damage;
         _s = s;
         _dummy = dummy;
         _weapon = weapon;
@@ -85,7 +87,7 @@ internal sealed class UseResolver
         return new UseOutcome(targets.Count, critEvent, targets);
     }
 
-    /// <summary>One hit on one target: damage, log, the hit hook, then the hit's ailments.</summary>
+    /// <summary>One hit on one target: damage (ledger and damage event), log, the hit hook, then the hit's ailments.</summary>
     private (HitResult Hit, bool? IsCrit) ResolveHit(SkillRuntime skill, int ti, double critChance, bool first)
     {
         var target = _s.Targets[ti];
@@ -99,6 +101,7 @@ internal sealed class UseResolver
             _ledger.AddHit(skill.Id, ti, type, amount);
             total += amount;
         }
+        _damage.Add(_s.Time, skill.Id, ti, isDot: false, isCrit: isCrit == true, hit.Parts);
         if (!target.Immortal) target.Life -= total;
         _log.Add(_s.Time, "hit", $"{skill.Id} -> #{ti}: {SimLog.Num(total)}");
         if (isCrit == true) _log.Add(_s.Time, "crit", $"{skill.Id} -> #{ti}");
