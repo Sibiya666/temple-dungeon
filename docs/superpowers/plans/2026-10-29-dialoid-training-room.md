@@ -6,6 +6,11 @@
 
 > **Статус (2026-10-30).** Задачи 1–4 (ядро и песочница) выполнены на ветке `feat/training-room`. Задачи 5–12 переписаны под 3D-спецификацию (визуал сменился с 2D на 3D 2026-10-29) и под Windows как основную платформу (решение владельца 2026-10-30). Прежние задачи 5–9 (пак Anokolisa, 2D) отменены.
 >
+> **Решения владельца 2026-10-30** (ответы на вопросы после задач 1–4):
+> - **Рывок** остается ближним боем: дальше 2 м — отказ «Вне досягаемости». Удлинение (с проходом сквозь стены) — возможный узел дерева скилла Рывка, в этом плане не делается.
+> - **Жизнь манекена в комнате** опускается до нуля и доливается до максимума — у **всех** пресетов, включая «Тренировочный» (задача 6).
+> - **Отступник в комнате** умереть не может: здоровье опускается, ниже нуля скиллы не применяются, здоровье быстро восстанавливается. Делается вместе с реализацией Отступника (не в этом плане); задача 6 не должна этому мешать.
+>
 > **Где исполнять задачи 5–12.** На новой ветке от `main` после вливания `feat/training-room`. Спека — версия из `main` (коммиты 822cd31 и b710278: 3D, Forward+, «Экран боя»); старая 2D-версия на ветке задач 1–4 для задач 5–12 недействительна.
 
 **Architecture:**
@@ -281,12 +286,14 @@ game/Main.cs, game/SelfTest.cs                  переделка корня; �
   - `public sealed record SlotInfo(int Slot, string SkillId, string Name, TagSet Tags, double Cost, double CostPerSec, double CooldownSec, double UseTimeSec, bool IsChannel)` и `LiveFight.Slots` — по одному на заполненный слот боя (для подсказок; фактическое время применения — `UseSec` события).
   - `public sealed record TimedEffect(string Id, double? TimeLeft, int Stacks)`. Баффы и недуги — с таймером; счетчики механик (`MechanicCounters`) — как стаки с `TimeLeft = null`, но только из явного списка показываемых счетчиков с русским именем (в `Texts`); служебные счетчики (например, счетчик применений в `PyroMechanics`) скрыты, тест: у каждого показанного стака на 6 эталонах есть русское имя; ключевые вклады множителя получаемого урона на цели — как дебафф без таймера.
   - `LiveState` дополняется (новый `init`, старый конструктор работает): `string ResourceId`, `double BusyLeft`, `int? QueuedSlot`, `int? HeldSlot` (слоты боя), `IReadOnlyList<TimedEffect> HeroEffects`, `IReadOnlyList<IReadOnlyList<TimedEffect>> TargetEffects` (по каждой цели, упорядочено по id ordinal).
+  - **Полоса жизни у бессмертного пресета** (решение владельца 2026-10-30). В живом бою с `InfiniteLife` пресет с бесконечной жизнью в данных (`LifePerTarget = +∞`, «Тренировочный») получает конечную жизнь цели, равную `LifePerTarget` пресета `boss` × G(уровня) **[Решение Claude]** — чтобы условия «цель ниже X %» вели себя так же, как на «Боссе». Жизнь убывает и доливается до максимума, как у остальных пресетов. `Simulator.Run` и окно мгновенной симуляции считают пресет как в данных (бессмертным); тест неизменности эталона зеленый. `LiveState.Life`/`LifeMax` по целям отдаются для полосы над манекеном.
   - `LiveFight.State` кешируется до следующего `Step` **или** любой команды (`Press`, `StartChannel`, `StopChannel`): после нажатия `QueuedSlot`/`HeldSlot` видны сразу.
 
 - [ ] **Step 1: Тесты.**
   - `Structured_fields_are_set_on_use_hit_ailment_proc_and_mechanic_events` — на каждом из 6 эталонов у событий `use`/`hit`/`crit`/`ailment`/`proc` заполнены `SkillId`, у `use` — `UseSec > 0`, у `hit` — `Target` и `DamageSeq`, у механик — `MechanicKey`.
   - `Every_hit_has_exactly_one_damage_event_with_same_seq` и `Dot_damage_events_carry_ailment_or_zone_id`.
   - `State_cache_is_dropped_by_commands` — после `Press` в занятом состоянии `State.QueuedSlot` виден без шага.
+  - `Training_dummy_life_drops_and_refills_in_live_fight` — на «Тренировочном» жизнь цели убывает, доходит до нуля и доливается; смерти и on-kill нет; `Simulator.Run` на том же пресете не изменился.
   - `Engine_extraction_keeps_every_reference_result_identical` зеленый без перегенерации эталона.
   - `Slot_info_matches_compiled_skill` — Огненный шар: стоимость и время применения совпадают с `SkillSheet` того же билда.
   - `State_reports_queue_hold_busy_and_timers` — очередь, канал Вихря, бафф Боевого клича с таймером, поджог на цели со стаками.
