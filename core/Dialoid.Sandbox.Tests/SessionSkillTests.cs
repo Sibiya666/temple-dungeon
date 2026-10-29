@@ -76,6 +76,101 @@ public class SessionSkillTests
     }
 
     [Fact]
+    public void Why_cannot_add_node_point_is_a_dry_run_with_the_command_text()
+    {
+        var s = NewSorcerer();
+        Assert.Equal(s.AddSkillNodePoint(0, "heat").Error, s.WhyCannotAddSkillNodePoint(0, "heat")); // empty slot
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.True(s.SetSkillLevel(0, 20).Ok);
+        var rev = s.Revision;
+
+        foreach (var node in new[] { "frost_orb", "nope" })
+        {
+            var why = s.WhyCannotAddSkillNodePoint(0, node);
+            Assert.NotNull(why);
+            Assert.Equal(rev, s.Revision);
+            Assert.Equal(why, s.AddSkillNodePoint(0, node).Error);
+        }
+        Assert.Contains("Морозный шар", s.WhyCannotAddSkillNodePoint(0, "frost_orb"));
+        Assert.Equal(rev, s.Revision);
+
+        Assert.Null(s.WhyCannotAddSkillNodePoint(0, "heat"));
+        Assert.Equal(rev, s.Revision);
+        Assert.Empty(s.Build.Slots[0].NodePoints);
+        Assert.True(s.AddSkillNodePoint(0, "heat").Ok);
+        Assert.True(s.AddSkillNodePoint(0, "heat").Ok);
+        Assert.True(s.AddSkillNodePoint(0, "frost_orb").Ok);
+
+        // Exclusive group and full node: the same text as the refusal.
+        foreach (var node in new[] { "storm_orb", "frost_orb" })
+        {
+            var why = s.WhyCannotAddSkillNodePoint(0, node);
+            Assert.NotNull(why);
+            Assert.Equal(why, s.AddSkillNodePoint(0, node).Error);
+        }
+        Assert.Contains("Морозный шар", s.WhyCannotAddSkillNodePoint(0, "storm_orb"));
+
+        // No free points.
+        Assert.True(s.SetSkillLevel(0, 3).Ok);
+        var noPoints = s.WhyCannotAddSkillNodePoint(0, "heat");
+        Assert.NotNull(noPoints);
+        Assert.Equal(noPoints, s.AddSkillNodePoint(0, "heat").Error);
+    }
+
+    [Fact]
+    public void Skill_points_free_follows_level_and_spending()
+    {
+        var s = NewSorcerer();
+        Assert.Equal(0, s.SkillPointsFree(0));
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.True(s.SetSkillLevel(0, 5).Ok);
+        Assert.Equal(5, s.SkillPointsFree(0));
+        Assert.True(s.AddSkillNodePoint(0, "heat").Ok);
+        Assert.True(s.AddSkillNodePoint(0, "heat").Ok);
+        Assert.Equal(3, s.SkillPointsFree(0));
+        Assert.True(s.SetSkillLevel(0, 1).Ok); // overspent: 2 of 1
+        Assert.Equal(0, s.SkillPointsFree(0));
+        Assert.Equal(0, s.SkillPointsFree(SandboxSession.SlotCount));
+    }
+
+    [Fact]
+    public void Can_undo_slot_matches_undo_slot()
+    {
+        var s = NewSorcerer();
+        Assert.False(s.CanUndoSlot(0));
+        Assert.False(s.UndoSlot(0).Ok);
+        Assert.False(s.CanUndoSlot(-1));
+        Assert.False(s.CanUndoSlot(SandboxSession.SlotCount));
+
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.True(s.CanUndoSlot(0)); // back to empty
+        Assert.True(s.SetSlotSkill(0, "spark").Ok);
+        Assert.True(s.CanUndoSlot(0));
+        Assert.True(s.UndoSlot(0).Ok);
+        Assert.Equal("fireball", s.GetSlot(0)!.SkillId);
+
+        // The undo target (spark) now sits in another slot: undo would be refused.
+        Assert.True(s.SetSlotSkill(1, "spark").Ok);
+        Assert.False(s.CanUndoSlot(0));
+        Assert.False(s.UndoSlot(0).Ok);
+
+        // Emptying a slot can be undone; the redo (back to empty) too.
+        Assert.True(s.SetSlotSkill(2, "ice_lance").Ok);
+        Assert.True(s.SetSlotSkill(2, null).Ok);
+        Assert.True(s.CanUndoSlot(2));
+        Assert.True(s.UndoSlot(2).Ok);
+        Assert.Equal("ice_lance", s.GetSlot(2)!.SkillId);
+        Assert.True(s.CanUndoSlot(2));
+
+        // A slot closed by the level cannot get its old skill back.
+        Assert.True(s.SetSlotSkill(4, "meteor").Ok);
+        Assert.True(s.SetSlotSkill(4, "blink").Ok);
+        Assert.True(s.SetLevel(14).Ok); // compacts the 4 filled slots to 0..3; slot 4 (open from 20) is now empty
+        Assert.False(s.CanUndoSlot(4));
+        Assert.False(s.UndoSlot(4).Ok);
+    }
+
+    [Fact]
     public void Skill_points_are_limited_by_skill_level()
     {
         var s = NewSorcerer();

@@ -12,6 +12,15 @@ public sealed record SimResult(double DpsSingleTarget, double DpsPack, IReadOnly
     /// <summary>Defensive bookkeeping; set only when the dummy attacks (<see cref="SimConfig.DummyAttacks"/>), null otherwise.</summary>
     public DefenseTotals? Defense { get; init; }
 
+    /// <summary>
+    /// DPS per source skill: <see cref="DamageBySkill"/> divided by the same elapsed time as <see cref="DpsSingleTarget"/> and
+    /// <see cref="DpsPack"/>. Damage to every target counts, so the values sum to <see cref="DpsPack"/> (empty when rejected).
+    /// </summary>
+    public IReadOnlyDictionary<string, double> DpsBySkill { get; init; } = new SortedDictionary<string, double>(StringComparer.Ordinal);
+
+    /// <summary>DPS per damage type: <see cref="DamageByType"/> over the same elapsed time; sums to <see cref="DpsPack"/> (empty when rejected).</summary>
+    public IReadOnlyDictionary<DamageType, double> DpsByType { get; init; } = new SortedDictionary<DamageType, double>();
+
     /// <summary>Character resource and life at time 0, at the first step boundary at or after each 0.5 s of simulation time, and at
     /// the end of the run (empty when rejected).</summary>
     public IReadOnlyList<ResourceSample> ResourceSeries { get; init; } = Array.Empty<ResourceSample>();

@@ -10,8 +10,9 @@ namespace Dialoid.Game.Ui;
 /// The «Скиллы» tab (spec §13.4): the skill slots (a slot closed by the level says when it opens), each with its skill
 /// choice (the class's skills and the skills of the equipped items), level and «Вернуть»; the tree of the chosen slot's
 /// skill as a node list with «+»/«−»; the free points; the skill's SkillLines through <see cref="NumberLabel"/>; the
-/// rotation editor. Every change is a <see cref="SandboxSession"/> command (a refusal goes to the status line); blocked
-/// nodes are greyed with the reason taken from the core <see cref="SkillTree"/> helpers. The panel redraws itself whole
+/// rotation editor. Every change is a <see cref="SandboxSession"/> command (a refusal goes to the status line); an empty
+/// node that cannot take a point now is greyed with the session's own refusal text
+/// (<see cref="SandboxSession.WhyCannotAddSkillNodePoint"/>); «Вернуть» is off when <see cref="SandboxSession.CanUndoSlot"/> says no. The panel redraws itself whole
 /// (deferred, see <see cref="SessionPanel"/>).
 /// </summary>
 public partial class SkillsPanel : SessionPanel
@@ -28,6 +29,10 @@ public partial class SkillsPanel : SessionPanel
     private readonly List<OptionButton?> _slotOptions = new();
     private readonly List<IReadOnlyList<string?>> _slotChoices = new();
     private readonly Dictionary<string, string> _blocked = new();
+    private readonly List<Button> _undoButtons = new();
+
+    /// <summary>The «Вернуть» button of each open slot drawn now (closed slots have none), by slot order.</summary>
+    public IReadOnlyList<Button> UndoButtons => _undoButtons;
 
     /// <summary>The last refused command's error, or null.</summary>
     public string? CommandError => _commandError;
@@ -128,6 +133,7 @@ public partial class SkillsPanel : SessionPanel
         _slotOptions.Clear();
         _slotChoices.Clear();
         _blocked.Clear();
+        _undoButtons.Clear();
         PointsText = "";
 
         var build = Session.Build;
@@ -219,8 +225,14 @@ public partial class SkillsPanel : SessionPanel
             tree.Pressed += () => ShowTree(slot);
             row.AddChild(tree);
         }
-        var undo = new Button { Text = "Вернуть", TooltipText = "Вернуть, что стояло в слоте до последней смены" };
+        var undo = new Button
+        {
+            Text = "Вернуть",
+            TooltipText = "Вернуть, что стояло в слоте до последней смены",
+            Disabled = !Session.CanUndoSlot(slot),
+        };
         undo.Pressed += () => Undo(slot);
+        _undoButtons.Add(undo);
         row.AddChild(undo);
     }
 
@@ -238,20 +250,20 @@ public partial class SkillsPanel : SessionPanel
         Content!.AddChild(levelNumber);
 
         int total = Session.SkillPointsTotal(_treeSlot), spent = Session.SkillPointsSpent(_treeSlot);
-        PointsText = $"Очки дерева: потрачено {spent} из {total}, свободно {Math.Max(0, total - spent)}";
+        PointsText = $"Очки дерева: потрачено {spent} из {total}, свободно {Session.SkillPointsFree(_treeSlot)}";
         AddText(PointsText, spent > total ? Red : null);
 
         var points = slot.NodePoints;
         foreach (var node in skill.Tree)
         {
             int have = points.GetValueOrDefault(node.Id);
-            var reason = have > 0 ? null : BlockReason(skill, node, points);
+            var reason = have > 0 ? null : Session.WhyCannotAddSkillNodePoint(_treeSlot, node.Id);
             if (reason != null) _blocked[node.Id] = reason;
 
             var tooltip = node.Description;
             if (node.Requires.Count > 0)
                 tooltip += "\nТребует: " + string.Join(", ", node.Requires.Select(r => $"«{NodeName(skill, r.NodeId)}» {r.Points} очк."));
-            if (reason != null) tooltip += "\nНедоступен: " + reason;
+            if (reason != null) tooltip += "\nСейчас нельзя: " + reason;
 
             var row = new HBoxContainer { TooltipText = tooltip };
             var name = new Label
@@ -325,21 +337,6 @@ public partial class SkillsPanel : SessionPanel
         var reset = new Button { Text = "Сбросить ротацию (порядок слотов)", SizeFlagsHorizontal = SizeFlags.ShrinkBegin };
         reset.Pressed += () => ResetRotation();
         Content!.AddChild(reset);
-    }
-
-    /// <summary>Why an empty node cannot take a point now, from the core helpers (requirements, exclusive group), or null.</summary>
-    private static string? BlockReason(SkillDefinition skill, SkillTreeNode node, IReadOnlyDictionary<string, int> points)
-    {
-        var reasons = new List<string>();
-        if (!SkillTree.RequirementsMet(node, points))
-            reasons.Add("нужно " + string.Join(", ", node.Requires
-                .Where(r => points.GetValueOrDefault(r.NodeId) < r.Points)
-                .Select(r => $"«{NodeName(skill, r.NodeId)}» {r.Points} очк.")));
-        var after = new Dictionary<string, int>(points) { [node.Id] = 1 };
-        var clash = SkillTree.ViolatedGroups(skill, after).FirstOrDefault(g => g.Nodes.Contains(node.Id));
-        if (clash.Group != null)
-            reasons.Add("из одной группы с " + string.Join(", ", clash.Nodes.Where(id => id != node.Id).Select(id => $"«{NodeName(skill, id)}»")));
-        return reasons.Count == 0 ? null : string.Join("; ", reasons);
     }
 
     /// <summary>The first level at which the slot opens (from <see cref="BuildRules.SlotsUnlocked"/>).</summary>

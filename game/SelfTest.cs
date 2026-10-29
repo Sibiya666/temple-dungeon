@@ -461,6 +461,7 @@ public sealed class SelfTest
         await FreshBuild(1, "Скиллы");
         Check(panel.SlotOptions.Count == SandboxSession.SlotCount, $"слотов нарисовано {panel.SlotOptions.Count}");
         Check(panel.SlotOptions[0] != null && panel.SlotOptions[1] == null, "закрытый слот нарисован открытым");
+        Check(panel.UndoButtons.Count == 1 && panel.UndoButtons[0].Disabled, "«Вернуть» включена без истории слота");
         Check(!panel.SelectSkill(1, panel.SlotChoices[0][1]).Ok, "закрытый слот принял скилл");
         await Settle();
         Check(panel.CommandError != null, "отказ не показан");
@@ -483,6 +484,18 @@ public sealed class SelfTest
         Check(panel.SelectLevel(0, 3).Ok, "уровень скилла 3 отклонен");
         await Settle();
         Check(panel.LevelNumber!.Line.Value == 3 && panel.PointsText.Contains("из 3"), $"уровень {panel.LevelNumber.Line.Value}, «{panel.PointsText}»");
+        Check(!panel.UndoButtons[0].Disabled, "«Вернуть» выключена после смены скилла");
+        Check(panel.PointsText.EndsWith($"свободно {session.SkillPointsFree(0)}", StringComparison.Ordinal), $"«{panel.PointsText}»");
+        var tree = session.Data.Skills[skills[0]].Tree;
+        var gated = tree.FirstOrDefault(n => n.Requires.Count > 0);
+        if (gated != null)
+        {
+            var why = session.WhyCannotAddSkillNodePoint(0, gated.Id);
+            Check(why != null && panel.BlockedNodes.GetValueOrDefault(gated.Id) == why, $"причина серого узла «{panel.BlockedNodes.GetValueOrDefault(gated.Id)}»");
+            Check(!panel.AddPoint(0, gated.Id).Ok && panel.CommandError == why, "отказ «+» не совпал с причиной в подсказке");
+        }
+        foreach (var free in tree.Where(n => n.Requires.Count == 0))
+            Check(!panel.BlockedNodes.ContainsKey(free.Id) || session.WhyCannotAddSkillNodePoint(0, free.Id) != null, $"узел {free.Id} серый без причины");
 
         Check(panel.SelectSkill(0, skills[1]).Ok, "второй скилл не встал");
         Check(panel.Undo(0).Ok && session.GetSlot(0)?.SkillId == skills[0] && session.GetSlot(0)!.Level == 3, "«Вернуть» не вернул скилл с уровнем");
@@ -567,6 +580,12 @@ public sealed class SelfTest
         Check(dps != null, $"нет DPS; статус «{panel.StatusText}»; " + string.Join("; ", panel.ShownViolations));
         Check(dps!.Line.Value > 0 && dps.Line.Value == panel.LastOutcome!.Result.DpsSingleTarget, $"DPS {dps.Line.Value}");
         Check(panel.NumberFor("sim_dps_pack") != null && panel.NumberFor("sim_hit_damage") != null, "нет DPS по паку или урона попаданиями");
+        var result = panel.LastOutcome!.Result;
+        Check(result.DpsBySkill.Count > 0 && result.DpsByType.Count > 0, "в SimResult нет DPS по скиллам или типам");
+        foreach (var (skill, value) in result.DpsBySkill)
+            Check(panel.NumberFor("sim_dps_skill_" + skill)?.Line.Value == value, $"DPS скилла {skill} не показан");
+        foreach (var (type, value) in result.DpsByType)
+            Check(panel.NumberFor("sim_dps_type_" + type.ToString().ToLowerInvariant())?.Line.Value == value, $"DPS типа {type} не показан");
         Check(panel.Graph != null && panel.Graph.Samples.Count > 1, "нет графика ресурса");
         Check(panel.Log == null, "лог показан без кнопки");
         panel.ToggleLog();

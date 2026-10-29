@@ -8,8 +8,8 @@ namespace Dialoid.Game.Ui;
 /// <summary>
 /// The «Симуляция» tab (spec §13.5): dummy, pack size (default from the dummy), mode, seed, «манекен бьет персонажа» and
 /// «Симулировать». The run goes through <see cref="SimulationRunner"/> (build snapshot taken on the main thread, simulation on
-/// the thread pool); the outcome is applied on the main thread only. While running the button is off and «считаю...» shows.
-/// Results (spec §11.3) come straight from <see cref="SimResult"/> through <see cref="NumberLabel"/>: DPS single/pack, damage by
+/// the thread pool); the outcome is applied on the main thread only (the await resumes on Godot's synchronization context). While running the button is off and «считаю...» shows.
+/// Results (spec §11.3) come straight from <see cref="SimResult"/> through <see cref="NumberLabel"/>: DPS single/pack, DPS and damage by
 /// skill and by type, hits vs damage over time, time to kill, time to death, the defensive totals, the resource series drawn
 /// on a <see cref="SeriesGraph"/> and the event log on a button. A result whose revision is no longer current is not shown
 /// («билд изменился — пересчитайте»); a rejected run shows its violations instead of numbers.
@@ -32,8 +32,6 @@ public partial class SimulationPanel : SessionPanel
     private readonly List<string> _dummyIds = new();
     private readonly List<SimMode> _modes = [SimMode.Average, SimMode.Roll];
     private readonly List<NumberLabel> _numbers = new();
-    private readonly object _pendingLock = new();
-    private (SimOutcome? Outcome, string? Error)? _pending;
     private string? _runError;
     private bool _logShown;
 
@@ -57,7 +55,7 @@ public partial class SimulationPanel : SessionPanel
     /// <summary>The last applied outcome, or null.</summary>
     public SimOutcome? LastOutcome { get; private set; }
 
-    /// <summary>True when the last outcome was applied on the main thread directly after the await (Godot's sync context).</summary>
+    /// <summary>True when the last outcome's continuation ran on the main thread (Godot's sync context).</summary>
     public bool AppliedOnMainThread { get; private set; }
 
     /// <summary>What the result area says above the numbers (running, stale, rejected, ready...).</summary>
@@ -161,60 +159,44 @@ public partial class SimulationPanel : SessionPanel
         RunButton.Disabled = true;
         RunButton.Text = RunningText;
         RequestRedraw();
-        var task = _runner.RunAsync(CurrentRequest());
+        Task<SimOutcome> task;
+        try
+        {
+            task = _runner.RunAsync(CurrentRequest());
+        }
+        catch (Exception e)
+        {
+            Apply(null, $"{e.GetType().Name}: {e.Message}");
+            return RunTask = Task.CompletedTask;
+        }
         RunTask = Await(task);
         return RunTask;
     }
 
+    /// <summary>
+    /// Awaits the run. Started on the main thread, the continuation comes back to it through Godot's synchronization
+    /// context (the self-test checks <see cref="AppliedOnMainThread"/>), so the outcome is applied there.
+    /// </summary>
     private async Task Await(Task<SimOutcome> task)
     {
         SimOutcome? outcome = null;
         string? error = null;
         try { outcome = await task; }
         catch (Exception e) { error = $"{e.GetType().Name}: {e.Message}"; }
-
-        if (System.Environment.CurrentManagedThreadId == _mainThreadId)
-        {
-            AppliedOnMainThread = true;
-            Apply(outcome, error);
-            return;
-        }
-
-        // No Godot sync context: hand the outcome to the main thread and wait for it there.
-        AppliedOnMainThread = false;
-        var applied = new TaskCompletionSource();
-        lock (_pendingLock) _pending = (outcome, error);
-        _appliedSignal = applied;
-        CallDeferred(MethodName.ApplyPending);
-        await applied.Task;
+        AppliedOnMainThread = System.Environment.CurrentManagedThreadId == _mainThreadId;
+        Apply(outcome, error);
     }
 
-    private TaskCompletionSource? _appliedSignal;
-
-    private void ApplyPending()
-    {
-        (SimOutcome? Outcome, string? Error)? pending;
-        lock (_pendingLock)
-        {
-            pending = _pending;
-            _pending = null;
-        }
-        if (pending is { } p) Apply(p.Outcome, p.Error);
-        _appliedSignal?.TrySetResult();
-    }
-
-    /// <summary>Main thread only.</summary>
+    /// <summary>Main thread only. An error clears the old outcome, so a crash is never shown above old numbers.</summary>
     private void Apply(SimOutcome? outcome, string? error)
     {
+        if (!IsInstanceValid(this)) return;
         Running = false;
-        if (outcome != null) LastOutcome = outcome;
+        LastOutcome = error != null ? null : outcome ?? LastOutcome;
         _runError = error;
         _logShown = false;
-        if (IsInstanceValid(RunButton))
-        {
-            RunButton.Disabled = false;
-            RunButton.Text = RunCaption;
-        }
+        RunButton.Disabled = false;
+        RunButton.Text = RunCaption;
         RequestRedraw();
     }
 
@@ -271,13 +253,24 @@ public partial class SimulationPanel : SessionPanel
         Number("sim_dps_single", "DPS по одной цели", result.DpsSingleTarget, BreakdownText.Whole, note);
         Number("sim_dps_pack", "DPS по паку", result.DpsPack, BreakdownText.Whole, note);
 
+        string SkillTitle(string id) => data.Skills.TryGetValue(id, out var s) ? s.Name : id;
+        var dpsNote = note + "; DPS по всем целям, в сумме дает DPS по паку";
+
+        Header("DPS по скиллам");
+        if (result.DpsBySkill.Count == 0) AddText("нет урона");
+        foreach (var (id, dps) in result.DpsBySkill.OrderByDescending(kv => kv.Value))
+            Number("sim_dps_skill_" + id, SkillTitle(id), dps, BreakdownText.Whole, dpsNote);
+
+        Header("DPS по типам урона");
+        if (result.DpsByType.Count == 0) AddText("нет урона");
+        foreach (var (type, dps) in result.DpsByType.OrderByDescending(kv => kv.Value))
+            Number("sim_dps_type_" + type.ToString().ToLowerInvariant(), BreakdownText.DamageTypeName(type), dps, BreakdownText.Whole, dpsNote);
+
         Header("Урон за бой по скиллам");
-        if (result.DamageBySkill.Count == 0) AddText("нет урона");
         foreach (var (id, dmg) in result.DamageBySkill.OrderByDescending(kv => kv.Value))
-            Number("sim_skill_" + id, data.Skills.TryGetValue(id, out var s) ? s.Name : id, dmg, BreakdownText.Whole, note);
+            Number("sim_skill_" + id, SkillTitle(id), dmg, BreakdownText.Whole, note);
 
         Header("Урон за бой по типам");
-        if (result.DamageByType.Count == 0) AddText("нет урона");
         foreach (var (type, dmg) in result.DamageByType.OrderByDescending(kv => kv.Value))
             Number("sim_type_" + type.ToString().ToLowerInvariant(), BreakdownText.DamageTypeName(type), dmg, BreakdownText.Whole, note);
 

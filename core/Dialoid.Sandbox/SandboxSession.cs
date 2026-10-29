@@ -216,25 +216,34 @@ public sealed class SandboxSession
     /// <summary>One more point into a skill tree node: needs a free point, met requirements and a free exclusive group.</summary>
     public CommandResult AddSkillNodePoint(int slot, string nodeId)
     {
-        if (SlotSkill(slot, out var current, out var skill) is { } refusal) return refusal;
-        if (skill.Tree.FirstOrDefault(n => n.Id == nodeId) is not { } node)
-            return CommandResult.Fail(Texts.UnknownSkillNode(nodeId, skill.Name));
+        if (WhyCannotAddSkillNodePoint(slot, nodeId) is { } refusal) return CommandResult.Fail(refusal);
+        var points = _slots[slot]!.NodePoints;
+        points[nodeId] = points.GetValueOrDefault(nodeId) + 1;
+        return Commit();
+    }
+
+    /// <summary>
+    /// Dry run of <see cref="AddSkillNodePoint"/>: the Russian refusal it would give now (same text), or null when it would
+    /// succeed. Changes nothing.
+    /// </summary>
+    public string? WhyCannotAddSkillNodePoint(int slot, string nodeId)
+    {
+        if (SlotSkill(slot, out var current, out var skill) is { } refusal) return refusal.Error;
+        if (skill.Tree.FirstOrDefault(n => n.Id == nodeId) is not { } node) return Texts.UnknownSkillNode(nodeId, skill.Name);
         var points = current.NodePoints;
         int have = points.GetValueOrDefault(nodeId);
-        if (have >= node.MaxPoints) return CommandResult.Fail(Texts.SkillNodeFull(node.Name, node.MaxPoints));
+        if (have >= node.MaxPoints) return Texts.SkillNodeFull(node.Name, node.MaxPoints);
         int total = SkillTree.PointsForLevel(current.Level);
-        if (SkillTree.PointsSpent(points) >= total) return CommandResult.Fail(Texts.NoFreeSkillPoints(skill.Name, total));
+        if (SkillTree.PointsSpent(points) >= total) return Texts.NoFreeSkillPoints(skill.Name, total);
         if (!SkillTree.RequirementsMet(node, points))
-            return CommandResult.Fail(Texts.SkillNodeRequirements(node.Name, string.Join(", ",
-                node.Requires.Select(r => Texts.SkillNodeRequirement(NodeName(skill, r.NodeId), r.Points)))));
+            return Texts.SkillNodeRequirements(node.Name, string.Join(", ",
+                node.Requires.Select(r => Texts.SkillNodeRequirement(NodeName(skill, r.NodeId), r.Points))));
 
         var after = new Dictionary<string, int>(points) { [nodeId] = have + 1 };
         if (SkillTree.ViolatedGroups(skill, after).FirstOrDefault(g => g.Nodes.Contains(nodeId)) is { Group: not null } clash)
-            return CommandResult.Fail(Texts.SkillNodeExclusive(node.Name,
-                string.Join(", ", clash.Nodes.Where(id => id != nodeId).Select(id => NodeName(skill, id)))));
-
-        points[nodeId] = have + 1;
-        return Commit();
+            return Texts.SkillNodeExclusive(node.Name,
+                string.Join(", ", clash.Nodes.Where(id => id != nodeId).Select(id => NodeName(skill, id))));
+        return null;
     }
 
     /// <summary>One point out of a node; refused when another taken node would lose its requirement.</summary>
@@ -378,6 +387,18 @@ public sealed class SandboxSession
     public int SkillPointsTotal(int slot) => GetSlot(slot) is { } s ? SkillTree.PointsForLevel(s.Level) : 0;
 
     public int SkillPointsSpent(int slot) => GetSlot(slot) is { } s ? SkillTree.PointsSpent(s.NodePoints) : 0;
+
+    /// <summary>Tree points of the slotted skill not spent yet (0 for an empty slot or when overspent).</summary>
+    public int SkillPointsFree(int slot) => Math.Max(0, SkillPointsTotal(slot) - SkillPointsSpent(slot));
+
+    /// <summary>True when <see cref="UndoSlot"/> would succeed now.</summary>
+    public bool CanUndoSlot(int slot)
+    {
+        if (!ValidSlot(slot) || !_hasUndo[slot]) return false;
+        var previous = _undo[slot];
+        if (previous == null) return _slots[slot] != null;
+        return slot < SlotsOpen && Data.Skills.TryGetValue(previous.SkillId, out var skill) && CheckSlottable(slot, skill) == null;
+    }
 
     /// <summary>Skill sheet lines of the slot (empty for an empty slot or a build that cannot be compiled).</summary>
     public IReadOnlyList<NumberLine> SkillLines(int slot) => Current.SkillLines(slot);
