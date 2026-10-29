@@ -1,0 +1,6 @@
+[
+  { "id": "crypt", "name": "Склеп" },
+  { "id": "swamp", "name": "Болото" },
+  { "id": "forge", "name": "Кузня" },
+  { "id": "ruins", "name": "Руины" }
+]
