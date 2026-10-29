@@ -160,4 +160,77 @@ internal static class Texts
     public static string OverrideLine(string value, string source) => $"Переопределение: {value} — {source}";
     public static string Total(string value) => $"Итог: {value}";
     public static string TotalCapped(string uncapped, string capped) => $"Итог (до капа → после капа): {uncapped} → {capped}";
+
+    // Training room: combat log, press refusals, meter.
+    public const string LogSeparator = " · ";
+    public static string LogTime(string seconds) => $"{seconds} с";
+    public const string LogHit = "попадание";
+    public static string LogHitOnTarget(int target) => $"попадание по цели {target + 1}";
+    public const string LogDot = "урон со временем";
+    public static string LogDotOnTarget(int target) => $"урон со временем по цели {target + 1}";
+    public const string LogCritMark = "(крит)";
+    public const string LogMechanic = "механика";
+    public const string LogBuff = "бафф";
+    public static string LogSlot(int slot) => $"слот {slot}";
+    public static string LogRefusal(string reason) => $"отказ: {reason}";
+
+    public const string BuildChangedRestart = "Билд изменен — бой начат заново";
+    public static string DummyChangedRestart(string dummyName) => $"Манекен «{dummyName}» — бой начат заново";
+    public static string ModeChangedRestart(string modeName) => $"Режим «{modeName}» — бой начат заново";
+    public static string FightNotStarted(string reasons) => $"Бой не начат: {reasons}";
+
+    public static string RefusalReason(Dialoid.Core.Simulation.PressRefusal r, string? cooldownLeft) => r switch
+    {
+        Dialoid.Core.Simulation.PressRefusal.EmptySlot => "пустой слот",
+        Dialoid.Core.Simulation.PressRefusal.Cooldown => cooldownLeft == null ? "перезарядка" : $"перезарядка {cooldownLeft} с",
+        Dialoid.Core.Simulation.PressRefusal.NotEnoughResource => "не хватает ресурса",
+        Dialoid.Core.Simulation.PressRefusal.Busy => "персонаж занят",
+        Dialoid.Core.Simulation.PressRefusal.BuffActive => "бафф уже действует",
+        Dialoid.Core.Simulation.PressRefusal.WeaponMismatch => "не подходит оружие",
+        Dialoid.Core.Simulation.PressRefusal.TriggeredOnly => "скилл только срабатывает от других",
+        Dialoid.Core.Simulation.PressRefusal.OutOfReach => "цель вне досягаемости",
+        Dialoid.Core.Simulation.PressRefusal.FightOver => "бой не идет",
+        _ => "отказ",
+    };
+
+    /// <summary>"812 огнем": the damage type in the instrumental case.</summary>
+    public static string DamageTypeInstrumental(Dialoid.Core.Combat.DamageType t) => t switch
+    {
+        Dialoid.Core.Combat.DamageType.Physical => "физическим",
+        Dialoid.Core.Combat.DamageType.Fire => "огнем",
+        Dialoid.Core.Combat.DamageType.Cold => "холодом",
+        Dialoid.Core.Combat.DamageType.Lightning => "молнией",
+        Dialoid.Core.Combat.DamageType.Poison => "ядом",
+        _ => t.ToString(),
+    };
+
+    private static readonly Dictionary<string, string> AilmentNames = new(StringComparer.Ordinal)
+    {
+        ["bleed"] = "кровотечение", ["ignite"] = "поджог", ["poison"] = "отравление",
+        ["shock"] = "шок", ["chill"] = "охлаждение", ["freeze"] = "заморозка",
+    };
+
+    /// <summary>Russian ailment name; an unknown id gives the generic «недуг».</summary>
+    public static string AilmentName(string id) => AilmentNames.GetValueOrDefault(id, EventKindName("ailment"));
+
+    /// <summary>Known mechanic log texts in Russian (by the text after "mechanic_id: "); null for an unknown one.</summary>
+    public static string? MechanicText(string text) =>
+        text == "charges spent" ? "заряды потрачены"
+        : text.StartsWith("freeze on #", StringComparison.Ordinal) && text.EndsWith(" shattered", StringComparison.Ordinal) ? "заморозка разбита"
+        : null;
+
+    public const string MitigationFinal = "дошло";
+    public const string MitigationArmor = "броня";
+    public const string MitigationResist = "сопротивления";
+    public const string MitigationTaken = "множитель получаемого урона";
+    public const string MitigationNullified = "обнулено";
+
+    public static string MeterModeName(MeterMode mode) => mode switch
+    {
+        MeterMode.DpsBySkill => "DPS по скиллам",
+        MeterMode.DamageBySkill => "Урон по скиллам",
+        MeterMode.DamageByType => "Урон по типам",
+        MeterMode.Mitigation => "Потеря на защите",
+        _ => mode.ToString(),
+    };
 }

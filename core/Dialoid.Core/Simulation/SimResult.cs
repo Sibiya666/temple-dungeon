@@ -25,6 +25,10 @@ public sealed record SimResult(double DpsSingleTarget, double DpsPack, IReadOnly
     /// the end of the run (empty when rejected).</summary>
     public IReadOnlyList<ResourceSample> ResourceSeries { get; init; } = Array.Empty<ResourceSample>();
 
+    /// <summary>What the dummies' defense took off every hit and DoT tick, summed per source skill and in total (empty when rejected).
+    /// Each skill's Final equals its <see cref="DamageBySkill"/> up to rounding.</summary>
+    public MitigationTotals Mitigation { get; init; } = MitigationTotals.Empty;
+
     /// <summary>All-zero result carrying the reasons the simulation did not run.</summary>
     public static SimResult Rejected(IReadOnlyList<RuleViolation> violations) =>
         new(0, 0, new SortedDictionary<string, double>(StringComparer.Ordinal), new SortedDictionary<DamageType, double>(),
