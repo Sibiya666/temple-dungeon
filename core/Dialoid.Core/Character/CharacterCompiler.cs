@@ -49,7 +49,7 @@ public sealed class CharacterCompiler
         var rules = _data.AttributeRules;
         foreach (var b in rules.Bonuses)
         {
-            var src = new SourceRef("attribute", b.Attribute.StatId(), $"Атрибут: {b.Attribute.StatId()}");
+            var src = new SourceRef("attribute", b.Attribute.StatId(), $"Атрибут: {b.Attribute.RussianName()}");
             mods.Add(new Modifier(b.Stat, b.Kind, b.ValuePerPoint, TagSet.Empty, Array.Empty<Condition>(),
                 new PerStat(b.Attribute.StatId(), 1, null), src));
         }
@@ -57,7 +57,7 @@ public sealed class CharacterCompiler
         {
             var p = cls.Primary.StatId();
             mods.Add(new Modifier("damage", ModKind.More, rules.PrimaryDamageMorePerPoint, TagSet.Empty,
-                Array.Empty<Condition>(), new PerStat(p, 1, null), new SourceRef("attribute", p, $"Основной атрибут: {p}")));
+                Array.Empty<Condition>(), new PerStat(p, 1, null), new SourceRef("attribute", p, $"Основной атрибут: {cls.Primary.RussianName()}")));
         }
 
         // Life: 100 + 11 per level, then the class multiplier as a More modifier.

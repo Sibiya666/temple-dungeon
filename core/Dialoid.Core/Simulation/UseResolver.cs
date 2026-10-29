@@ -135,14 +135,11 @@ internal sealed class UseResolver
     {
         foreach (var def in _ailments)
         {
-            var ailBase = hit.AilmentBase.GetValueOrDefault(def.SourceType);
-            if (def.Id == "poison" && def.SourceType != DamageType.Physical)
-                ailBase += hit.AilmentBase.GetValueOrDefault(DamageType.Physical); // spec 6.7: poison from poison and physical
+            var ailBase = SkillMath.AilmentBase(hit.AilmentBase, def);
             if (ailBase <= 0) continue;
 
-            // The skill's own chance is the stat's base (on top of the stat default), so Increased/More/Less scale it too.
-            var statDefault = _data.Stats[def.ChanceStat].Default; // ailments.json only names existing stats
-            var chance = skill.Stat(def.ChanceStat, _conditions, skill.Skill.Base.AilmentChances.GetValueOrDefault(def.Id) + statDefault);
+            // ailments.json only names existing stats
+            var chance = skill.Stat(def.ChanceStat, _conditions, SkillMath.AilmentChanceBase(_data, def, skill.Skill));
             if (chance <= 0 || !_random.Chance($"ail:{def.Id}:{skill.ChannelKey}:{ti}", chance / 100)) continue;
 
             var instance = AilmentCalculator.MakeInstance(def, ailBase, skill.Character, skill.Skill, defense, _conditions)
@@ -185,13 +182,7 @@ internal sealed class UseResolver
     public bool ForceAilment(SkillRuntime skill, int ti, AilmentDefinition def, IReadOnlyDictionary<DamageType, double>? hitBase,
         string origin = "proc")
     {
-        double ailBase = 0;
-        if (hitBase != null)
-        {
-            ailBase = hitBase.GetValueOrDefault(def.SourceType);
-            if (def.Id == "poison" && def.SourceType != DamageType.Physical)
-                ailBase += hitBase.GetValueOrDefault(DamageType.Physical);
-        }
+        var ailBase = hitBase != null ? SkillMath.AilmentBase(hitBase, def) : 0;
         if (ailBase <= 0 && def.DamageFraction > 0) return false;
 
         var target = _s.Targets[ti];

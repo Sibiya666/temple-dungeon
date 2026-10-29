@@ -1,6 +1,7 @@
 using Dialoid.Core.Character;
 using Dialoid.Core.Combat;
 using Dialoid.Core.Effects;
+using Dialoid.Core.Explain;
 using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
@@ -8,8 +9,6 @@ namespace Dialoid.Core.Tests.Combat;
 
 public class HitPipelineTests
 {
-    private sealed class NoConditions : IConditionContext { public bool IsMet(Condition c) => false; }
-
     private static readonly Dictionary<string, StatDefinition> Defs = BuildDefs();
 
     private static Dictionary<string, StatDefinition> BuildDefs()
@@ -55,7 +54,7 @@ public class HitPipelineTests
         new(armor, new Dictionary<DamageType, double> { [DamageType.Fire] = fire }, taken);
 
     private static HitResult Hit(CompiledCharacter c, CompiledSkill s, TargetDefense t, bool? crit = false, WeaponStub? w = null) =>
-        HitCalculator.Resolve(new HitInput(c, s, t, new NoConditions(), crit, (min, max) => (min + max) / 2, w));
+        HitCalculator.Resolve(new HitInput(c, s, t, NoConditions.Instance, crit, (min, max) => (min + max) / 2, w));
 
     [Fact]
     public void Portion_gets_modifiers_of_every_lineage_type()
@@ -182,7 +181,7 @@ public class HitPipelineTests
     public void Pick_in_range_is_used()
     {
         var s = Skill(new() { [DamageType.Fire] = (10, 20) });
-        var r = HitCalculator.Resolve(new HitInput(Char(), s, Target(), new NoConditions(), false, (min, max) => max));
+        var r = HitCalculator.Resolve(new HitInput(Char(), s, Target(), NoConditions.Instance, false, (min, max) => max));
         Assert.Equal(20, r.Final[DamageType.Fire], 9);
     }
 

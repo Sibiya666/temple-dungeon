@@ -1,3 +1,4 @@
+using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 
 namespace Dialoid.Core.Combat;
@@ -24,8 +25,7 @@ public static class HitCalculator
         portions = ConversionResolver.Apply(portions, skill.Conversions);
 
         // Crit
-        var critBase = skill.Base.WeaponEffectiveness != null && input.Weapon is { } w ? w.CritChance : skill.Base.CritChance;
-        var chanceRes = ev.Evaluate("crit_chance", skill.Tags, input.Conditions, critBase);
+        var chanceRes = ev.Evaluate("crit_chance", skill.Tags, input.Conditions, SkillMath.CritChanceBase(skill, input.Weapon));
         var dmgRes = ev.Evaluate("crit_damage", skill.Tags, input.Conditions);
         breakdown.Add(chanceRes);
         breakdown.Add(dmgRes);

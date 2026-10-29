@@ -1,0 +1,18 @@
+<Project Sdk="Godot.NET.Sdk/4.7.2">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RollForward>Major</RollForward>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>Dialoid.Game</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../core/Dialoid.Sandbox/Dialoid.Sandbox.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -311,6 +311,32 @@ public class ReferenceBuildTests
         Assert.True(survival.TimeToDeath >= 5, $"{path}: dies in {survival.TimeToDeath} s");
     }
 
+    /// <summary>
+    /// Spec 11.3: DPS by skill and by type use the DPS denominator (elapsed time) and count every target, so like
+    /// DamageBySkill/DamageByType summing to the total damage (HitDamage + DotDamage), they sum to DpsPack (pack semantics, not
+    /// single target). Checked on a single dummy and on a pack, with a relative tolerance of 1e-9 (summation order differs).
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(MainBuilds))]
+    public void Dps_by_skill_and_type_sum_to_pack_dps(string path)
+    {
+        var b = ContentHarness.LoadBuild(path);
+        foreach (var dummy in new[] { "training", "swarm" })
+        {
+            var r = ContentHarness.Run(b, dummy);
+            var total = r.HitDamage + r.DotDamage;
+            Assert.True(r.DpsPack > 0, $"{path}/{dummy}: no damage");
+            double tol = 1e-9 * Math.Max(1, r.DpsPack);
+            Assert.Equal(r.DamageBySkill.Keys, r.DpsBySkill.Keys);
+            Assert.Equal(r.DamageByType.Keys, r.DpsByType.Keys);
+            Assert.Equal(total, r.DamageBySkill.Values.Sum(), 1e-9 * Math.Max(1, total));
+            Assert.Equal(r.DpsPack, r.DpsBySkill.Values.Sum(), tol);
+            Assert.Equal(r.DpsPack, r.DpsByType.Values.Sum(), tol);
+            foreach (var (skill, damage) in r.DamageBySkill)
+                Assert.Equal(damage / total * r.DpsPack, r.DpsBySkill[skill], tol);
+        }
+    }
+
     /// <summary>Spec 15.5: within a class the reference builds differ by dominant damage type or dominant skill («Тренировочный»).</summary>
     [Fact]
     public void Builds_within_a_class_differ_by_dominant_type_or_skill()

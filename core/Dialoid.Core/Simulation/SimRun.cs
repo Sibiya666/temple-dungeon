@@ -35,6 +35,14 @@ internal sealed class SimRun
     private readonly bool _defensive;
     private readonly SortedDictionary<DamageType, double> _damageTaken = new();
     private double _nextAttack;
+    private int _attacksReceived, _attacksDodged;
+    private readonly SortedDictionary<DamageType, double> _incoming = new();
+    private double _mitigatedByArmor, _mitigatedByResist, _lifeRegenerated;
+
+    // Resource/life series for the result: time 0, the first step boundary at or after each SampleIntervalSec, and the end of the run.
+    private const double SampleIntervalSec = 0.5;
+    private readonly List<ResourceSample> _series = new();
+    private double _nextSample = SampleIntervalSec;
 
     private readonly IRandomSource _random;
     private readonly MechanicRuntime _mechanicHooks;
@@ -86,6 +94,7 @@ internal sealed class SimRun
         double? timeToKill = null;
         // Alive at the cap => the cap; a fight ended by killing a non-respawning dummy => null (neither died nor survived the cap).
         double? timeToDeath = _defensive ? _config.SurvivalCapSec : null;
+        Sample(0);
 
         for (var i = 0; i < steps; i++)
         {
@@ -102,10 +111,22 @@ internal sealed class SimRun
             TickLife(step);
             if (_defensive && DummyAttackStep(t, step) is { } deathTime) { timeToDeath = elapsed = deathTime; break; }
             if (HandleDeaths(t + step)) { timeToKill = elapsed = t + step; timeToDeath = null; break; }
+            if (t + step >= _nextSample - Eps)
+            {
+                Sample(t + step);
+                while (_nextSample <= t + step + Eps) _nextSample += SampleIntervalSec;
+            }
         }
+        if (_series[^1].Time < elapsed - Eps) Sample(elapsed);
 
-        return ResultBuilder.Build(_ledger, _log, Math.Max(elapsed, step), timeToKill, timeToDeath, _damageTaken);
+        var defense = _defensive
+            ? new DefenseTotals(_attacksReceived, _attacksDodged, new SortedDictionary<DamageType, double>(_incoming),
+                _mitigatedByArmor, _mitigatedByResist, _lifeRegenerated)
+            : null;
+        return ResultBuilder.Build(_ledger, _log, Math.Max(elapsed, step), timeToKill, timeToDeath, _damageTaken, defense, _series);
     }
+
+    private void Sample(double time) => _series.Add(new ResourceSample(time, _s.Resource, _s.Life));
 
     private void Act(double t, double step)
     {
@@ -228,7 +249,9 @@ internal sealed class SimRun
         var ev = _procs.Evaluator;
         _s.LifeMax = ev.Evaluate("life", default, _conditions).Value;
         var regen = ev.Evaluate("life_regen_pct", default, _conditions).Value / 100 * _s.LifeMax;
+        var before = _s.Life;
         _s.Life = Math.Min(_s.LifeMax, _s.Life + regen * dt);
+        _lifeRegenerated += Math.Max(0, _s.Life - before);
     }
 
     private void TickBuffs(double dt)
@@ -317,8 +340,10 @@ internal sealed class SimRun
         var dodgeMax = ev.Evaluate("dodge_chance_max", default, _conditions).Value;
         var p = Math.Clamp(Math.Min(dodge, dodgeMax), 0, 100) / 100;
         _log.Add(at, "dummy_attack", $"interval {SimLog.Num(attack.IntervalSec)}");
+        _attacksReceived++;
         if (_random.Chance("dodge", p))
         {
+            _attacksDodged++;
             _log.Add(at, "dodge", "attack dodged");
             return false;
         }
@@ -335,16 +360,26 @@ internal sealed class SimRun
         {
             if (!attack.DamagePerHit.TryGetValue(type, out var raw) || raw <= 0) continue;
             var hit = raw * gear;
+            _incoming[type] = _incoming.GetValueOrDefault(type) + hit;
             double taken;
             if (type == DamageType.Physical)
+            {
                 taken = hit * (1 - Mitigation.ArmorReduction(armor, hit));
+                _mitigatedByArmor += hit - taken;
+            }
             else
             {
                 var name = type.ToString().ToLowerInvariant();
                 var resist = ev.Evaluate("resist_" + name, default, _conditions).Value;
                 var cap = ev.Evaluate("resist_" + name + "_max", default, _conditions).Value;
                 taken = hit * Mitigation.ResistMultiplier(Math.Min(resist, cap), 0);
-                if (elementalArmor > 0) taken *= 1 - Mitigation.ArmorReduction(armor * elementalArmor, hit);
+                _mitigatedByResist += hit - taken;
+                if (elementalArmor > 0)
+                {
+                    var afterResist = taken;
+                    taken *= 1 - Mitigation.ArmorReduction(armor * elementalArmor, hit);
+                    _mitigatedByArmor += afterResist - taken;
+                }
             }
             if (taken <= 0) continue;
             taken *= takenMult;

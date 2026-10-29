@@ -4,9 +4,13 @@ namespace Dialoid.Core.Simulation;
 
 internal static class ResultBuilder
 {
-    /// <summary>DPS = damage / elapsed; DpsSingleTarget counts target 0 only, DpsPack every target.</summary>
+    /// <summary>
+    /// DPS = damage / elapsed; DpsSingleTarget counts target 0 only, DpsPack every target. DpsBySkill and DpsByType use the same
+    /// elapsed and every target, so each sums to DpsPack.
+    /// </summary>
     public static SimResult Build(DamageLedger ledger, SimLog log, double elapsed, double? timeToKill, double? timeToDeath,
-        IReadOnlyDictionary<Combat.DamageType, double>? damageTaken = null)
+        IReadOnlyDictionary<Combat.DamageType, double>? damageTaken = null, DefenseTotals? defense = null,
+        IReadOnlyList<ResourceSample>? resourceSeries = null)
     {
         double pack = 0;
         foreach (var d in ledger.ByTarget) pack += d;
@@ -16,6 +20,13 @@ internal static class ResultBuilder
             new SortedDictionary<Combat.DamageType, double>(ledger.ByType),
             ledger.Hit, ledger.Dot, timeToKill, timeToDeath, log.Events.ToList(), Array.Empty<RuleViolation>(),
             new SortedDictionary<Combat.DamageType, double>(
-                (damageTaken ?? new Dictionary<Combat.DamageType, double>()).ToDictionary(kv => kv.Key, kv => kv.Value)));
+                (damageTaken ?? new Dictionary<Combat.DamageType, double>()).ToDictionary(kv => kv.Key, kv => kv.Value)))
+        {
+            Defense = defense,
+            DpsBySkill = new SortedDictionary<string, double>(ledger.BySkill.ToDictionary(kv => kv.Key, kv => kv.Value / elapsed),
+                StringComparer.Ordinal),
+            DpsByType = new SortedDictionary<Combat.DamageType, double>(ledger.ByType.ToDictionary(kv => kv.Key, kv => kv.Value / elapsed)),
+            ResourceSeries = resourceSeries?.ToList() ?? (IReadOnlyList<ResourceSample>)Array.Empty<ResourceSample>(),
+        };
     }
 }

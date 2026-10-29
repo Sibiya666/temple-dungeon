@@ -1,11 +1,13 @@
 # Dialoid
 
-Диаблоид (ARPG в духе Diablo/PoE2/Last Epoch). Сейчас в репозитории `Dialoid.Core` — чистая C#-библиотека правил игры без Godot, — и контент в `data/`.
+Диаблоид (ARPG в духе Diablo/PoE2/Last Epoch). Сейчас в репозитории `Dialoid.Core` — чистая C#-библиотека правил игры без Godot, — контент в `data/`, `Dialoid.Sandbox` (сессия редактирования билда) и отладочная сцена на Godot в `game/`.
 
 ## Документы
 
 - Спецификация: [docs/superpowers/specs/2026-10-25-dialoid-core-systems-design.md](docs/superpowers/specs/2026-10-25-dialoid-core-systems-design.md)
 - План 1 (движок правил): [docs/superpowers/plans/2026-10-25-dialoid-core-engine.md](docs/superpowers/plans/2026-10-25-dialoid-core-engine.md)
+- Заметки движка и закрытые хвосты планов: [docs/superpowers/plans/2026-10-25-dialoid-core-engine-notes.md](docs/superpowers/plans/2026-10-25-dialoid-core-engine-notes.md)
+- Скриншоты отладочной сцены: [docs/superpowers/debug-scene-screenshots/](docs/superpowers/debug-scene-screenshots/)
 - Справочник автора данных: [docs/data-authoring-reference.md](docs/data-authoring-reference.md)
 - Вопросы владельцу по контенту и балансу: [docs/superpowers/content-owner-questions.md](docs/superpowers/content-owner-questions.md)
 - Журнал баланса: [data/BALANCE_NOTES.md](data/BALANCE_NOTES.md)
@@ -69,10 +71,69 @@ dotnet tools/BuildOptimizer/bin/Release/net8.0/BuildOptimizer.dll suite --all
 
 Пересборка эталонных билдов после изменения чисел: `tools/BuildOptimizer/rebuild_references.sh` (инструмент разработчика вне решения; запускать только последовательно, полная пересборка около 1,5 часа). После нее проверить diff в `data/builds/`, прогнать тесты и обновить метрики в `data/builds/README.md` (таблицы собраны из вывода `suite --all`).
 
+## Отладочная сцена
+
+Godot-проект `game/` — отладочная сцена (спека §13): тонкий слой отрисовки над `Dialoid.Sandbox`, правил игры в нём нет. Интерфейс строится кодом в `Main._Ready()`, вкладки: «Персонаж», «Пассивки», «Асцендант», «Скиллы», «Симуляция», «Разбор», «Билды».
+
+Нужен Godot 4.7 .NET (версия `Godot.NET.Sdk` в `game/Dialoid.Game.csproj` совпадает с редактором):
+
+```bash
+brew install --cask godot-mono
+```
+
+Если Godot стоит в другом месте, укажите путь к бинарю в переменной `GODOT` (по умолчанию `/Applications/Godot_mono.app/Contents/MacOS/Godot`, иначе `godot` из PATH).
+
+Запуск: открыть `game/project.godot` в редакторе Godot и нажать «Запустить» (F5) — или из корня репозитория:
+
+```bash
+dotnet build game/Dialoid.Game.csproj
+"${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --path game
+```
+
+Данные сцена ищет сама: ближайший `data/` с `classes.json` вверх от `game/`. Другой каталог данных задаётся переменной `DIALOID_DATA`. Если данные не найдены или не загрузились, сцена показывает ошибку и проверенные пути, а в лог пишет строку `DIALOID_LOAD_FAILED: <причина>`.
+
+Проверка сборки без окна (`dotnet build` → `godot --headless --import` → `godot --headless --quit`, каждый шаг под лимитом времени):
+
+```bash
+tools/godot_check.sh
+# проверка сцены без данных: ошибка загрузки обязательна, ERROR в логе — нет
+DIALOID_DATA=/nonexistent tools/godot_check.sh --expect-load-failure
+```
+
+### Самопроверка
+
+Самопроверка сцены (`-- --selftest`) нажимает настоящие панели теми же обработчиками, что и мышь, печатает по строке на шаг (`SELFTEST OK …` / `SELFTEST FAIL …: причина`) и выходит с кодом 0, если все шаги прошли, иначе 1:
+
+```bash
+tools/godot_check.sh --selftest
+# то же вручную, из корня или из папки game/
+"${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --headless --path game -- --selftest
+cd game && "${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --headless --path . -- --selftest
+```
+
+Приемка (спека §15.4) входит в самопроверку. Для каждого из шести основных эталонов билд загружается во вкладке «Билды» (история «Разбора» при этом очищается), «Тренировочный» манекен считается в режиме «среднее» во вкладке «Симуляция», и DPS панели сверяется с `Simulator.Run` по тому же файлу (до бита). Затем меняются два узла главного скилла (скилл с наибольшим DPS):
+
+- **узел дерева скилла:** кнопкой «−» во вкладке «Скиллы» снимается очко с узла, названного в разборе множителя урона попадания (`hit_mult_*`): DPS меняется, строка узла в этом разборе меняется или пропадает, «+» возвращает DPS точно. Если «−» у всех таких узлов отклонен (на них держатся зависимые узлы, так у огненного Рассекающего удара), берется узел из разбора крита или пробивания, и таблица называет отклоненные; если подходящего узла нет совсем, шаг падает;
+- **notable пассивного дерева:** кликом по дереву снимается взятый notable, названный в разборе главного скилла: DPS меняется, в «Разборе» пропадает строка узла, после возврата DPS прежний. Если у билда нет notable, снятие которого не рвет путь к старту (так у «Чародей, Криомант — Ледяное копье»), в таблице стоит «—», другой узел не подставляется.
+
+Итог — таблица `SELFTEST TABLE билд | главный скилл | DPS до | узел скилла «−» | notable`. Еще самопроверка проверяет, что подписи пассивного дерева не перекрывают друг друга и узлы (подпись, которой некуда встать, видна при наведении).
+
+Скриншоты всех вкладок (эталон пиромана после симуляции, плюс «Разбор» множителя урона попадания) снимаются в окне, не в `--headless`:
+
+```bash
+"${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --path game -- --selftest --screenshots "$PWD/docs/superpowers/debug-scene-screenshots"
+```
+
+Коды выхода `tools/godot_check.sh`: 0 — всё в порядке; 1 — не прошла сборка или импорт, в логе Godot есть строка `ERROR:`/`SCRIPT ERROR:`, или с `--expect-load-failure` данные загрузились; 2 — Godot не найден; 3 — сцена не загрузила данные игры (строка `DIALOID_LOAD_FAILED:`); с `--selftest` — код самопроверки (он важнее проверок лога); 124 или 142 — шаг не уложился в лимит времени.
+
+`game/` не входит в `core/Dialoid.sln`: проект на Godot.NET.Sdk собирает этот скрипт.
+
 ## Статус
 
 | План | Состояние |
 |------|-----------|
 | План 1: движок правил Dialoid.Core | выполнен |
 | План 2: контент и баланс | выполнен (открытые вопросы — `docs/superpowers/content-owner-questions.md`) |
-| План 3: Godot | впереди |
+| План 3: отладочная сцена Godot | выполнен (самопроверка и приемка §15.3–15.4, скриншоты в `docs/superpowers/debug-scene-screenshots/`) |
+
+Этап 1 (правила, контент и баланс, отладочная сцена) завершен. Дальше — визуал отдельным этапом: 2D-пиксель-арт. Решения владельца по контенту, балансу и визуалу собираются в [docs/superpowers/content-owner-questions.md](docs/superpowers/content-owner-questions.md).
