@@ -97,6 +97,17 @@ public sealed class SelfTest
         steps.Add(new("passives.attribute-menu", PassiveAttributeMenu));
         steps.Add(new("passives.hover-zoom-pan", PassiveHoverZoomPan));
         steps.Add(new("ascendancy.take", AscendancyTake));
+        steps.Add(new("passives.drag-vs-click", PassiveDragVsClick));
+        steps.Add(new("passives.noop-clears-error", PassiveNoopClearsError));
+        steps.Add(new("skills.slots", SkillsSlots));
+        if (mains.Count > 0)
+        {
+            var reference = mains.FirstOrDefault(m => m.Path.EndsWith("warrior_berserker_whirlwind.json", StringComparison.Ordinal)) ?? mains[0];
+            steps.Add(new("skills.node-point", () => SkillsNodePoint(reference)));
+            steps.Add(new("simulation.reference", () => SimulationReference(reference)));
+            steps.Add(new("simulation.stale", () => SimulationStale(reference)));
+            steps.Add(new("simulation.violations", () => SimulationViolations(reference)));
+        }
         if (mains.Count > 0)
             steps.Add(new("restore-reference", async () =>
             {
@@ -375,6 +386,247 @@ public sealed class SelfTest
         Check(panel.PointsText == $"Очки асценданта: {notable.Cost}/{session.AscendancyPointsTotal}", $"счетчик «{panel.PointsText}»");
         Check(panel.View.StateOf(notable.Id) == TreeNodeState.Taken, "notable не окрашен взятым");
         Check(panel.StatusText == "", $"статус не очистился: «{panel.StatusText}»");
+    }
+
+    /// <summary>
+    /// Synthetic mouse events into the passive TreeView's _GuiInput: press, move 20 px, release pans and does not toggle;
+    /// press and release in place toggles. The node is dropped again afterwards.
+    /// </summary>
+    private async Task PassiveDragVsClick()
+    {
+        var panel = _main.Passives!;
+        var session = _main.Session!;
+        var view = panel.View;
+        await FreshBuild(10, "Пассивки");
+        view.FitToView();
+        var id = session.AllocatablePassives.OrderBy(x => x, StringComparer.Ordinal).First();
+        var pos = NodePoint(view, id);
+        var revision = session.Revision;
+        var pan = view.Pan;
+        var shift = new Vector2(20, 0);
+
+        view._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = pos });
+        view._GuiInput(new InputEventMouseMotion { Position = pos + shift, Relative = shift });
+        view._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = pos + shift });
+        await Settle();
+        Check(session.Revision == revision && !session.Build.PassiveNodes.Contains(id), "перетаскивание переключило узел");
+        Check(view.Pan.DistanceTo(pan + shift) < 0.5f, $"сдвиг {view.Pan - pan} вместо {shift}");
+
+        pos = NodePoint(view, id);
+        view._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = pos });
+        view._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = pos });
+        await Settle();
+        Check(session.Build.PassiveNodes.Contains(id), "клик без движения не взял узел");
+
+        var zoom = view.Zoom;
+        view._GuiInput(new InputEventMagnifyGesture { Position = pos, Factor = 1.5f });
+        Check(Mathf.IsEqualApprox(view.Zoom, zoom * 1.5f), $"жест масштаба: {view.Zoom} вместо {zoom * 1.5f}");
+        pan = view.Pan;
+        view._GuiInput(new InputEventPanGesture { Position = pos, Delta = new Vector2(0, 1) });
+        Check(view.Pan != pan, "жест сдвига не сдвинул дерево");
+
+        Check(panel.NodeClicked(id).Ok, "узел не снялся обратно");
+        view.FitToView();
+        await Settle();
+    }
+
+    /// <summary>A refusal in the status line is cleared by an accepted no-op command (the same attribute again).</summary>
+    private async Task PassiveNoopClearsError()
+    {
+        var panel = _main.Passives!;
+        var session = _main.Session!;
+        await FreshBuild(10, "Пассивки");
+        var id = session.AllocatablePassives.OrderBy(x => x, StringComparer.Ordinal)
+            .FirstOrDefault(x => session.Data.Passives.Nodes[x].Kind == Dialoid.Core.Passives.PassiveKind.Attribute);
+        Check(id != null, "рядом со стартом нет узла атрибута");
+        Check(panel.NodeClicked(id!).Ok, "узел атрибута не взят");
+        var unavailable = session.Data.Passives.Nodes.Values
+            .First(n => n.Kind != Dialoid.Core.Passives.PassiveKind.Start && !session.AllocatablePassives.Contains(n.Id)
+                        && !session.Build.PassiveNodes.Contains(n.Id));
+        Check(!panel.NodeClicked(unavailable.Id).Ok, "недоступный узел взят");
+        await Settle();
+        Check(panel.StatusText != "", "отказ не показан");
+        var revision = session.Revision;
+        Check(panel.ChooseAttribute(id!, session.Build.AttributeChoices[id!]).Ok, "тот же атрибут отклонен");
+        Check(session.Revision == revision, "тот же атрибут изменил билд");
+        await Settle();
+        Check(panel.StatusText == "", $"старый отказ остался: «{panel.StatusText}»");
+    }
+
+    /// <summary>Closed slots, the OptionButton signal, level, undo, a refusal and the rotation editor on a fresh build.</summary>
+    private async Task SkillsSlots()
+    {
+        var panel = _main.Skills!;
+        var session = _main.Session!;
+        await FreshBuild(1, "Скиллы");
+        Check(panel.SlotOptions.Count == SandboxSession.SlotCount, $"слотов нарисовано {panel.SlotOptions.Count}");
+        Check(panel.SlotOptions[0] != null && panel.SlotOptions[1] == null, "закрытый слот нарисован открытым");
+        Check(!panel.SelectSkill(1, panel.SlotChoices[0][1]).Ok, "закрытый слот принял скилл");
+        await Settle();
+        Check(panel.CommandError != null, "отказ не показан");
+
+        Check(_main.Character!.SelectLevel(20).Ok, "уровень 20 отклонен");
+        await Settle();
+        var choices = panel.SlotChoices[0];
+        var skills = choices.Where(c => c != null && session.Data.Skills[c].UnlockLevel <= 20).Select(c => c!).ToList();
+        Check(skills.Count >= 2, "у класса меньше двух скиллов до 20 уровня");
+
+        var box = panel.SlotOptions[0]!;
+        box.EmitSignal(OptionButton.SignalName.ItemSelected, choices.ToList().IndexOf(skills[0]));
+        Check(session.GetSlot(0)?.SkillId == skills[0], "скилл не встал через сигнал OptionButton");
+        Check(GodotObject.IsInstanceValid(box) && box.IsInsideTree() && panel.RedrawPending, "OptionButton удален во время сигнала");
+        await Settle();
+        Check(panel.CommandError == null, $"после успешной команды отказ остался: {panel.CommandError}");
+        Check(panel.TreeSlot == 0 && panel.LevelNumber != null, "дерево слота 1 не показано");
+        Check(panel.LevelNumber!.Line.Value == session.GetSlot(0)!.Level, "число уровня скилла не совпадает");
+
+        Check(panel.SelectLevel(0, 3).Ok, "уровень скилла 3 отклонен");
+        await Settle();
+        Check(panel.LevelNumber!.Line.Value == 3 && panel.PointsText.Contains("из 3"), $"уровень {panel.LevelNumber.Line.Value}, «{panel.PointsText}»");
+
+        Check(panel.SelectSkill(0, skills[1]).Ok, "второй скилл не встал");
+        Check(panel.Undo(0).Ok && session.GetSlot(0)?.SkillId == skills[0] && session.GetSlot(0)!.Level == 3, "«Вернуть» не вернул скилл с уровнем");
+
+        Check(panel.SelectSkill(1, skills[1]).Ok, "скилл во второй слот не встал");
+        await Settle();
+        Check(panel.ShownRotation.SequenceEqual(new[] { skills[0], skills[1] }), "ротация не по порядку слотов");
+        Check(panel.MoveInRotation(0, +1).Ok, "сдвиг ротации отклонен");
+        Check(session.Build.Rotation.SequenceEqual(new[] { skills[1], skills[0] }), "ротация не изменилась");
+        await Settle();
+        Check(panel.ShownRotation.SequenceEqual(new[] { skills[1], skills[0] }), "показанная ротация не изменилась");
+        Check(panel.ResetRotation().Ok && session.Build.Rotation.Count == 0, "ротация не сбросилась");
+        await Settle();
+    }
+
+    /// <summary>On a reference: taking a point back out and putting it in again changes the SkillLines both times.</summary>
+    private async Task SkillsNodePoint(ReferenceBuildInfo info)
+    {
+        var panel = _main.Skills!;
+        var session = _main.Session!;
+        Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        _main.SelectTab("Скиллы");
+        await Settle();
+        static string Snapshot(IEnumerable<NumberLabel> labels) => string.Join("|", labels.Select(l => l.Line.Key + "=" + l.Line.Value));
+
+        for (int slot = 0; slot < SandboxSession.SlotCount; slot++)
+        {
+            if (session.GetSlot(slot) is not { } current || !session.Data.Skills.TryGetValue(current.SkillId, out var skill)) continue;
+            panel.ShowTree(slot);
+            await Settle();
+            Check(panel.TreeSlot == slot, "дерево слота не открылось");
+            var original = Snapshot(panel.SkillNumbers);
+            Check(panel.SkillNumbers.Count > 0, $"у скилла «{skill.Name}» нет SkillLines");
+            foreach (var node in skill.Tree.Where(n => current.NodePoints.GetValueOrDefault(n.Id) > 0))
+            {
+                if (!panel.RemovePoint(slot, node.Id).Ok) continue;
+                await Settle();
+                var without = Snapshot(panel.SkillNumbers);
+                Check(panel.AddPoint(slot, node.Id).Ok, $"очко в «{node.Name}» не вернулось: {panel.CommandError}");
+                await Settle();
+                var with = Snapshot(panel.SkillNumbers);
+                Check(with == original, "после возврата очка числа не те, что были");
+                if (without == with) continue;
+                Check(panel.CommandError == null, "после успешной команды остался отказ");
+                return;
+            }
+        }
+        throw new Failure("ни одно очко дерева не изменило SkillLines");
+    }
+
+    /// <summary>Awaits a task with a time limit (the simulation runs on the thread pool).</summary>
+    private static async Task WithTimeout(Task task, int milliseconds, string what)
+    {
+        var done = await Task.WhenAny(task, Task.Delay(milliseconds));
+        Check(done == task, $"{what}: нет результата за {milliseconds / 1000} с");
+        await task;
+    }
+
+    /// <summary>The reference on the training dummy: button off while running, then DPS &gt; 0, the graph and the log.</summary>
+    private async Task SimulationReference(ReferenceBuildInfo info)
+    {
+        var panel = _main.Simulation!;
+        Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        _main.SelectTab("Симуляция");
+        await Settle();
+        var training = panel.DummyIds.ToList().IndexOf("training");
+        Check(training >= 0, "нет манекена training");
+        panel.DummyOptions.Selected = training;
+        panel.SelectDummy(training);
+        panel.ModeOptions.Selected = 0;
+        panel.DummyAttacks.ButtonPressed = false;
+
+        var run = panel.Simulate();
+        Check(panel.Running && panel.RunButton.Disabled && panel.RunButton.Text == SimulationPanel.RunningText, "кнопка не выключена на время расчета");
+        await Settle();
+        if (panel.Running) Check(panel.StatusText == SimulationPanel.RunningText, $"статус во время расчета «{panel.StatusText}»");
+        await WithTimeout(run, 60000, "симуляция");
+        await Settle();
+        Check(panel.AppliedOnMainThread, "результат применен не в главном потоке");
+        Check(!panel.Running && !panel.RunButton.Disabled, "кнопка не включилась после расчета");
+        var dps = panel.NumberFor("sim_dps_single");
+        Check(dps != null, $"нет DPS; статус «{panel.StatusText}»; " + string.Join("; ", panel.ShownViolations));
+        Check(dps!.Line.Value > 0 && dps.Line.Value == panel.LastOutcome!.Result.DpsSingleTarget, $"DPS {dps.Line.Value}");
+        Check(panel.NumberFor("sim_dps_pack") != null && panel.NumberFor("sim_hit_damage") != null, "нет DPS по паку или урона попаданиями");
+        Check(panel.Graph != null && panel.Graph.Samples.Count > 1, "нет графика ресурса");
+        Check(panel.Log == null, "лог показан без кнопки");
+        panel.ToggleLog();
+        await Settle();
+        Check(panel.Log != null && panel.Log.GetParsedText().Length > 0, "лог не показан");
+
+        dps.Open();
+        Check(_main.CurrentTab == Main.BreakdownTab && _main.Breakdown!.Current?.Line.Key == "sim_dps_single", "DPS не открылся в «Разборе»");
+        _main.SelectTab("Симуляция");
+
+        // Defensive mode on the attacking dummy.
+        var attacking = panel.DummyIds.ToList().IndexOf("attacking_boss");
+        if (attacking >= 0)
+        {
+            panel.DummyOptions.Selected = attacking;
+            panel.SelectDummy(attacking);
+            panel.DummyAttacks.ButtonPressed = true;
+            await WithTimeout(panel.Simulate(), 60000, "симуляция с атакой манекена");
+            await Settle();
+            Check(panel.LastOutcome!.Result.Defense != null && panel.NumberFor("sim_def_attacks") != null, "нет защитных итогов");
+            panel.DummyAttacks.ButtonPressed = false;
+            panel.DummyOptions.Selected = training;
+            panel.SelectDummy(training);
+        }
+    }
+
+    /// <summary>A skill node changed after the press: the arriving result is stale and not shown.</summary>
+    private async Task SimulationStale(ReferenceBuildInfo info)
+    {
+        var panel = _main.Simulation!;
+        var session = _main.Session!;
+        Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        _main.SelectTab("Симуляция");
+        await Settle();
+
+        var run = panel.Simulate();
+        int slot = Enumerable.Range(0, SandboxSession.SlotCount).First(i => session.GetSlot(i)?.NodePoints.Count > 0);
+        var revision = session.Revision;
+        var node = session.GetSlot(slot)!.NodePoints.Keys.FirstOrDefault(id => _main.Skills!.RemovePoint(slot, id).Ok);
+        Check(node != null && session.Revision == revision + 1, "узел скилла не изменился");
+        await WithTimeout(run, 60000, "симуляция");
+        await Settle();
+        Check(panel.LastOutcome != null && panel.LastOutcome.Revision != session.Revision, "результат не от старой ревизии");
+        Check(panel.StatusText == SimulationPanel.StaleText, $"статус «{panel.StatusText}»");
+        Check(panel.Numbers.Count == 0, "устаревшие числа показаны");
+    }
+
+    /// <summary>A rejected run (level 1 on a level-60 reference) shows the violations instead of numbers.</summary>
+    private async Task SimulationViolations(ReferenceBuildInfo info)
+    {
+        var panel = _main.Simulation!;
+        Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
+        Check(_main.Character!.SelectLevel(1).Ok, "уровень 1 отклонен");
+        _main.SelectTab("Симуляция");
+        await WithTimeout(panel.Simulate(), 60000, "симуляция");
+        await Settle();
+        Check(panel.ShownViolations.Count > 0 && panel.Numbers.Count == 0, $"нарушения не показаны; статус «{panel.StatusText}»");
+        Check(_main.Builds.Load(info).Ok, "эталон не перезагрузился");
+        await Settle();
+        Check(panel.StatusText == SimulationPanel.StaleText, "после смены билда результат не помечен устаревшим");
     }
 
     /// <summary>Throws a <see cref="Failure"/> with <paramref name="why"/> when the condition is false.</summary>

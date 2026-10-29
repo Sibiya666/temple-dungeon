@@ -117,11 +117,13 @@ public partial class PassivePanel : SessionPanel
         return ChooseAttribute(nodeId, AttributeOrder[index]);
     }
 
+    /// <summary>A refusal is shown; an accepted command (even a no-op that raises no Changed) clears a stale refusal.</summary>
     private CommandResult Run(CommandResult result)
     {
-        if (!result.Ok)
+        var error = result.Ok ? null : result.Error;
+        if (error != _commandError)
         {
-            _commandError = result.Error;
+            _commandError = error;
             RequestRedraw();
         }
         return result;

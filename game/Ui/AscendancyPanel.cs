@@ -94,6 +94,7 @@ public partial class AscendancyPanel : SessionPanel
     {
         if (Current() is { } asc && asc.Start.Id == nodeId)
         {
+            _commandError = null;
             _info = $"«{asc.Start.Name}» — стартовый узел: он взят, пока выбран асцендант «{asc.Name}».";
             RequestRedraw();
             return null;
@@ -104,7 +105,7 @@ public partial class AscendancyPanel : SessionPanel
     private CommandResult Run(CommandResult result)
     {
         _info = null;
-        if (!result.Ok) _commandError = result.Error;
+        _commandError = result.Ok ? null : result.Error;
         RequestRedraw();
         return result;
     }

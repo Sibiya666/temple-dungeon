@@ -49,6 +49,8 @@ public partial class Main : Control
     public BuildsPanel? Builds { get; private set; }
     public PassivePanel? Passives { get; private set; }
     public AscendancyPanel? AscendancyView { get; private set; }
+    public SkillsPanel? Skills { get; private set; }
+    public SimulationPanel? Simulation { get; private set; }
 
     private Label _errorLabel = null!;
     private TabContainer _tabs = null!;
@@ -112,6 +114,14 @@ public partial class Main : Control
         AscendancyView = new AscendancyPanel { Name = "AscendancyPanel" };
         AscendancyView.Setup(session);
         AddPanel("Асцендант", AscendancyView);
+
+        Skills = new SkillsPanel { Name = "SkillsPanel" };
+        Skills.Setup(session, ShowBreakdown);
+        AddPanel("Скиллы", Skills);
+
+        Simulation = new SimulationPanel { Name = "SimulationPanel" };
+        Simulation.Setup(session, ShowBreakdown);
+        AddPanel("Симуляция", Simulation);
 
         Builds = new BuildsPanel { Name = "BuildsPanel" };
         Builds.Setup(session, DataDirectory);

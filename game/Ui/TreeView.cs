@@ -13,7 +13,7 @@ public sealed record TreeViewNode(string Id, Vector2 Position, float Radius, str
 
 /// <summary>
 /// Generic graph view of the debug scene (spec §13.2–13.3): edges as lines and nodes as circles painted in _Draw on a plain
-/// Control. Mouse wheel zooms around the cursor, dragging with the left (or middle) button pans, a left click on a node
+/// Control. Mouse wheel (or a trackpad pinch) zooms around the cursor, a trackpad two-finger scroll pans, dragging with the left (or middle) button pans, a left click on a node
 /// raises <see cref="NodeClicked"/>, a right click <see cref="NodeRightClicked"/>, hovering shows the node's text as a
 /// tooltip and raises <see cref="HoveredChanged"/>.
 /// The view knows no game rules: <see cref="SetGraph"/> gives the shape, <see cref="SetStates"/> the colours. Zoom and pan
@@ -34,6 +34,9 @@ public partial class TreeView : Control
     public const float DragThreshold = 4f;
 
     private const float FitMargin = 24f;
+
+    /// <summary>Pixels of pan per unit of a trackpad pan gesture (two-finger scroll on macOS).</summary>
+    public const float PanGestureSpeed = 12f;
 
     /// <summary>Captions show only on nodes drawn at least this large, so a zoomed-out tree stays readable.</summary>
     public const float CaptionMinPixels = 7f;
@@ -202,6 +205,14 @@ public partial class TreeView : Control
     {
         switch (@event)
         {
+            case InputEventPanGesture pan:
+                PanBy(-pan.Delta * PanGestureSpeed);
+                AcceptEvent();
+                break;
+            case InputEventMagnifyGesture magnify:
+                if (magnify.Factor > 0) ZoomAt(magnify.Position, magnify.Factor);
+                AcceptEvent();
+                break;
             case InputEventMouseButton { ButtonIndex: MouseButton.WheelUp, Pressed: true } wheel:
                 ZoomAt(wheel.Position, WheelStep);
                 AcceptEvent();
