@@ -236,6 +236,37 @@ public class LiveFightTests
     }
 
     [Fact]
+    public void Live_log_keeps_flowing_past_the_simulator_cap_with_bounded_memory()
+    {
+        // About 6 500 events a minute on the 5-target swarm: the simulator's capped log would stop after 10 000.
+        var fight = Start(ContentHarness.LoadBuild("sorcerer_spark_hybrid"), new LiveFightConfig("swarm", SimMode.Roll));
+        var rotation = fight.Setup.Rotation();
+        var drained = 0;
+        for (var i = 0; i < 20_000 && drained <= SimLog.Cap + 2_000; i++)
+        {
+            fight.Step(rotation);
+            var batch = fight.DrainEvents();
+            Assert.DoesNotContain(batch, e => e.Kind == "log_truncated");
+            drained += batch.Count;
+        }
+        Assert.True(drained > SimLog.Cap + 2_000, $"events drained: {drained}");
+
+        for (var i = 0; i < 40; i++) fight.Step(rotation); // two more seconds
+        var fresh = fight.DrainEvents();
+        Assert.Contains(fresh, e => e.Kind == "use");
+        Assert.Contains(fresh, e => e.Kind == "hit");
+        Assert.True(fight.Snapshot().Log.Count < 2 * LiveFight.LogKeep);
+
+        // Nobody drains for over three minutes: only the most recent events wait, still in order and up to now.
+        for (var i = 0; i < 4_000; i++) fight.Step(rotation);
+        var backlog = fight.DrainEvents();
+        Assert.InRange(backlog.Count, LiveFight.LogKeep, 2 * LiveFight.LogKeep - 1);
+        Assert.True(backlog.Zip(backlog.Skip(1)).All(p => p.First.Time <= p.Second.Time));
+        Assert.True(backlog[^1].Time > fight.State.Time - 1);
+        Assert.True(fight.Snapshot().Log.Count < 2 * LiveFight.LogKeep);
+    }
+
+    [Fact]
     public void State_shows_buffs_ailments_and_life()
     {
         var fight = Start("warrior_berserker_whirlwind");

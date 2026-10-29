@@ -21,7 +21,10 @@ public sealed class LiveFight
 
     private readonly CombatEngine _engine;
     private readonly PlayerCommands _commands = new();
-    private int _eventsDrained;
+
+    /// <summary>A live fight's log never stops; it keeps this many recent events (up to twice as many) for <see cref="Snapshot"/>
+    /// and as many undrained ones for <see cref="DrainEvents"/>, so an endless fight uses bounded memory.</summary>
+    internal const int LogKeep = SimLog.Cap;
 
     internal FightSetup Setup { get; }
 
@@ -31,7 +34,7 @@ public sealed class LiveFight
     internal LiveFight(FightSetup setup, LiveFightConfig config)
     {
         Setup = setup;
-        _engine = setup.Engine(ToSimConfig(config), config.InfiniteLife);
+        _engine = setup.Engine(ToSimConfig(config), config.InfiniteLife, log: SimLog.Rolling(LogKeep));
     }
 
     /// <summary>
@@ -96,17 +99,9 @@ public sealed class LiveFight
     /// <summary>Test entry: one step with another command source (the rotation, to compare with the simulator).</summary>
     internal void Step(ICommandSource commands) => _engine.Step(commands);
 
-    /// <summary>The log events since the previous call. The log stops after <see cref="SimLog.Cap"/> events with one
-    /// "log_truncated" event, as in the simulator.</summary>
-    public IReadOnlyList<SimEvent> DrainEvents()
-    {
-        var all = _engine.Events;
-        if (_eventsDrained == all.Count) return Array.Empty<SimEvent>();
-        var fresh = new SimEvent[all.Count - _eventsDrained];
-        for (var i = 0; i < fresh.Length; i++) fresh[i] = all[_eventsDrained + i];
-        _eventsDrained = all.Count;
-        return fresh;
-    }
+    /// <summary>The log events since the previous call, oldest first. The live log never stops (no "log_truncated"); if the
+    /// caller does not drain for a long time, only the most recent <see cref="LogKeep"/>–2×<see cref="LogKeep"/> events are kept.</summary>
+    public IReadOnlyList<SimEvent> DrainEvents() => _engine.Log.Drain();
 
     /// <summary>Damage events since the previous call. Always empty until the engine emits them (training room plan, task 3).</summary>
     public IReadOnlyList<DamageEvent> DrainDamage() => Array.Empty<DamageEvent>();
@@ -134,7 +129,8 @@ public sealed class LiveFight
 
     /// <summary>
     /// The fight's result so far (the simulator's <see cref="SimResult"/>, over <see cref="LiveState.Time"/>). The dummy never attacks
-    /// in a live fight, so TimeToDeath is always null.
+    /// in a live fight, so TimeToDeath is always null. Its Log holds only the most recent events (see <see cref="LogKeep"/>);
+    /// the damage totals cover the whole fight.
     /// </summary>
     public SimResult Snapshot() => _engine.Result();
 

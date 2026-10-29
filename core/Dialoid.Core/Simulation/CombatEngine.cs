@@ -25,7 +25,7 @@ internal sealed class CombatEngine
     private readonly SimConfig _config;
     private readonly SimState _s;
     private readonly SimConditionContext _conditions;
-    private readonly SimLog _log = new();
+    private readonly SimLog _log;
     private readonly DamageLedger _ledger;
     private readonly UseResolver _resolver;
     private readonly ProcEngine _procs;
@@ -58,11 +58,13 @@ internal sealed class CombatEngine
 
     public Action<SimState>? StepObserver { get; init; }
 
+    /// <param name="log">Where events go: the simulator's capped log by default, a rolling log for live fights.</param>
     /// <param name="infiniteLife">Targets never die: a target brought to 0 life is refilled to its max life without a kill
     /// (no kill event, no on-kill effects, ailments stay). Damage is accounted as usual.</param>
     public CombatEngine(GameData data, MechanicRegistry mechanics, CompiledCharacter character, WeaponStub? weapon,
-        IReadOnlyList<SkillRuntime> skills, DummyDefinition dummy, SimConfig config, bool infiniteLife)
+        IReadOnlyList<SkillRuntime> skills, DummyDefinition dummy, SimConfig config, bool infiniteLife, SimLog? log = null)
     {
+        _log = log ?? new SimLog();
         _defensive = config.DummyAttacks && dummy.Attack is { IntervalSec: > 0 };
         _nextAttack = dummy.Attack?.IntervalSec ?? 0;
         _character = character;
@@ -114,8 +116,8 @@ internal sealed class CombatEngine
 
     public WeaponStub? Weapon => _weapon;
 
-    /// <summary>The event log so far (capped at <see cref="SimLog.Cap"/> events).</summary>
-    public IReadOnlyList<SimEvent> Events => _log.Events;
+    /// <summary>The event log (capped or rolling, see the constructor).</summary>
+    public SimLog Log => _log;
 
     /// <summary>Length of a full offline run: the survival cap in defensive mode (the dummy attacks), DurationSec otherwise.</summary>
     public double SpanSec => _defensive ? _config.SurvivalCapSec : _config.DurationSec;
