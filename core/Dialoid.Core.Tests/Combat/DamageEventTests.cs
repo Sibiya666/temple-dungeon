@@ -153,6 +153,15 @@ public class DamageEventTests
     }
 
     [Fact]
+    public void Shared_empty_totals_cannot_be_changed()
+    {
+        Assert.Empty(MitigationTotals.Empty.BySkill);
+        var asDictionary = Assert.IsAssignableFrom<IDictionary<string, DamagePart>>(MitigationTotals.Empty.BySkill);
+        Assert.True(asDictionary.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => asDictionary["fireball"] = MitigationTotals.Empty.Total);
+    }
+
+    [Fact]
     public void Undrained_damage_events_stay_bounded_and_never_stop()
     {
         var fight = LiveFight.Start(ContentHarness.Data, MechanicRegistry.Default, ContentHarness.LoadBuild("sorcerer_pyromancer_fireball"),

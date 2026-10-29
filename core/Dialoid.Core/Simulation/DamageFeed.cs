@@ -48,7 +48,10 @@ internal sealed class DamageFeed
     }
 
     /// <summary>A copy of the sums so far.</summary>
-    public MitigationTotals Totals() =>
-        new(new SortedDictionary<string, DamagePart>(_bySkill.ToDictionary(kv => kv.Key, kv => kv.Value.ToPart(default)), StringComparer.Ordinal),
-            _total.ToPart(default));
+    public MitigationTotals Totals()
+    {
+        var bySkill = new SortedDictionary<string, DamagePart>(StringComparer.Ordinal);
+        foreach (var (skillId, sum) in _bySkill) bySkill[skillId] = sum.ToPart(default);
+        return new MitigationTotals(bySkill, _total.ToPart(default));
+    }
 }

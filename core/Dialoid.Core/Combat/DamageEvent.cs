@@ -26,8 +26,9 @@ public sealed record DamageEvent(double Time, string SkillId, int Target, bool I
 /// </summary>
 public sealed record MitigationTotals(IReadOnlyDictionary<string, DamagePart> BySkill, DamagePart Total)
 {
+    /// <summary>No damage at all. Shared, so its dictionary is read-only.</summary>
     public static MitigationTotals Empty { get; } =
-        new(new SortedDictionary<string, DamagePart>(StringComparer.Ordinal), new DamagePart(default, 0, 0, 0, 0, 0, 0));
+        new(System.Collections.ObjectModel.ReadOnlyDictionary<string, DamagePart>.Empty, new DamagePart(default, 0, 0, 0, 0, 0, 0));
 }
 
 /// <summary>Mutable running sum of <see cref="DamagePart"/> fields (the hit pipeline and the fight totals add into it).</summary>
