@@ -10,7 +10,7 @@ namespace Dialoid.Game.Ui.Hud;
 /// </summary>
 public partial class TargetPlateView : PanelContainer
 {
-    public const float MinWidth = 170;
+    public const float MinWidth = 240;
     public const float LifeHeight = 14;
 
     private readonly Label _name;

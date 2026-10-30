@@ -1,4 +1,4 @@
-using Dialoid.Core.Simulation;
+﻿using Dialoid.Core.Simulation;
 using Dialoid.Game.Room;
 using Dialoid.Game.Ui;
 using Dialoid.Game.Ui.Hud;

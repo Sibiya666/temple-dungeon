@@ -164,6 +164,7 @@ public sealed partial class SelfTest
             steps.AddRange(WindowSteps());
             steps.AddRange(MeterSteps());
             steps.AddRange(GamepadSteps());
+            steps.AddRange(HudSteps());
             steps.Add(new("windows.restore", CombatRestore));
         }
         if (_screenshotDir != null)
@@ -1063,6 +1064,7 @@ public sealed partial class SelfTest
         await WindowScreenshots();
         await MeterScreenshots();
         await GamepadScreenshots();
+        await HudScreenshots();
         _main.CloseAllWindows();
     }
 

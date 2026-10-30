@@ -310,7 +310,8 @@ public partial class CombatHud : Control
         }
         var size = _focusTip.Show(focused.Overflow.TooltipText);
         var at = focused.Overflow.GetGlobalRect();
-        _focusTip.PlaceAt(new Vector2(at.Position.X, at.Position.Y - size.Y - 6), size, Size, 0);
+        // Beside the bottom column (it never covers the rows' other icons), its bottom level with the «+N».
+        _focusTip.PlaceAt(new Vector2(Mathf.Max(at.End.X, BottomRect.End.X) + 8, at.End.Y - size.Y), size, Size, 0);
     }
 
     /// <summary>The hero's refusal text («Перезарядка 2,1 с») where the hero shows it, fading as it does.</summary>
@@ -357,7 +358,8 @@ public partial class CombatHud : Control
         var size = TargetPlate.GetCombinedMinimumSize();
         var width = Mathf.Max(size.X, TargetPlateView.MinWidth);
         TargetPlate.Size = new Vector2(width, size.Y);
-        TargetPlate.Position = new Vector2(p.X - width / 2, p.Y - size.Y);
+        // Never under the top bar (a far figure's head near the top edge): then the plate covers the head instead.
+        TargetPlate.Position = new Vector2(p.X - width / 2, Mathf.Max(p.Y - size.Y, TopBar.Height + 4));
     }
 
     /// <summary>Pixels between the hero's feet and a refusal text placed under them (clear of the target ring).</summary>
