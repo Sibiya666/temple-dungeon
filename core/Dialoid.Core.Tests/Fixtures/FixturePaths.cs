@@ -24,4 +24,19 @@ public static class FixturePaths
         foreach (var f in Directory.GetFiles(Tiny)) File.Copy(f, Path.Combine(target, Path.GetFileName(f)));
         return target;
     }
+
+    /// <summary>The real tower data directory (repository data/tower/).</summary>
+    public static string RealTowerData => Path.Combine(RealData, "tower");
+
+    /// <summary>The small tower data set (Fixtures/tower/).</summary>
+    public static string TowerFixture => Path.Combine(AppContext.BaseDirectory, "Fixtures", "tower");
+
+    /// <summary>Copies the tower fixture into a fresh temp directory so a test can break it.</summary>
+    public static string CopyTowerFixture()
+    {
+        var target = Path.Combine(Path.GetTempPath(), "dialoid-tower-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(target);
+        foreach (var f in Directory.GetFiles(TowerFixture)) File.Copy(f, Path.Combine(target, Path.GetFileName(f)));
+        return target;
+    }
 }

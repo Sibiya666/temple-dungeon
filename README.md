@@ -148,5 +148,6 @@ DIALOID_DATA=/nonexistent tools/godot_check.sh --expect-load-failure
 | План 1: движок правил Dialoid.Core | выполнен |
 | План 2: контент и баланс | выполнен (открытые вопросы — `docs/superpowers/content-owner-questions.md`) |
 | План 3: отладочная сцена Godot | выполнен (самопроверка и приемка §15.3–15.4, скриншоты в `docs/superpowers/debug-scene-screenshots/`) |
+| Башня: логика в ядре (план 5) | выполнен: `Dialoid.Core/Tower` (данные `data/tower/`, сборка, намазка, забег, награда), приемка экономики — `core/Dialoid.Core.Tests/Tower/EconomyAcceptanceTests.cs`. Активности этажей, монстры и лут — следующие планы |
 
 Этап 1 (правила, контент и баланс, отладочная сцена) завершен. Дальше — визуал отдельным этапом: 2D-пиксель-арт. Решения владельца по контенту, балансу и визуалу собираются в [docs/superpowers/content-owner-questions.md](docs/superpowers/content-owner-questions.md).
