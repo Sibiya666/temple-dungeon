@@ -337,7 +337,8 @@ public partial class MeterWindow : SessionPanel, IPadPanel
             _total.Text = $"Урон {RuNumber.Short(segment.TotalDamage)} · DPS {RuNumber.Short(segment.Dps)} · длительность {seconds / 60}:{seconds % 60:00}";
             _total.TooltipText = $"Урон сегмента {RuNumber.Grouped(segment.TotalDamage)}, DPS {RuNumber.Grouped(segment.Dps)} (урон / длительность сегмента)";
             _change.Text = ChangeLabel(segment);
-            var color = segment.IsOpen || segment.DpsChangeVsPrevious is not { } change ? Grey
+            // «DPS 0%» is neither better nor worse: neutral grey (curator, task 13 round 1).
+            var color = segment.IsOpen || segment.DpsChangeVsPrevious is not { } change || Math.Abs(change) < 0.005 ? Grey
                 : change >= 0 ? new Color(0.55f, 0.9f, 0.55f) : new Color(1f, 0.5f, 0.45f);
             if (_changeColor != color)
             {
@@ -392,7 +393,7 @@ public partial class MeterWindow : SessionPanel, IPadPanel
 
         var top = new HBoxContainer { Name = "Segment" };
         AddChild(top);
-        _segments = new OptionButton { Name = "Segments", FocusMode = FocusModeEnum.None, ClipText = true, FitToLongestItem = false, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(120, 0), TooltipText = SegmentsHint };
+        _segments = new OptionButton { Name = "Segments", FocusMode = FocusModeEnum.None, ClipText = true, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis, FitToLongestItem = false, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(120, 0), TooltipText = SegmentsHint };
         _segments.ItemSelected += i => SelectSegment(i >= 0 && i < _segmentChoices.Count ? (i == 0 ? null : _segmentChoices[(int)i]) : null);
         top.AddChild(_segments);
 

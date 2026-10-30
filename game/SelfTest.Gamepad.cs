@@ -313,7 +313,7 @@ public sealed partial class SelfTest
             Host.FocusWindow(spec.Id);
             await Settle();
             var window = Host.Window(spec.Id);
-            var wanted = ButtonPrompts.Targets(window).Where(c => c is BaseButton or Godot.Range or LineEdit).ToList();
+            var wanted = ButtonPrompts.Targets(window).Where(c => c is BaseButton or Godot.Range or LineEdit or IPadControl or Tree or ItemList).ToList();
             var reached = new HashSet<Control>();
             var queue = new Queue<Control>();
             if (FocusOwner is { } start && window.IsAncestorOf(start))
@@ -356,10 +356,17 @@ public sealed partial class SelfTest
         var node = view.Nodes.First(n => n.Caption != null);
         view.PadSelect(node.Id);
         await Settle();
+        // «Пассивки» shows the node's description in its own line: no focus tooltip repeats it over the room (curator round 1).
         var hover = view.NodeLocalPosition(node.Id) is { } at ? view._GetTooltip(at) : "";
-        Check(Host.FocusTooltip == node.Tooltip && hover == node.Tooltip, $"подсказка узла по фокусу «{Host.FocusTooltip}», по наведению «{hover}»");
-        var tip = Host.FocusTooltipRect;
-        Check(!tip.Intersects(Host.Window(WindowIds.Passives).GetGlobalRect()), "подсказка закрывает окно в фокусе");
+        var panelLine = _main.Passives.HoverText;
+        Check(Host.FocusTooltip == null && hover == node.Tooltip && panelLine.Contains(node.Tooltip.Split('\n')[0]),
+            $"узел по фокусу: подсказка «{Host.FocusTooltip}», строка окна «{panelLine}», по наведению «{hover}»");
+        var help = ButtonPrompts.Walk(_main.Passives).OfType<Label>().FirstOrDefault(l => l.HasMeta(ButtonPrompts.HelpMeta));
+        Check(help != null && help.Text.StartsWith("A —") && !help.Text.Contains("ЛКМ"), $"строка помощи в режиме геймпада: «{help?.Text}»");
+        // The gamepad's captions: the focused node and where the stick goes, on plates inside the view.
+        var plates = view.PadCaptions();
+        Check(plates.Any(p => p.Id == node.Id) && plates.Count >= 2 && plates.All(p => new Rect2(Vector2.Zero, view.Size).Encloses(p.Rect)),
+            $"подписи геймпада: {string.Join(", ", plates.Select(p => p.Id))}");
 
         _main.Breakdown!.ShowLine(_main.Session!.CharacterLines[0]);
         Host.FocusWindow(WindowIds.Breakdown);
@@ -368,6 +375,12 @@ public sealed partial class SelfTest
         row.GrabFocus();
         await Settle();
         Check(Host.FocusTooltip == row.GetTooltip(row.Size / 2) && row.TooltipText.Length > 0, $"подсказка строки по фокусу «{Host.FocusTooltip}», по наведению «{row.TooltipText}»");
+        var tipRect = Host.FocusTooltipRect;
+        var bdWindow = Host.Window(WindowIds.Breakdown).GetGlobalRect();
+        var heroX = Host.HeroScreenX?.Invoke();
+        var clearOfHero = heroX is not { } hx || tipRect.End.X < hx - SharedTooltip.HeroClearance + 1 || tipRect.Position.X > hx + SharedTooltip.HeroClearance - 1;
+        Check((clearOfHero || bdWindow.Encloses(tipRect)) && !tipRect.Intersects(row.GetGlobalRect()),
+            $"подсказка {tipRect} у героя x={heroX} или на строке {row.GetGlobalRect()} (окно {bdWindow})");
         // The mouse shows the same text through the same component (Godot's own tooltips are off).
         Device.Set(InputKind.KeyboardMouse);
         var centre = row.GetGlobalRect().GetCenter();
@@ -390,7 +403,11 @@ public sealed partial class SelfTest
         PadTap(JoyButton.DpadLeft);
         await Settle();
         var view = _main.Passives!.View;
+        if (view.HasFocus()) view.ReleaseFocus();
+        view.FitToView();
+        var fitZoom = view.Zoom;
         view.GrabFocus();
+        Check(view.Zoom >= fitZoom * 1.5f - 1e-3f || Mathf.IsEqualApprox(view.Zoom, TreeView.MaxZoom), $"фокус в дереве не приблизил: {view.Zoom} при «Вписать» {fitZoom}");
         // A node with a neighbour to the right.
         var from = view.Nodes.FirstOrDefault(n => view.NeighbourOf(n.Id, Vector2.Right) != null && view.NodeLocalPosition(n.Id) is { } p && new Rect2(Vector2.Zero, view.Size).HasPoint(p))
                    ?? throw new Failure("нет узла с соседом справа");
@@ -418,6 +435,7 @@ public sealed partial class SelfTest
         Check(view.StateOf(available.Id) == afterA, "A после клика дал другое состояние");
         PadTap(JoyButton.A); // back as it was
         await Settle();
+        Check(view.StateOf(available.Id) != TreeNodeState.Taken, "A на взятом узле не снял его");
 
         // X on a taken attribute node: the menu on the current choice.
         var attr = view.Nodes.FirstOrDefault(n => view.StateOf(n.Id) == TreeNodeState.Taken &&
@@ -470,6 +488,7 @@ public sealed partial class SelfTest
         PadTap(JoyButton.Start);
         await NextFrame();
         Check(Host.FocusedWindow == WindowHost.TopBarId && FocusOwner != null && bar.IsAncestorOf(FocusOwner), $"Menu не дал фокус верхней панели: {FocusOwner?.Name}");
+        Check(Host.BarPromptText?.Contains("[A]") == true && Host.BarPromptText.Contains("[B]"), $"под верхней панелью нет строки кнопок: «{Host.BarPromptText}»");
         bar.DummyOptions.GrabFocus();
         var before = bar.DummyOptions.Selected;
         PadTap(JoyButton.A);
@@ -519,6 +538,27 @@ public sealed partial class SelfTest
             await NextFrame();
         } while ((int)seed.Value == seedBefore + 1 && ++tries < 5);
         Check((int)seed.Value != seedBefore + 1, "X не сменил сид");
+
+        // Held → on the seed: the shown value runs, the fight restarts once on the release, not on every repeat.
+        var changes = 0;
+        void Count(double _) => changes++;
+        seed.ValueChanged += Count;
+        try
+        {
+            var heldFrom = (int)seed.Value;
+            Pad(JoyButton.DpadRight, true);
+            var holdStart = Time.GetTicksMsec();
+            while (Time.GetTicksMsec() - holdStart < 900) await NextFrame();
+            var shown = (int)seed.Value;
+            Check(shown > heldFrom + 2 && changes == 1, $"удержание →: сид {heldFrom} → {shown}, применений {changes}");
+            Pad(JoyButton.DpadRight, false);
+            await NextFrame();
+            Check(changes == 2 && Training.Seed == (int)seed.Value, $"после отпускания: применений {changes}, сид боя {Training.Seed}, поле {seed.Value}");
+        }
+        finally
+        {
+            seed.ValueChanged -= Count;
+        }
         PadTap(JoyButton.Y);
         await NextFrame();
         Check(Meter.ConfirmingReset, "Y на поле сида не спросил «Сбросить» (Y — действие окна)");
@@ -616,14 +656,15 @@ public sealed partial class SelfTest
         Check(hud.Slots.All(s => s.KeyText == ButtonPrompts.SlotGlyph(s.Number)), $"на панели боя {string.Join(" ", hud.Slots.Select(s => s.KeyText))}");
         var window = Host.Window(WindowIds.Passives);
         Check(window.PadFocused && window.PromptBar.IsVisibleInTree() && window.PromptBar.Text.Contains("[B]"), $"строка кнопок «{window.PromptBar.Text}»");
+        Check(window.PromptBar.Text.Contains("[LB⁠/⁠RB] Окна") && !window.PromptBar.Text.Contains("[A] "), $"пары подсказок разрываются: «{window.PromptBar.Text}»");
         Check(FocusOwner is IPadControl || FocusOwner != null && FocusOwner.HasThemeStylebox("focus"), $"у элемента в фокусе {FocusOwner?.Name} нет рамки");
 
         var viewport = _main.GetViewport();
-        viewport.PushInput(new InputEventMouseMotion { Relative = new Vector2(1, 0), Position = new Vector2(400, 400) });
-        Check(Device.Active == InputKind.Gamepad, "сдвиг мыши на 1 px переключил на мышь");
-        viewport.PushInput(new InputEventMouseMotion { Relative = new Vector2(10, 0), Position = new Vector2(410, 400) });
+        viewport.PushInput(new InputEventMouseMotion { Relative = new Vector2(3, 0), Position = new Vector2(400, 400) });
+        Check(Device.Active == InputKind.Gamepad, "сдвиг мыши на 3 px переключил на мышь");
+        viewport.PushInput(new InputEventMouseMotion { Relative = new Vector2(5, 0), Position = new Vector2(410, 400) });
         await NextFrame();
-        Check(Device.Active == InputKind.KeyboardMouse, "сдвиг мыши на 10 px не переключил на мышь");
+        Check(Device.Active == InputKind.KeyboardMouse, "сдвиг мыши на 5 px не переключил на мышь");
         Check(FocusOwner == null && Host.FocusedWindow == null && !window.PromptBar.IsVisibleInTree(), $"после мыши фокус на {FocusOwner?.Name}, окно {Host.FocusedWindow}");
         Check(WindowHost.Specs.All(s => bar.KeyLabel(s.Id).Text == GameWindow.KeyName(s.Key)), "буквы клавиш не вернулись");
         Check(hud.Slots.All(s => s.KeyText == s.Number.ToString()), "цифры слотов не вернулись");
@@ -631,12 +672,31 @@ public sealed partial class SelfTest
         Axis(JoyAxis.LeftX, 0.1f);
         Check(Device.Active == InputKind.KeyboardMouse, "стик 0,1 переключил на геймпад");
         Axis(JoyAxis.LeftX, 0f);
+        // Below the switch threshold the stick neither switches nor moves the hero (the prompts would say keyboard).
+        Axis(JoyAxis.LeftX, 0.3f);
+        Check(Device.Active == InputKind.KeyboardMouse && Room.Hero.MoveInput == Vector2.Zero, $"стик 0,3 в режиме мыши: {Device.Active}, движение {Room.Hero.MoveInput}");
+        Axis(JoyAxis.LeftX, 0f);
 
         // Back on the gamepad: the window focused before the mouse gets its control back.
         PadTap(JoyButton.Y);
         await Settle();
         Check(Device.Active == InputKind.Gamepad && Host.FocusedWindow == WindowIds.Passives && FocusOwner != null && window.IsAncestorOf(FocusOwner),
             $"после возврата на геймпад фокус {Host.FocusedWindow}, {FocusOwner?.Name}");
+        await PadMode();
+
+        // The gamepad put the focus on the seed; the owner takes the keyboard: the field lets go, so 1–5 go to the fight, not into it.
+        Host.FocusWindow(WindowIds.Meter);
+        await Settle();
+        Meter.Seed.GetLineEdit().GrabFocus();
+        await NextFrame();
+        Check(FocusOwner == Meter.Seed.GetLineEdit(), "фокус не на поле сида");
+        var seedText = Meter.Seed.GetLineEdit().Text;
+        _main.GetViewport().PushInput(new InputEventKey { PhysicalKeycode = Key.Key1, Keycode = Key.Key1, Unicode = '1', Pressed = true });
+        _main.GetViewport().PushInput(new InputEventKey { PhysicalKeycode = Key.Key1, Keycode = Key.Key1, Unicode = '1', Pressed = false });
+        await NextFrame();
+        Check(Device.Active == InputKind.KeyboardMouse && FocusOwner == null && Meter.Seed.GetLineEdit().Text == seedText,
+            $"после клавиши фокус на {FocusOwner?.Name}, сид «{Meter.Seed.GetLineEdit().Text}»");
+        Meter.SetSimMode(Dialoid.Core.Simulation.SimMode.Roll, 1);
         await PadMode();
     }
 
@@ -689,6 +749,7 @@ public sealed partial class SelfTest
             await Settle();
             _main.OpenWindow(WindowIds.Log);
             _main.OpenWindow(WindowIds.Meter);
+            await NextFrame();
             await Settle();
             var screen = _main.Size;
             var log = Host.Window(WindowIds.Log).GetGlobalRect();
@@ -699,6 +760,11 @@ public sealed partial class SelfTest
             Check(!charts.Intersects(log), $"графики {charts} заходят на журнал {log}");
             var meter = Host.Window(WindowIds.Meter).GetGlobalRect();
             Check(meter.Size.X <= screen.X * WindowHost.MaxSideFraction + 0.5f, $"измеритель шире трети: {meter.Size.X} из {screen.X}");
+            var follow = LogWindow.Lines.GetParent().GetNode<Control>("Filters/Follow");
+            var kinds = LogWindow.KindsMenu;
+            Check(Mathf.Abs(follow.GetGlobalRect().Position.Y - kinds.GetGlobalRect().Position.Y) < 2, "«Автопрокрутка» ушла с ряда фильтров");
+            Check(log.Size.Y >= 260, $"журнал ниже 260 px: {log.Size.Y}");
+            Check(Meter.SegmentOption.TextOverrunBehavior == TextServer.OverrunBehavior.TrimEllipsis, "у списка сегментов нет многоточия");
             if (_screenshotDir != null && !headless)
             {
                 PlaceNearDummy();
@@ -743,6 +809,10 @@ public sealed partial class SelfTest
             view.GrabFocus();
             if (view.Nodes.FirstOrDefault(n => n.Caption != null && view.StateOf(n.Id) == TreeNodeState.Available) is { } node) view.PadSelect(node.Id);
             await Shot("task-13-passives-gamepad");
+            // The same zoom with the mouse: captions that show here must not vanish on the pad (curator round 1).
+            Device.Set(InputKind.KeyboardMouse);
+            await Shot("task-13-passives-mouse-same-zoom");
+            Device.Set(InputKind.Gamepad);
 
             Host.FocusWindow(WindowIds.Meter);
             await Settle();

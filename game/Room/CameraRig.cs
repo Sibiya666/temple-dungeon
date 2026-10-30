@@ -114,6 +114,9 @@ public partial class CameraRig : Node3D
     /// <summary>The right stick's vertical value the camera holds now (0 inside the dead zone).</summary>
     public float StickValue => _stick;
 
+    /// <summary>The gamepad is gone: the stick zoom stops.</summary>
+    public void ClearStick() => _stick = 0;
+
     /// <summary>One frame of the right stick's zoom (the self-test calls it with a fixed step).</summary>
     public void StickZoom(double delta)
     {

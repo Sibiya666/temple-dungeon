@@ -26,6 +26,9 @@
 
 $ErrorActionPreference = 'Stop'
 
+# The self-test's developer filter (DIALOID_SELFTEST_FILTER) never applies to a check: every step runs.
+Remove-Item Env:DIALOID_SELFTEST_FILTER -ErrorAction SilentlyContinue
+
 $Root = Split-Path -Parent $PSScriptRoot
 $Game = Join-Path $Root 'game'
 $Marker = 'DIALOID_LOAD_FAILED:'

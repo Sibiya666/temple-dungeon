@@ -236,7 +236,7 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
         popup.IdPressed += id => SetKindVisible((LogKind)(int)id, !_kinds.Contains((LogKind)(int)id));
         filters.AddChild(_kindsMenu);
 
-        _skillOption = new OptionButton { Name = "Skill", FocusMode = FocusModeEnum.None, ClipText = true, FitToLongestItem = false, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(150, 0), TooltipText = "Строки одного скилла" };
+        _skillOption = new OptionButton { Name = "Skill", FocusMode = FocusModeEnum.None, ClipText = true, FitToLongestItem = false, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(110, 0), TooltipText = "Строки одного скилла" };
         _skillOption.ItemSelected += i => SetSkillFilter(i >= 0 && i < _skillChoices.Count ? _skillChoices[(int)i] : null);
         filters.AddChild(_skillOption);
 

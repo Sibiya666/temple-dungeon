@@ -128,9 +128,12 @@ public partial class Main : Control
         Combat!.InputBlocked = () => Windows.WindowHasFocus;
         Room!.CameraRig.InputBlocked = () => Windows.WindowHasFocus;
         Windows.LeftBottomRightLimit = screen => CombatHud.LeftEdge(screen.X) - CombatHud.WindowGap;
+        Windows.HeroScreenX = () => RoomToScreen(Combat.Hero.Position)?.X;
         if (Dialoid.Game.Input.InputDevice.Instance is { } device)
         {
             device.GamepadLost += Combat.ReleaseAll;
+            device.GamepadLost += Windows.ClearPadState;
+            device.GamepadLost += Room.CameraRig.ClearStick;
             device.Changed += Combat.OnDeviceChanged;
         }
     }

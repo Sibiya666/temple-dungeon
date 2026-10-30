@@ -597,7 +597,9 @@ public partial class CombatDriver : Node
             Hero.SetMoveInput(keys);
             return;
         }
-        var stick = new Vector2(_stick.X, -_stick.Y);
+        // The stick moves the hero only in gamepad mode: below the switch threshold (0.35) it neither switches nor moves, so the hero
+        // never walks while the prompts say keyboard (review round 1).
+        var stick = InputDevice.Gamepad ? new Vector2(_stick.X, -_stick.Y) : Vector2.Zero;
         var length = Mathf.Min(1, stick.Length());
         if (length < InputActions.StickDeadzone) Hero.SetMoveInput(Vector2.Zero);
         else Hero.SetMoveInput(stick.Normalized(), run: length > InputActions.StickRun);

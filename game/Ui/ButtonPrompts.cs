@@ -59,6 +59,17 @@ public static class ButtonPrompts
     public const string EditMeta = "pad_edit";
     public const string KeyboardFocusMeta = "pad_kb_focus";
     public const string AcceptMeta = "pad_accept";
+    public const string HelpMeta = "pad_help";
+    public const string KeyboardHelpMeta = "kb_help";
+
+    /// <summary>A help line with a text per device: the mouse one, and the gamepad one in gamepad mode (curator: «ЛКМ…» lines lie on the pad).</summary>
+    public static Label Help(Label label, string gamepadText)
+    {
+        label.SetMeta(KeyboardHelpMeta, label.Text);
+        label.SetMeta(HelpMeta, gamepadText);
+        if (Dialoid.Game.Input.InputDevice.Gamepad) label.Text = gamepadText;
+        return label;
+    }
 
     private static readonly ConditionalWeakTable<Control, Dictionary<PadCommand, (string Label, Action Run)>> Actions = new();
 
@@ -160,6 +171,7 @@ public static class ButtonPrompts
         foreach (var node in Walk(root))
         {
             if (node is ScrollContainer scroll && gamepad) scroll.FollowFocus = true;
+            if (node is Label { } help && help.HasMeta(HelpMeta)) help.Text = help.GetMeta(gamepad ? HelpMeta : KeyboardHelpMeta).AsString();
             if (node is not Control c) continue;
             Control target = c is SpinBox spin ? spin.GetLineEdit() : c;
             var wanted = c.HasMeta(SkipMeta) ? Control.FocusModeEnum.None
@@ -215,7 +227,10 @@ public static class ButtonPrompts
 
     /// <summary>The prompt line text: «[A] Взять  ·  [X] Атрибут  ·  [B] Назад».</summary>
     public static string Line(IEnumerable<(string Button, string Label)> prompts) =>
-        string.Join("   ", prompts.Where(p => p.Label.Length > 0).Select(p => p.Button + " " + p.Label));
+        string.Join("   ", prompts.Where(p => p.Label.Length > 0).Select(p => Unbreakable(p.Button + " " + p.Label)));
+
+    /// <summary>One prompt pair that never wraps inside: no-break spaces, and word joiners around «/» («[LB/RB]», «[←/→]»).</summary>
+    public static string Unbreakable(string pair) => pair.Replace(" ", " ").Replace("/", "⁠/⁠");
 
     /// <summary>What A does on a control (the first prompt of the bar).</summary>
     public static string AcceptLabel(Control? focus) => focus != null && focus.HasMeta(AcceptMeta) ? focus.GetMeta(AcceptMeta).AsString() : focus switch

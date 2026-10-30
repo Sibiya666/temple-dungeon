@@ -70,7 +70,7 @@ public partial class TopBar : PanelContainer
         if (session != null && currentDummy != null)
         {
             row.AddChild(new Label { Text = "Манекен:", VerticalAlignment = VerticalAlignment.Center });
-            DummyOptions = new OptionButton { Name = "Dummy", FocusMode = FocusModeEnum.None, TooltipText = "Пресет манекена из data/dummies.json; смена начинает бой заново" };
+            DummyOptions = new OptionButton { Name = "Dummy", FocusMode = FocusModeEnum.None, TooltipText = "Защита и здоровье манекена; смена начинает бой заново" };
             foreach (var (dummyId, dummy) in session.Data.Dummies)
             {
                 _dummyIds.Add(dummyId);

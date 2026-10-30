@@ -86,7 +86,10 @@ public sealed partial class SelfTest
         var steps = Steps();
         // A developer's shortcut: DIALOID_SELFTEST_FILTER=gamepad runs only the steps whose names start with it (never set by the checks).
         if (System.Environment.GetEnvironmentVariable("DIALOID_SELFTEST_FILTER") is { Length: > 0 } filter)
+        {
             steps = steps.Where(s => s.Name.StartsWith(filter, StringComparison.Ordinal) || s.Name == "panels").ToList();
+            GD.Print($"SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER={filter}: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ ({steps.Count}) — это не приемка !!!");
+        }
         int failed = 0;
         foreach (var step in steps)
         {

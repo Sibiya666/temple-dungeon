@@ -275,7 +275,8 @@ public partial class WindowHost : Control
         }
         var fullHeight = Mathf.Max(MinSize.Y, bottom - top);
         var height = spec.Height > 0 ? Mathf.Min(spec.Height, fullHeight) : fullHeight;
-        if (lift) height = Mathf.Max(MinSize.Y, Mathf.Min(height, fullHeight / 2)); // the charts above it keep half
+        // Lifted, the log keeps its height while the charts above keep their smallest (they scroll): ~10 rows at 1366×768.
+        if (lift) height = Mathf.Max(MinSize.Y, Mathf.Min(height, fullHeight - MinSize.Y - Margin));
         var x = spec.Edge is WindowEdge.Left or WindowEdge.LeftBottom ? Margin : screen.X - Margin - width;
         var y = spec.Edge == WindowEdge.LeftBottom ? (lift ? bottom : screen.Y - Margin) - height : top;
         return new Rect2(x, y, width, height);
@@ -292,6 +293,28 @@ public partial class WindowHost : Control
         window.Position = rect.Position;
         window.Size = rect.Size;
         Clamp(window);
+        // A window opened the first time measures its wrapped labels at no width and comes out too tall; once laid out, it gets its
+        // place again (the log at 1366 opened 992 px tall; review round 1).
+        _replace[window] = (rect, 2);
+    }
+
+    /// <summary>Windows placed this frame, re-placed on the next frames once their contents have a width.</summary>
+    private readonly Dictionary<GameWindow, (Rect2 Rect, int Frames)> _replace = new();
+
+    private void ReplaceOpened()
+    {
+        foreach (var (window, (rect, frames)) in _replace.ToList())
+        {
+            if (frames <= 0 || !IsInstanceValid(window) || !window.Visible)
+            {
+                _replace.Remove(window);
+                continue;
+            }
+            _replace[window] = (rect, frames - 1);
+            window.Position = rect.Position;
+            window.Size = rect.Size;
+            Clamp(window);
+        }
     }
 
     private void ClampAll()
@@ -317,6 +340,7 @@ public partial class WindowHost : Control
     /// <summary>Writes where the owner left the window.</summary>
     private void Remember(GameWindow window)
     {
+        _replace.Remove(window); // the owner placed it
         Clamp(window);
         _config.SetValue(window.Spec.Id, "position", window.Position);
         _config.SetValue(window.Spec.Id, "size", window.Size);

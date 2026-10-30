@@ -50,8 +50,8 @@ public partial class WindowHost
     private SpinBox? _editing;
     private bool _acceptPassed;
     private double _editValue, _editRevert;
-    private PanelContainer _tipPanel = null!;
-    private Label _tipLabel = null!;
+    private SharedTooltip _tip = null!;
+    private Label _barPrompt = null!;
 
     /// <summary>The top bar (Menu focuses it).</summary>
     public TopBar? Bar { get; set; }
@@ -66,8 +66,14 @@ public partial class WindowHost
     public SpinBox? EditingField => _editing;
 
     /// <summary>The focus tooltip shown now, or null.</summary>
-    public string? FocusTooltip => _tipPanel.Visible ? _tipLabel.Text : null;
-    public Rect2 FocusTooltipRect => _tipPanel.GetGlobalRect();
+    public string? FocusTooltip => _tip.Shown;
+    public Rect2 FocusTooltipRect => _tip.GetGlobalRect();
+
+    /// <summary>The control under the mouse whose tooltip shows now (the same panel as the focus tooltip), or null.</summary>
+    public Control? HoverTipControl => InputDevice.Gamepad ? null : _tip.HoverControl;
+
+    /// <summary>The prompt row under the top bar while Menu gave it the focus, or null.</summary>
+    public string? BarPromptText => _barPrompt.Visible ? _barPrompt.Text : null;
 
     /// <summary>The focus moved between the fight, a window and the top bar.</summary>
     public event Action? FocusChanged;
@@ -77,15 +83,15 @@ public partial class WindowHost
 
     private void SetupPad()
     {
-        _tipPanel = new PanelContainer { Name = "FocusTooltip", Visible = false, MouseFilter = MouseFilterEnum.Ignore, TopLevel = false };
-        var style = new StyleBoxFlat { BgColor = new Color(0.07f, 0.065f, 0.06f, 0.97f), BorderColor = Border, ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 5, ContentMarginBottom = 6 };
-        style.SetBorderWidthAll(1);
-        style.SetCornerRadiusAll(3);
-        _tipPanel.AddThemeStyleboxOverride("panel", style);
-        _tipLabel = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new Vector2(0, 0), MouseFilter = MouseFilterEnum.Ignore };
-        _tipLabel.AddThemeColorOverride("font_color", new Color(0.94f, 0.91f, 0.85f));
-        _tipPanel.AddChild(_tipLabel);
-        AddChild(_tipPanel);
+        _tip = new SharedTooltip();
+        AddChild(_tip);
+        _barPrompt = new Label { Name = "BarPrompts", Visible = false, MouseFilter = MouseFilterEnum.Ignore };
+        _barPrompt.AddThemeFontSizeOverride("font_size", 14);
+        _barPrompt.AddThemeColorOverride("font_color", new Color(0.93f, 0.85f, 0.7f));
+        var barStyle = new StyleBoxFlat { BgColor = TitleBackground, BorderColor = FocusedBorder, ContentMarginLeft = 10, ContentMarginRight = 10, ContentMarginTop = 3, ContentMarginBottom = 4 };
+        barStyle.SetBorderWidthAll(1);
+        _barPrompt.AddThemeStyleboxOverride("normal", barStyle);
+        AddChild(_barPrompt);
         GetViewport().GuiFocusChanged += OnGuiFocusChanged;
         GetTree().NodeAdded += OnNodeAdded;
         if (InputDevice.Instance is { } device) device.Changed += OnDeviceChanged;
@@ -121,7 +127,7 @@ public partial class WindowHost
         if (Bar != null) ButtonPrompts.ApplyFocusModes(Bar, gamepad);
         foreach (var pad in ButtonPrompts.Walk(this).OfType<IPadControl>()) pad.PadModeChanged(gamepad);
         foreach (var w in _windows.Values) w.ShowDevice(gamepad);
-        _held = null;
+        StopHold();
         if (gamepad)
         {
             var back = _beforeMouse;
@@ -135,12 +141,15 @@ public partial class WindowHost
         }
         else
         {
+            // A field the gamepad put the focus on (the seed, the skill level) is not being typed into: it lets go too, or 1–5 and
+            // WASD would type into it (review, task 13 round 1). A field the player clicked into keeps the keys.
+            var padOwned = FocusedWindow != null;
             _beforeMouse = FocusedWindow;
             CancelEdit();
             SetFocused(null, release: false);
             // Enter and Space must not press a control nobody sees; a text field being typed into keeps the keys.
-            if (GetViewport().GuiGetFocusOwner() is { } focus && !IsTextField(focus)) focus.ReleaseFocus();
-            _tipPanel.Visible = false;
+            if (GetViewport().GuiGetFocusOwner() is { } focus && (padOwned || !IsTextField(focus))) focus.ReleaseFocus();
+            _tip.Visible = false;
         }
     }
 
@@ -161,7 +170,7 @@ public partial class WindowHost
         foreach (var (wid, w) in _windows) w.SetPadFocused(wid == id);
         if (id == null)
         {
-            _tipPanel.Visible = false;
+            _tip.Visible = false;
             if (release && GetViewport().GuiGetFocusOwner() is { } f && (InputDevice.Gamepad || !IsTextField(f))) f.ReleaseFocus();
         }
         FocusChanged?.Invoke();
@@ -340,7 +349,7 @@ public partial class WindowHost
                     var was = _stick.GetValueOrDefault(dir);
                     _stick[dir] = on;
                     if (on && !was) commands.Add(dir);
-                    else if (!on && was && _held == dir) _held = null;
+                    else if (!on && was && _held == dir) StopHold();
                 }
                 break;
             }
@@ -356,7 +365,7 @@ public partial class WindowHost
                 else if (_rtDown && m.AxisValue <= InputActions.TriggerRelease) _rtDown = false;
                 break;
             case InputEventJoypadButton { Pressed: false } b:
-                if (DirectionOf(b) is { } d && _held == d) _held = null;
+                if (DirectionOf(b) is { } d && _held == d) StopHold();
                 break;
         }
         return commands;
@@ -396,7 +405,7 @@ public partial class WindowHost
                 return true;
             }
         }
-        _held = null;
+        StopHold();
         foreach (var c in commands)
         {
             var count = popup.ItemCount;
@@ -499,6 +508,7 @@ public partial class WindowHost
         var direction = command is PadCommand.Up or PadCommand.Down or PadCommand.Left or PadCommand.Right;
         if (direction)
         {
+            CommitHold();
             _held = command;
             _repeatLeft = RepeatDelay;
             _repeats = 0;
@@ -508,10 +518,10 @@ public partial class WindowHost
             RestoreFocus();
             return;
         }
-        Apply(command, focus, root);
+        Apply(command, focus, root, repeat: false);
     }
 
-    private void Apply(PadCommand command, Control focus, Control root)
+    private void Apply(PadCommand command, Control focus, Control root, bool repeat)
     {
         var horizontal = command is PadCommand.Left or PadCommand.Right;
         var sign = command is PadCommand.Left or PadCommand.TriggerLeft ? -1 : 1;
@@ -526,7 +536,7 @@ public partial class WindowHost
         switch (command)
         {
             case PadCommand.Left or PadCommand.Right when field != null && !IsEditMode(field):
-                Step(field, sign * (_repeats >= FastAfterRepeats ? 10 : 1));
+                Step(field, sign * (_repeats >= FastAfterRepeats ? 10 : 1), repeat);
                 return;
             case PadCommand.Up or PadCommand.Down when focus is Tree tree && TreeStep(tree, command == PadCommand.Down ? 1 : -1):
                 return;
@@ -537,7 +547,7 @@ public partial class WindowHost
         if (ButtonPrompts.TryAction(focus, command)) return;
         if (command is PadCommand.TriggerLeft or PadCommand.TriggerRight && field != null && !IsEditMode(field))
         {
-            Step(field, sign * 10);
+            Step(field, sign * 10, repeat: false);
             return;
         }
         Panel?.PadButton(command, focus);
@@ -607,10 +617,49 @@ public partial class WindowHost
 
     private static bool IsEditMode(Range field) => field.HasMeta(ButtonPrompts.EditMeta);
 
-    private static void Step(Range field, int steps)
+    private Range? _holdField;
+
+    /// <summary>
+    /// ←/→ on a number field: the first press applies at once; a held repeat only moves the shown value (the seed would restart
+    /// the fight and the level rebuild the build on every repeat), and the release applies it once (<see cref="StopHold"/>).
+    /// </summary>
+    private void Step(Range field, int steps, bool repeat)
     {
         var step = field.Step > 0 ? field.Step : 1;
-        field.Value = Mathf.Clamp(field.Value + steps * step, field.MinValue, field.MaxValue);
+        var value = Mathf.Clamp(field.Value + steps * step, field.MinValue, field.MaxValue);
+        if (!repeat)
+        {
+            CommitHold();
+            field.Value = value;
+            return;
+        }
+        _holdField = field;
+        field.SetValueNoSignal(value);
+        if (field is SpinBox spin) spin.GetLineEdit().Text = RuNumber.Format(value, "0.##");
+        field.QueueRedraw();
+    }
+
+    /// <summary>A held direction ended (released, the stick back, another command): a held number change is applied once.</summary>
+    private void StopHold()
+    {
+        _held = null;
+        CommitHold();
+    }
+
+    private void CommitHold()
+    {
+        if (_holdField is not { } field) return;
+        _holdField = null;
+        if (IsInstanceValid(field)) field.EmitSignal(Godot.Range.SignalName.ValueChanged, field.Value);
+    }
+
+    /// <summary>The gamepad is gone: no stick, trigger or held direction is remembered.</summary>
+    public void ClearPadState()
+    {
+        StopHold();
+        _stick.Clear();
+        _rightStick = Vector2.Zero;
+        _ltDown = _rtDown = false;
     }
 
     private void StepEdit(int steps)
@@ -699,14 +748,22 @@ public partial class WindowHost
 
     public override void _Process(double delta)
     {
+        ReplaceOpened();
+        ProcessPad(delta);
+    }
+
+    private void ProcessPad(double delta)
+    {
         if (!InputDevice.Gamepad)
         {
-            UpdateHoverTip(delta);
+            _barPrompt.Visible = false;
+            _tip.UpdateHover(delta, Size, TopInset());
             return;
         }
         if (FocusedWindow == null)
         {
-            if (_tipPanel.Visible) _tipPanel.Visible = false;
+            if (_tip.Visible) _tip.Visible = false;
+            _barPrompt.Visible = false;
             return;
         }
         if (FocusRoot is not { } root || !root.IsVisibleInTree())
@@ -723,7 +780,7 @@ public partial class WindowHost
             {
                 _repeatLeft = RepeatEvery;
                 _repeats++;
-                Apply(held, focus, root);
+                Apply(held, focus, root, repeat: true);
             }
         }
         if (_rightStick.Length() > InputActions.StickDeadzone && focus != null)
@@ -795,105 +852,34 @@ public partial class WindowHost
             var text = ButtonPrompts.Line(PromptsFor(focus));
             if (window.PromptBar.Text != text) window.PromptBar.Text = text;
         }
+        // The top bar has no window of its own: its prompt row hangs under it (curator, task 13 round 1).
+        _barPrompt.Visible = root == Bar;
+        if (root == Bar && Bar != null)
+        {
+            _barPrompt.Text = ButtonPrompts.Line(Bar.WindowOf(focus!) != null || focus == null
+                ? new[] { ("[A]", "Открыть"), ("[←/→]", "Выбор"), ("[B]", "Назад") }
+                : new[] { ("[A]", "Список"), ("[←/→]", "Выбор"), ("[B]", "Назад") });
+            _barPrompt.ResetSize();
+            _barPrompt.Position = new Vector2(Margin, Bar.Size.Y + 2) - GlobalPosition;
+            MoveChild(_barPrompt, GetChildCount() - 1);
+        }
         UpdateTooltip(root, focus);
     }
 
-    /// <summary>The text a control shows on hover and on focus (one source for both: a tree node, a bar row, a number field).</summary>
-    public static string TipOf(Control control, Vector2? at = null) => control switch
-    {
-        IPadControl pad when at == null => pad.PadTooltip(),
-        LineEdit { } edit when edit.GetParent() is SpinBox spin => spin.GetTooltip(spin.Size / 2),
-        _ => control.GetTooltip(at ?? control.Size / 2),
-    };
-
-    /// <summary>Puts <paramref name="text"/> into the tooltip panel and shows it on top; returns its size (zero for an empty text: hidden).</summary>
-    private Vector2 ShowTip(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-        {
-            _tipPanel.Visible = false;
-            return Vector2.Zero;
-        }
-        if (_tipLabel.Text != text)
-        {
-            _tipLabel.Text = text;
-            _tipLabel.CustomMinimumSize = Vector2.Zero;
-            var font = _tipLabel.GetThemeFont("font");
-            var widest = text.Split('\n').Max(l => font.GetStringSize(l, HorizontalAlignment.Left, -1, _tipLabel.GetThemeFontSize("font_size")).X);
-            _tipLabel.CustomMinimumSize = new Vector2(Mathf.Min(widest + 2, 360), 0);
-            _tipPanel.Size = Vector2.Zero;
-        }
-        if (!_tipPanel.Visible)
-        {
-            _tipPanel.Visible = true;
-            MoveChild(_tipPanel, GetChildCount() - 1);
-        }
-        var size = _tipPanel.GetCombinedMinimumSize();
-        _tipPanel.Size = size;
-        return size;
-    }
-
-    private void PlaceTip(Vector2 pos, Vector2 size)
-    {
-        var screen = Size;
-        pos.X = Mathf.Clamp(pos.X, 0, Mathf.Max(0, screen.X - size.X));
-        pos.Y = Mathf.Clamp(pos.Y, TopInset(), Mathf.Max(TopInset(), screen.Y - size.Y));
-        _tipPanel.Position = pos - GlobalPosition;
-    }
-
-    /// <summary>The hover text of the focused control, beside its window (never over the control or its neighbours).</summary>
+    /// <summary>The focused control's text (<see cref="SharedTooltip.ShowForFocus"/>); the trees of «Пассивки» and «Асцендант» show
+    /// their node's description in the window itself, so they give none.</summary>
     private void UpdateTooltip(Control root, Control? focus)
     {
-        var size = ShowTip(focus == null ? "" : TipOf(focus));
-        if (size == Vector2.Zero) return;
-        var area = root.GetGlobalRect();
-        var at = focus!.GetGlobalRect();
-        var screen = Size;
-        Vector2 pos;
-        if (root == Bar) pos = new Vector2(at.Position.X, area.End.Y + 6);
-        else if (area.End.X + 8 + size.X <= screen.X) pos = new Vector2(area.End.X + 8, at.Position.Y);
-        else if (area.Position.X - 8 - size.X >= 0) pos = new Vector2(area.Position.X - 8 - size.X, at.Position.Y);
-        else pos = new Vector2(at.Position.X, at.End.Y + 6);
-        PlaceTip(pos, size);
+        var inside = root is GameWindow w ? (Rect2?)w.Content.GetGlobalRect() : null;
+        _tip.ShowForFocus(root, focus, root == Bar, HeroScreenX?.Invoke(), inside, Size, TopInset());
     }
 
-    // ---------- the same tooltip on mouse hover ----------
-
-    /// <summary>Seconds the mouse rests on a control before its tooltip shows (Godot's own tooltips are off: gui/timers/tooltip_delay_sec).</summary>
-    public const double HoverDelaySec = 0.5;
-
-    private Control? _hovered;
-    private Vector2 _hoverAt;
-    private double _hoverFor;
-
-    /// <summary>The control under the mouse whose tooltip is shown now, or null.</summary>
-    public Control? HoverTipControl => _tipPanel.Visible && !InputDevice.Gamepad ? _hovered : null;
-
-    /// <summary>The mouse: after <see cref="HoverDelaySec"/> on a control its text shows below-right of the cursor; a press or a move away hides it.</summary>
-    private void UpdateHoverTip(double delta)
-    {
-        var viewport = GetViewport();
-        var hovered = viewport.GuiGetHoveredControl();
-        var mouse = viewport.GetMousePosition();
-        if (hovered != _hovered || mouse.DistanceTo(_hoverAt) > 3 && !_tipPanel.Visible)
-        {
-            _hovered = hovered;
-            _hoverAt = mouse;
-            _hoverFor = 0;
-            if (_tipPanel.Visible) _tipPanel.Visible = false;
-        }
-        if (_hovered == null || !IsInstanceValid(_hovered) || !_hovered.IsVisibleInTree()) return;
-        _hoverFor += delta;
-        if (_hoverFor < HoverDelaySec) return;
-        var size = ShowTip(TipOf(_hovered, _hovered.GetLocalMousePosition()));
-        if (size != Vector2.Zero) PlaceTip(mouse + new Vector2(14, 20), size);
-    }
+    /// <summary>Where the hero stands on screen (x), so the focus tooltip keeps his sides free; null when unknown.</summary>
+    public Func<float?>? HeroScreenX { get; set; }
 
     /// <summary>A mouse press hides the hover tooltip until the mouse rests again.</summary>
     private void HideHoverTip()
     {
-        _hoverFor = 0;
-        _hoverAt = GetViewport().GetMousePosition();
-        if (!InputDevice.Gamepad) _tipPanel.Visible = false;
+        if (!InputDevice.Gamepad) _tip.ResetHover();
     }
 }

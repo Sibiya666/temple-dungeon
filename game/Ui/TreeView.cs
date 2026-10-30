@@ -381,8 +381,9 @@ public partial class TreeView : Control, IPadControl
                 ZoomAt(NodeLocalPosition(id) ?? Size / 2, command == PadCommand.TriggerRight ? PadZoomStep : 1f / PadZoomStep);
                 KeepInView(id);
                 return true;
-            case PadCommand.Center:
-                if (NodeLocalPosition(id) is { } p) PanBy(Size / 2 - p);
+            case PadCommand.Center: // R3: «Вписать дерево», the selected node stays in view
+                FitToView();
+                KeepInView(id);
                 return true;
             default:
                 return false;
@@ -395,7 +396,10 @@ public partial class TreeView : Control, IPadControl
         return true;
     }
 
-    public string PadTooltip() => HoveredId != null && _byId.TryGetValue(HoveredId, out var n) ? n.Tooltip : "";
+    public string PadTooltip() => !DescriptionInPanel && HoveredId != null && _byId.TryGetValue(HoveredId, out var n) ? n.Tooltip : "";
+
+    /// <summary>The panel shows the selected node's description itself (its hover line), so the focus tooltip would only repeat it.</summary>
+    public bool DescriptionInPanel { get; set; }
 
     /// <summary>What X does on the selected node (the panel says: «Атрибут» on an attribute node), else none.</summary>
     public Func<string?, string?>? AltLabel { get; set; }
@@ -406,7 +410,7 @@ public partial class TreeView : Control, IPadControl
         yield return ("[A]", state == TreeNodeState.Taken ? "Снять" : "Взять");
         if (AltLabel?.Invoke(HoveredId) is { } alt) yield return ("[X]", alt);
         yield return ("[LT/RT]", "Масштаб");
-        yield return ("[R3]", "К узлу");
+        yield return ("[R3]", "Вписать");
     }
 
     public void PadModeChanged(bool gamepad)
@@ -417,8 +421,11 @@ public partial class TreeView : Control, IPadControl
     public override void _Notification(int what)
     {
         if (what == NotificationMouseExit && !Dialoid.Game.Input.InputDevice.Gamepad) SetHovered(null);
-        else if (what == NotificationFocusEnter && Dialoid.Game.Input.InputDevice.Gamepad && (HoveredId == null || !_byId.ContainsKey(HoveredId)) && CentreNode() is { } first)
-            PadSelect(first);
+        else if (what == NotificationFocusEnter && Dialoid.Game.Input.InputDevice.Gamepad)
+        {
+            if ((HoveredId == null || !_byId.ContainsKey(HoveredId)) && CentreNode() is { } first) PadSelect(first);
+            PadFocusZoom();
+        }
         if (what == NotificationFocusEnter || what == NotificationFocusExit) QueueRedraw();
     }
 
@@ -482,6 +489,69 @@ public partial class TreeView : Control, IPadControl
             for (int i = 0; i < lines.Length; i++)
                 DrawString(font, rect.Position + new Vector2(0, font.GetAscent(size) + i * lineHeight), lines[i], HorizontalAlignment.Left, -1,
                     size, CaptionColor);
+        }
+        if (HasFocus() && Dialoid.Game.Input.InputDevice.Gamepad) DrawPadCaptions(font, fontSize);
+    }
+
+    /// <summary>Plate colour of the gamepad captions (the focused node and where the stick goes next).</summary>
+    private static readonly Color PlateColor = new(0.05f, 0.045f, 0.04f, 0.9f);
+
+    /// <summary>The name of a node for a caption: its caption, else its tooltip's first line.</summary>
+    public string NameOf(string id) => _byId.TryGetValue(id, out var n) ? n.Caption ?? n.Tooltip.Split('\n')[0] : id;
+
+    /// <summary>
+    /// The gamepad's captions (curator, task 13 round 1): the focused node and its neighbours in the four directions always get
+    /// their name on a dark plate, past the caption layout, each on its own side (the focused one above), kept inside the view.
+    /// </summary>
+    public IReadOnlyList<(string Id, Rect2 Rect)> PadCaptions()
+    {
+        var plates = new List<(string, Rect2)>();
+        if (HoveredId == null || !_byId.ContainsKey(HoveredId)) return plates;
+        var font = GetThemeDefaultFont();
+        var size = GetThemeDefaultFontSize();
+        var items = new List<(string Id, Vector2 Side)> { (HoveredId, Vector2.Up) };
+        foreach (var dir in new[] { Vector2.Up, Vector2.Down, Vector2.Left, Vector2.Right })
+            if (NeighbourOf(HoveredId, dir) is { } next && items.All(i => i.Id != next)) items.Add((next, dir));
+        foreach (var (id, side) in items)
+        {
+            var c = WorldToLocal(_byId[id].Position);
+            var r = Mathf.Max(_byId[id].Radius * Zoom, 3f) + 4;
+            var text = NameOf(id);
+            var extent = font.GetStringSize(text, HorizontalAlignment.Left, -1, size) + new Vector2(10, 4);
+            var at = side == Vector2.Up ? new Vector2(c.X - extent.X / 2, c.Y - r - extent.Y)
+                : side == Vector2.Down ? new Vector2(c.X - extent.X / 2, c.Y + r)
+                : side == Vector2.Left ? new Vector2(c.X - r - extent.X, c.Y - extent.Y / 2)
+                : new Vector2(c.X + r, c.Y - extent.Y / 2);
+            at = new Vector2(Mathf.Clamp(at.X, 2, Mathf.Max(2, Size.X - extent.X - 2)), Mathf.Clamp(at.Y, 2, Mathf.Max(2, Size.Y - extent.Y - 2)));
+            plates.Add((id, new Rect2(at, extent)));
+        }
+        return plates;
+    }
+
+    private void DrawPadCaptions(Font font, int fontSize)
+    {
+        foreach (var (id, rect) in PadCaptions())
+        {
+            var focused = id == HoveredId;
+            DrawRect(rect, PlateColor);
+            DrawRect(rect, focused ? WindowHost.FocusFrame : EdgeColor, false, 1f);
+            DrawString(font, rect.Position + new Vector2(5, 2 + font.GetAscent(fontSize)), NameOf(id), HorizontalAlignment.Left, -1, fontSize,
+                focused ? WindowHost.FocusFrame : CaptionColor);
+        }
+    }
+
+    /// <summary>The zoom the gamepad sets when the tree gets the focus: this many times «Вписать», so the neighbours' names fit.</summary>
+    public const float PadZoomOverFit = 1.75f;
+
+    /// <summary>The tree got the gamepad focus: «Вписать» zoom × <see cref="PadZoomOverFit"/>, centred on the selected node.</summary>
+    public void PadFocusZoom()
+    {
+        if (HoveredId == null || Size.X <= 1) return;
+        FitToView();
+        if (NodeLocalPosition(HoveredId) is { } p)
+        {
+            ZoomAt(p, PadZoomOverFit);
+            if (NodeLocalPosition(HoveredId) is { } q) PanBy(Size / 2 - q);
         }
     }
 

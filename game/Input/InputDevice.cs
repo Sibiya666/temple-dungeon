@@ -24,6 +24,7 @@ public partial class InputDevice : Node
 
     private float _mouseTravel;
     private ulong _mouseTravelStart;
+    private InputEvent? _lastSeen;
 
     /// <summary>The autoload (null before it entered the tree, e.g. in a plain C# test).</summary>
     public static InputDevice? Instance { get; private set; }
@@ -66,6 +67,9 @@ public partial class InputDevice : Node
     /// host, which sees events before the room does (so the switch happens before the event is used).</summary>
     public void Observe(InputEvent e)
     {
+        // The window host observes first and this autoload again: one event counts once (mouse travel was doubled; review round 1).
+        if (ReferenceEquals(e, _lastSeen)) return;
+        _lastSeen = e;
         switch (e)
         {
             case InputEventJoypadButton { Pressed: true }:
@@ -114,8 +118,12 @@ public partial class InputDevice : Node
             Say(ConnectedText);
             return;
         }
-        GamepadLost?.Invoke();
-        Set(InputKind.KeyboardMouse);
+        // Another pad may still be connected: then nothing is let go (its own buttons still count).
+        if (Godot.Input.GetConnectedJoypads().Count == 0)
+        {
+            GamepadLost?.Invoke();
+            Set(InputKind.KeyboardMouse);
+        }
         Say(DisconnectedText);
     }
 
