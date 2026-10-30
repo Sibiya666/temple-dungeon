@@ -109,6 +109,16 @@ public sealed partial class SelfTest
         await Run(0.5);
         Check(UseLines(first) > uses, $"X не применил слот 1 ({first})");
 
+        // The right stick zooms, R3 restores the default zoom.
+        var rig = Room.CameraRig;
+        rig.ResetZoom();
+        Axis(JoyAxis.RightY, -1f);
+        rig.StickZoom(0.2);
+        Check(rig.Zoom < CameraRig.DefaultZoom, $"правый стик вверх не приблизил: {rig.Zoom}");
+        Axis(JoyAxis.RightY, 0f);
+        PadTap(JoyButton.RightStick);
+        Check(Mathf.IsEqualApprox(rig.Zoom, CameraRig.DefaultZoom), $"R3 не вернул зум: {rig.Zoom}");
+
         // The channel on the trigger: Whirlwind into slot 5 for this step.
         var skills = _main.Skills!;
         var ww = SlotOf("whirlwind");
@@ -355,6 +365,14 @@ public sealed partial class SelfTest
         row.GrabFocus();
         await Settle();
         Check(Host.FocusTooltip == row.GetTooltip(row.Size / 2) && row.TooltipText.Length > 0, $"подсказка строки по фокусу «{Host.FocusTooltip}», по наведению «{row.TooltipText}»");
+        // The mouse shows the same text through the same component (Godot's own tooltips are off).
+        Device.Set(InputKind.KeyboardMouse);
+        var centre = row.GetGlobalRect().GetCenter();
+        _main.GetViewport().PushInput(new InputEventMouseMotion { Position = centre, GlobalPosition = centre });
+        var waitFrom = Time.GetTicksMsec();
+        while (Host.HoverTipControl != row && Time.GetTicksMsec() - waitFrom < 3000) await NextFrame();
+        Check(Host.HoverTipControl == row && Host.FocusTooltip == row.TooltipText, $"по наведению показано «{Host.FocusTooltip}» над {Host.HoverTipControl?.Name}");
+        _main.GetViewport().PushInput(new InputEventMouseMotion { Position = new Vector2(2, _main.Size.Y - 2), GlobalPosition = new Vector2(2, _main.Size.Y - 2) });
         await PadMode();
     }
 

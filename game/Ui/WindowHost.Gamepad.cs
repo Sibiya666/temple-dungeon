@@ -699,7 +699,12 @@ public partial class WindowHost
 
     public override void _Process(double delta)
     {
-        if (FocusedWindow == null || !InputDevice.Gamepad)
+        if (!InputDevice.Gamepad)
+        {
+            UpdateHoverTip(delta);
+            return;
+        }
+        if (FocusedWindow == null)
         {
             if (_tipPanel.Visible) _tipPanel.Visible = false;
             return;
@@ -793,20 +798,21 @@ public partial class WindowHost
         UpdateTooltip(root, focus);
     }
 
-    /// <summary>The hover text of the focused control, beside its window (never over the control or its neighbours).</summary>
-    private void UpdateTooltip(Control root, Control? focus)
+    /// <summary>The text a control shows on hover and on focus (one source for both: a tree node, a bar row, a number field).</summary>
+    public static string TipOf(Control control, Vector2? at = null) => control switch
     {
-        var text = focus switch
-        {
-            null => "",
-            IPadControl pad => pad.PadTooltip(),
-            LineEdit { } edit when edit.GetParent() is SpinBox spin => spin.GetTooltip(spin.Size / 2),
-            _ => focus.GetTooltip(focus.Size / 2),
-        };
+        IPadControl pad when at == null => pad.PadTooltip(),
+        LineEdit { } edit when edit.GetParent() is SpinBox spin => spin.GetTooltip(spin.Size / 2),
+        _ => control.GetTooltip(at ?? control.Size / 2),
+    };
+
+    /// <summary>Puts <paramref name="text"/> into the tooltip panel and shows it on top; returns its size (zero for an empty text: hidden).</summary>
+    private Vector2 ShowTip(string text)
+    {
         if (string.IsNullOrEmpty(text))
         {
             _tipPanel.Visible = false;
-            return;
+            return Vector2.Zero;
         }
         if (_tipLabel.Text != text)
         {
@@ -824,6 +830,22 @@ public partial class WindowHost
         }
         var size = _tipPanel.GetCombinedMinimumSize();
         _tipPanel.Size = size;
+        return size;
+    }
+
+    private void PlaceTip(Vector2 pos, Vector2 size)
+    {
+        var screen = Size;
+        pos.X = Mathf.Clamp(pos.X, 0, Mathf.Max(0, screen.X - size.X));
+        pos.Y = Mathf.Clamp(pos.Y, TopInset(), Mathf.Max(TopInset(), screen.Y - size.Y));
+        _tipPanel.Position = pos - GlobalPosition;
+    }
+
+    /// <summary>The hover text of the focused control, beside its window (never over the control or its neighbours).</summary>
+    private void UpdateTooltip(Control root, Control? focus)
+    {
+        var size = ShowTip(focus == null ? "" : TipOf(focus));
+        if (size == Vector2.Zero) return;
         var area = root.GetGlobalRect();
         var at = focus!.GetGlobalRect();
         var screen = Size;
@@ -832,8 +854,46 @@ public partial class WindowHost
         else if (area.End.X + 8 + size.X <= screen.X) pos = new Vector2(area.End.X + 8, at.Position.Y);
         else if (area.Position.X - 8 - size.X >= 0) pos = new Vector2(area.Position.X - 8 - size.X, at.Position.Y);
         else pos = new Vector2(at.Position.X, at.End.Y + 6);
-        pos.X = Mathf.Clamp(pos.X, 0, Mathf.Max(0, screen.X - size.X));
-        pos.Y = Mathf.Clamp(pos.Y, TopInset(), Mathf.Max(TopInset(), screen.Y - size.Y));
-        _tipPanel.Position = pos - GlobalPosition;
+        PlaceTip(pos, size);
+    }
+
+    // ---------- the same tooltip on mouse hover ----------
+
+    /// <summary>Seconds the mouse rests on a control before its tooltip shows (Godot's own tooltips are off: gui/timers/tooltip_delay_sec).</summary>
+    public const double HoverDelaySec = 0.5;
+
+    private Control? _hovered;
+    private Vector2 _hoverAt;
+    private double _hoverFor;
+
+    /// <summary>The control under the mouse whose tooltip is shown now, or null.</summary>
+    public Control? HoverTipControl => _tipPanel.Visible && !InputDevice.Gamepad ? _hovered : null;
+
+    /// <summary>The mouse: after <see cref="HoverDelaySec"/> on a control its text shows below-right of the cursor; a press or a move away hides it.</summary>
+    private void UpdateHoverTip(double delta)
+    {
+        var viewport = GetViewport();
+        var hovered = viewport.GuiGetHoveredControl();
+        var mouse = viewport.GetMousePosition();
+        if (hovered != _hovered || mouse.DistanceTo(_hoverAt) > 3 && !_tipPanel.Visible)
+        {
+            _hovered = hovered;
+            _hoverAt = mouse;
+            _hoverFor = 0;
+            if (_tipPanel.Visible) _tipPanel.Visible = false;
+        }
+        if (_hovered == null || !IsInstanceValid(_hovered) || !_hovered.IsVisibleInTree()) return;
+        _hoverFor += delta;
+        if (_hoverFor < HoverDelaySec) return;
+        var size = ShowTip(TipOf(_hovered, _hovered.GetLocalMousePosition()));
+        if (size != Vector2.Zero) PlaceTip(mouse + new Vector2(14, 20), size);
+    }
+
+    /// <summary>A mouse press hides the hover tooltip until the mouse rests again.</summary>
+    private void HideHoverTip()
+    {
+        _hoverFor = 0;
+        _hoverAt = GetViewport().GetMousePosition();
+        if (!InputDevice.Gamepad) _tipPanel.Visible = false;
     }
 }

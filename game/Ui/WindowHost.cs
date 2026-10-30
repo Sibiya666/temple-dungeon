@@ -345,6 +345,10 @@ public partial class WindowHost : Control
         }
         switch (e)
         {
+            // A press hides the hover tooltip until the mouse rests again.
+            case InputEventMouseButton { Pressed: true }:
+                HideHoverTip();
+                break;
             // On the mouse a pressed button keeps no focus: Enter and Space must not press it again unseen (a text field keeps it).
             case InputEventMouseButton { Pressed: false } when !Dialoid.Game.Input.InputDevice.Gamepad:
                 Callable.From(() =>
