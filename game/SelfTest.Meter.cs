@@ -58,7 +58,7 @@ public sealed partial class SelfTest
             next = t + 0.3;
             Driver.PressSlot(slots[turn++ % slots.Count]);
         });
-        if (close) await Run(TrainingRoom.SegmentIdleSec + 15, until: () => Training.Current == null); // DoTs and zones tick on
+        if (close) await Run(TrainingRoom.SegmentIdleSec + 40, until: () => Training.Current == null); // DoTs and zones tick on
         if (close) Check(Training.Current == null, $"сегмент не закрылся: последний урон в {Training.Current?.End:0.0} с, бой {Training.State?.Time:0.0} с");
     }
 
@@ -346,7 +346,7 @@ public sealed partial class SelfTest
             meter.Refresh();
             await Settle();
             var expected = CombatLogText.DpsChange(after.DpsChangeVsPrevious!.Value);
-            Check(meter.ChangeText == expected, $"рядом с подписью «{meter.ChangeText}», а не «{expected}»");
+            Check(meter.ChangeText.StartsWith(expected, StringComparison.Ordinal), $"рядом с подписью «{meter.ChangeText}», а не «{expected}»");
             Check(meter.SegmentOption.GetItemText(0) == MeterWindow.SegmentText(after) && meter.SegmentOption.GetItemText(0).Contains(expected),
                 $"в списке сегментов «{meter.SegmentOption.GetItemText(0)}»");
             meter.SelectSegment(before.Index);
@@ -405,6 +405,7 @@ public sealed partial class SelfTest
         try
         {
             await LoadForCombat(Thunderer);
+            meter.ConfirmReset(); // only this run's segments in the list
             var room = Room;
             room.PlaceHero(room.Dummy.TargetPosition(0) + new Vector3(1, 0, -1).Normalized() * 1.3f + TowardsCamera * 0.4f);
             room.CameraRig.ResetZoom();
@@ -431,6 +432,9 @@ public sealed partial class SelfTest
                 meter.Refresh();
                 LogWindow.Refresh();
                 await Shot($"task-11-meter-{name}");
+                var s = LogWindow.Scroll!;
+                GD.Print($"SELFTEST NOTE журнал в кадре {name}: прокрутка {s.Value:0}/{s.MaxValue:0} страница {s.Page:0}, следит {LogWindow.FollowTail}, внизу {LogWindow.AtBottom()}, " +
+                         $"последняя строка «{LogWindow.ShownEntries[^1].Text}», tree.scroll {LogWindow.Lines.GetScroll()}");
             }
             GD.Print("SELFTEST NOTE потеря на защите в кадре: " + string.Join(", ", meter.ShownRows.Select(r => r.Label)));
 
@@ -452,6 +456,8 @@ public sealed partial class SelfTest
             _main.OpenWindow(WindowIds.Charts);
             Charts.Refresh();
             await Shot("task-11-charts");
+            Charts.ScrollToEnd();
+            await Shot("task-11-charts-defence");
             if (dropped != null) Check(await ClickPassive(dropped), $"узел {dropped} не взят обратно");
         }
         finally

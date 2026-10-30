@@ -28,6 +28,7 @@ public partial class MeterWindow : SessionPanel
     public const string MainDamageKey = "hit_avg_with_crit";
 
     public const string NoFightText = "Боя еще не было: ударьте манекен, и здесь появятся полосы.";
+    public const string SegmentsHint = "Сегмент боя: от первого удара до 5 с без ударов. Верхний — последний, за ним измеритель следит сам.";
     public const string ResetQuestion = "Сбросить измеритель? Все сохраненные сегменты будут удалены, журнал останется.";
 
     private static readonly MeterMode[] ModeOrder = [MeterMode.DpsBySkill, MeterMode.DamageBySkill, MeterMode.DamageByType, MeterMode.Mitigation];
@@ -262,11 +263,11 @@ public partial class MeterWindow : SessionPanel
             _empty.Visible = false;
             _bars.SetRows(segment.Rows(Mode), Mode, skillMode, MeterColors.SkillOrder(Session));
             var seconds = (int)Math.Floor(segment.Duration);
-            _total.Text = $"Урон {RuNumber.Short(segment.TotalDamage)} · DPS {RuNumber.Short(segment.Dps)} · {seconds / 60}:{seconds % 60:00}";
+            _total.Text = $"Урон {RuNumber.Short(segment.TotalDamage)} · DPS {RuNumber.Short(segment.Dps)} · длительность {seconds / 60}:{seconds % 60:00}";
             _total.TooltipText = $"Урон сегмента {RuNumber.Grouped(segment.TotalDamage)}, DPS {RuNumber.Grouped(segment.Dps)} (урон / длительность сегмента)";
             if (segment.DpsChangeVsPrevious is { } change)
             {
-                _change.Text = CombatLogText.DpsChange(change);
+                _change.Text = CombatLogText.DpsChange(change) + " к прошлому сегменту";
                 _change.AddThemeColorOverride("font_color", change >= 0 ? new Color(0.55f, 0.9f, 0.55f) : new Color(1f, 0.5f, 0.45f));
                 _change.TooltipText = "DPS этого сегмента против предыдущего";
             }
@@ -307,7 +308,11 @@ public partial class MeterWindow : SessionPanel
         }
         _segments.Disabled = _segmentChoices.Count == 0;
         if (_segmentChoices.Count == 0) _segments.Text = "Сегментов нет";
-        else if (SelectedSegment is { } shown) _segments.Select(_segmentChoices.IndexOf(shown.Index));
+        else if (SelectedSegment is { } shown)
+        {
+            _segments.Select(_segmentChoices.IndexOf(shown.Index));
+            _segments.TooltipText = SegmentText(shown) + "\n" + SegmentsHint;
+        }
     }
 
     private void Build()
@@ -316,11 +321,9 @@ public partial class MeterWindow : SessionPanel
 
         var top = new HBoxContainer { Name = "Segment" };
         AddChild(top);
-        _segments = new OptionButton { Name = "Segments", FocusMode = FocusModeEnum.None, ClipText = true, FitToLongestItem = false, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(120, 0), TooltipText = "Сегмент боя: от первого удара до 5 с без ударов. Верхний — последний, за ним измеритель следит сам." };
+        _segments = new OptionButton { Name = "Segments", FocusMode = FocusModeEnum.None, ClipText = true, FitToLongestItem = false, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(120, 0), TooltipText = SegmentsHint };
         _segments.ItemSelected += i => SelectSegment(i >= 0 && i < _segmentChoices.Count ? (i == 0 ? null : _segmentChoices[(int)i]) : null);
         top.AddChild(_segments);
-        _change = new Label { Name = "Change", VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Stop };
-        top.AddChild(_change);
 
         var modeRow = new HBoxContainer { Name = "ModeRow" };
         AddChild(modeRow);
@@ -329,9 +332,12 @@ public partial class MeterWindow : SessionPanel
         _modes.Select(0);
         _modes.ItemSelected += i => SetMode(ModeOrder[(int)i]);
         modeRow.AddChild(_modes);
-        _total = new Label { Name = "Total", HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill, ClipText = true, MouseFilter = MouseFilterEnum.Stop };
+        _change = new Label { Name = "Change", HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Stop };
+        modeRow.AddChild(_change);
+
+        _total = new Label { Name = "Total", ClipText = true, MouseFilter = MouseFilterEnum.Stop };
         _total.AddThemeColorOverride("font_color", new Color(0.93f, 0.85f, 0.7f));
-        modeRow.AddChild(_total);
+        AddChild(_total);
 
         var scroll = new ScrollContainer { Name = "BarsScroll", SizeFlagsVertical = SizeFlags.ExpandFill, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, CustomMinimumSize = new Vector2(0, 60) };
         AddChild(scroll);
@@ -428,7 +434,9 @@ public partial class MeterBars : Control
 
     /// <summary>The number and share on the right of a row: «1,2 тыс. · 45,3%» (a bonus with «+»).</summary>
     public static string ValueText(MeterRow row) =>
-        (row.IsBonus ? "+" : "") + RuNumber.Short(row.Value) + " · " + (row.IsBonus ? "+" : "") + RuNumber.Format(row.Share * 100, "0.#") + "%";
+        row.IsBonus
+            ? "+" + RuNumber.Format(row.Share * 100, "0.#") + "%" // the caption already says «+19,6 тыс. от уязвимости»
+            : RuNumber.Short(row.Value) + " · " + RuNumber.Format(row.Share * 100, "0.#") + "%";
 
     public Color FillOf(MeterRow row) => MeterColors.Bar(_mode, row, _skillOrder);
 

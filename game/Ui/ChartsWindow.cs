@@ -109,6 +109,13 @@ public partial class ChartsWindow : SessionPanel
         if (visible && _dirty && (opened || _sinceRefresh >= RefreshSec)) Refresh();
     }
 
+    /// <summary>Scrolls to the defence chart at the bottom (the screenshot run shows it).</summary>
+    public void ScrollToEnd()
+    {
+        var scroll = GetNode<ScrollContainer>("Scroll");
+        scroll.ScrollVertical = (int)scroll.GetVScrollBar().MaxValue;
+    }
+
     /// <summary>Reads the segment's series now (the self-test calls it).</summary>
     public void Refresh()
     {
@@ -149,9 +156,9 @@ public partial class ChartsCanvas : Control
     public const float SectionGap = 14;
     public const float TitleHeight = 24;
     public const float LineChartHeight = 170;
-    public const float AxisWidth = 64;
+    public const float AxisWidth = 86;
     public const float BarHeight = 22;
-    public const float DefenceRowHeight = 44;
+    public const float DefenceRowHeight = 68;
 
     private static readonly Color Axis = new(0.45f, 0.42f, 0.38f);
     private static readonly Color Grid = new(0.22f, 0.21f, 0.2f);
@@ -315,9 +322,9 @@ public partial class ChartsCanvas : Control
             var p = bar.Part;
             Text(bar.Label, new Vector2(0, Baseline(y, 20)), MeterColors.Text);
             var bonus = bar.Vulnerability + bar.Penetration;
-            Text($"до защиты {RuNumber.Short(p.BeforeDefense)} · дошло {RuNumber.Short(p.Final)}" + (bonus > 0 ? $" (+{RuNumber.Short(bonus)})" : ""),
-                new Vector2(0, Baseline(y, 20)), Muted, HorizontalAlignment.Right, Size.X);
-            var top = y + 21;
+            Text($"до защиты {RuNumber.Short(p.BeforeDefense)} · дошло {RuNumber.Short(p.Final)}" + (bonus > 0 ? $" · прибавки +{RuNumber.Short(bonus)}" : ""),
+                new Vector2(0, Baseline(y + 20, 20)), Muted);
+            var top = y + 42;
             DrawRect(new Rect2(0, top, Size.X, 14), MeterColors.Track);
             var x = 0f;
             if (max > 0)

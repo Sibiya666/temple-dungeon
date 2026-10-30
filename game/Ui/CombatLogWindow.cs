@@ -36,6 +36,11 @@ public partial class CombatLogWindow : SessionPanel
     ];
 
     private const string Separator = " · ";
+
+    /// <summary>Rows use a slightly smaller font than the window, so the event column keeps a whole hit on one or two lines.</summary>
+    public const int RowFontSize = 14;
+
+    private static readonly System.Text.RegularExpressions.Regex DigitGroups = new(@"(?<=\d) (?=\d)", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
     private const int TimeColumn = 0, WhoColumn = 1, WhatColumn = 2;
 
     private static readonly Color TextColor = new(0.9f, 0.87f, 0.8f);
@@ -57,6 +62,8 @@ public partial class CombatLogWindow : SessionPanel
     private Label _status = null!;
     private VScrollBar? _scroll;
     private bool _followTail = true;
+    private float _wrapWidth;
+    private bool _rewrap;
     private bool _syncing;
     private bool _dirty = true;
     private bool _subscribed;
@@ -131,6 +138,8 @@ public partial class CombatLogWindow : SessionPanel
         var opened = visible && !_wasVisible;
         _wasVisible = visible;
         if (visible && _dirty && (opened || _sinceRefresh >= RefreshSec)) Refresh();
+        // The tree lays out its rows a frame after they are added: keep following until it really is at the bottom.
+        else if (visible && _followTail && !AtBottom()) ScrollToEnd();
     }
 
     // ---------- handlers (the controls and the self-test call these) ----------
@@ -174,7 +183,7 @@ public partial class CombatLogWindow : SessionPanel
         var entries = _room.Filter(_kinds, _skillId);
         Sync(entries);
         var hidden = Kinds.Where(k => !_kinds.Contains(k.Kind)).Select(k => k.Name.ToLowerInvariant()).ToList();
-        _status.Text = $"Показано строк: {RuNumber.Grouped(entries.Count)} из {RuNumber.Grouped(_room.Log.Count)}" +
+        _status.Text = $"Строк {RuNumber.Grouped(entries.Count)} из {RuNumber.Grouped(_room.Log.Count)}" +
                        (hidden.Count > 0 ? $" · скрыты: {string.Join(", ", hidden)}" : "");
     }
 
@@ -242,6 +251,7 @@ public partial class CombatLogWindow : SessionPanel
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             CustomMinimumSize = new Vector2(0, 80),
         };
+        _tree.AddThemeFontSizeOverride("font_size", RowFontSize);
         _tree.SetColumnTitle(TimeColumn, "Время");
         _tree.SetColumnTitle(WhoColumn, "Кто");
         _tree.SetColumnTitle(WhatColumn, "Что произошло");
@@ -251,6 +261,7 @@ public partial class CombatLogWindow : SessionPanel
         _scroll = _tree.GetChildren(true).OfType<VScrollBar>().FirstOrDefault();
         if (_scroll != null) _scroll.ValueChanged += _ => OnScrolled();
         _tree.Ready += FitColumns;
+        _tree.Resized += OnTreeResized;
 
         _status = new Label { Name = "Status", AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         _status.AddThemeColorOverride("font_color", SystemColor);
@@ -270,6 +281,47 @@ public partial class CombatLogWindow : SessionPanel
         _tree.SetColumnCustomMinimumWidth(WhoColumn, (int)Math.Ceiling(NameTextWidth() + pad));
         _tree.SetColumnExpand(WhatColumn, true);
         _tree.SetColumnClipContent(WhatColumn, true);
+    }
+
+    /// <summary>
+    /// Breaks the event text into lines that fit <see cref="_wrapWidth"/>, at spaces but never inside a number («12 221»). The tree's
+    /// own autowrap measures a row only when it is drawn, so its scroll range lags behind and the view cannot stay at the newest
+    /// line; explicit line breaks are measured when the row is added.
+    /// </summary>
+    private string Wrap(string text)
+    {
+        if (_wrapWidth <= 0) return text;
+        var font = _tree.GetThemeFont("font");
+        var size = _tree.GetThemeFontSize("font_size");
+        float Width(string s) => font.GetStringSize(s, HorizontalAlignment.Left, -1, size).X;
+        if (Width(text) <= _wrapWidth) return text;
+        var words = DigitGroups.Replace(text, " ").Split(' ');
+        var lines = new List<string>();
+        var line = "";
+        foreach (var word in words)
+        {
+            var candidate = line.Length == 0 ? word : line + " " + word;
+            if (line.Length > 0 && Width(candidate) > _wrapWidth)
+            {
+                lines.Add(line);
+                line = word;
+            }
+            else line = candidate;
+        }
+        lines.Add(line);
+        return string.Join("\n", lines).Replace(' ', ' ');
+    }
+
+    /// <summary>The event column changed width: the rows are wrapped again at the next sync.</summary>
+    private void OnTreeResized()
+    {
+        // Room for the scroll bar even before it shows (it appears once the rows outgrow the view, without a resize).
+        var bar = _scroll is { Visible: false } s ? s.GetCombinedMinimumSize().X : 0;
+        var width = _tree.GetColumnWidth(WhatColumn) - NameColumnPadding() - bar;
+        if (Math.Abs(width - _wrapWidth) < 1) return;
+        _wrapWidth = width;
+        _rewrap = true;
+        _dirty = true;
     }
 
     private void OnScrolled()
@@ -318,7 +370,8 @@ public partial class CombatLogWindow : SessionPanel
     {
         var root = _tree.GetRoot();
         _syncing = true;
-        var start = entries.Count == 0 ? -1 : _shown.FindIndex(e => ReferenceEquals(e, entries[0]));
+        var start = entries.Count == 0 || _rewrap ? -1 : _shown.FindIndex(e => ReferenceEquals(e, entries[0]));
+        _rewrap = false;
         if (start < 0)
         {
             foreach (var child in root.GetChildren()) child.Free();
@@ -347,7 +400,7 @@ public partial class CombatLogWindow : SessionPanel
         var (time, who, what) = Columns(e);
         item.SetText(TimeColumn, time);
         item.SetText(WhoColumn, who);
-        item.SetText(WhatColumn, what);
+        item.SetText(WhatColumn, Wrap(what)); // a long hit wraps instead of losing its number
         var color = ColorOf(e.Kind);
         foreach (var c in new[] { TimeColumn, WhoColumn, WhatColumn })
         {
