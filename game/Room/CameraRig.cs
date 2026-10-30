@@ -97,25 +97,50 @@ public partial class CameraRig : Node3D
         if (_zoom < MinZoom || _zoom > MaxZoom) Zoom = _zoom; // the window aspect changed
     }
 
-    public override void _Process(double delta) => Follow();
+    public override void _Process(double delta)
+    {
+        Follow();
+        StickZoom(delta);
+    }
 
-    /// <summary>Wheel zooms, the middle button restores the default (only events no window took; spec §4).</summary>
+    /// <summary>Zoom steps per second with the right stick at full tilt.</summary>
+    public const float StickZoomSteps = 6f;
+
+    private float _stick;
+
+    /// <summary>True while the interface owns the gamepad (a window has the focus): the stick does not zoom.</summary>
+    public Func<bool>? InputBlocked { get; set; }
+
+    /// <summary>The right stick's vertical value the camera holds now (0 inside the dead zone).</summary>
+    public float StickValue => _stick;
+
+    /// <summary>One frame of the right stick's zoom (the self-test calls it with a fixed step).</summary>
+    public void StickZoom(double delta)
+    {
+        if (InputBlocked?.Invoke() == true) _stick = 0;
+        if (Mathf.Abs(_stick) > Dialoid.Game.Input.InputActions.StickDeadzone) ZoomBy(_stick * StickZoomSteps * (float)delta);
+    }
+
+    /// <summary>Wheel / right stick zoom, the middle button / R3 restore the default (only events no window took; spec §4).</summary>
     public override void _UnhandledInput(InputEvent e)
     {
         if (HandleInput(e)) GetViewport().SetInputAsHandled();
     }
 
-    /// <summary>The camera's reaction to one input event; true when it used it.</summary>
+    /// <summary>The camera's reaction to one input event (the actions zoom_in / zoom_out / zoom_reset); true when it used it.</summary>
     public bool HandleInput(InputEvent e)
     {
-        if (e is not InputEventMouseButton { Pressed: true } mb) return false;
-        switch (mb.ButtonIndex)
+        if (e is InputEventJoypadMotion { Axis: JoyAxis.RightY } stick)
         {
-            case MouseButton.WheelUp: ZoomBy(-1); return true;
-            case MouseButton.WheelDown: ZoomBy(1); return true;
-            case MouseButton.Middle: ResetZoom(); return true;
-            default: return false;
+            _stick = InputBlocked?.Invoke() == true ? 0 : stick.AxisValue;
+            return true;
         }
+        if (e is not InputEventMouseButton and not InputEventJoypadButton || !e.IsPressed()) return false;
+        if (e.IsActionPressed(Dialoid.Game.Input.InputActions.ZoomIn)) ZoomBy(-1);
+        else if (e.IsActionPressed(Dialoid.Game.Input.InputActions.ZoomOut)) ZoomBy(1);
+        else if (e.IsActionPressed(Dialoid.Game.Input.InputActions.ZoomReset)) ResetZoom();
+        else return false;
+        return true;
     }
 
     /// <summary>

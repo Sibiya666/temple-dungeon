@@ -113,11 +113,18 @@ public partial class HeroView : CharacterBody3D
     // ---------- commands ----------
 
     /// <summary>WASD as a vector: X right, Y up the screen (zero stops the key movement).</summary>
-    public void SetMoveInput(Vector2 wasd)
+    public void SetMoveInput(Vector2 wasd, bool run = true)
     {
         _wasd = wasd.LengthSquared() > 1 ? wasd.Normalized() : wasd;
+        _wasdRun = run;
         if (_wasd != Vector2.Zero) _target = null;
     }
+
+    private bool _wasdRun = true;
+
+    /// <summary>The key or stick movement now (X right, Y up the screen) and whether it runs.</summary>
+    public Vector2 MoveInput => _wasd;
+    public bool MoveInputRuns => _wasdRun;
 
     /// <summary>Walks (or runs) to a floor point.</summary>
     public void MoveTo(Vector3 point, bool run)
@@ -215,7 +222,7 @@ public partial class HeroView : CharacterBody3D
         {
             var (right, up) = ScreenAxes();
             move = (right * _wasd.X + up * _wasd.Y).Normalized();
-            speed = RunSpeed;
+            speed = _wasdRun ? RunSpeed : WalkSpeed;
         }
         else if (_target is { } target)
         {

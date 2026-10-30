@@ -102,6 +102,8 @@ public partial class Main : Control
             AddChild(bar);
             bar.SetAnchorsAndOffsetsPreset(LayoutPreset.TopWide);
             bar.Setup(Windows, Session, () => Training!.DummyId, id => Combat!.SetDummy(id));
+            Windows.Bar = bar;
+            WireGamepad();
             Windows.TopInset = () => bar.Size.Y;
             Windows.BottomInset = () => CombatHud.ReservedHeight;
             // A tree opens fitted to its window (captions inside the view).
@@ -115,6 +117,22 @@ public partial class Main : Control
 
         if (OS.GetCmdlineUserArgs().Contains(SelfTestArg))
             new SelfTest(this).Start();
+    }
+
+    /// <summary>
+    /// The gamepad (plan 4 task 13): the fight and the camera take no gamepad buttons while a window has the focus; a lost gamepad
+    /// lets go of everything the fight held; the log never reaches under the combat screen (its right edge stops 8 px left of it).
+    /// </summary>
+    private void WireGamepad()
+    {
+        Combat!.InputBlocked = () => Windows.WindowHasFocus;
+        Room!.CameraRig.InputBlocked = () => Windows.WindowHasFocus;
+        Windows.LeftBottomRightLimit = screen => CombatHud.LeftEdge(screen.X) - CombatHud.WindowGap;
+        if (Dialoid.Game.Input.InputDevice.Instance is { } device)
+        {
+            device.GamepadLost += Combat.ReleaseAll;
+            device.Changed += Combat.OnDeviceChanged;
+        }
     }
 
     /// <summary>Opens a window by its id (<see cref="WindowIds"/>) and raises it.</summary>
@@ -132,7 +150,7 @@ public partial class Main : Control
     {
         if (Breakdown == null) return;
         Breakdown.ShowLine(line, context);
-        OpenWindow(WindowIds.Breakdown);
+        Windows.OpenFromUi(WindowIds.Breakdown); // on the gamepad from a focused window it takes the focus
     }
 
     private void BuildPanels(SandboxSession session)
@@ -169,7 +187,7 @@ public partial class Main : Control
         LogView.Setup(session, Training!);
         Windows.Add(WindowIds.Log, LogView);
         MeterView = new MeterWindow { Name = "MeterView" };
-        MeterView.Setup(session, Training!, ShowBreakdown, Combat?.Numbers, () => OpenWindow(WindowIds.Charts));
+        MeterView.Setup(session, Training!, ShowBreakdown, Combat?.Numbers, () => Windows.OpenFromUi(WindowIds.Charts));
         Windows.Add(WindowIds.Meter, MeterView);
         ChartsView = new ChartsWindow { Name = "ChartsView" };
         var meter = MeterView;

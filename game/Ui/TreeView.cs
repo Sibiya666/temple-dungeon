@@ -21,7 +21,7 @@ public sealed record TreeViewNode(string Id, Vector2 Position, float Radius, str
 /// The input handlers (<see cref="ClickAt"/>, <see cref="RightClickAt"/>, <see cref="HoverAt"/>, <see cref="ZoomAt"/>,
 /// <see cref="PanBy"/>) are public so the self-test drives the same code the mouse does.
 /// </summary>
-public partial class TreeView : Control
+public partial class TreeView : Control, IPadControl
 {
     public const float MinZoom = 0.05f;
     public const float MaxZoom = 8f;
@@ -279,13 +279,148 @@ public partial class TreeView : Control
         }
     }
 
-    public override void _Notification(int what)
-    {
-        if (what == NotificationMouseExit) SetHovered(null);
-    }
-
     public override string _GetTooltip(Vector2 atPosition) =>
         NodeAt(atPosition) is { } id ? _byId[id].Tooltip : "";
+
+    // ---- gamepad (plan 4 task 13) ---------------------------------------------------------------------------------------
+
+    /// <summary>A node counts as «that way» within this many degrees of the stick's direction.</summary>
+    public const float PadConeDegrees = 50f;
+
+    /// <summary>LT / RT zoom factor and the right stick's pan speed (pixels per second at full tilt).</summary>
+    public const float PadZoomStep = 1.25f;
+    public const float PadPanSpeed = 700f;
+
+    /// <summary>The pixels kept between a selected node and the view's edge (the view pans to keep it inside).</summary>
+    public const float PadKeepMargin = 40f;
+
+    /// <summary>
+    /// The nearest node from <paramref name="fromId"/> in the direction <paramref name="dir"/> (screen space, y down): inside a cone
+    /// of ±<see cref="PadConeDegrees"/>, the smallest distance × (1 + angle / cone); null when none is that way.
+    /// </summary>
+    public string? NeighbourOf(string fromId, Vector2 dir)
+    {
+        if (!_byId.TryGetValue(fromId, out var from)) return null;
+        string? best = null;
+        var bestWeight = float.MaxValue;
+        var cone = Mathf.DegToRad(PadConeDegrees);
+        foreach (var n in _nodes)
+        {
+            if (n.Id == fromId) continue;
+            var d = n.Position - from.Position;
+            var dist = d.Length();
+            if (dist < 1e-4f) continue;
+            var angle = Mathf.Abs(d.AngleTo(dir));
+            if (angle > cone) continue;
+            var weight = dist * (1 + angle / cone);
+            if (weight < bestWeight)
+            {
+                best = n.Id;
+                bestWeight = weight;
+            }
+        }
+        return best;
+    }
+
+    /// <summary>Selects a node from the gamepad (the hover ring, the panel's hover line) and pans so it stays in view.</summary>
+    public void PadSelect(string id)
+    {
+        SetHovered(id);
+        KeepInView(id);
+    }
+
+    /// <summary>Pans the least so the node is at least <see cref="PadKeepMargin"/> inside the view.</summary>
+    public void KeepInView(string id)
+    {
+        if (NodeLocalPosition(id) is not { } p || Size.X <= 1 || Size.Y <= 1) return;
+        var margin = Mathf.Min(PadKeepMargin, Mathf.Min(Size.X, Size.Y) / 3);
+        var shift = new Vector2(
+            p.X < margin ? margin - p.X : p.X > Size.X - margin ? Size.X - margin - p.X : 0,
+            p.Y < margin ? margin - p.Y : p.Y > Size.Y - margin ? Size.Y - margin - p.Y : 0);
+        if (shift != Vector2.Zero) PanBy(shift);
+    }
+
+    /// <summary>The node nearest the view's centre (the first selection when the tree gets the focus).</summary>
+    public string? CentreNode()
+    {
+        var centre = Size / 2;
+        return _nodes.MinBy(n => WorldToLocal(n.Position).DistanceSquaredTo(centre))?.Id;
+    }
+
+    public bool PadInput(PadCommand command)
+    {
+        if (HoveredId == null || !_byId.ContainsKey(HoveredId))
+        {
+            if (CentreNode() is not { } first) return false;
+            PadSelect(first);
+            return true;
+        }
+        var id = HoveredId;
+        switch (command)
+        {
+            case PadCommand.Up or PadCommand.Down or PadCommand.Left or PadCommand.Right:
+            {
+                var dir = command switch
+                {
+                    PadCommand.Up => Vector2.Up,
+                    PadCommand.Down => Vector2.Down,
+                    PadCommand.Left => Vector2.Left,
+                    _ => Vector2.Right,
+                };
+                if (NeighbourOf(id, dir) is not { } next) return false; // nothing that way: the focus leaves the tree
+                PadSelect(next);
+                return true;
+            }
+            case PadCommand.Accept:
+                NodeClicked?.Invoke(id);
+                return true;
+            case PadCommand.Alt:
+                NodeRightClicked?.Invoke(id, NodeLocalPosition(id) ?? Size / 2);
+                return true;
+            case PadCommand.TriggerLeft or PadCommand.TriggerRight:
+                ZoomAt(NodeLocalPosition(id) ?? Size / 2, command == PadCommand.TriggerRight ? PadZoomStep : 1f / PadZoomStep);
+                KeepInView(id);
+                return true;
+            case PadCommand.Center:
+                if (NodeLocalPosition(id) is { } p) PanBy(Size / 2 - p);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public bool PadStick(Vector2 value, double delta)
+    {
+        PanBy(-value * PadPanSpeed * (float)delta);
+        return true;
+    }
+
+    public string PadTooltip() => HoveredId != null && _byId.TryGetValue(HoveredId, out var n) ? n.Tooltip : "";
+
+    /// <summary>What X does on the selected node (the panel says: «Атрибут» on an attribute node), else none.</summary>
+    public Func<string?, string?>? AltLabel { get; set; }
+
+    public IEnumerable<(string Button, string Label)> PadPrompts()
+    {
+        var state = HoveredId != null ? StateOf(HoveredId) : TreeNodeState.Unavailable;
+        yield return ("[A]", state == TreeNodeState.Taken ? "Снять" : "Взять");
+        if (AltLabel?.Invoke(HoveredId) is { } alt) yield return ("[X]", alt);
+        yield return ("[LT/RT]", "Масштаб");
+        yield return ("[R3]", "К узлу");
+    }
+
+    public void PadModeChanged(bool gamepad)
+    {
+        if (!gamepad) SetHovered(null);
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationMouseExit && !Dialoid.Game.Input.InputDevice.Gamepad) SetHovered(null);
+        else if (what == NotificationFocusEnter && Dialoid.Game.Input.InputDevice.Gamepad && (HoveredId == null || !_byId.ContainsKey(HoveredId)) && CentreNode() is { } first)
+            PadSelect(first);
+        if (what == NotificationFocusEnter || what == NotificationFocusExit) QueueRedraw();
+    }
 
     private void SetHovered(string? id)
     {
@@ -305,6 +440,7 @@ public partial class TreeView : Control
     public override void _Draw()
     {
         DrawRect(new Rect2(Vector2.Zero, Size), Background);
+        if (HasFocus()) DrawRect(new Rect2(Vector2.One, Size - Vector2.One * 2), WindowHost.FocusFrame, false, 2f);
 
         foreach (var (a, b) in _edges)
         {

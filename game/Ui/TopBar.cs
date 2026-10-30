@@ -33,6 +33,10 @@ public partial class TopBar : PanelContainer
         _currentDummy = currentDummy;
         _selectDummy = selectDummy;
         Name = "TopBar";
+        // Only the gold focus frame of the windows' theme (the buttons keep their look); the gamepad reaches the bar by Menu.
+        var theme = new Theme();
+        WindowHost.AddFocusStyles(theme);
+        Theme = theme;
         MouseFilter = MouseFilterEnum.Stop;
         CustomMinimumSize = new Vector2(0, Height);
         var style = new StyleBoxFlat { BgColor = new Color(0.075f, 0.07f, 0.065f, 1f), BorderColor = WindowHost.Border, ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 4, ContentMarginBottom = 4 };
@@ -80,28 +84,64 @@ public partial class TopBar : PanelContainer
         }
         host.Changed += Sync;
         Sync();
+        if (Dialoid.Game.Input.InputDevice.Instance is { } device)
+        {
+            device.Changed += kind => ShowDevice(kind == Dialoid.Game.Input.InputKind.Gamepad);
+            ShowDevice(device.Active == Dialoid.Game.Input.InputKind.Gamepad);
+        }
     }
 
     /// <summary>The key after the title, smaller and dimmer («Персонаж C»), in room the button keeps at its right; padding 4 px.</summary>
     private void AddKey(Button button, string key)
     {
-        const int keySize = 13;
-        var keyWidth = ThemeDB.FallbackFont.GetStringSize(key, HorizontalAlignment.Left, -1, keySize).X;
+        var label = new Label { Name = "Key", MouseFilter = MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
+        label.AddThemeFontSizeOverride("font_size", KeySize);
+        label.AddThemeColorOverride("font_color", new Color(0.62f, 0.6f, 0.56f)); // about 60 % of the title's brightness
+        button.AddChild(label);
+        _keys[button] = label;
+        SetKey(button, key);
+    }
+
+    private const int KeySize = 13;
+
+    /// <summary>The caption at the button's right («P» on the keyboard, «[←]» or nothing on the gamepad) and the room kept for it.</summary>
+    private void SetKey(Button button, string key)
+    {
+        var label = _keys[button];
+        var keyWidth = key.Length == 0 ? 0 : ThemeDB.FallbackFont.GetStringSize(key, HorizontalAlignment.Left, -1, KeySize).X;
         foreach (var state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled", "focus" })
         {
             if (button.GetThemeStylebox(state, "Button")?.Duplicate() is not StyleBox box) continue;
             box.ContentMarginLeft = KeyPadding;
-            box.ContentMarginRight = KeyPadding + 4 + keyWidth;
+            box.ContentMarginRight = KeyPadding + (keyWidth > 0 ? 4 + keyWidth : 0);
             button.AddThemeStyleboxOverride(state, box);
         }
-        var label = new Label { Name = "Key", Text = key, MouseFilter = MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
-        label.AddThemeFontSizeOverride("font_size", keySize);
-        label.AddThemeColorOverride("font_color", new Color(0.62f, 0.6f, 0.56f)); // about 60 % of the title's brightness
-        button.AddChild(label);
+        label.Text = key;
         label.SetAnchorsAndOffsetsPreset(LayoutPreset.RightWide);
         label.OffsetLeft = -(KeyPadding + keyWidth);
         label.OffsetRight = -KeyPadding;
-        _keys[button] = label;
+    }
+
+    /// <summary>The captions follow the device: keys on the keyboard, D-pad glyphs (or nothing: those windows open from this bar) on the gamepad.</summary>
+    public void ShowDevice(bool gamepad)
+    {
+        foreach (var (id, button) in _buttons)
+        {
+            var spec = WindowHost.SpecOf(id);
+            var dpad = Dialoid.Game.Input.GamepadLayout.DpadOf(id);
+            SetKey(button, !gamepad ? GameWindow.KeyName(spec.Key) : dpad is { } b ? ButtonPrompts.Glyph(b) : "");
+            button.TooltipText = gamepad
+                ? $"Окно «{spec.Title}»: A — открыть или перейти в него" + (dpad is { } d ? $", из боя — {ButtonPrompts.Glyph(d)}" : "")
+                : $"Открыть или закрыть окно «{spec.Title}» — клавиша {GameWindow.KeyName(spec.Key)}";
+        }
+    }
+
+    /// <summary>The window a top-bar button opens, or null for another control.</summary>
+    public string? WindowOf(Control control)
+    {
+        foreach (var (id, button) in _buttons)
+            if (button == control) return id;
+        return null;
     }
 
     /// <summary>Inner padding of a window button, pixels.</summary>

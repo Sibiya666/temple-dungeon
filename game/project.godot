@@ -8,6 +8,10 @@ config/name="Dialoid"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 
+[autoload]
+
+InputDevice="*res://Input/InputDevice.cs"
+
 [display]
 
 window/size/viewport_width=1600

@@ -30,6 +30,24 @@ public partial class CombatHud : Control
 
     public static float BarWidth => 5 * SlotWidth + 4 * SlotGap;
 
+    /// <summary>The combat screen's left edge on a screen <paramref name="width"/> wide (its bottom column is centred).</summary>
+    public static float LeftEdge(float width) => width / 2 - BarWidth / 2;
+
+    /// <summary>Pixels kept between a window and the combat screen.</summary>
+    public const float WindowGap = 8;
+
+    /// <summary>The bottom column (buffs, resource, slots) on screen.</summary>
+    public Rect2 BottomRect => _column.GetGlobalRect();
+
+    private VBoxContainer _column = null!;
+    private Label _toast = null!;
+    private double _toastLeft;
+
+    /// <summary>The device message shown now («Геймпад отключен»), or null.</summary>
+    public string? ToastShown => _toast.Visible ? _toast.Text : null;
+
+    public const double ToastSec = 3;
+
     private CombatDriver _driver = null!;
     private SandboxSession _session = null!;
     private EffectNames _names = null!;
@@ -91,6 +109,7 @@ public partial class CombatHud : Control
         column.OffsetBottom = -BottomMargin;
         column.OffsetTop = -ReservedHeight + 8;
         column.GrowVertical = GrowDirection.Begin;
+        _column = column;
 
         _heroRow = new HFlowContainer { Name = "Buffs", MouseFilter = MouseFilterEnum.Ignore, Alignment = FlowContainer.AlignmentMode.Center, SizeFlagsVertical = SizeFlags.ShrinkEnd };
         _heroRow.AddThemeConstantOverride("h_separation", 4);
@@ -145,9 +164,50 @@ public partial class CombatHud : Control
         {
             if (e.Slot is { } s && s >= 1 && s <= _slots.Count) _slots[s - 1].Blink();
         };
+
+        // Device messages («Геймпад отключен») at the top centre for a few seconds; slot keys follow the device.
+        _toast = new Label { Name = "Toast", Visible = false, MouseFilter = MouseFilterEnum.Ignore, HorizontalAlignment = HorizontalAlignment.Center };
+        _toast.AddThemeFontSizeOverride("font_size", 20);
+        _toast.AddThemeColorOverride("font_color", new Color(0.95f, 0.85f, 0.62f));
+        _toast.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.9f));
+        _toast.AddThemeConstantOverride("outline_size", 5);
+        AddChild(_toast);
+        _toast.SetAnchorsAndOffsetsPreset(LayoutPreset.CenterTop);
+        _toast.OffsetTop = TopBar.Height + 16;
+        if (Dialoid.Game.Input.InputDevice.Instance is { } device)
+        {
+            device.Message += ShowToast;
+            device.Changed += kind => ShowDevice(kind == Dialoid.Game.Input.InputKind.Gamepad);
+            ShowDevice(device.Active == Dialoid.Game.Input.InputKind.Gamepad);
+        }
     }
 
-    public override void _Process(double delta) => Refresh(delta);
+    /// <summary>Slot captions: digits on the keyboard, the gamepad's buttons («[X]» … «[RT]») on the gamepad.</summary>
+    public void ShowDevice(bool gamepad)
+    {
+        foreach (var slot in _slots) slot.ShowKey(gamepad ? ButtonPrompts.SlotGlyph(slot.Number) : slot.Number.ToString());
+    }
+
+    public void ShowToast(string text)
+    {
+        _toast.Text = text;
+        _toast.Visible = true;
+        _toast.Modulate = Colors.White;
+        _toast.ResetSize();
+        _toast.Position = new Vector2((Size.X - _toast.Size.X) / 2, _toast.Position.Y);
+        _toastLeft = ToastSec;
+    }
+
+    public override void _Process(double delta)
+    {
+        Refresh(delta);
+        if (_toastLeft > 0)
+        {
+            _toastLeft -= delta;
+            _toast.Modulate = new Color(1, 1, 1, (float)Math.Clamp(_toastLeft / 0.6, 0, 1));
+            if (_toastLeft <= 0) _toast.Visible = false;
+        }
+    }
 
     /// <summary>Reads the fight's state into the screen (the self-test calls it after stepping the fight by hand).</summary>
     public void Refresh(double delta = 0)
@@ -356,6 +416,11 @@ public partial class SlotView : Control
         (_cooldown.OffsetLeft, _cooldown.OffsetRight, _cooldown.OffsetTop, _cooldown.OffsetBottom) = (18, -18, 0, 32);
         _inner.AddChild(_cooldown);
     }
+
+    /// <summary>The key caption now («1» or «[X]»).</summary>
+    public string KeyText => _key.Text;
+
+    public void ShowKey(string text) => _key.Text = text;
 
     /// <summary>A refused press on this slot: the slot flashes and shakes for <see cref="CombatHud.BlinkSec"/>.</summary>
     public void Blink() => BlinkLeft = CombatHud.BlinkSec;

@@ -1,4 +1,5 @@
 using Dialoid.Core.Simulation;
+using Dialoid.Game.Input;
 using Dialoid.Core.Stats;
 using Dialoid.Sandbox;
 using Godot;
@@ -79,7 +80,9 @@ public partial class CombatDriver : Node
     public sealed record MeleeTimeline(string SkillId, double Start, double Contact, double End, double? FlashAt);
 
     private readonly List<PendingUse> _uses = new();
-    private readonly HashSet<Key> _moveKeys = new();
+    private readonly HashSet<string> _moveKeys = new();
+    private readonly Dictionary<int, int> _slotHeld = new();
+    private Vector2 _stick;
     private readonly Dictionary<int, DotSum> _dots = new();
     private double _visualTime;
     private double _freezeLeft;
@@ -162,7 +165,7 @@ public partial class CombatDriver : Node
         if (fightTime < _lastFightTime) ResetVisuals();
         _lastFightTime = fightTime;
         SyncDummy();
-        if ((_moveKeys.Count > 0 || _channelSlot != null) && KeysBlocked()) ReleaseHeldKeys(); // focus moved to a text field
+        if ((_moveKeys.Count > 0 || _channelSlot != null || _stick != Vector2.Zero || _slotHeld.Count > 0) && KeysBlocked()) ReleaseAll(); // focus moved to a text field or a window
         Training.UpdateReach(HeroDistance(), TargetOnScreen());
         Training.Advance(delta); // the real frame time: hit-stop never slows the fight
         Advanced += delta;
@@ -229,6 +232,7 @@ public partial class CombatDriver : Node
     {
         if (Dummy.PresetId == Training.DummyId) return;
         Dummy.SetPreset(Training.DummyId);
+        SelectedTarget = null;
         ResetVisuals();
     }
 
@@ -483,8 +487,10 @@ public partial class CombatDriver : Node
         if (!Room.IsShown && e.IsPressed()) return false;
         switch (e)
         {
-            case InputEventKey key:
-                return HandleKey(key);
+            case InputEventKey or InputEventJoypadButton or InputEventJoypadMotion:
+                // Releases always pass, so a held channel or a move key is never stuck when the focus moved meanwhile.
+                if (e.IsPressed() && KeysBlocked()) return false;
+                return HandleAction(e);
             case InputEventMouseMotion motion:
                 _mouse = motion.Position;
                 return false;
@@ -503,28 +509,125 @@ public partial class CombatDriver : Node
         }
     }
 
-    private bool HandleKey(InputEventKey key)
+    /// <summary>
+    /// The fight's actions (<see cref="InputActions"/>), from the keyboard or the gamepad alike: slots 1–5 (X, A, B, Y, RT; the
+    /// trigger presses at 0.5 and lets go at 0.3), movement (WASD runs; the left stick has a round dead zone of 0.2, walks up to
+    /// 0.6 and runs past it, relative to the camera), approach the target (F, LB), next target (Tab, RB). A slot held on both
+    /// devices is let go when both let go. Presses are refused while the interface owns the input; releases always pass.
+    /// </summary>
+    private bool HandleAction(InputEvent e)
     {
-        var code = key.PhysicalKeycode != Key.None ? key.PhysicalKeycode : key.Keycode;
-        // Releases always pass, so a held channel or a move key is never stuck when focus moved meanwhile.
-        if (key.Pressed && KeysBlocked()) return false;
-        if (code is >= Key.Key1 and <= Key.Key5)
+        var pressed = e.IsPressed() && !e.IsEcho();
+        for (int slot = 1; slot <= 5; slot++)
         {
-            var slot = (int)(code - Key.Key1) + 1;
-            if (key.Pressed && !key.Echo) PressSlot(slot);
-            else if (!key.Pressed) ReleaseSlot(slot);
+            var action = InputActions.Slot(slot);
+            if (!e.IsAction(action)) continue;
+            var source = e is InputEventJoypadButton or InputEventJoypadMotion ? PadSource : KeySource;
+            if (e is InputEventJoypadMotion trigger)
+            {
+                var down = (_slotHeld.GetValueOrDefault(slot) & PadSource) != 0;
+                if (!down && trigger.AxisValue >= InputActions.TriggerPress) HoldSlot(slot, source);
+                else if (down && trigger.AxisValue <= InputActions.TriggerRelease) LetGoSlot(slot, source);
+                return true;
+            }
+            if (pressed) HoldSlot(slot, source);
+            else if (!e.IsPressed()) LetGoSlot(slot, source);
             return true;
         }
-        if (code is Key.W or Key.A or Key.S or Key.D)
+        if (e is InputEventJoypadMotion stick && stick.Axis is JoyAxis.LeftX or JoyAxis.LeftY &&
+            (e.IsAction(InputActions.MoveLeft) || e.IsAction(InputActions.MoveRight) || e.IsAction(InputActions.MoveUp) || e.IsAction(InputActions.MoveDown)))
         {
-            if (key.Pressed) _moveKeys.Add(code);
-            else _moveKeys.Remove(code);
-            Hero.SetMoveInput(new Vector2(
-                (_moveKeys.Contains(Key.D) ? 1 : 0) - (_moveKeys.Contains(Key.A) ? 1 : 0),
-                (_moveKeys.Contains(Key.W) ? 1 : 0) - (_moveKeys.Contains(Key.S) ? 1 : 0)));
+            var value = KeysBlocked() ? 0 : stick.AxisValue;
+            _stick = stick.Axis == JoyAxis.LeftX ? _stick with { X = value } : _stick with { Y = value };
+            UpdateMove();
+            return true;
+        }
+        foreach (var action in MoveActions)
+        {
+            if (!e.IsAction(action)) continue;
+            if (pressed && !KeysBlocked()) _moveKeys.Add(action);
+            else if (!e.IsPressed()) _moveKeys.Remove(action);
+            UpdateMove();
+            return true;
+        }
+        if (e.IsAction(InputActions.ApproachTarget))
+        {
+            if (pressed && !KeysBlocked()) ApproachDummy(SelectedTarget ?? Dummy.Nearest(Hero.Position).Target);
+            return true;
+        }
+        if (e.IsAction(InputActions.NextTarget))
+        {
+            if (pressed && !KeysBlocked()) SelectNextTarget();
             return true;
         }
         return false;
+    }
+
+    private static readonly string[] MoveActions = [InputActions.MoveLeft, InputActions.MoveRight, InputActions.MoveUp, InputActions.MoveDown];
+    private const int KeySource = 1, PadSource = 2;
+
+    private void HoldSlot(int slot, int source)
+    {
+        if (KeysBlocked()) return;
+        var held = _slotHeld.GetValueOrDefault(slot);
+        _slotHeld[slot] = held | source;
+        if (_channelSlot == slot) return; // the channel is already held by the other device
+        PressSlot(slot);
+    }
+
+    private void LetGoSlot(int slot, int source)
+    {
+        var held = _slotHeld.GetValueOrDefault(slot) & ~source;
+        if (held == 0)
+        {
+            _slotHeld.Remove(slot);
+            ReleaseSlot(slot);
+        }
+        else _slotHeld[slot] = held;
+    }
+
+    /// <summary>Keys run; the stick walks below <see cref="InputActions.StickRun"/> and runs past it; the keys win when both move.</summary>
+    private void UpdateMove()
+    {
+        var keys = new Vector2(
+            (_moveKeys.Contains(InputActions.MoveRight) ? 1 : 0) - (_moveKeys.Contains(InputActions.MoveLeft) ? 1 : 0),
+            (_moveKeys.Contains(InputActions.MoveUp) ? 1 : 0) - (_moveKeys.Contains(InputActions.MoveDown) ? 1 : 0));
+        if (keys != Vector2.Zero)
+        {
+            Hero.SetMoveInput(keys);
+            return;
+        }
+        var stick = new Vector2(_stick.X, -_stick.Y);
+        var length = Mathf.Min(1, stick.Length());
+        if (length < InputActions.StickDeadzone) Hero.SetMoveInput(Vector2.Zero);
+        else Hero.SetMoveInput(stick.Normalized(), run: length > InputActions.StickRun);
+    }
+
+    /// <summary>The figure RB (or Tab) chose for LB / F, or null (then the nearest one).</summary>
+    public int? SelectedTarget { get; private set; }
+
+    /// <summary>RB: the next figure (on «Рой»; the only one otherwise) gets the ring and becomes the target of LB.</summary>
+    public void SelectNextTarget()
+    {
+        if (Dummy.FigureCount == 0) return;
+        var from = SelectedTarget ?? Dummy.RingTarget ?? -1;
+        SelectedTarget = (from + 1) % Dummy.FigureCount;
+        Dummy.MarkTarget(SelectedTarget.Value);
+    }
+
+    /// <summary>The gamepad was lost or the interface took the input: nothing stays held.</summary>
+    public void ReleaseAll()
+    {
+        _slotHeld.Clear();
+        _stick = Vector2.Zero;
+        _leftHeld = false;
+        ReleaseHeldKeys();
+    }
+
+    /// <summary>Gamepad mode: the cursor is hidden, the run after the held cursor stops.</summary>
+    public void OnDeviceChanged(InputKind kind)
+    {
+        if (kind == InputKind.Gamepad) _leftHeld = false;
     }
 
     /// <summary>A click on the floor walks there (held: runs after the cursor); on a dummy figure — walks into melee reach of it.</summary>

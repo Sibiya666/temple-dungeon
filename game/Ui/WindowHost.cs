@@ -74,6 +74,9 @@ public partial class WindowHost : Control
     public Func<float> TopInset { get; set; } = () => 0;
     public Func<float> BottomInset { get; set; } = () => 0;
 
+    /// <summary>The x a bottom-left window must end at on a screen of the given size (the combat screen's left edge minus a gap), or null.</summary>
+    public Func<Vector2, float>? LeftBottomRightLimit { get; set; }
+
     /// <summary>True while a window's text field has focus (keys go to the field, not to the fight or the hotkeys).</summary>
     public static bool TextFieldFocused(Viewport viewport) => viewport.GuiGetFocusOwner() is LineEdit or TextEdit or SpinBox;
 
@@ -98,6 +101,7 @@ public partial class WindowHost : Control
         LoadConfig();
         Resized += ClampAll; // the host follows the screen (and the self-test's headless root size)
         Theme = WindowTheme();
+        SetupPad();
     }
 
     /// <summary>
@@ -127,7 +131,22 @@ public partial class WindowHost : Control
         foreach (var type in new[] { "CheckBox", "CheckButton" })
             foreach (var state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled" })
                 theme.SetStylebox(state, type, new StyleBoxEmpty { ContentMarginLeft = 4, ContentMarginRight = 4, ContentMarginTop = 2, ContentMarginBottom = 2 });
+        AddFocusStyles(theme);
         return theme;
+    }
+
+    /// <summary>The gold focus frame of the theme's <c>focus</c> style (gamepad, spec §4): buttons, lists, fields, sliders, trees.</summary>
+    public static readonly Color FocusFrame = new(1f, 0.8f, 0.38f, 1f);
+
+    public static void AddFocusStyles(Theme theme)
+    {
+        foreach (var type in new[] { "Button", "LineEdit", "TextEdit", "HSlider", "Tree", "ItemList", "Label" })
+        {
+            var box = new StyleBoxFlat { DrawCenter = false, BorderColor = FocusFrame, ExpandMarginLeft = 2, ExpandMarginRight = 2, ExpandMarginTop = 2, ExpandMarginBottom = 2 };
+            box.SetBorderWidthAll(2);
+            box.SetCornerRadiusAll(3);
+            theme.SetStylebox("focus", type, box);
+        }
     }
 
     /// <summary>Re-reads <see cref="ConfigPath"/> (the self-test points it to its own file first).</summary>
@@ -143,6 +162,7 @@ public partial class WindowHost : Control
     {
         var spec = SpecOf(id);
         var window = new GameWindow(spec, content) { Name = "Window_" + id, Visible = false };
+        window.ShowDevice(Dialoid.Game.Input.InputDevice.Gamepad);
         window.CloseRequested += () => CloseWindow(id);
         window.Moved += () => Remember(window);
         // A panel whose content grows (a longer breakdown) must not push its window off the screen.
@@ -189,6 +209,9 @@ public partial class WindowHost : Control
         if (GetViewport().GuiGetFocusOwner() is { } focus && window.IsAncestorOf(focus)) focus.ReleaseFocus();
         window.Visible = false;
         _order.Remove(id);
+        if (window.Content is IPadPanel panel) panel.PadClosed();
+        // No window keeps the focus: it goes back to the fight.
+        if (FocusedWindow == id) FocusCombat();
         Changed?.Invoke();
     }
 
@@ -237,6 +260,9 @@ public partial class WindowHost : Control
         var bottom = screen.Y - BottomInset() - Margin;
         // A side window takes at most a third of the screen, so the hero and the dummy next to him stay in sight.
         var width = Mathf.Min(Mathf.Min(spec.Width, screen.X * MaxSideFraction), screen.X - 2 * Margin);
+        // The bottom-left window (the log) ends left of the combat screen, so the two never overlap on a narrow screen (1366).
+        if (spec.Edge == WindowEdge.LeftBottom && LeftBottomRightLimit?.Invoke(screen) is { } limit)
+            width = Mathf.Max(MinSize.X, Mathf.Min(width, limit - Margin));
         var fullHeight = Mathf.Max(MinSize.Y, bottom - top);
         var height = spec.Height > 0 ? Mathf.Min(spec.Height, fullHeight) : fullHeight;
         var x = spec.Edge is WindowEdge.Left or WindowEdge.LeftBottom ? Margin : screen.X - Margin - width;
@@ -310,6 +336,23 @@ public partial class WindowHost : Control
 
     public override void _Input(InputEvent e)
     {
+        // The device switches before anything uses the event (the room sees it after the windows).
+        Dialoid.Game.Input.InputDevice.Instance?.Observe(e);
+        if (e is InputEventJoypadButton or InputEventJoypadMotion)
+        {
+            if (HandlePad(e)) GetViewport().SetInputAsHandled();
+            return;
+        }
+        switch (e)
+        {
+            // On the mouse a pressed button keeps no focus: Enter and Space must not press it again unseen (a text field keeps it).
+            case InputEventMouseButton { Pressed: false } when !Dialoid.Game.Input.InputDevice.Gamepad:
+                Callable.From(() =>
+                {
+                    if (GetViewport().GuiGetFocusOwner() is { } owner && !IsTextField(owner) && !Dialoid.Game.Input.InputDevice.Gamepad) owner.ReleaseFocus();
+                }).CallDeferred();
+                break;
+        }
         switch (e)
         {
             // A press on a window raises it (its own controls still get the press).
@@ -343,14 +386,13 @@ public partial class WindowHost : Control
     {
         if (!key.Pressed || key.Echo || key.CtrlPressed || key.AltPressed || key.MetaPressed) return false;
         if (TextFieldFocused(GetViewport())) return false;
-        var code = CodeOf(key);
-        if (code == Key.Escape)
+        if (key.IsActionPressed(Dialoid.Game.Input.InputActions.WindowClose))
         {
             if (TopWindow is not { } top) return false;
             CloseWindow(top);
             return true;
         }
-        var spec = Specs.FirstOrDefault(s => s.Key == code);
+        var spec = Specs.FirstOrDefault(s => key.IsActionPressed(Dialoid.Game.Input.InputActions.Window(s.Id)));
         if (spec == null || !_windows.ContainsKey(spec.Id)) return false;
         ToggleWindow(spec.Id);
         return true;
@@ -398,6 +440,7 @@ public partial class GameWindow : PanelContainer
         style.SetBorderWidthAll(1);
         style.SetCornerRadiusAll(3);
         AddThemeStyleboxOverride("panel", style);
+        _style = style;
 
         var box = new VBoxContainer();
         box.AddThemeConstantOverride("separation", 0);
@@ -435,6 +478,24 @@ public partial class GameWindow : PanelContainer
         content.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         body.AddChild(content);
 
+        // What the gamepad's buttons do here now (only in gamepad mode, only in the focused window).
+        PromptBar = new Label
+        {
+            Name = "Prompts",
+            Visible = false,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        PromptBar.AddThemeFontSizeOverride("font_size", 14);
+        PromptBar.AddThemeColorOverride("font_color", new Color(0.93f, 0.85f, 0.7f));
+        var prompts = new PanelContainer { Name = "PromptPanel", Visible = false, MouseFilter = MouseFilterEnum.Ignore };
+        var promptStyle = new StyleBoxFlat { BgColor = WindowHost.TitleBackground, ContentMarginLeft = 10, ContentMarginRight = 22, ContentMarginTop = 3, ContentMarginBottom = 4 };
+        promptStyle.CornerRadiusBottomLeft = promptStyle.CornerRadiusBottomRight = 3;
+        prompts.AddThemeStyleboxOverride("panel", promptStyle);
+        prompts.AddChild(PromptBar);
+        box.AddChild(prompts);
+        _promptPanel = prompts;
+
         var grip = new Control
         {
             Name = "Grip",
@@ -457,6 +518,33 @@ public partial class GameWindow : PanelContainer
 
     /// <summary>The key's letter for the title and the top bar («P», «Esc»).</summary>
     public static string KeyName(Key key) => OS.GetKeycodeString(key);
+
+    private readonly StyleBoxFlat _style;
+    private readonly PanelContainer _promptPanel;
+    private bool _gamepad;
+
+    /// <summary>The prompt line at the bottom («[A] Взять   [X] Атрибут   [B] Закрыть»).</summary>
+    public Label PromptBar { get; }
+
+    /// <summary>The window holds the gamepad focus (a brighter bronze frame and the prompt line).</summary>
+    public bool PadFocused { get; private set; }
+
+    public void SetPadFocused(bool focused)
+    {
+        PadFocused = focused;
+        _style.BorderColor = focused ? WindowHost.FocusedBorder : WindowHost.Border;
+        _style.SetBorderWidthAll(focused ? 2 : 1);
+        _promptPanel.Visible = PromptBar.Visible = focused && _gamepad;
+    }
+
+    /// <summary>The title names the key on the keyboard («Пассивки (P)») and the D-pad button on the gamepad («Пассивки [←]»).</summary>
+    public void ShowDevice(bool gamepad)
+    {
+        _gamepad = gamepad;
+        var dpad = Dialoid.Game.Input.GamepadLayout.DpadOf(Spec.Id);
+        TitleLabel.Text = !gamepad ? $"{Spec.Title} ({KeyName(Spec.Key)})" : dpad is { } b ? $"{Spec.Title} {ButtonPrompts.Glyph(b)}" : Spec.Title;
+        _promptPanel.Visible = PromptBar.Visible = PadFocused && gamepad;
+    }
 
     private WindowHost? Host => GetParent() as WindowHost;
 
