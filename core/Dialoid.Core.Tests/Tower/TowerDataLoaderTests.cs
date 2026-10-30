@@ -228,6 +228,38 @@ public class TowerDataLoaderTests
     }
 
     [Fact]
+    public void Hard_counter_from_rank_is_required()
+    {
+        var dir = FixturePaths.CopyTowerFixture();
+        Edit(dir, "rules.json", n => n.AsObject().Remove("hard_counter_from_rank"));
+        var (data, errors) = TowerDataLoader.Load(dir);
+        Assert.Null(data);
+        Assert.Contains(errors, x => x.File == "rules.json" && x.Message.Contains("hard_counter_from_rank"));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(16)]
+    public void Hard_counter_from_rank_out_of_range_is_rejected(int value)
+    {
+        var dir = FixturePaths.CopyTowerFixture();
+        Edit(dir, "rules.json", n => n["hard_counter_from_rank"] = value);
+        var (data, errors) = TowerDataLoader.Load(dir);
+        Assert.Null(data);
+        Assert.Contains(errors, x => x.File == "rules.json" && x.Message.Contains("hard_counter_from_rank"));
+    }
+
+    [Fact]
+    public void Hard_counter_from_rank_must_match_remove_currency_rank()
+    {
+        var dir = FixturePaths.CopyTowerFixture();
+        Edit(dir, "rules.json", n => n["hard_counter_from_rank"] = 4);
+        var (data, errors) = TowerDataLoader.Load(dir);
+        Assert.Null(data);
+        Assert.Contains(errors, x => x.File == "rules.json" && x.Message.Contains("hard_counter_from_rank") && x.Message.Contains("Снятие"));
+    }
+
+    [Fact]
     public void Rank1_drop_multiplier_below_one_is_rejected()
     {
         var dir = FixturePaths.CopyTowerFixture();

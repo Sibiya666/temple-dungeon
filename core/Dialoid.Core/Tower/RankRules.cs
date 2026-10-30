@@ -32,6 +32,9 @@ public static class RankRules
     /// <summary>The character may enter the rank: level ≥ the band bottom.</summary>
     public static bool LevelAllows(TowerRules r, int rank, int characterLevel) => characterLevel >= Def(r, rank).LevelMin;
 
+    /// <summary>Hard-counter mods (spec 9.3) are allowed from <see cref="TowerRules.HardCounterFromRank"/> (when Снятие starts dropping).</summary>
+    public static bool AllowsHardCounter(TowerRules r, int rank) => rank >= r.HardCounterFromRank;
+
     internal static RankDef Def(TowerRules r, int rank) =>
         rank >= 1 && rank <= r.Ranks.Count
             ? r.Ranks[rank - 1]

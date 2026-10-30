@@ -16,6 +16,8 @@ public static class TowerDataLoader
     public const string BossesType = "bosses";
     /// <summary>Group every summit-acting tower mod must be in (spec 5.2: at most one such mod acts on the summit).</summary>
     public const string SummitGroup = "gate";
+    /// <summary>Targeted-removal currency; hard counters arrive at the rank where it starts dropping.</summary>
+    public const string RemoveCurrencyId = "remove";
 
     private static readonly CurrencyOp[] LevellessOps = { CurrencyOp.Clear, CurrencyOp.RemoveOne, CurrencyOp.RerollOne, CurrencyOp.RerollVariant, CurrencyOp.Shuffle };
 
@@ -27,6 +29,7 @@ public static class TowerDataLoader
         var biomes = LoadBiomes(towerDirectory, errors);
         var mods = LoadMods(towerDirectory, types, errors);
         var currencies = LoadCurrencies(towerDirectory, mods, errors);
+        if (rules != null) CheckHardCounterRank(rules, currencies, errors);
         if (errors.Count > 0 || rules == null) return (null, errors);
         return (new TowerData(rules, types, biomes, mods, currencies), errors);
     }
@@ -59,6 +62,7 @@ public static class TowerDataLoader
         double xpPer = Req(j.XpPenaltyPerLevel, "xp_penalty_per_level");
         double xpCap = Req(j.XpPenaltyCap, "xp_penalty_cap");
         double rank1Drop = Req(j.Rank1DropMultiplier, "rank1_drop_multiplier");
+        int hardFrom = Req(j.HardCounterFromRank, "hard_counter_from_rank");
         if (errors.Count > before) return null;
 
         if (floors < 1) Err("«floors» должно быть положительным");
@@ -84,10 +88,12 @@ public static class TowerDataLoader
         if (xpCap is < 0 or > 1) Err("«xp_penalty_cap» должен быть от 0 до 1");
         if (!(rank1Drop >= 1)) Err("«rank1_drop_multiplier» должен быть не меньше 1: ранг 1 щедрый, а не скупой");
 
+        if (hardFrom < 1 || hardFrom > RankCount) Err($"«hard_counter_from_rank» должен быть от 1 до {RankCount}");
+
         var ranks = LoadRanks(j.Ranks, Err);
         if (errors.Count > before) return null;
         return new TowerRules(floors, floorSlots, towerSlots, heights, summit, c, divPer, divCap, shuffleBonus, noDeath, qualityCap,
-            shuffleCosts, ratio, minLevel, xpPer, xpCap, ranks, rank1Drop);
+            shuffleCosts, ratio, minLevel, xpPer, xpCap, ranks, rank1Drop, hardFrom);
     }
 
     private static List<RankDef> LoadRanks(List<RankJson>? src, Action<string> err)
@@ -279,4 +285,19 @@ public static class TowerDataLoader
     }
 
     private static string OpName(CurrencyOp op) => System.Text.Json.JsonNamingPolicy.SnakeCaseLower.ConvertName(op.ToString());
+
+    /// <summary>Hard counters arrive together with the targeted-removal currency (spec 9.3): its first drop rank is the threshold.</summary>
+    private static void CheckHardCounterRank(TowerRules rules, List<CurrencyDef> currencies, List<DataError> errors)
+    {
+        var remove = currencies.FirstOrDefault(c => c.Id == RemoveCurrencyId);
+        if (remove == null)
+        {
+            if (!errors.Any(e => e.File == "currencies.json" && e.Id == RemoveCurrencyId))
+                errors.Add(new DataError("currencies.json", null, $"Нет валюты «{RemoveCurrencyId}»: от ее ранга зависят жесткие контры"));
+            return;
+        }
+        if (rules.HardCounterFromRank != remove.DropsFromRank)
+            errors.Add(new DataError("rules.json", null,
+                $"«hard_counter_from_rank» ({rules.HardCounterFromRank}) должен совпадать с «drops_from_rank» валюты «{RemoveCurrencyId}» ({remove.DropsFromRank}): жесткие контры приходят вместе со Снятием"));
+    }
 }

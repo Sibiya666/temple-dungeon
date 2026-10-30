@@ -54,4 +54,12 @@ public class RankRulesTests
     [InlineData(16)]
     public void Unknown_rank_throws(int rank) =>
         Assert.Throws<ArgumentOutOfRangeException>(() => RankRules.ZoneLevel(R, rank, 30));
+
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(4, false)]
+    [InlineData(5, true)]
+    [InlineData(6, true)]
+    [InlineData(15, true)]
+    public void Hard_counter_allowed_from_rank_5(int rank, bool expected) => Assert.Equal(expected, RankRules.AllowsHardCounter(R, rank));
 }
