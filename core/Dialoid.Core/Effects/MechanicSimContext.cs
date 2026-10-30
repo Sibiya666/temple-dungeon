@@ -171,7 +171,16 @@ public sealed class MechanicSimContext
     public void SetTargetDamageTaken(int target, double increasedPercent) =>
         _s.Targets[target].SetDamageTaken(Effect.MechanicId, increasedPercent);
 
-    public void Log(string text) => _log.Add(_s.Time, "mechanic", $"{Effect.MechanicId}: {text}");
+    /// <summary>A "mechanic" log event: <paramref name="text"/> is an English detail for tests and tools; the event carries the
+    /// mechanic id (<see cref="SimEvent.MechanicKey"/>), the event skill and target, so the game layer names it from the data.
+    /// <paramref name="value"/> is the number the event is about (<see cref="SimEvent.Value"/>), taken before any reset.</summary>
+    public void Log(string text, double? value = null) => _log.Add(new SimEvent(_s.Time, "mechanic", $"{Effect.MechanicId}: {text}")
+    {
+        MechanicKey = Effect.MechanicId,
+        SkillId = _skill?.Id,
+        Target = TargetIndex >= 0 ? TargetIndex : null,
+        Value = value,
+    });
 }
 
 /// <summary>The run services a <see cref="MechanicSimContext"/> works with.</summary>

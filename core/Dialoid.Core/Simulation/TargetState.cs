@@ -9,6 +9,9 @@ public sealed record AilmentInstance(string AilmentId, DamageType Type, double D
     public double Magnitude { get; init; }
     /// <summary>Applied by a triggered copy: kills it causes fire no procs.</summary>
     public bool Triggered { get; init; }
+    /// <summary>Defense breakdown of <see cref="DamagePerSec"/> (its Final), worked out when the instance was made; a DoT tick
+    /// scales it by the time ticked. Null for instances that deal no damage or were built by hand.</summary>
+    internal DamagePart? PerSecond { get; init; }
 }
 
 /// <summary>Mutable state of a target: life, active ailments, freeze and freeze immunity (spec 6.7).</summary>
@@ -31,6 +34,9 @@ public sealed class TargetState
     /// <summary>Spec 6.6 additive bucket: strongest active shock plus the keyed contributions set by mechanics.</summary>
     public double DamageTakenIncreased =>
         _ailments.Where(a => a.AilmentId == "shock").Select(a => a.Magnitude).DefaultIfEmpty(0).Max() + _damageTakenSources.Values.Sum();
+
+    /// <summary>The keyed contributions to the damage-taken bucket (key: the mechanic id that set it → increased %), ordinal order.</summary>
+    public IReadOnlyDictionary<string, double> DamageTakenSources => _damageTakenSources;
 
     /// <summary>Sets (0 removes) one keyed contribution to the damage-taken bucket; cleared on death/respawn.</summary>
     public void SetDamageTaken(string key, double increasedPercent)

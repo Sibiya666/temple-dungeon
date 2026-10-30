@@ -148,7 +148,10 @@ internal sealed class ProcEngine
             var copy = CopyOf(source, cast);
             if (copy == null || !copy.WeaponFits(_weapon)) continue;
             if (copy.Skill.Procs.Count > 0)
-                _log.Add(_s.Time, "proc_blocked", $"{copy.Id}: triggered copy fires no procs");
+                _log.Add(new SimEvent(_s.Time, "proc_blocked", $"{copy.Id}: triggered copy fires no procs")
+                {
+                    SkillId = copy.Id, SourceSkillId = source.Id,
+                });
             _resolver.Apply(copy); // a copy's hooks never fire procs: every proc hook returns early for triggered copies
         }
     }
@@ -236,7 +239,12 @@ internal sealed class ProcEngine
             ProcAction.CastSkill c => $"cast_skill {c.SkillId}",
             _ => "?",
         };
-        _log.Add(_s.Time, "proc", $"{source.Id}: {trigger} -> {action}");
+        _log.Add(new SimEvent(_s.Time, "proc", $"{source.Id}: {trigger} -> {action}")
+        {
+            SkillId = proc.Action is ProcAction.CastSkill cast ? cast.SkillId : source.Id,
+            SourceSkillId = source.Id,
+            AilmentId = proc.Action is ProcAction.ApplyAilment ail ? ail.AilmentId : null,
+        });
     }
 
     // ---- Triggered copies ----

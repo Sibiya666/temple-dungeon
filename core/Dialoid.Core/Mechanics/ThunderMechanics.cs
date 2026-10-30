@@ -30,12 +30,13 @@ public sealed class StaticCharge : IMechanic
         ctx.SetCounter("counted", 0);
         if (ctx.Counter("charges") < ctx.Number("max_charges", 10) - 1e-9) return;
         if (!ctx.SkillTags.Contains("spender") && ctx.ResourcePaid <= 0) return;
+        var spent = ctx.Counter("charges");
         ctx.SetCounter("charges", 0);
         ctx.SetCounter("counted", 1);
         ctx.SetCounter("armed", 1);
         ctx.ApplyBuff(BuffId, double.PositiveInfinity,
             new[] { ctx.Mod("damage", ModKind.More, ctx.Number("more", 100), TagSet.Of("skill:" + ctx.SkillId)) });
-        ctx.Log("charges spent");
+        ctx.Log("charges spent", spent);
     }
 
     public void OnHit(MechanicSimContext ctx)

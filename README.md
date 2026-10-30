@@ -75,40 +75,41 @@ dotnet tools/BuildOptimizer/bin/Release/net8.0/BuildOptimizer.dll suite --all
 
 Godot-проект `game/` — отладочная сцена (спека §13): тонкий слой отрисовки над `Dialoid.Sandbox`, правил игры в нём нет. Интерфейс строится кодом в `Main._Ready()`, вкладки: «Персонаж», «Пассивки», «Асцендант», «Скиллы», «Симуляция», «Разбор», «Билды».
 
-Нужен Godot 4.7 .NET (версия `Godot.NET.Sdk` в `game/Dialoid.Game.csproj` совпадает с редактором):
+Разработка и приемка идут на Windows (PowerShell 5.1). Нужен Godot 4.7 .NET, консольная сборка `Godot_v4.7.2-stable_mono_win64_console.exe` (версия `Godot.NET.Sdk` в `game/Dialoid.Game.csproj` совпадает с редактором), и .NET SDK (`dotnet`). Где ищется Godot: переменная `GODOT`, иначе `C:\Users\sibiya666\Tools\Godot_v4.7.2-stable_mono_win64\Godot_v4.7.2-stable_mono_win64_console.exe`, иначе `godot` из PATH. Другой путь:
 
-```bash
-brew install --cask godot-mono
+```powershell
+$env:GODOT = 'D:\Godot\Godot_v4.7.2-stable_mono_win64_console.exe'
 ```
-
-Если Godot стоит в другом месте, укажите путь к бинарю в переменной `GODOT` (по умолчанию `/Applications/Godot_mono.app/Contents/MacOS/Godot`, иначе `godot` из PATH).
 
 Запуск: открыть `game/project.godot` в редакторе Godot и нажать «Запустить» (F5) — или из корня репозитория:
 
-```bash
+```powershell
 dotnet build game/Dialoid.Game.csproj
-"${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --path game
+& 'C:\Users\sibiya666\Tools\Godot_v4.7.2-stable_mono_win64\Godot_v4.7.2-stable_mono_win64_console.exe' --path game
 ```
 
 Данные сцена ищет сама: ближайший `data/` с `classes.json` вверх от `game/`. Другой каталог данных задаётся переменной `DIALOID_DATA`. Если данные не найдены или не загрузились, сцена показывает ошибку и проверенные пути, а в лог пишет строку `DIALOID_LOAD_FAILED: <причина>`.
 
-Проверка сборки без окна (`dotnet build` → `godot --headless --import` → `godot --headless --quit`, каждый шаг под лимитом времени):
+Проверка сборки без окна (`dotnet build` 600 с → `godot --headless --import` 600 с → `godot --headless --quit` 60 с; каждый шаг под лимитом, при превышении процесс и его дочерние убиваются):
 
-```bash
-tools/godot_check.sh
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1
 # проверка сцены без данных: ошибка загрузки обязательна, ERROR в логе — нет
-DIALOID_DATA=/nonexistent tools/godot_check.sh --expect-load-failure
+$env:DIALOID_DATA = 'C:\nonexistent'
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1 -ExpectLoadFailure
+Remove-Item Env:DIALOID_DATA
+# первый импорт десятков FBX долгий: лимит импорта в секундах
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1 -ImportTimeoutSec 1200
 ```
 
 ### Самопроверка
 
-Самопроверка сцены (`-- --selftest`) нажимает настоящие панели теми же обработчиками, что и мышь, печатает по строке на шаг (`SELFTEST OK …` / `SELFTEST FAIL …: причина`) и выходит с кодом 0, если все шаги прошли, иначе 1:
+Самопроверка сцены (`-- --selftest`, лимит 300 с) нажимает настоящие панели теми же обработчиками, что и мышь, печатает по строке на шаг (`SELFTEST OK …` / `SELFTEST FAIL …: причина`) и выходит с кодом 0, если все шаги прошли, иначе 1:
 
-```bash
-tools/godot_check.sh --selftest
-# то же вручную, из корня или из папки game/
-"${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --headless --path game -- --selftest
-cd game && "${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --headless --path . -- --selftest
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1 -SelfTest
+# то же вручную, из корня репозитория
+& 'C:\Users\sibiya666\Tools\Godot_v4.7.2-stable_mono_win64\Godot_v4.7.2-stable_mono_win64_console.exe' --headless --path game -- --selftest
 ```
 
 Приемка (спека §15.4) входит в самопроверку. Для каждого из шести основных эталонов билд загружается во вкладке «Билды» (история «Разбора» при этом очищается), «Тренировочный» манекен считается в режиме «среднее» во вкладке «Симуляция», и DPS панели сверяется с `Simulator.Run` по тому же файлу (до бита). Затем меняются два узла главного скилла (скилл с наибольшим DPS):
@@ -118,13 +119,25 @@ cd game && "${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --headl
 
 Итог — таблица `SELFTEST TABLE билд | главный скилл | DPS до | узел скилла «−» | notable`. Еще самопроверка проверяет, что подписи пассивного дерева не перекрывают друг друга и узлы (подпись, которой некуда встать, видна при наведении).
 
-Скриншоты всех вкладок (эталон пиромана после симуляции, плюс «Разбор» множителя урона попадания) снимаются в окне, не в `--headless`:
+Скриншоты всех вкладок (эталон пиромана после симуляции, плюс «Разбор» множителя урона попадания) снимаются в окне, не в `--headless` (самопроверка в окне, лимит 300 с):
 
-```bash
-"${GODOT:-/Applications/Godot_mono.app/Contents/MacOS/Godot}" --path game -- --selftest --screenshots "$PWD/docs/superpowers/debug-scene-screenshots"
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1 -Screenshots docs/superpowers/debug-scene-screenshots
 ```
 
-Коды выхода `tools/godot_check.sh`: 0 — всё в порядке; 1 — не прошла сборка или импорт, в логе Godot есть строка `ERROR:`/`SCRIPT ERROR:`, или с `--expect-load-failure` данные загрузились; 2 — Godot не найден; 3 — сцена не загрузила данные игры (строка `DIALOID_LOAD_FAILED:`); с `--selftest` — код самопроверки (он важнее проверок лога); 124 или 142 — шаг не уложился в лимит времени.
+Коды выхода `tools/godot_check.ps1`: 0 — всё в порядке; 1 — не прошла сборка или импорт, в логе Godot есть строка `ERROR:`/`SCRIPT ERROR:` (после снятия ANSI-кодов), или с `-ExpectLoadFailure` данные загрузились; 2 — Godot не найден или неверный аргумент; 3 — сцена не загрузила данные игры (строка `DIALOID_LOAD_FAILED:`); с `-SelfTest`/`-Screenshots` — код самопроверки (он важнее проверок лога); 124 — шаг не уложился в лимит времени.
+
+### Mac
+
+На Mac та же проверка — `tools/godot_check.sh` (bash; Godot: `GODOT`, иначе `/Applications/Godot_mono.app/Contents/MacOS/Godot`, иначе `godot` из PATH; установка `brew install --cask godot-mono`):
+
+```bash
+tools/godot_check.sh
+tools/godot_check.sh --selftest
+DIALOID_DATA=/nonexistent tools/godot_check.sh --expect-load-failure
+```
+
+Коды выхода те же, лимит импорта 120 с, при превышении лимита код 124 или 142 (perl alarm).
 
 `game/` не входит в `core/Dialoid.sln`: проект на Godot.NET.Sdk собирает этот скрипт.
 

@@ -8,7 +8,7 @@ namespace Dialoid.Core.Simulation;
 /// Priority rotation (spec 11.3): Build.Rotation order (fallback: slot order), all non-generators first, then generators,
 /// so a generator is used only when every spender is blocked. Triggered-only skills never enter the rotation.
 /// </summary>
-internal sealed class Rotation
+internal sealed class Rotation : ICommandSource
 {
     private const double Eps = 1e-9;
 
@@ -24,17 +24,30 @@ internal sealed class Rotation
 
     public bool IsEmpty => Order.Count == 0;
 
+    /// <summary>A non-empty rotation with nothing usable is starved (logged as no_resource).</summary>
+    public bool WantsToAct => !IsEmpty;
+
+    public SkillRuntime? Next(SimState s, IConditionContext c, WeaponStub? weapon) => Pick(s, c, weapon);
+
     /// <summary>First skill whose cooldown is ready, whose cost is affordable and whose weapon requirement is met.</summary>
     public SkillRuntime? Pick(SimState s, IConditionContext c, WeaponStub? weapon)
     {
         foreach (var skill in Order)
-        {
-            if (s.CooldownReadyAt.TryGetValue(skill.Id, out var ready) && ready > s.Time + Eps) continue;
-            if (!skill.WeaponFits(weapon)) continue;
-            if (skill.OwnBuffIds.Any(id => s.Buffs.TryGetValue(id, out var left) && left > 0)) continue; // buff still running
-            if (skill.Cost(c) / skill.TickSpeed(s, s.Time) > s.Resource + Eps) continue;
-            return skill;
-        }
+            if (Refusal(skill, s, c, weapon, s.Time) == PressRefusal.None) return skill;
         return null;
+    }
+
+    /// <summary>
+    /// Why <paramref name="skill"/> cannot be used now (None when it can): the checks of <see cref="Pick"/>, shared with live
+    /// key presses. Order: weapon, own buff still running, cooldown (ready by <paramref name="readyBy"/>, the time the use would
+    /// start), resource.
+    /// </summary>
+    public static PressRefusal Refusal(SkillRuntime skill, SimState s, IConditionContext c, WeaponStub? weapon, double readyBy)
+    {
+        if (!skill.WeaponFits(weapon)) return PressRefusal.WeaponMismatch;
+        if (skill.OwnBuffIds.Any(id => s.Buffs.TryGetValue(id, out var left) && left > 0)) return PressRefusal.BuffActive;
+        if (s.CooldownReadyAt.TryGetValue(skill.Id, out var ready) && ready > readyBy + Eps) return PressRefusal.Cooldown;
+        if (skill.Cost(c) / skill.TickSpeed(s, s.Time) > s.Resource + Eps) return PressRefusal.NotEnoughResource;
+        return PressRefusal.None;
     }
 }

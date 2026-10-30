@@ -40,14 +40,17 @@ public static class HitCalculator
 
         var final = new SortedDictionary<DamageType, double>();
         var ailment = new SortedDictionary<DamageType, double>();
+        var parts = new SortedDictionary<DamageType, DamagePartSum>();
 
         foreach (var p in portions)
         {
-            if (skill.NullifiedDamageTypes.Contains(p.Type)) continue; // e.g. unconverted physical under avatar_of_fire
+            // A nullified type (e.g. unconverted physical under avatar_of_fire) deals nothing and feeds no ailment; its damage before
+            // defense is still worked out for the defense breakdown, without a stat breakdown line and without a random roll.
+            var nullified = skill.NullifiedDamageTypes.Contains(p.Type);
             var ctx = skill.Tags.With(HitTag);
             foreach (var t in p.Lineage) ctx = ctx.With(t.ToString().ToLowerInvariant());
             var dmg = ev.Evaluate("damage", ctx, input.Conditions, 1);
-            breakdown.Add(dmg);
+            if (!nullified) breakdown.Add(dmg);
             var mult = Math.Max(0, dmg.Value);
 
             // Crit-only modifiers: evaluated with the crit tag when a crit can happen; the same multiplier keeps the plain formula.
@@ -56,29 +59,49 @@ public static class HitCalculator
             {
                 var critDmg = ev.Evaluate("damage", ctx.With(CritTag), input.Conditions, 1);
                 critOnly = Math.Max(0, critDmg.Value);
-                if (critOnly != mult) breakdown.Add(critDmg);
+                if (critOnly != mult && !nullified) breakdown.Add(critDmg);
             }
 
-            var value = input.PickInRange(p.Min, p.Max);
+            var value = nullified ? (p.Min + p.Max) / 2 : input.PickInRange(p.Min, p.Max);
             var ailmentBase = value * critApplied; // after base, conversion and crit; before modifiers and defense (spec 6.1 item 7)
             var amount = critOnly == mult
                 ? ailmentBase * mult
                 : value * (input.IsCrit == true ? critMult * critOnly : (1 - chance / 100) * mult + chance / 100 * critMult * critOnly);
 
+            if (!parts.TryGetValue(p.Type, out var part)) parts[p.Type] = part = new DamagePartSum();
+            part.BeforeDefense += amount;
+            if (nullified)
+            {
+                part.Nullified += amount;
+                continue;
+            }
+
+            // Each defense step is recorded as (amount before it − amount after it), next to the unchanged arithmetic.
+            var beforeDefense = amount;
             if (p.Type == DamageType.Physical)
+            {
                 amount *= 1 - Mitigation.ArmorReduction(input.Target.Armor, amount);
+                part.ByArmor += beforeDefense - amount;
+            }
             else
             {
                 var pen = ev.Evaluate($"penetration_{p.Type.ToString().ToLowerInvariant()}", skill.Tags, input.Conditions).Value;
                 input.Target.Resists.TryGetValue(p.Type, out var resist);
                 amount *= Mitigation.ResistMultiplier(resist, pen);
+                part.ByResist += beforeDefense - amount;
             }
+            var afterDefense = amount;
             amount *= input.Target.DamageTakenMultiplier;
+            part.ByTakenMultiplier += afterDefense - amount;
+            part.Final += amount;
 
             final[p.Type] = final.GetValueOrDefault(p.Type) + amount;
             ailment[p.Type] = ailment.GetValueOrDefault(p.Type) + ailmentBase;
         }
 
-        return new HitResult(final, ailment, input.IsCrit ?? false, critApplied, breakdown);
+        return new HitResult(final, ailment, input.IsCrit ?? false, critApplied, breakdown)
+        {
+            Parts = parts.Select(kv => kv.Value.ToPart(kv.Key)).ToList(),
+        };
     }
 }

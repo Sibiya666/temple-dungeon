@@ -17,4 +17,9 @@ public sealed record HitInput(CompiledCharacter Character, CompiledSkill Skill, 
 
 /// <summary>Final and AilmentBase are keyed by the final damage type of each portion.</summary>
 public sealed record HitResult(IReadOnlyDictionary<DamageType, double> Final, IReadOnlyDictionary<DamageType, double> AilmentBase,
-    bool IsCrit, double CritMultiplierApplied, IReadOnlyList<StatResult> Breakdown);
+    bool IsCrit, double CritMultiplierApplied, IReadOnlyList<StatResult> Breakdown)
+{
+    /// <summary>What the target's defense took off the hit, one part per damage type (ordered by type), nullified types included.
+    /// Each part's Final equals <see cref="Final"/> of its type (0 for a nullified type, which is missing from Final).</summary>
+    public IReadOnlyList<DamagePart> Parts { get; init; } = Array.Empty<DamagePart>();
+}

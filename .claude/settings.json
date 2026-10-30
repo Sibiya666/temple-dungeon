@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ccd_session_mgmt__list_events",
+      "mcp__ccd_session_mgmt__list_sessions",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__Claude_Browser__find",
+      "mcp__Claude_Browser__read_network_requests",
+      "mcp__terminal__read_terminal",
+      "Bash(dotnet test core/Dialoid.sln)",
+      "Bash(dotnet test core/Dialoid.Core.Tests)",
+      "Bash(dotnet build core/Dialoid.sln)",
+      "PowerShell(dotnet test core/Dialoid.sln)",
+      "PowerShell(dotnet test core/Dialoid.Core.Tests)",
+      "PowerShell(dotnet build core/Dialoid.sln)"
+    ]
+  }
+}
