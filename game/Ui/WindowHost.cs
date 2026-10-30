@@ -481,6 +481,7 @@ public partial class GameWindow : PanelContainer
         row.AddChild(TitleLabel);
         CloseButton = new Button { Text = "×", Flat = true, FocusMode = FocusModeEnum.None, TooltipText = "Закрыть (Esc закрывает верхнее окно)", CustomMinimumSize = new Vector2(28, 0) };
         CloseButton.Pressed += () => CloseRequested?.Invoke();
+        ButtonPrompts.Skip(CloseButton); // the gamepad closes with B
         row.AddChild(CloseButton);
 
         var body = new MarginContainer { SizeFlagsVertical = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Pass };

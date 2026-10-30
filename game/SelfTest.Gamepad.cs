@@ -331,6 +331,8 @@ public sealed partial class SelfTest
                     if (!GodotObject.IsInstanceValid(from) || !from.IsVisibleInTree()) break;
                     from.GrabFocus();
                     PadTap(dir);
+                    // A tree or the bars take the direction while they have a node or a row that way: repeated presses leave them.
+                    for (int i = 0; i < 60 && from is IPadControl && FocusOwner == from; i++) PadTap(dir);
                     if (FocusOwner is { } to && to != from && window.IsAncestorOf(to) && reached.Add(to)) queue.Enqueue(to);
                     Check(FocusOwner == null || window.IsAncestorOf(FocusOwner), $"«{spec.Title}»: фокус ушел из окна на {FocusOwner?.Name}");
                 }
