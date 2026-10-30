@@ -183,9 +183,15 @@ public partial class RoomView : Node3D
         UpdateOcclusion();
     }
 
+    /// <summary>
+    /// The room is on screen: its SubViewport's container is visible (a hidden tab skips the per-frame work). A room not in a
+    /// SubViewport counts as visible.
+    /// </summary>
+    public bool IsShown => GetViewport() is not SubViewport { } viewport || viewport.GetParent() is not CanvasItem parent || parent.IsVisibleInTree();
+
     public override void _Process(double delta)
     {
-        if (Hero == null) return;
+        if (Hero == null || !IsShown) return;
         _time += delta;
         foreach (var t in _torches)
             t.Light.LightEnergy = t.BaseEnergy * (0.82f + 0.25f * _flicker.GetNoise1D((float)(_time * 10.0) + t.Seed));
@@ -194,43 +200,67 @@ public partial class RoomView : Node3D
 
     // ---------- budget and fading ----------
 
+    /// <summary>A shadowed torch keeps its shadow out to this extra distance and wins ties by this much (no popping at the edge).</summary>
+    public const float ShadowHysteresis = 0.5f;
+
+    private float[] _scores = [];
+    private int[] _order = [];
+
     /// <summary>
-    /// The hero light always casts a full shadow. On High the torches nearest the hero (within <see cref="TorchShadowRadius"/>)
-    /// cast partial shadows, at most <see cref="MaxShadowLights"/> − 1 of them; every other torch casts none.
+    /// The hero light always casts a full shadow. On High the torches nearest the hero (within <see cref="TorchShadowRadius"/>,
+    /// a shadowed one within the radius + <see cref="ShadowHysteresis"/>) cast partial shadows, at most
+    /// <see cref="MaxShadowLights"/> − 1 of them; every other torch casts none. A light is touched only when its state changes
+    /// (each change re-pairs it in the renderer); no allocations per frame.
     /// </summary>
     public void UpdateShadowBudget()
     {
-        HeroLight.ShadowEnabled = true;
-        HeroLight.ShadowOpacity = 1f;
+        if (!HeroLight.ShadowEnabled) HeroLight.ShadowEnabled = true;
         var allowed = _quality == GraphicsQuality.High ? MaxShadowLights - 1 : 0;
-        var hero = Hero.Position;
-        var chosen = _torches
-            .Select(t => (Torch: t, Distance: Flat(t.Light.Position).DistanceTo(Flat(hero))))
-            .Where(x => x.Distance <= TorchShadowRadius)
-            .OrderBy(x => x.Distance)
-            .Take(allowed)
-            .Select(x => x.Torch)
-            .ToHashSet();
-        foreach (var t in _torches)
+        var n = _torches.Count;
+        if (_scores.Length != n) (_scores, _order) = (new float[n], new int[n]);
+        var hero = Flat(Hero.Position);
+        int candidates = 0;
+        for (int i = 0; i < n; i++)
         {
-            t.Light.ShadowEnabled = chosen.Contains(t);
-            t.Light.ShadowOpacity = TorchShadowOpacity;
+            var light = _torches[i].Light;
+            var d = Flat(light.Position).DistanceTo(hero);
+            var limit = light.ShadowEnabled ? TorchShadowRadius + ShadowHysteresis : TorchShadowRadius;
+            if (d > limit) continue;
+            _scores[candidates] = light.ShadowEnabled ? d - ShadowHysteresis : d;
+            _order[candidates++] = i;
+        }
+        // Insertion sort of the few candidates by score.
+        for (int a = 1; a < candidates; a++)
+        {
+            var (s, o) = (_scores[a], _order[a]);
+            int b = a - 1;
+            for (; b >= 0 && _scores[b] > s; b--) (_scores[b + 1], _order[b + 1]) = (_scores[b], _order[b]);
+            (_scores[b + 1], _order[b + 1]) = (s, o);
+        }
+        for (int i = 0; i < n; i++)
+        {
+            bool on = false;
+            for (int k = 0; k < candidates && k < allowed; k++)
+                if (_order[k] == i) { on = true; break; }
+            var light = _torches[i].Light;
+            if (light.ShadowEnabled != on) light.ShadowEnabled = on;
         }
     }
+
+    private readonly Vector3[] _occlusionTargets = new Vector3[4];
 
     /// <summary>Occluders crossed by the line from the hero or the dummy (waist and head) towards the camera fade to alpha hash.</summary>
     public void UpdateOcclusion()
     {
-        var targets = new List<Vector3>();
-        foreach (var (pos, height) in new[] { (Hero.Position, HeroModel.TargetHeight), (Dummy.Position, DummyModel.TargetHeight) })
-        {
-            targets.Add(pos + new Vector3(0, height * 0.5f, 0));
-            targets.Add(pos + new Vector3(0, height * 0.95f, 0));
-        }
+        var t = _occlusionTargets;
+        (t[0], t[1]) = (Hero.Position + new Vector3(0, HeroModel.TargetHeight * 0.5f, 0), Hero.Position + new Vector3(0, HeroModel.TargetHeight * 0.95f, 0));
+        (t[2], t[3]) = (Dummy.Position + new Vector3(0, DummyModel.TargetHeight * 0.5f, 0), Dummy.Position + new Vector3(0, DummyModel.TargetHeight * 0.95f, 0));
+        var ray = CameraRig.Direction * CameraRig.Distance;
         foreach (var o in _occluders)
         {
             var bounds = o.Bounds.Grow(0.15f);
-            var hide = targets.Any(t => bounds.IntersectsSegment(t, t + CameraRig.Direction * CameraRig.Distance));
+            bool hide = false;
+            for (int i = 0; i < t.Length && !hide; i++) hide = bounds.IntersectsSegment(t[i], t[i] + ray);
             if (hide == o.Faded) continue;
             o.Faded = hide;
             foreach (var m in o.Materials)
@@ -430,7 +460,7 @@ public partial class RoomView : Node3D
         cap.EmissionEnabled = true;
         cap.EmissionTexture = cap.AlbedoTexture;
         cap.EmissionOperator = BaseMaterial3D.EmissionOperatorEnum.Multiply; // colour × texture, not colour + texture
-        cap.Emission = cap.AlbedoTexture != null ? new Color(0.17f, 0.14f, 0.11f) : new Color(0.07f, 0.055f, 0.04f);
+        cap.Emission = cap.AlbedoTexture != null ? new Color(0.07f, 0.06f, 0.05f) : new Color(0.05f, 0.04f, 0.03f);
         var parts = new[]
         {
             Box(new Vector3(1.9f, 0.35f, 1.9f), p + new Vector3(0, 0.175f, 0), dark),
@@ -471,10 +501,10 @@ public partial class RoomView : Node3D
         scaleCurve.AddPoint(new Vector2(0.3f, 1f));
         scaleCurve.AddPoint(new Vector2(1, 0.1f));
         var ramp = new Gradient();
-        ramp.SetColor(0, new Color(1f, 0.74f, 0.34f, 0.75f));
-        ramp.SetColor(1, new Color(0.2f, 0.05f, 0.02f, 0f));
-        ramp.AddPoint(0.3f, new Color(1f, 0.5f, 0.1f, 0.7f));
-        ramp.AddPoint(0.65f, new Color(0.5f, 0.12f, 0.03f, 0.4f));
+        ramp.SetColor(0, new Color(1f, 0.4f, 0.08f, 0.5f));
+        ramp.SetColor(1, new Color(0.25f, 0.03f, 0.01f, 0f));
+        ramp.AddPoint(0.3f, new Color(0.85f, 0.22f, 0.03f, 0.45f));
+        ramp.AddPoint(0.65f, new Color(0.45f, 0.08f, 0.02f, 0.28f));
         var process = new ParticleProcessMaterial
         {
             EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box,
@@ -636,8 +666,8 @@ public partial class RoomView : Node3D
         {
             Name = "FillLight",
             LightColor = new Color(1f, 0.92f, 0.8f),
-            LightEnergy = 1.4f,
-            OmniRange = 3.2f,
+            LightEnergy = 2.2f,
+            OmniRange = 4f,
             ShadowEnabled = false,
         };
         AddChild(FillLight);

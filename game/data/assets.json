@@ -23,7 +23,7 @@
       "albedo": "polyhaven/monastery_stone_floor/diff.jpg",
       "normal": "polyhaven/monastery_stone_floor/nor_gl.jpg",
       "roughness": "polyhaven/monastery_stone_floor/rough.jpg",
-      "tint": [0.72, 0.72, 0.74], "uv": 0.4, "flat": [0.30, 0.29, 0.28]
+      "tint": [0.6, 0.6, 0.62], "uv": 1.7, "normalScale": 0.5, "flat": [0.30, 0.29, 0.28]
     },
     "wall": {
       "albedo": "polyhaven/castle_wall_slates/diff.jpg",
@@ -35,7 +35,7 @@
       "albedo": "polyhaven/medieval_blocks_02/diff.jpg",
       "normal": "polyhaven/medieval_blocks_02/nor_gl.jpg",
       "roughness": "polyhaven/medieval_blocks_02/rough.jpg",
-      "tint": [0.85, 0.83, 0.8], "uv": 0.6, "flat": [0.33, 0.31, 0.29]
+      "tint": [0.62, 0.6, 0.58], "uv": 0.6, "flat": [0.33, 0.31, 0.29]
     },
     "wood": {
       "albedo": "polyhaven/medieval_wood/diff.jpg",

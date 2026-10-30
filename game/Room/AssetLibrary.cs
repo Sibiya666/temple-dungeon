@@ -11,7 +11,7 @@ public sealed record CharacterEntry(string File, float Height);
 public sealed record ClipEntry(string File, bool Loop);
 
 /// <summary>A Poly Haven PBR set of the asset table: three files, a tint, the world triplanar scale and the flat stub colour.</summary>
-public sealed record SurfaceEntry(string Albedo, string Normal, string Roughness, Color Tint, float Uv, Color Flat);
+public sealed record SurfaceEntry(string Albedo, string Normal, string Roughness, Color Tint, float Uv, Color Flat, float NormalScale = 1f);
 
 /// <summary>The table id → file of game/data/assets.json (files relative to the assets folder, names as on disk).</summary>
 public sealed record AssetTable(
@@ -39,7 +39,8 @@ public sealed record AssetTable(
             var v = p.Value;
             surfaces[p.Name] = new SurfaceEntry(
                 v.GetProperty("albedo").GetString()!, v.GetProperty("normal").GetString()!, v.GetProperty("roughness").GetString()!,
-                ColorOf(v.GetProperty("tint")), v.GetProperty("uv").GetSingle(), ColorOf(v.GetProperty("flat")));
+                ColorOf(v.GetProperty("tint")), v.GetProperty("uv").GetSingle(), ColorOf(v.GetProperty("flat")),
+                v.TryGetProperty("normalScale", out var ns) ? ns.GetSingle() : 1f);
         }
         return new AssetTable(characters, clips, surfaces);
     }
@@ -71,8 +72,8 @@ public sealed class AssetLibrary
     /// <summary>World-space outline width of the hero, metres (prototype: 0.022 / model scale).</summary>
     public const float OutlineWidth = 0.022f;
 
-    /// <summary>Enemy skin multiplier (prototype `_style`).</summary>
-    public static readonly Color EnemyDim = new(0.62f, 0.6f, 0.58f, 1f);
+    /// <summary>Enemy skin multiplier (prototype `_style` had 0.62; the art review asked for ~0.5).</summary>
+    public static readonly Color EnemyDim = new(0.5f, 0.49f, 0.47f, 1f);
 
     public static readonly Color OutlineColor = new(1f, 0.78f, 0.35f);
 
@@ -379,7 +380,7 @@ public sealed class AssetLibrary
             var inst = scene.Instantiate();
             var player = inst.FindChild("AnimationPlayer", true, false) as AnimationPlayer;
             var skeleton = inst.FindChild("Skeleton3D", true, false) as Skeleton3D;
-            var names = player?.GetAnimationList() ?? [];
+            var names = (player?.GetAnimationList() ?? []).Where(n => n != "RESET").ToArray();
             if (player != null && names.Length > 0)
             {
                 var anim = (Animation)player.GetAnimation(names[0]).Duplicate(true);
@@ -435,7 +436,7 @@ public sealed class AssetLibrary
             AlbedoColor = entry.Tint,
             NormalEnabled = true,
             NormalTexture = normal,
-            NormalScale = 1f,
+            NormalScale = entry.NormalScale,
             RoughnessTexture = rough,
             RoughnessTextureChannel = BaseMaterial3D.TextureChannel.Green,
             Uv1Triplanar = true,

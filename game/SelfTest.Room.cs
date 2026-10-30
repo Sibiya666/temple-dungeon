@@ -1,4 +1,4 @@
-using Dialoid.Game.Room;
+﻿using Dialoid.Game.Room;
 using Godot;
 
 namespace Dialoid.Game;
@@ -131,29 +131,102 @@ public sealed partial class SelfTest
         return Task.CompletedTask;
     }
 
-    /// <summary>The height of every character's AABB is the spec height ±5 % (models measured, never assumed in centimetres).</summary>
-    private Task RoomScale()
+    /// <summary>
+    /// The height of every character is the spec height ±5 %, measured independently of the code that chose the scale: the
+    /// character stands in the scene tree (no clip, so the rest pose), and after a frame its vertices are skinned with the
+    /// skeleton's current global bone poses and the engine's global transforms (a stub: its mesh AABB in world space). The feet
+    /// must be on the floor and the head-top bone near the top, so a centimetre/metre or bind-pose mistake fails.
+    /// </summary>
+    private async Task RoomScale()
     {
         var notes = new List<string>();
+        var origin = new Vector3(0, 0, 40); // outside the hall, nothing else there
+        var heroScale = 0f;
         foreach (var (id, spec) in SpecHeights)
         {
             Check(Assets.Table.Characters.TryGetValue(id, out var entry) && Mathf.IsEqualApprox(entry.Height, spec), $"рост {id} в таблице не {spec}");
             var c = Assets.Character(id);
             try
             {
-                var h = AssetLibrary.MeasureHeight(c);
+                Room.AddChild(c);
+                c.Position = origin;
+                await NextFrame();
+                var (lo, hi) = PosedWorldSpanY(c);
+                var h = hi - lo;
                 Check(Mathf.Abs(h - spec) <= 0.05f * spec, $"{id}: высота {h:0.###} м вместо {spec} м ±5 %");
-                notes.Add($"{id} {h:0.###} м{(c.IsStub ? " (заглушка)" : $" (масштаб {c.ModelScale:0.###})")}");
+                Check(Mathf.Abs(lo - origin.Y) <= 0.05f * spec, $"{id}: ноги на высоте {lo - origin.Y:0.###} м, а не на полу");
+                var head = HeadTopY(c) - origin.Y;
+                if (head != null)
+                    Check(head.Value >= 0.75f * spec && head.Value <= 1.02f * spec, $"{id}: макушка на {head.Value:0.###} м при росте {spec} м");
+                if (id == AssetLibrary.HeroId) heroScale = c.ModelScale;
+                notes.Add($"{id} {h:0.###} м{(c.IsStub ? " (заглушка)" : $" (масштаб {c.ModelScale:0.###}, макушка {head:0.##} м)")}");
             }
             finally
             {
                 c.Free();
             }
         }
-        var inRoom = AssetLibrary.MeasureHeight(Room.HeroModel);
-        Check(Mathf.Abs(inRoom - 1.85f) <= 0.05f * 1.85f, $"герой в комнате {inRoom:0.###} м");
+        Check(Mathf.IsEqualApprox(Room.HeroModel.ModelScale, heroScale), $"масштаб героя в комнате {Room.HeroModel.ModelScale}, а не {heroScale}");
         GD.Print("SELFTEST NOTE рост: " + string.Join(", ", notes));
-        return Task.CompletedTask;
+    }
+
+    /// <summary>World Y span of a character in the tree: skinned meshes by the current global bone poses, others by their AABB.</summary>
+    private static (float Lo, float Hi) PosedWorldSpanY(CharacterModel c)
+    {
+        float lo = float.MaxValue, hi = float.MinValue;
+        foreach (var mi in c.Meshes)
+        {
+            var skeleton = mi.Skin != null ? mi.GetNodeOrNull<Skeleton3D>(mi.Skeleton) : null;
+            if (skeleton == null)
+            {
+                var box = mi.GlobalTransform * mi.GetAabb();
+                (lo, hi) = (Mathf.Min(lo, box.Position.Y), Mathf.Max(hi, box.End.Y));
+                continue;
+            }
+            var binds = new Transform3D[mi.Skin!.GetBindCount()];
+            for (int b = 0; b < binds.Length; b++)
+            {
+                var bone = mi.Skin.GetBindBone(b);
+                if (bone < 0) bone = skeleton.FindBone(mi.Skin.GetBindName(b));
+                binds[b] = skeleton.GlobalTransform * skeleton.GetBoneGlobalPose(Math.Max(bone, 0)) * mi.Skin.GetBindPose(b);
+            }
+            for (int s = 0; s < mi.Mesh.GetSurfaceCount(); s++)
+            {
+                var arrays = mi.Mesh.SurfaceGetArrays(s);
+                var verts = arrays[(int)Mesh.ArrayType.Vertex].AsVector3Array();
+                var bones = arrays[(int)Mesh.ArrayType.Bones].AsInt32Array();
+                var weights = arrays[(int)Mesh.ArrayType.Weights].AsFloat32Array();
+                var per = bones.Length / Math.Max(1, verts.Length);
+                for (int i = 0; i < verts.Length; i++)
+                {
+                    float y = 0, total = 0;
+                    for (int k = 0; k < per; k++)
+                    {
+                        var w = weights[i * per + k];
+                        if (w <= 0) continue;
+                        y += (binds[bones[i * per + k]] * verts[i]).Y * w;
+                        total += w;
+                    }
+                    if (total <= 0) continue;
+                    y /= total;
+                    (lo, hi) = (Mathf.Min(lo, y), Mathf.Max(hi, y));
+                }
+            }
+        }
+        return (lo, hi);
+    }
+
+    /// <summary>World Y of the head-top bone (HeadTop_End, else Head), or null for a stub.</summary>
+    private static float? HeadTopY(CharacterModel c)
+    {
+        var sk = c.Skeleton;
+        if (sk == null) return null;
+        int bone = -1;
+        for (int b = 0; b < sk.GetBoneCount() && bone < 0; b++)
+            if (AssetLibrary.CanonicalBone(sk.GetBoneName(b)) == "HeadTop_End") bone = b;
+        for (int b = 0; b < sk.GetBoneCount() && bone < 0; b++)
+            if (AssetLibrary.CanonicalBone(sk.GetBoneName(b)) == "Head") bone = b;
+        return bone < 0 ? null : (sk.GlobalTransform * sk.GetBoneGlobalPose(bone)).Origin.Y;
     }
 
     /// <summary>
@@ -304,10 +377,15 @@ public sealed partial class SelfTest
                 Check(room.TorchLights.Contains(t), $"тень у постороннего света {t.Name}");
                 Check(t.ShadowOpacity is >= 0.5f and <= 0.7f, $"shadow_opacity факела {t.ShadowOpacity}");
                 var d = new Vector2(t.Position.X - spot.X, t.Position.Z - spot.Z).Length();
-                Check(d <= RoomView.TorchShadowRadius, $"тень у факела в {d:0.#} м от героя");
+                Check(d <= RoomView.TorchShadowRadius + RoomView.ShadowHysteresis, $"тень у факела в {d:0.#} м от героя");
             }
             var near = room.TorchLights.Count(t => new Vector2(t.Position.X - spot.X, t.Position.Z - spot.Z).Length() <= RoomView.TorchShadowRadius);
-            Check(torches.Count == Math.Min(near, RoomView.MaxShadowLights - 1), $"у {spot}: факелов с тенью {torches.Count} при {near} рядом");
+            Check(torches.Count >= Math.Min(near, RoomView.MaxShadowLights - 1) && torches.Count <= RoomView.MaxShadowLights - 1,
+                $"у {spot}: факелов с тенью {torches.Count} при {near} рядом");
+            // Same spot again: nothing toggles (hysteresis, state kept).
+            var state = room.TorchLights.Select(t => t.ShadowEnabled).ToList();
+            room.UpdateShadowBudget();
+            Check(room.TorchLights.Select(t => t.ShadowEnabled).SequenceEqual(state), $"у {spot}: тени факелов переключились без движения");
             if (near > RoomView.MaxShadowLights - 1) limitBound = true;
             maxTorches = Math.Max(maxTorches, torches.Count);
         }
