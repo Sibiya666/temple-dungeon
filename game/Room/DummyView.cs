@@ -119,7 +119,7 @@ public partial class DummyView : Node3D
         {
             Name = "DummyFill",
             LightColor = new Color(0.8f, 0.82f, 0.9f),
-            LightEnergy = 0.55f,
+            LightEnergy = 0.8f, // task 12 shots: 0.55 left the elemental zombie dark under the lightning ribbon
             OmniRange = 3.6f,
             OmniAttenuation = 1.5f,
             ShadowEnabled = false,

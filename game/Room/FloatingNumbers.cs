@@ -8,7 +8,8 @@ namespace Dialoid.Game.Room;
 /// larger and ends with «!»; a DoT tick is small and fainter (<see cref="TickAlpha"/>) so hits read first; the damage type's
 /// icon stands left of the number so the meaning does not rest on colour alone. A number lives <see cref="LifeSec"/> and rises;
 /// numbers take turns over <see cref="Slots"/> places along the screen horizontal, and a new number that would cover a young
-/// one on screen moves up a line. At most <see cref="MaxShown"/> at once (the oldest go first). Stepped with the visual time
+/// one on screen moves up a line; a number never stands on or under the target plate (<see cref="KeepOut"/>, checked every
+/// frame). At most <see cref="MaxShown"/> at once (the oldest go first). Stepped with the visual time
 /// (frozen by hit-stop). <see cref="Enabled"/> off shows nothing (the meter's switch, task 10).
 /// </summary>
 public sealed partial class FloatingNumbers : Node3D
@@ -26,9 +27,34 @@ public sealed partial class FloatingNumbers : Node3D
     /// <summary>A new number moves up a line while it covers a number younger than this.</summary>
     public const double OverlapAgeSec = 0.45;
 
-    private sealed record Shown(Node3D Root, Label3D Label, Sprite3D Icon, Vector3 Start, float Width, float Height, float BaseAlpha);
+    // Width covers the icon and the text; the box's centre sits BoxShift left of the root (the icon hangs left of the text).
+    private sealed record Shown(Node3D Root, Label3D Label, Sprite3D Icon, Vector3 Start, float Width, float Height, float BaseAlpha, float BoxShift);
 
-    private readonly List<(Shown Item, double Age)> _shown = new();
+    // Lift: how far (room space) the number was moved to clear the target plate; it only adds up over its life (no jumping back).
+    private readonly List<(Shown Item, double Age, Vector3 Lift)> _shown = new();
+
+    /// <summary>
+    /// How far (room space) a number box must move to clear what the screen keeps free (the combat screen's target plate): centre, half extents
+    /// along the screen's right and up, room space. Applied at the start and every frame.
+    /// </summary>
+    public Func<Vector3, Vector3, Vector3, Vector3>? KeepOut { get; set; }
+
+    /// <summary>The boxes of the numbers on screen now: centre and half extents along the screen's right and up (for checks).</summary>
+    public IEnumerable<(Vector3 Centre, Vector3 HalfRight, Vector3 HalfUp)> Boxes()
+    {
+        var (right, up) = ScreenAxes();
+        foreach (var (item, _, _) in _shown) yield return Box(item, item.Root.Position, right, up);
+    }
+
+    private static (Vector3 Centre, Vector3 HalfRight, Vector3 HalfUp) Box(Shown item, Vector3 at, Vector3 right, Vector3 up) =>
+        (at - right * item.BoxShift, right * (item.Width / 2), up * (item.Height / 2));
+
+    private Vector3 KeepOutOf(Shown item, Vector3 at, Vector3 right, Vector3 up)
+    {
+        if (KeepOut == null) return Vector3.Zero;
+        var (c, hr, hu) = Box(item, at, right, up);
+        return KeepOut(c, hr, hu);
+    }
     private static readonly Dictionary<EffectKind, ImageTexture> Icons = new();
     private int _slot;
 
@@ -111,13 +137,15 @@ public sealed partial class FloatingNumbers : Node3D
         _slot = (_slot + 1) % Slots;
         var start = at + right * ((_slot - 1.5f) * 0.75f) + new Vector3(0, (_slot % 2) * 0.35f, 0);
         var line = size * PixelSize * 1.05f;
-        var item = new Shown(root, label, icon, start, textWidth + iconSize * 1.4f, line, baseAlpha);
+        // The box spans from the icon's left edge (textWidth/2 + 1.2 icon left of the root) to the text's right edge.
+        var item = new Shown(root, label, icon, start, textWidth + iconSize * 1.2f, line, baseAlpha, iconSize * 0.6f);
         // Move up a line (at most six) while the new number covers a young one.
         for (int k = 0; k < 6 && _shown.Any(s => s.Age < OverlapAgeSec && Covers(s.Item, s.Item.Root.Position, item, start, right, up)); k++)
             start += up * line;
         item = item with { Start = start };
-        root.Position = start;
-        _shown.Add((item, 0));
+        var lift = KeepOutOf(item, start, right, up);
+        root.Position = start + lift;
+        _shown.Add((item, 0, lift));
         Last = (text, size, kind);
         ShownTotal++;
     }
@@ -125,9 +153,10 @@ public sealed partial class FloatingNumbers : Node3D
     public void Advance(double dt)
     {
         if (dt <= 0) return;
+        var (right, up) = ScreenAxes();
         for (int i = 0; i < _shown.Count; i++)
         {
-            var (item, age) = _shown[i];
+            var (item, age, lift) = _shown[i];
             age += dt;
             if (age >= LifeSec)
             {
@@ -135,9 +164,12 @@ public sealed partial class FloatingNumbers : Node3D
                 _shown.RemoveAt(i--);
                 continue;
             }
-            _shown[i] = (item, age);
             var t = (float)(age / LifeSec);
-            item.Root.Position = item.Start + new Vector3(0, Rise * t, 0);
+            var at = item.Start + new Vector3(0, Rise * t, 0) + lift;
+            var more = KeepOutOf(item, at, right, up);
+            lift += more;
+            _shown[i] = (item, age, lift);
+            item.Root.Position = at + more;
             var alpha = item.BaseAlpha * (t < 0.5f ? 1f : 1f - (t - 0.5f) * 2f);
             item.Label.Modulate = item.Label.Modulate with { A = alpha };
             item.Label.OutlineModulate = item.Label.OutlineModulate with { A = alpha };
@@ -145,9 +177,28 @@ public sealed partial class FloatingNumbers : Node3D
         }
     }
 
+    /// <summary>
+    /// Raises every number that now stands on the kept-free area (the plate moved to another figure or grew after this frame's
+    /// <see cref="Advance"/>): called by the combat screen right after it places the plate, so no frame shows a covered number.
+    /// </summary>
+    public void KeepClear()
+    {
+        if (KeepOut == null) return;
+        var (right, up) = ScreenAxes();
+        for (int i = 0; i < _shown.Count; i++)
+        {
+            var (item, age, lift) = _shown[i];
+            var at = item.Root.Position;
+            var more = KeepOutOf(item, at, right, up);
+            if (more == Vector3.Zero) continue;
+            _shown[i] = (item, age, lift + more);
+            item.Root.Position = at + more;
+        }
+    }
+
     public void Clear()
     {
-        foreach (var (item, _) in _shown) item.Root.QueueFree();
+        foreach (var (item, _, _) in _shown) item.Root.QueueFree();
         _shown.Clear();
     }
 

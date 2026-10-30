@@ -170,6 +170,7 @@ public partial class CombatHud : Control
         AddChild(_refusal);
         driver.Hero.DrawRefusal3D = false;
         driver.NumberLift = LiftAbovePlate;
+        driver.Numbers.KeepOut = PlateKeepOut;
 
         driver.Refused += e =>
         {
@@ -325,6 +326,7 @@ public partial class CombatHud : Control
         var target = ChooseTarget(_gamepad, HoveredFigure(), dummy.RingTarget, dummy.FigureCount);
         TargetPlate.Show(PlateData(target));
         PlacePlate(target);
+        _driver.Numbers.KeepClear(); // numbers the plate just moved onto rise above it in this same frame
         PlaceRefusal();
         UpdateFocusTip();
     }
@@ -382,9 +384,11 @@ public partial class CombatHud : Control
     private void PlacePlate(int? target)
     {
         var dummy = _driver.Dummy;
+        // No plate, no chevron: a hidden plate never leaves its marker behind (task 14 review).
         if (target is not { } t || t >= dummy.FigureCount || !TargetPlate.Visible)
         {
             TargetPlate.Visible = false;
+            _marker.Visible = false;
             return;
         }
         var feet = dummy.TargetPosition(t);
@@ -392,6 +396,7 @@ public partial class CombatHud : Control
         if (_project(new Vector3(feet.X, top + 0.05f, feet.Z)) is not { } p)
         {
             TargetPlate.Visible = false;
+            _marker.Visible = false;
             return;
         }
         var size = TargetPlate.GetCombinedMinimumSize();
@@ -427,12 +432,49 @@ public partial class CombatHud : Control
     /// </summary>
     public Vector3 LiftAbovePlate(Vector3 at)
     {
+        // The start's centre only; every frame PlateKeepOut also keeps the whole number box off the plate.
         if (!TargetPlate.Visible || _project(at) is not { } p || _project(at + Vector3.Up) is not { } up) return at;
         var rect = new Rect2(TargetPlate.Position, TargetPlate.Size);
         var perMetre = p.Y - up.Y; // screen pixels per metre of height
         var limit = rect.Position.Y - NumberGap;
         if (perMetre < 0.1f || p.Y <= limit || p.X < rect.Position.X - 60 || p.X > rect.End.X + 60) return at;
         return at + Vector3.Up * ((p.Y - limit) / perMetre);
+    }
+
+    /// <summary>
+    /// How far (room space) a floating number must move so its whole box (centre <paramref name="centre"/>, half extents along the
+    /// screen <paramref name="halfRight"/> and <paramref name="halfUp"/>, room space) clears the target plate. A box in the plate's
+    /// columns (grown by 4 px), below the plate included (it would rise into it), rises until it ends <see cref="NumberGap"/> above
+    /// the plate; when that would put it under the top bar (a plate near the top edge) it steps sideways off the plate instead, to the
+    /// nearer side. Zero when it is clear. Called every frame for every number (task 14 review: on «Рой» numbers of the other figures
+    /// slid under a plate that moved or grew).
+    /// </summary>
+    public Vector3 PlateKeepOut(Vector3 centre, Vector3 halfRight, Vector3 halfUp)
+    {
+        if (!TargetPlate.Visible || _project(centre) is not { } c || _project(centre + Vector3.Up) is not { } up) return Vector3.Zero;
+        var perMetre = c.Y - up.Y;
+        if (perMetre < 0.1f) return Vector3.Zero;
+        var min = c;
+        var max = c;
+        foreach (var corner in new[] { halfRight + halfUp, halfRight - halfUp, -halfRight + halfUp, -halfRight - halfUp })
+        {
+            if (_project(centre + corner) is not { } q) return Vector3.Zero;
+            min = new Vector2(Mathf.Min(min.X, q.X), Mathf.Min(min.Y, q.Y));
+            max = new Vector2(Mathf.Max(max.X, q.X), Mathf.Max(max.Y, q.Y));
+        }
+        var plate = new Rect2(TargetPlate.Position, TargetPlate.Size).Grow(4);
+        var limit = plate.Position.Y - NumberGap;
+        if (max.X < plate.Position.X || min.X > plate.End.X || max.Y <= limit) return Vector3.Zero; // below it too: it would rise into it
+        var rise = max.Y - limit;
+        if (min.Y - rise >= TopBar.Height + 4) return Vector3.Up * (rise / perMetre);
+        // Sideways along the screen's horizontal: pixels per metre of halfRight's direction.
+        var side = halfRight.Normalized();
+        if (_project(centre + side) is not { } s || Mathf.Abs(s.X - c.X) < 0.1f) return Vector3.Up * (rise / perMetre);
+        var perSide = s.X - c.X;
+        var toRight = plate.End.X + NumberGap - min.X;
+        var toLeft = max.X - (plate.Position.X - NumberGap);
+        var dx = toRight <= toLeft && plate.End.X + NumberGap + (max.X - min.X) <= Size.X ? toRight : -toLeft;
+        return side * (dx / perSide);
     }
 
     /// <summary>Seconds with one decimal under 10, whole above: «2,1», «14».</summary>
