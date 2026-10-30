@@ -341,7 +341,7 @@ game/Main.cs, game/SelfTest.cs                  переделка корня; �
 
 **Files:**
 - Create: `tools/sync_assets.ps1`, `game/Room/AssetLibrary.cs`, `RoomView.cs`, `CameraRig.cs`
-- Modify: `tools/godot_check.ps1` (вызывает `sync_assets.ps1` перед импортом), `game/project.godot` (рендерер Forward+, `rendering/textures/vram_compression`, размер `positional_shadow_atlas` под 8 теневых источников), `game/Main.cs`, `game/SelfTest.cs`, `README.md` («Ассеты комнаты»: какие файлы скачать с Mixamo и с какими настройками — FBX Binary, T-pose, With Skin для персонажей, Without Skin для клипов, 30 fps; какие текстуры Poly Haven, 2K; куда положить)
+- Modify: `tools/godot_check.ps1` (вызывает `sync_assets.ps1` перед импортом), `game/project.godot` (рендерер Forward+, `rendering/textures/vram_compression`, размер `positional_shadow_atlas` под 8 теневых источников, `[physics] 3d/physics_engine="Jolt Physics"` — решение владельца 2026-10-30; Effekseer в этот план не входит: эффекты комнаты — на частицах Godot, Effekseer понадобится для сложных заклинаний позже), `game/Main.cs`, `game/SelfTest.cs`, `README.md` («Ассеты комнаты»: какие файлы скачать с Mixamo и с какими настройками — FBX Binary, T-pose, With Skin для персонажей, Without Skin для клипов, 30 fps; какие текстуры Poly Haven, 2K; куда положить)
 
 **Interfaces:**
 - Produces:
