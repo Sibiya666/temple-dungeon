@@ -34,6 +34,9 @@ public sealed partial class FloatingNumbers : Node3D
 
     public int Count => _shown.Count;
 
+    /// <summary>Numbers shown since the start (for checks).</summary>
+    public int ShownTotal { get; private set; }
+
     /// <summary>Texts of the numbers on screen now, oldest first.</summary>
     public IEnumerable<string> Texts => _shown.Select(s => s.Item.Label.Text);
 
@@ -92,6 +95,7 @@ public sealed partial class FloatingNumbers : Node3D
         root.Position = start;
         _shown.Add((new Shown(root, label, icon, start), 0));
         Last = (text, size, kind);
+        ShownTotal++;
     }
 
     public void Advance(double dt)

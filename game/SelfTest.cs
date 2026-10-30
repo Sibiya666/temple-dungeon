@@ -146,6 +146,7 @@ public sealed partial class SelfTest
         foreach (var info in mains) steps.Add(new($"acceptance {info.Title}", () => Acceptance(info)));
         if (mains.Count > 0) steps.Add(new("class-change-resets", () => ClassChangeResets(mains[^1])));
         if (mains.Count > 0) steps.Add(new("passives.captions-no-overlap", () => PassiveCaptions(mains[0])));
+        if (mains.Count > 0) steps.AddRange(CombatSteps());
         if (_screenshotDir != null)
         {
             var pyro = mains.FirstOrDefault(m => m.Path.EndsWith("sorcerer_pyromancer_fireball.json", StringComparison.Ordinal));

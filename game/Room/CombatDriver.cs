@@ -71,6 +71,7 @@ public partial class CombatDriver : Node
     private bool _leftHeld;
     private double _leftHeldFor;
     private Vector2 _mouse;
+    private double _lastFightTime;
 
     public RoomView Room { get; private set; } = null!;
     public TrainingRoom Training { get; private set; } = null!;
@@ -101,9 +102,6 @@ public partial class CombatDriver : Node
     /// <summary>The last hit shown (after its contact frame or projectile).</summary>
     public VisualEvent? LastShownHit { get; private set; }
 
-    /// <summary>Reactions started by DoT ticks: must stay 0 (spec §4).</summary>
-    public int TickReactions { get; private set; }
-
     public void Setup(RoomView room, TrainingRoom training, SkillAnimations animations)
     {
         Room = room;
@@ -127,6 +125,10 @@ public partial class CombatDriver : Node
         var visualDt = frozenNow ? 0 : delta;
         SetFrozen(Frozen);
 
+        // A restarted fight (build edit, dummy or mode change) starts at 0: what the old one left pending is gone.
+        var fightTime = Training.State?.Time ?? 0;
+        if (fightTime < _lastFightTime) ClearPending();
+        _lastFightTime = fightTime;
         SyncDummy();
         Training.UpdateReach(HeroDistance(), TargetOnScreen());
         Training.Advance(delta); // the real frame time: hit-stop never slows the fight
@@ -193,7 +195,13 @@ public partial class CombatDriver : Node
     {
         if (Dummy.PresetId == Training.DummyId) return;
         Dummy.SetPreset(Training.DummyId);
+        ClearPending();
+    }
+
+    private void ClearPending()
+    {
         _uses.Clear();
+        _channelSlot = null;
         Effects.Clear();
         Numbers.Clear();
     }
