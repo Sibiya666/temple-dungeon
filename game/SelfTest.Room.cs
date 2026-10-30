@@ -75,8 +75,10 @@ public sealed partial class SelfTest
         var chunks = room.FindChildren("FloorChunk*", nameof(MeshInstance3D), true, false).OfType<MeshInstance3D>().ToList();
         Check(chunks.Count >= 20, $"пол не кусками: {chunks.Count}");
         var floor = chunks[0].MaterialOverride as StandardMaterial3D;
-        Check(floor != null && (floor.AlbedoTexture != null) == assets.HasTextures,
-            assets.HasTextures ? "текстуры есть, а пол однотонный" : "текстур нет, а у пола текстура");
+        var floorEntry = assets.Table.Surfaces["floor"];
+        var floorTextured = new[] { floorEntry.Albedo, floorEntry.Normal, floorEntry.Roughness }.All(f => ResourceLoader.Exists(AssetLibrary.VendorPath(f)));
+        Check(floor != null && (floor.AlbedoTexture != null) == floorTextured,
+            floorTextured ? "текстуры пола есть, а пол однотонный" : "текстур пола нет, а у пола текстура");
 
         var env = room.Environment;
         Check(env.TonemapMode == Godot.Environment.ToneMapper.Filmic && env.GlowEnabled && env.GlowHdrThreshold >= 1f, "окружение не filmic со свечением по порогу");

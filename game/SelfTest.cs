@@ -1016,6 +1016,13 @@ public sealed partial class SelfTest
             await Shot(names[i]);
         }
 
+        // The room with the hero next to the dummy (the combat spot), then back at the spawn.
+        var room = Room;
+        _main.SelectTab(Main.RoomTab);
+        room.PlaceHero(room.DummySpot + TowardsCamera * 2.2f + new Vector3(0.6f, 0, -0.6f));
+        await Shot("00-room-dummy");
+        room.PlaceHero(room.HeroSpawn);
+
         var labels = await ShowSkill(slot);
         var mult = labels.FirstOrDefault(l => l.Line.Key.StartsWith("hit_mult_", StringComparison.Ordinal));
         Check(mult != null, "у главного скилла нет множителя урона попадания");

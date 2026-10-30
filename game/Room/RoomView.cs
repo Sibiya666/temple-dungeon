@@ -88,7 +88,7 @@ public partial class RoomView : Node3D
     public IReadOnlyList<Occluder> Occluders => _occluders;
 
     /// <summary>Where the hero appears: at the front edge of the hall, facing the dummy.</summary>
-    public Vector3 HeroSpawn { get; } = new(7f, 0, 5.5f);
+    public Vector3 HeroSpawn { get; } = new(5f, 0, 3.5f);
 
     /// <summary>Where the dummy stands: the middle of the hall.</summary>
     public Vector3 DummySpot { get; } = new(-1.5f, 0, -1f);
@@ -426,8 +426,11 @@ public partial class RoomView : Node3D
         // Cap: a faint self-light so the top reads as stone, not a black hole (spec §4).
         var cap = Assets.Surface("stone");
         cap.AlbedoColor *= new Color(0.82f, 0.82f, 0.8f);
+        // No light reaches the tops (every light hangs lower), so the cap glows its own texture faintly.
         cap.EmissionEnabled = true;
-        cap.Emission = new Color(0.07f, 0.055f, 0.04f);
+        cap.EmissionTexture = cap.AlbedoTexture;
+        cap.EmissionOperator = BaseMaterial3D.EmissionOperatorEnum.Multiply; // colour × texture, not colour + texture
+        cap.Emission = cap.AlbedoTexture != null ? new Color(0.17f, 0.14f, 0.11f) : new Color(0.07f, 0.055f, 0.04f);
         var parts = new[]
         {
             Box(new Vector3(1.9f, 0.35f, 1.9f), p + new Vector3(0, 0.175f, 0), dark),
@@ -468,7 +471,7 @@ public partial class RoomView : Node3D
         scaleCurve.AddPoint(new Vector2(0.3f, 1f));
         scaleCurve.AddPoint(new Vector2(1, 0.1f));
         var ramp = new Gradient();
-        ramp.SetColor(0, new Color(1f, 0.85f, 0.45f, 0.8f));
+        ramp.SetColor(0, new Color(1f, 0.74f, 0.34f, 0.75f));
         ramp.SetColor(1, new Color(0.2f, 0.05f, 0.02f, 0f));
         ramp.AddPoint(0.3f, new Color(1f, 0.5f, 0.1f, 0.7f));
         ramp.AddPoint(0.65f, new Color(0.5f, 0.12f, 0.03f, 0.4f));
