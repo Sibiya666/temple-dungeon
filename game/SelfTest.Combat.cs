@@ -444,7 +444,10 @@ public sealed partial class SelfTest
         var rune = DummyView.RuneColor;
         var outline = AssetLibrary.OutlineColor;
         float Saturation(Color c) => Mathf.Max(c.R, Mathf.Max(c.G, c.B)) - Mathf.Min(c.R, Mathf.Min(c.G, c.B));
-        Check(Saturation(rune) < Saturation(outline) - 0.3f && rune.B > outline.B, "руны не бледнее и не холоднее контура героя");
+        // The hero's outline is warm white / pale cream (HUD spec §9: gold is the rare leader's mark), the runes a darker pale gold.
+        Check(Saturation(outline) <= 0.2f && outline.V >= 0.95f && outline.R >= outline.G && outline.G >= outline.B && outline.B > 0.7f,
+            $"контур героя не теплый белый: {outline}");
+        Check(outline.V - rune.V >= 0.1f && Saturation(rune) > Saturation(outline), "руны не отличаются от теплого белого контура героя");
         Check(!(rune.B > rune.G && rune.R > rune.G), "руны фиолетовые (цвет тьмы)");
         Driver.SetDummy(TrainingRoom.DefaultDummyId);
         GD.Print("SELFTEST NOTE пресеты: " + string.Join(", ", notes));

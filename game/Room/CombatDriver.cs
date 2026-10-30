@@ -233,6 +233,7 @@ public partial class CombatDriver : Node
         if (Dummy.PresetId == Training.DummyId) return;
         Dummy.SetPreset(Training.DummyId);
         SelectedTarget = null;
+        LastHitFigure = null;
         ResetVisuals();
     }
 
@@ -402,6 +403,7 @@ public partial class CombatDriver : Node
         var target = hit.Target ?? 0;
         var kind = DamageVisuals.Of(hit.DamageType);
         Dummy.MarkTarget(target);
+        LastHitFigure = Dummy.FigureOf(target);
         Dummy.Flash(Effects, target, kind, hit.IsCrit, hit.IsDot);
         if (!hit.IsDot && !channel) Dummy.React(target, _visualTime);
         // Tick numbers start lower than hit numbers so the two streams do not cover each other.
@@ -608,6 +610,17 @@ public partial class CombatDriver : Node
     /// <summary>The figure RB (or Tab) chose for LB / F, or null (then the nearest one).</summary>
     public int? SelectedTarget { get; private set; }
 
+    /// <summary>The figure the last shown hit landed on (a skill's hit or a single target's tick), or null before the first hit.</summary>
+    public int? LastHitFigure { get; private set; }
+
+    /// <summary>The dummy figure under a point of the room's screen (the room viewport's pixels), or null.</summary>
+    public int? FigureAt(Vector2 screen)
+    {
+        var camera = Room.CameraRig.Camera;
+        if (!camera.IsInsideTree()) return null;
+        return Dummy.Pick(camera.ProjectRayOrigin(screen), camera.ProjectRayNormal(screen));
+    }
+
     /// <summary>RB: the next figure (on «Рой»; the only one otherwise) gets the ring and becomes the target of LB.</summary>
     public void SelectNextTarget()
     {
@@ -637,10 +650,7 @@ public partial class CombatDriver : Node
     {
         _leftHeld = true;
         _leftHeldFor = 0;
-        var camera = Room.CameraRig.Camera;
-        var origin = camera.ProjectRayOrigin(screen);
-        var dir = camera.ProjectRayNormal(screen);
-        if (Dummy.Pick(origin, dir) is { } figure)
+        if (FigureAt(screen) is { } figure)
         {
             ApproachDummy(figure);
             _leftHeld = false;

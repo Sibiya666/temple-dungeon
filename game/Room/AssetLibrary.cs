@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Godot;
 
@@ -75,12 +75,13 @@ public sealed class AssetLibrary
     /// <summary>Enemy skin multiplier (prototype `_style` had 0.62; the art review asked for ~0.5).</summary>
     public static readonly Color EnemyDim = new(0.5f, 0.49f, 0.47f, 1f);
 
-    public static readonly Color OutlineColor = new(1f, 0.78f, 0.35f);
+    /// <summary>The hero's outline: warm white / pale cream (HUD spec §9; gold is the rare leader's mark, enemies spec 7.2).</summary>
+    public static readonly Color OutlineColor = new(1f, 0.95f, 0.84f);
 
     private const string OutlineShaderCode = """
         shader_type spatial;
         render_mode unshaded, cull_front, depth_draw_opaque;
-        uniform vec4 color : source_color = vec4(1.0, 0.78, 0.35, 1.0);
+        uniform vec4 color : source_color = vec4(1.0, 0.95, 0.84, 1.0);
         uniform float grow = 0.022;
         void vertex() { VERTEX += NORMAL * grow; }
         void fragment() { ALBEDO = color.rgb; }

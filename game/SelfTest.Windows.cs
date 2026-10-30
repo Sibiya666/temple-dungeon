@@ -1,6 +1,7 @@
-﻿using Dialoid.Core.Simulation;
+using Dialoid.Core.Simulation;
 using Dialoid.Game.Room;
 using Dialoid.Game.Ui;
+using Dialoid.Game.Ui.Hud;
 using Dialoid.Sandbox;
 using Godot;
 
@@ -282,7 +283,7 @@ public sealed partial class SelfTest
         PlaceNearDummy();
         hud.Refresh();
         var state = Training.State!;
-        Check(hud.Resource.Text == ResourceBar.TextOf(Training.ResourceName, state.Resource, state.ResourceMax) && hud.Resource.Text.StartsWith(Training.ResourceName, StringComparison.Ordinal),
+        Check(hud.Resource.Text == ResourceBarView.TextOf(Training.ResourceName, state.Resource, state.ResourceMax) && hud.Resource.Text.StartsWith(Training.ResourceName, StringComparison.Ordinal),
             $"полоса ресурса «{hud.Resource.Text}»");
         var shortSeen = false;
         foreach (var view in hud.Slots)
@@ -292,7 +293,7 @@ public sealed partial class SelfTest
             Check(view.NameText == (info?.Name ?? "пусто"), $"слот {view.Number}: «{view.NameText}»");
             // The red frame is the core's own resource check (live costs and buffs), never a formula of the game layer.
             var expectShort = info != null && state.ResourceShortSlots.Contains(view.Number);
-            Check(view.ResourceShort == expectShort && (view.FrameColor == SlotView.ShortColor) == expectShort,
+            Check(view.ResourceShort == expectShort && (view.FrameColor == SkillSlotView.ShortColor) == expectShort,
                 $"слот {view.Number}: красная рамка {view.ResourceShort}, в State {expectShort}");
             Check(info == null || view.CostNow == state.CostBySlot[view.Number], $"слот {view.Number}: стоимость {view.CostNow}");
             shortSeen |= expectShort;
@@ -329,7 +330,7 @@ public sealed partial class SelfTest
         hud.Refresh();
         var blinking = hud.Slots[cry - 1];
         Check(blinking.BlinkLeft > 0, "слот не мигнул при отказе");
-        Check(blinking.FrameColor != SlotView.ShortColor || blinking.ResourceShort, "мигание отказа выглядит как нехватка ресурса");
+        Check(blinking.FrameColor != SkillSlotView.ShortColor || blinking.ResourceShort, "мигание отказа выглядит как нехватка ресурса");
         // The refusal text never lies on the dummy plate (the hero stands beside the dummy here).
         Check(!hud.PlateShown || !hud.RefusalRect.Intersects(hud.PlateRect), $"текст отказа {hud.RefusalRect} на плашке {hud.PlateRect}");
         // A damage number never starts under the plate: it is lifted above the plate's top edge.

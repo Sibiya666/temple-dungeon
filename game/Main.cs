@@ -265,6 +265,16 @@ public partial class Main : Control
         Hud = new CombatHud();
         AddChild(Hud);
         Hud.Setup(Combat, session, RoomToScreen);
+        Hud.FigureAt = ScreenToFigure;
+    }
+
+    /// <summary>The dummy figure under a point of this control's screen (the target plate follows the cursor), or null.</summary>
+    public int? ScreenToFigure(Vector2 point)
+    {
+        if (Combat == null || RoomViewport == null || RoomContainer == null || !RoomContainer.GetGlobalRect().HasPoint(point)) return null;
+        var size = RoomViewport.Size;
+        var scale = RoomContainer.Size.X > 0 && RoomContainer.Size.Y > 0 ? new Vector2(size.X, size.Y) / RoomContainer.Size : Vector2.One;
+        return Combat.FigureAt((point - RoomContainer.GlobalPosition) * scale);
     }
 
     /// <summary>A point of the room on this control's screen; null when it is behind the camera.</summary>

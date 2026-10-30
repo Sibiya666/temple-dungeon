@@ -3,30 +3,38 @@ using Dialoid.Core.Effects;
 using Dialoid.Core.Explain;
 using Dialoid.Core.Simulation;
 using Dialoid.Game.Room;
+using Dialoid.Game.Ui.Hud;
 using Dialoid.Sandbox;
 using Godot;
 
 namespace Dialoid.Game.Ui;
 
 /// <summary>
-/// The combat screen (spec §4 «Экран боя»): without it the owner cannot see why a skill did not fire. Bottom centre: the hero's
-/// buffs and mechanic stacks with timers, the resource bar («Мана 45 / 100»), the slot bar 1–5 (skill name, key, cooldown
-/// shade with seconds, red frame and shade when the resource is short, a highlight for the queued press and the held channel, a
-/// blink on a refusal; the tooltip gives cost, cooldown and use time from <see cref="SlotInfo"/>). Over the dummy: a plate with
-/// the preset name and the target's ailments and debuffs with stacks and timers. Everything is read from
-/// <see cref="TrainingRoom.State"/> every frame; nothing here decides a rule. Numbers go through <see cref="RuNumber"/> (none of
-/// them has a NumberLine). Only the slots take the mouse (for their tooltips); the rest lets clicks through to the room.
+/// The room's combat screen (room spec §4 «Экран боя»), assembled from the HUD's reusable components (HUD spec §4 items 3, 6–8,
+/// §7 «Сейчас»): bottom centre, from the top — the hero's ailments and debuffs (<see cref="EffectRowView"/>, torn dark-red frame;
+/// empty in the room, the dummy never hits), the hero's buffs and stacks (bronze frame), the resource bar
+/// (<see cref="ResourceBarView"/>) and the slot bar 1–5 (<see cref="SkillSlotView"/>). The target plate
+/// (<see cref="TargetPlateView"/>) floats over the head of the target's figure: with the mouse the figure under the cursor, else
+/// the figure the last skill hit; with the gamepad the target RB chose, else the last hit (<see cref="ChooseTarget"/>). Each frame
+/// this class builds the components' records from <see cref="TrainingRoom.State"/> and places the views; nothing here decides a
+/// rule. Only the slots and the rows' «+N» take the mouse (for their tooltips); the rest lets clicks through to the room.
 /// </summary>
 public partial class CombatHud : Control
 {
-    public const float SlotWidth = 112;
-    public const float SlotHeight = 72;
+    public const float SlotWidth = SkillSlotView.Width;
+    public const float SlotHeight = SkillSlotView.Height;
     public const float SlotGap = 6;
     public const float BottomMargin = 12;
-    public const double BlinkSec = 0.28;
+    public const double BlinkSec = SkillSlotView.BlinkSec;
+
+    /// <summary>Icons a hero row shows at most before it folds the rest into «+N».</summary>
+    public const int HeroRowMax = 9;
+
+    /// <summary>Icons the target plate shows at most before «+N».</summary>
+    public const int PlateRowMax = 6;
 
     /// <summary>Pixels the combat screen takes at the bottom (full-height windows end above it).</summary>
-    public const float ReservedHeight = BottomMargin + SlotHeight + 6 + ResourceBar.BarHeight + 6 + 30 + 8;
+    public const float ReservedHeight = BottomMargin + SlotHeight + 6 + ResourceBarView.BarHeight + 6 + 30 + 8;
 
     public static float BarWidth => 5 * SlotWidth + 4 * SlotGap;
 
@@ -36,7 +44,7 @@ public partial class CombatHud : Control
     /// <summary>Pixels kept between a window and the combat screen.</summary>
     public const float WindowGap = 8;
 
-    /// <summary>The bottom column (buffs, resource, slots) on screen.</summary>
+    /// <summary>The bottom column (rows, resource, slots) on screen.</summary>
     public Rect2 BottomRect => _column.GetGlobalRect();
 
     private VBoxContainer _column = null!;
@@ -52,34 +60,43 @@ public partial class CombatHud : Control
     private SandboxSession _session = null!;
     private EffectNames _names = null!;
     private Func<Vector3, Vector2?> _project = null!;
-    private readonly List<SlotView> _slots = new();
-    private readonly List<EffectChip> _heroChips = new();
-    private readonly List<EffectChip> _plateChips = new();
-    private HFlowContainer _heroRow = null!;
-    private PanelContainer _plate = null!;
-    private Label _plateName = null!;
-    private HFlowContainer _plateRow = null!;
+    private readonly List<SkillSlotView> _slots = new();
     private Label _refusal = null!;
+    private SharedTooltip _focusTip = null!;
+    private Vector2? _mouse;
+    private bool _gamepad;
+    private IReadOnlyList<EffectChipData>? _previewBuffs, _previewDebuffs;
 
-    public ResourceBar Resource { get; private set; } = null!;
-    public IReadOnlyList<SlotView> Slots => _slots;
+    public ResourceBarView Resource { get; private set; } = null!;
+    public IReadOnlyList<SkillSlotView> Slots => _slots;
+    public EffectRowView HeroBuffs { get; private set; } = null!;
+    public EffectRowView HeroDebuffs { get; private set; } = null!;
+    public TargetPlateView TargetPlate { get; private set; } = null!;
 
-    /// <summary>Texts of the hero's buff and stack icons shown now, in order.</summary>
-    public IEnumerable<string> HeroTexts => _heroChips.Where(c => c.Visible).Select(c => c.Text);
+    /// <summary>The figure under a point of this control's screen, or null (set by the scene: it knows the room's camera).</summary>
+    public Func<Vector2, int?>? FigureAt { get; set; }
 
-    /// <summary>The effects behind the hero's icons shown now.</summary>
-    public IEnumerable<TimedEffect> HeroEffects => _heroChips.Where(c => c.Visible).Select(c => c.Effect!);
+    /// <summary>Texts of the hero's buff and stack icons shown now, in order («+N» last).</summary>
+    public IEnumerable<string> HeroTexts => HeroBuffs.ShownTexts;
 
-    /// <summary>The dummy plate: shown, its preset name, its icon texts, and its rect on screen.</summary>
-    public bool PlateShown => _plate.Visible;
-    public string PlateName => _plateName.Text;
-    public IEnumerable<string> PlateTexts => _plateChips.Where(c => c.Visible).Select(c => c.Text);
-    public Rect2 PlateRect => _plate.GetGlobalRect();
-    public Control Plate => _plate;
+    /// <summary>The effects behind the hero's buff icons shown now.</summary>
+    public IEnumerable<TimedEffect> HeroEffects => HeroBuffs.ShownEffects.Where(e => e.Effect != null).Select(e => e.Effect!);
+
+    /// <summary>The target plate: shown, whose (core target), its name, its icon texts, and its rect on screen.</summary>
+    public bool PlateShown => TargetPlate.Visible;
+    public int? PlateTarget => TargetPlate.Visible ? TargetPlate.Data?.Target : null;
+    public string PlateName => TargetPlate.NameText;
+    public IEnumerable<string> PlateTexts => TargetPlate.Effects.ShownTexts;
+    public Rect2 PlateRect => TargetPlate.GetGlobalRect();
+    public Control Plate => TargetPlate;
 
     /// <summary>The refusal text shown over the hero now, or null.</summary>
     public string? RefusalShown => _refusal.Visible ? _refusal.Text : null;
     public Rect2 RefusalRect => new(_refusal.Position, _refusal.Size);
+
+    /// <summary>The full list shown for a focused «+N», or null.</summary>
+    public string? FocusTooltip => _focusTip.Shown;
+    public Rect2 FocusTooltipRect => _focusTip.GetGlobalRect();
 
     public CombatHud()
     {
@@ -111,41 +128,26 @@ public partial class CombatHud : Control
         column.GrowVertical = GrowDirection.Begin;
         _column = column;
 
-        _heroRow = new HFlowContainer { Name = "Buffs", MouseFilter = MouseFilterEnum.Ignore, Alignment = FlowContainer.AlignmentMode.Center, SizeFlagsVertical = SizeFlags.ShrinkEnd };
-        _heroRow.AddThemeConstantOverride("h_separation", 4);
-        _heroRow.AddThemeConstantOverride("v_separation", 4);
-        column.AddChild(_heroRow);
+        HeroDebuffs = new EffectRowView(EffectRowKind.Debuffs, HeroRowMax) { Name = "Debuffs", SizeFlagsVertical = SizeFlags.ShrinkEnd, Visible = false };
+        column.AddChild(HeroDebuffs);
+        HeroBuffs = new EffectRowView(EffectRowKind.Buffs, HeroRowMax) { Name = "Buffs", SizeFlagsVertical = SizeFlags.ShrinkEnd };
+        column.AddChild(HeroBuffs);
 
-        Resource = new ResourceBar { Name = "Resource" };
+        Resource = new ResourceBarView(BarWidth) { Name = "Resource" };
         column.AddChild(Resource);
 
         var bar = new HBoxContainer { Name = "Slots", MouseFilter = MouseFilterEnum.Ignore };
         bar.AddThemeConstantOverride("separation", (int)SlotGap);
         column.AddChild(bar);
-        for (int i = 1; i <= Dialoid.Sandbox.SandboxSession.SlotCount; i++)
+        for (int i = 1; i <= SandboxSession.SlotCount; i++)
         {
-            var slot = new SlotView(i) { Name = "Slot" + i };
+            var slot = new SkillSlotView(i) { Name = "Slot" + i };
             _slots.Add(slot);
             bar.AddChild(slot);
         }
 
-        _plate = new PanelContainer { Name = "DummyPlate", MouseFilter = MouseFilterEnum.Ignore, Visible = false };
-        var plateStyle = new StyleBoxFlat { BgColor = new Color(0.06f, 0.055f, 0.05f, 0.9f), BorderColor = new Color(0.55f, 0.27f, 0.22f), ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 3, ContentMarginBottom = 4 };
-        plateStyle.SetBorderWidthAll(1);
-        plateStyle.SetCornerRadiusAll(3);
-        _plate.AddThemeStyleboxOverride("panel", plateStyle);
-        var plateBox = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        plateBox.AddThemeConstantOverride("separation", 3);
-        _plate.AddChild(plateBox);
-        _plateName = new Label { HorizontalAlignment = HorizontalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
-        _plateName.AddThemeColorOverride("font_color", new Color(0.95f, 0.82f, 0.72f));
-        _plateName.AddThemeFontSizeOverride("font_size", 15);
-        plateBox.AddChild(_plateName);
-        _plateRow = new HFlowContainer { MouseFilter = MouseFilterEnum.Ignore, Alignment = FlowContainer.AlignmentMode.Center, CustomMinimumSize = new Vector2(0, 0) };
-        _plateRow.AddThemeConstantOverride("h_separation", 3);
-        _plateRow.AddThemeConstantOverride("v_separation", 3);
-        plateBox.AddChild(_plateRow);
-        AddChild(_plate);
+        TargetPlate = new TargetPlateView(PlateRowMax) { Name = "DummyPlate" };
+        AddChild(TargetPlate);
 
         // The refusal text over the hero is drawn here, after the plate, so a plate next to the hero never covers it.
         _refusal = new Label { Name = "Refusal", MouseFilter = MouseFilterEnum.Ignore, Visible = false, HorizontalAlignment = HorizontalAlignment.Center };
@@ -164,6 +166,10 @@ public partial class CombatHud : Control
         {
             if (e.Slot is { } s && s >= 1 && s <= _slots.Count) _slots[s - 1].Blink();
         };
+
+        // The full list of a focused «+N» (the shared tooltip component; the hover one is the windows' own).
+        _focusTip = new SharedTooltip { Name = "HudFocusTip" };
+        AddChild(_focusTip);
 
         // Device messages («Геймпад отключен») at the top centre for a few seconds; slot keys follow the device.
         _toast = new Label { Name = "Toast", Visible = false, MouseFilter = MouseFilterEnum.Ignore, HorizontalAlignment = HorizontalAlignment.Center };
@@ -185,8 +191,11 @@ public partial class CombatHud : Control
     /// <summary>Slot captions: digits on the keyboard, the gamepad's buttons («[X]» … «[RT]») on the gamepad.</summary>
     public void ShowDevice(bool gamepad)
     {
-        foreach (var slot in _slots) slot.ShowKey(gamepad ? ButtonPrompts.SlotGlyph(slot.Number) : slot.Number.ToString());
+        _gamepad = gamepad;
+        foreach (var slot in _slots) slot.ShowKey(KeyOf(slot.Number, gamepad));
     }
+
+    public static string KeyOf(int slot, bool gamepad) => gamepad ? ButtonPrompts.SlotGlyph(slot) : slot.ToString();
 
     public void HideToast()
     {
@@ -204,6 +213,23 @@ public partial class CombatHud : Control
         _toastLeft = ToastSec;
     }
 
+    /// <summary>
+    /// Shows <paramref name="buffs"/> and <paramref name="debuffs"/> in the hero's rows instead of the fight's (the self-test's
+    /// stand-in data: in the room the hero never has debuffs); null for a row gives it back to the fight.
+    /// </summary>
+    public void PreviewHeroRows(IReadOnlyList<EffectChipData>? buffs, IReadOnlyList<EffectChipData>? debuffs)
+    {
+        _previewBuffs = buffs;
+        _previewDebuffs = debuffs;
+        Refresh();
+    }
+
+    public override void _Input(InputEvent e)
+    {
+        // The cursor, for the figure under it (the room's input may never see a motion over the interface).
+        if (e is InputEventMouse mouse) _mouse = mouse.Position;
+    }
+
     public override void _Process(double delta)
     {
         Refresh(delta);
@@ -215,23 +241,76 @@ public partial class CombatHud : Control
         }
     }
 
+    /// <summary>The records of the components from the fight's state now (the self-test compares them with the state).</summary>
+    public SkillSlotData SlotData(int number) =>
+        SkillSlotData.From(number, number - 1 < _driver.Training.Slots.Count ? _driver.Training.Slots[number - 1] : null, _driver.Training.State,
+            _driver.Training.ResourceName, KeyOf(number, _gamepad));
+
+    public ResourceBarData? ResourceData() => ResourceBarData.From(_driver.Training.State, _driver.Training.ResourceName);
+
+    public IReadOnlyList<EffectChipData> BuffData() =>
+        _previewBuffs ?? EffectChipData.From(_driver.Training.State?.HeroEffects ?? Array.Empty<TimedEffect>(), _names);
+
+    /// <summary>The hero's ailments and debuffs: none in the room (the dummy never hits) unless the self-test shows stand-ins.</summary>
+    public IReadOnlyList<EffectChipData> DebuffData() => _previewDebuffs ?? Array.Empty<EffectChipData>();
+
+    public TargetPlateData? PlateData(int? target) => target is { } t
+        ? TargetPlateData.From(_driver.Training.State, t, BreakdownText.DummyName(_session.Data, _driver.Training.DummyId), _names)
+        : null;
+
+    /// <summary>
+    /// Whose plate (HUD spec §4 item 8): with the mouse the figure under the cursor, else the figure the last skill hit; with the
+    /// gamepad the target RB chose, else the last hit. In the room the fight always runs against the pack's first target, so
+    /// before any hit the plate is that target's (the room's builder decision: «no target» only when there is no figure).
+    /// </summary>
+    public static int? ChooseTarget(bool gamepad, int? hovered, int? selected, int? lastHit, int figures)
+    {
+        if (figures <= 0) return null;
+        var target = gamepad ? selected ?? lastHit : hovered ?? lastHit;
+        return Math.Clamp(target ?? 0, 0, figures - 1);
+    }
+
+    /// <summary>The figure under the cursor now (keyboard-and-mouse mode, the cursor over the room, not over the interface).</summary>
+    public int? HoveredFigure()
+    {
+        if (_gamepad || _mouse is not { } at || FigureAt == null) return null;
+        var over = GetViewport().GuiGetHoveredControl();
+        if (over != null && over is not SubViewportContainer) return null;
+        return FigureAt(at);
+    }
+
     /// <summary>Reads the fight's state into the screen (the self-test calls it after stepping the fight by hand).</summary>
     public void Refresh(double delta = 0)
     {
         if (_driver == null) return;
-        var training = _driver.Training;
-        var state = training.State;
-        for (int i = 0; i < _slots.Count; i++)
-            _slots[i].Show(i < training.Slots.Count ? training.Slots[i] : null, state, training.ResourceName, delta);
-        Resource.Show(state, training.ResourceName);
-        Fill(_heroRow, _heroChips, state?.HeroEffects ?? Array.Empty<TimedEffect>());
+        for (int i = 0; i < _slots.Count; i++) _slots[i].Show(SlotData(i + 1), delta);
+        Resource.Show(ResourceData());
+        var buffs = BuffData();
+        HeroBuffs.Show(buffs);
+        var debuffs = DebuffData();
+        if (HeroDebuffs.Visible != debuffs.Count > 0) HeroDebuffs.Visible = debuffs.Count > 0;
+        HeroDebuffs.Show(debuffs);
 
-        var target = _driver.Dummy.RingTarget ?? 0;
-        var effects = state != null && target < state.TargetEffects.Count ? state.TargetEffects[target] : Array.Empty<TimedEffect>();
-        _plateName.Text = BreakdownText.DummyName(_session.Data, training.DummyId);
-        Fill(_plateRow, _plateChips, effects);
-        PlacePlate();
+        var dummy = _driver.Dummy;
+        var target = ChooseTarget(_gamepad, HoveredFigure(), _driver.SelectedTarget, _driver.LastHitFigure, dummy.FigureCount);
+        TargetPlate.Show(PlateData(target));
+        PlacePlate(target);
         PlaceRefusal();
+        UpdateFocusTip();
+    }
+
+    /// <summary>A focused «+N» shows its row's full list over the row.</summary>
+    private void UpdateFocusTip()
+    {
+        var focused = new[] { HeroBuffs, HeroDebuffs, TargetPlate.Effects }.FirstOrDefault(r => r.Overflow.HasFocus() && r.Overflow.IsVisibleInTree());
+        if (focused == null)
+        {
+            if (_focusTip.Visible) _focusTip.Visible = false;
+            return;
+        }
+        var size = _focusTip.Show(focused.Overflow.TooltipText);
+        var at = focused.Overflow.GetGlobalRect();
+        _focusTip.PlaceAt(new Vector2(at.Position.X, at.Position.Y - size.Y - 6), size, Size, 0);
     }
 
     /// <summary>The hero's refusal text («Перезарядка 2,1 с») where the hero shows it, fading as it does.</summary>
@@ -248,9 +327,9 @@ public partial class CombatHud : Control
         _refusal.Modulate = new Color(1, 1, 1, hero.RefusalAlpha);
         var size = _refusal.GetCombinedMinimumSize();
         _refusal.Size = size;
-        // Over the head; when that would touch the dummy plate (the hero beside the dummy), under the feet below the target ring;
+        // Over the head; when that would touch the target plate (the hero beside the dummy), under the feet below the target ring;
         // at chest level (across the figures) only as the last resort.
-        var plate = _plate.Visible ? new Rect2(_plate.Position, _plate.Size).Grow(4) : new Rect2();
+        var plate = TargetPlate.Visible ? new Rect2(TargetPlate.Position, TargetPlate.Size).Grow(4) : new Rect2();
         var chest = _project(hero.Position + new Vector3(0, HeroView.Height * 0.6f, 0));
         var feet = _project(hero.Position);
         var spots = new List<Vector2> { p - size / 2 };
@@ -259,50 +338,26 @@ public partial class CombatHud : Control
         _refusal.Position = spots.FirstOrDefault(s => !plate.Intersects(new Rect2(s, size)), spots[^1]);
     }
 
-    private void Fill(HFlowContainer row, List<EffectChip> chips, IReadOnlyList<TimedEffect> effects)
-    {
-        while (chips.Count < effects.Count)
-        {
-            var chip = new EffectChip();
-            chips.Add(chip);
-            row.AddChild(chip);
-        }
-        for (int i = 0; i < chips.Count; i++)
-        {
-            if (i < effects.Count) chips[i].Show(effects[i], _names.Of(effects[i]));
-            else chips[i].Visible = false;
-        }
-    }
-
-    /// <summary>Over the dummy's head (the highest figure, the pack's centre), centred; hidden when behind the camera.</summary>
-    private void PlacePlate()
+    /// <summary>Over the head of the target's figure, centred; hidden when there is no target or it is behind the camera.</summary>
+    private void PlacePlate(int? target)
     {
         var dummy = _driver.Dummy;
-        if (dummy.FigureCount == 0)
+        if (target is not { } t || t >= dummy.FigureCount || !TargetPlate.Visible)
         {
-            _plate.Visible = false;
+            TargetPlate.Visible = false;
             return;
         }
-        var centre = Vector3.Zero;
-        var top = 0f;
-        for (int i = 0; i < dummy.FigureCount; i++)
+        var feet = dummy.TargetPosition(t);
+        var top = feet.Y + dummy.Figures[dummy.FigureOf(t)].Model.TargetHeight;
+        if (_project(new Vector3(feet.X, top + 0.05f, feet.Z)) is not { } p)
         {
-            var feet = dummy.TargetPosition(i);
-            centre += feet;
-            top = Mathf.Max(top, feet.Y + dummy.Figures[i].Model.TargetHeight);
-        }
-        centre /= dummy.FigureCount;
-        var anchor = _project(new Vector3(centre.X, top + 0.05f, centre.Z));
-        if (anchor is not { } p)
-        {
-            _plate.Visible = false;
+            TargetPlate.Visible = false;
             return;
         }
-        _plate.Visible = true;
-        var size = _plate.GetCombinedMinimumSize();
-        var width = Mathf.Max(size.X, 150);
-        _plate.Size = new Vector2(width, size.Y);
-        _plate.Position = new Vector2(p.X - width / 2, p.Y - size.Y);
+        var size = TargetPlate.GetCombinedMinimumSize();
+        var width = Mathf.Max(size.X, TargetPlateView.MinWidth);
+        TargetPlate.Size = new Vector2(width, size.Y);
+        TargetPlate.Position = new Vector2(p.X - width / 2, p.Y - size.Y);
     }
 
     /// <summary>Pixels between the hero's feet and a refusal text placed under them (clear of the target ring).</summary>
@@ -317,8 +372,8 @@ public partial class CombatHud : Control
     /// </summary>
     public Vector3 LiftAbovePlate(Vector3 at)
     {
-        if (!_plate.Visible || _project(at) is not { } p || _project(at + Vector3.Up) is not { } up) return at;
-        var rect = new Rect2(_plate.Position, _plate.Size);
+        if (!TargetPlate.Visible || _project(at) is not { } p || _project(at + Vector3.Up) is not { } up) return at;
+        var rect = new Rect2(TargetPlate.Position, TargetPlate.Size);
         var perMetre = p.Y - up.Y; // screen pixels per metre of height
         var limit = rect.Position.Y - NumberGap;
         if (perMetre < 0.1f || p.Y <= limit || p.X < rect.Position.X - 60 || p.X > rect.End.X + 60) return at;
@@ -326,304 +381,7 @@ public partial class CombatHud : Control
     }
 
     /// <summary>Seconds with one decimal under 10, whole above: «2,1», «14».</summary>
-    public static string Seconds(double sec) => sec < 9.95 ? RuNumber.Format(sec, "0.0") : RuNumber.Format(Math.Round(sec, MidpointRounding.AwayFromZero), "0");
-}
-
-/// <summary>
-/// One slot of the bar (UI review round 1): the key top-left; the cooldown seconds centred in the upper part with a dark curtain
-/// coming down from the top by the remaining fraction; the name below (never under the seconds, at least 80 % bright on
-/// cooldown); a red frame plus a dark-red shade only when the resource is short (the core's <see cref="LiveState.ResourceShortSlots"/>);
-/// a yellow frame for the queued press and a blue one for the held channel; a refused press flashes the whole slot light yellow
-/// for <see cref="CombatHud.BlinkSec"/> and shakes it ±3 px (no red: red means the resource).
-/// </summary>
-public partial class SlotView : Control
-{
-    public static readonly Color Background = new(0.1f, 0.095f, 0.09f, 0.94f);
-    public static readonly Color EdgeColor = new(0.42f, 0.35f, 0.25f);
-    public static readonly Color ShortColor = new(0.9f, 0.15f, 0.12f);
-    public static readonly Color QueuedColor = new(0.98f, 0.82f, 0.3f);
-    public static readonly Color HeldColor = new(0.45f, 0.85f, 1f);
-    public static readonly Color FlashColor = new(1f, 0.96f, 0.78f);
-    public const float ShakePixels = 3;
-
-    private readonly Control _inner;
-    private readonly Label _name;
-    private readonly Label _key;
-    private readonly Label _cooldown;
-    private readonly Control _frame;
-    private string _tooltipFor = "";
-    private bool? _empty;
-
-    public int Number { get; }
-    public SlotInfo? Info { get; private set; }
-
-    /// <summary>Cooldown seconds shown (null when the skill is ready) and its text.</summary>
-    public double? CooldownLeft { get; private set; }
-    public string CooldownText => _cooldown.Visible ? _cooldown.Text : "";
-
-    /// <summary>A press would be refused for the resource now (red frame and shade), as the core says.</summary>
-    public bool ResourceShort { get; private set; }
-
-    /// <summary>What one use costs now (the core's <see cref="LiveState.CostBySlot"/>), or null for an empty slot.</summary>
-    public double? CostNow { get; private set; }
-    public bool Queued { get; private set; }
-    public bool Held { get; private set; }
-    public double BlinkLeft { get; private set; }
-    public string NameText => _name.Text;
-
-    /// <summary>The colour of the frame drawn now (red only for a short resource).</summary>
-    public Color FrameColor { get; private set; }
-
-    /// <summary>Horizontal shake of the slot's face now, pixels.</summary>
-    public float Shake => _inner.Position.X;
-
-    public SlotView(int number)
-    {
-        Number = number;
-        CustomMinimumSize = new Vector2(CombatHud.SlotWidth, CombatHud.SlotHeight);
-        MouseFilter = MouseFilterEnum.Stop;
-
-        _inner = new Control { Name = "Face", MouseFilter = MouseFilterEnum.Ignore };
-        _inner.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _inner.Draw += () => _inner.DrawRect(new Rect2(Vector2.Zero, _inner.Size), Background);
-        AddChild(_inner);
-
-        _frame = new Control { MouseFilter = MouseFilterEnum.Ignore };
-        _frame.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _frame.Draw += DrawFrame;
-        _inner.AddChild(_frame);
-
-        _name = new Label
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Bottom,
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            ClipText = true,
-            MouseFilter = MouseFilterEnum.Ignore,
-        };
-        _name.AddThemeFontSizeOverride("font_size", 14);
-        _name.AddThemeConstantOverride("line_spacing", -2);
-        _name.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        (_name.OffsetLeft, _name.OffsetRight, _name.OffsetTop, _name.OffsetBottom) = (5, -5, 30, -3);
-        _inner.AddChild(_name);
-
-        _key = new Label { Text = number.ToString(), MouseFilter = MouseFilterEnum.Ignore, Position = new Vector2(6, 1) };
-        _key.AddThemeFontSizeOverride("font_size", 14);
-        _key.AddThemeColorOverride("font_color", new Color(0.95f, 0.8f, 0.45f));
-        _inner.AddChild(_key);
-
-        // The seconds are centred in the upper part, the name sits below them: they never cover each other.
-        _cooldown = new Label { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore, Visible = false };
-        _cooldown.AddThemeFontSizeOverride("font_size", 23);
-        _cooldown.AddThemeColorOverride("font_color", Colors.White);
-        _cooldown.AddThemeColorOverride("font_outline_color", Colors.Black);
-        _cooldown.AddThemeConstantOverride("outline_size", 6);
-        _cooldown.SetAnchorsAndOffsetsPreset(LayoutPreset.TopWide);
-        (_cooldown.OffsetLeft, _cooldown.OffsetRight, _cooldown.OffsetTop, _cooldown.OffsetBottom) = (18, -18, 0, 32);
-        _inner.AddChild(_cooldown);
-    }
-
-    /// <summary>The key caption now («1» or «[X]»).</summary>
-    public string KeyText => _key.Text;
-
-    public void ShowKey(string text) => _key.Text = text;
-
-    /// <summary>A refused press on this slot: the slot flashes and shakes for <see cref="CombatHud.BlinkSec"/>.</summary>
-    public void Blink() => BlinkLeft = CombatHud.BlinkSec;
-
-    public void Show(SlotInfo? info, LiveState? state, string resourceName, double delta)
-    {
-        Info = info;
-        BlinkLeft = Math.Max(0, BlinkLeft - delta);
-        var fade = (float)(BlinkLeft / CombatHud.BlinkSec);
-        _inner.Position = new Vector2(BlinkLeft > 0 ? ShakePixels * fade * Mathf.Sin((float)(BlinkLeft * 70)) : 0, 0);
-        _name.Text = info?.Name ?? "пусто";
-        if (_empty != (info == null)) // a theme override relayouts: only when it changes
-        {
-            _empty = info == null;
-            _name.AddThemeColorOverride("font_color", info == null ? new Color(0.5f, 0.47f, 0.42f) : new Color(0.93f, 0.9f, 0.84f));
-        }
-        CooldownLeft = info != null && state != null && state.CooldownLeftBySlot.TryGetValue(Number, out var left) && left > 0 ? left : null;
-        CostNow = info != null && state != null && state.CostBySlot.TryGetValue(Number, out var cost) ? cost : null;
-        ResourceShort = info != null && state != null && state.ResourceShortSlots.Contains(Number);
-        Queued = state?.QueuedSlot == Number;
-        Held = state?.HeldSlot == Number;
-        _cooldown.Visible = CooldownLeft != null;
-        if (CooldownLeft is { } cd) _cooldown.Text = CombatHud.Seconds(cd);
-        _name.Modulate = CooldownLeft != null || ResourceShort ? new Color(0.82f, 0.82f, 0.82f) : Colors.White;
-        FrameColor = ResourceShort ? ShortColor : Held ? HeldColor : Queued ? QueuedColor : EdgeColor;
-
-        var costKey = CostNow is { } c ? RuNumber.Format(c, "0.#") : "";
-        var tipKey = info == null ? "" : $"{info.SkillId}|{info.Cost}|{info.CostPerSec}|{info.CooldownSec}|{info.UseTimeSec}|{resourceName}|{costKey}";
-        if (tipKey != _tooltipFor)
-        {
-            _tooltipFor = tipKey;
-            TooltipText = Tooltip(Number, info, resourceName, CostNow);
-        }
-        _frame.QueueRedraw();
-    }
-
-    /// <summary>The slot's tooltip: name, key, cost (and what it costs now, when buffs change it), cooldown, use time.</summary>
-    public static string Tooltip(int number, SlotInfo? info, string resourceName, double? costNow = null)
-    {
-        if (info == null) return $"Слот {number} пуст: скилл ставится в окне «Скиллы» (K)";
-        var resource = ResourceGenitive(resourceName);
-        var lines = new List<string> { $"{info.Name} — клавиша {number}" };
-        if (info.IsChannel)
-            lines.Add(info.CostPerSec > 0
-                ? $"Стоимость: {RuNumber.Format(info.CostPerSec, "0.##")} {resource} в секунду ({RuNumber.Format(info.Cost, "0.##")} за тик)"
-                : "Стоимость: нет");
-        else
-            lines.Add(info.Cost > 0 ? $"Стоимость: {RuNumber.Format(info.Cost, "0.##")} {resource}" : "Стоимость: нет");
-        if (costNow is { } now && Math.Abs(now - info.Cost) > 1e-6)
-            lines.Add($"Сейчас стоит: {RuNumber.Format(now, "0.##")} {resource}{(info.IsChannel ? " за тик" : "")}");
-        lines.Add(info.CooldownSec > 0 ? $"Перезарядка: {RuNumber.Format(info.CooldownSec, "0.##")} с" : "Перезарядка: нет");
-        lines.Add(info.IsChannel
-            ? $"Канал: тик {RuNumber.Format(info.UseTimeSec, "0.##")} с, пока клавиша зажата"
-            : $"Время применения: {RuNumber.Format(info.UseTimeSec, "0.##")} с");
-        return string.Join("\n", lines);
-    }
-
-    /// <summary>«Мана» → «маны», «Ярость» → «ярости» (the cost line).</summary>
-    public static string ResourceGenitive(string name) => name switch
-    {
-        "Мана" => "маны",
-        "Ярость" => "ярости",
-        "" => "ресурса",
-        _ => name.ToLowerInvariant(),
-    };
-
-    private void DrawFrame()
-    {
-        var size = _frame.Size;
-        var rect = new Rect2(Vector2.Zero, size);
-        if (Info != null && CooldownLeft is { } left)
-        {
-            // A curtain from the top: its height is the cooldown still left.
-            var fraction = Info.CooldownSec > 0 ? (float)Math.Clamp(left / Info.CooldownSec, 0, 1) : 1f;
-            _frame.DrawRect(new Rect2(0, 0, size.X, size.Y * fraction), new Color(0, 0, 0, 0.6f));
-        }
-        if (ResourceShort) _frame.DrawRect(rect, new Color(0.3f, 0, 0, 0.45f));
-        if (BlinkLeft > 0)
-        {
-            var a = (float)(BlinkLeft / CombatHud.BlinkSec);
-            _frame.DrawRect(rect, FlashColor with { A = 0.5f * a });
-        }
-        var width = FrameColor == EdgeColor ? 1f : 3f;
-        _frame.DrawRect(rect.Grow(-width / 2), FrameColor, filled: false, width: width);
-    }
-}
-
-/// <summary>The resource bar over the slots: fill and «Мана 45 / 100».</summary>
-public partial class ResourceBar : Control
-{
-    public const float BarHeight = 22;
-
-    private readonly Label _label;
-    private double _value;
-    private double _max;
-    private string _resourceId = "";
-
-    public string Text => _label.Text;
-
-    public ResourceBar()
-    {
-        CustomMinimumSize = new Vector2(CombatHud.BarWidth, BarHeight);
-        MouseFilter = MouseFilterEnum.Ignore;
-        _label = new Label { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
-        _label.AddThemeFontSizeOverride("font_size", 14);
-        _label.AddThemeColorOverride("font_outline_color", Colors.Black);
-        _label.AddThemeConstantOverride("outline_size", 4);
-        _label.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        AddChild(_label);
-    }
-
-    /// <summary>The text of the bar: «Мана 45 / 100» (whole numbers, rounded down so a short cost never reads as enough).</summary>
-    public static string TextOf(string name, double value, double max) =>
-        $"{name} {RuNumber.Grouped(Math.Floor(value))} / {RuNumber.Grouped(Math.Round(max, MidpointRounding.AwayFromZero))}";
-
-    public void Show(LiveState? state, string name)
-    {
-        Visible = state != null;
-        if (state == null) return;
-        _value = state.Resource;
-        _max = state.ResourceMax;
-        _resourceId = state.ResourceId;
-        _label.Text = TextOf(name, state.Resource, state.ResourceMax);
-        QueueRedraw();
-    }
-
-    public override void _Draw()
-    {
-        var rect = new Rect2(Vector2.Zero, Size);
-        DrawRect(rect, new Color(0.05f, 0.045f, 0.04f, 0.92f));
-        var fill = _resourceId == "fury" ? new Color(0.72f, 0.2f, 0.1f) : new Color(0.18f, 0.36f, 0.85f);
-        var fraction = _max > 0 ? (float)Math.Clamp(_value / _max, 0, 1) : 0f;
-        DrawRect(new Rect2(1, 1, (Size.X - 2) * fraction, Size.Y - 2), fill);
-        DrawRect(rect.Grow(-0.5f), SlotView.EdgeColor, filled: false, width: 1);
-    }
-}
-
-/// <summary>An icon of the combat screen: a buff, stack, ailment or debuff with its stacks and timer, as a small colored chip.</summary>
-public partial class EffectChip : PanelContainer
-{
-    private readonly Label _label;
-    private readonly StyleBoxFlat _style;
-
-    public TimedEffect? Effect { get; private set; }
-    public string Text => _label.Text;
-
-    public EffectChip()
-    {
-        MouseFilter = MouseFilterEnum.Ignore;
-        _style = new StyleBoxFlat { BgColor = new Color(0.07f, 0.065f, 0.06f, 0.92f), ContentMarginLeft = 7, ContentMarginRight = 6, ContentMarginTop = 1, ContentMarginBottom = 2 };
-        _style.SetBorderWidthAll(1);
-        _style.BorderWidthLeft = 4;
-        _style.SetCornerRadiusAll(2);
-        AddThemeStyleboxOverride("panel", _style);
-        _label = new Label { MouseFilter = MouseFilterEnum.Ignore };
-        _label.AddThemeFontSizeOverride("font_size", 14);
-        _label.AddThemeColorOverride("font_color", new Color(0.94f, 0.91f, 0.85f));
-        AddChild(_label);
-    }
-
-    /// <summary>«Боевой клич 6,2 с», «Поджог ×3 · 2,4 с», «Статический заряд: 4».</summary>
-    public static string TextOf(TimedEffect e, string name)
-    {
-        if (name.Length > 0) name = char.ToUpperInvariant(name[0]) + name[1..]; // ailment names are lowercase («поджог»)
-        if (e.Kind == TimedEffectKind.MechanicStack) return $"{name}: {RuNumber.Format(e.Stacks, "0")}";
-        var text = e.Stacks > 1 ? $"{name} ×{RuNumber.Format(e.Stacks, "0")}" : name;
-        if (e.TimeLeft is not { } t || double.IsInfinity(t)) return text;
-        // Stacks and timer are two numbers: a dot keeps «×2» and «3,1 с» apart.
-        return e.Stacks > 1 ? $"{text} · {CombatHud.Seconds(t)} с" : $"{text} {CombatHud.Seconds(t)} с";
-    }
-
-    public void Show(TimedEffect effect, string name)
-    {
-        Visible = true;
-        Effect = effect;
-        _label.Text = TextOf(effect, name);
-        var color = ColorOf(effect);
-        if (_style.BorderColor != color) _style.BorderColor = color;
-    }
-
-    /// <summary>Buffs green, stacks gold, ailments by their damage colour (spec §4 «Читаемость боя»), debuffs grey.</summary>
-    public static Color ColorOf(TimedEffect e) => e.Kind switch
-    {
-        TimedEffectKind.Buff => new Color(0.42f, 0.78f, 0.38f),
-        TimedEffectKind.MechanicStack => new Color(0.9f, 0.72f, 0.3f),
-        TimedEffectKind.Debuff => new Color(0.72f, 0.72f, 0.72f),
-        _ => e.Id switch
-        {
-            "ignite" => new Color(1f, 0.52f, 0.15f),
-            "poison" => new Color(0.42f, 0.85f, 0.28f),
-            "bleed" => new Color(0.85f, 0.2f, 0.2f),
-            "shock" => new Color(0.62f, 0.72f, 1f),
-            "chill" => new Color(0.55f, 0.85f, 1f),
-            "freeze" => new Color(0.75f, 0.95f, 1f),
-            _ => new Color(0.8f, 0.6f, 0.5f),
-        },
-    };
+    public static string Seconds(double sec) => HudFormat.Seconds(sec);
 }
 
 /// <summary>

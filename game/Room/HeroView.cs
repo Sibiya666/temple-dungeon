@@ -6,7 +6,7 @@ namespace Dialoid.Game.Room;
 /// The hero in the room (spec §4 «Наведение», §5): the Mixamo Paladin on a capsule body. It moves by WASD relative to the camera
 /// or towards a floor point (a click walks, a held button runs after the cursor), turns smoothly to its movement or to the dummy
 /// when a skill is used, and plays <c>sword and shield idle/walk/run</c>. <see cref="PlayAttack"/> stretches an attack clip to the
-/// core's use time; a channel replays it on every tick. A refused press shows its short text over the head. The outline (unshaded
+/// core's use time; a channel replays it on every tick. A refused press shows its short text over the head. The warm-white outline (unshaded
 /// overlay, see <see cref="AssetLibrary"/>), the light circle and the fill light are the room's. Input comes only through the
 /// methods (<see cref="CombatDriver"/> turns events into calls), never from the global Input.
 /// </summary>
