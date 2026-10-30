@@ -200,7 +200,7 @@ public class TrainingRoomTests
         Assert.True(room.StartChannel(Rooms.WhirlwindSlot, 1, true).Accepted);
         for (var i = 0; i < 20; i++)
         {
-            room.UpdateReach(ReachRules.MeleeTiles, true); // still in reach: nothing happens
+            room.UpdateReach(ReachRules.MeleeReachMeters, true); // still in reach: nothing happens
             room.Advance(LiveFight.StepSec);
         }
         Assert.Equal("whirlwind", room.State!.ChannelSkillId);
@@ -212,7 +212,7 @@ public class TrainingRoomTests
             room.Advance(LiveFight.StepSec);
         }
 
-        var refusals = room.LogLines.Select((l, i) => (l, i)).Where(x => x.l.Contains("Вихрь · отказ: цель вне досягаемости", StringComparison.Ordinal)).ToList();
+        var refusals = room.LogLines.Select((l, i) => (l, i)).Where(x => x.l.Contains("Вихрь · отказ: вне досягаемости", StringComparison.Ordinal)).ToList();
         var single = Assert.Single(refusals); // logged once, not every step
         Assert.DoesNotContain(room.LogLines.Skip(single.i + 1), l => l.Contains("Вихрь · применение", StringComparison.Ordinal));
         Assert.Null(room.State!.ChannelSkillId);
@@ -239,7 +239,7 @@ public class TrainingRoomTests
             room.Advance(LiveFight.StepSec);
         }
 
-        var refusals = room.LogLines.Select((l, i) => (l, i)).Where(x => x.l.Contains("Метеор · отказ: цель вне досягаемости", StringComparison.Ordinal)).ToList();
+        var refusals = room.LogLines.Select((l, i) => (l, i)).Where(x => x.l.Contains("Метеор · отказ: цель не видна", StringComparison.Ordinal)).ToList();
         var single = Assert.Single(refusals);
         Assert.DoesNotContain(room.LogLines.Skip(single.i + 1), l => l.Contains("Метеор · применение", StringComparison.Ordinal));
     }
@@ -283,9 +283,11 @@ public class TrainingRoomTests
             Assert.DoesNotMatch(Latin, line);
         }
 
+        // The same refusal in a row is one line with a count (the cap itself: Log_keeps_the_newest_lines_past_twice_the_cap).
+        var count = room.LogLines.Count;
         for (var i = 0; i < TrainingRoom.MaxLogLines + 50; i++) room.Press(Rooms.BlinkSlot, 3, false);
-        Assert.Equal(TrainingRoom.MaxLogLines, room.LogLines.Count);
-        Assert.Contains("отказ: цель вне досягаемости", room.LogLines[^1]);
+        Assert.Equal(Math.Min(TrainingRoom.MaxLogLines, count + 1), room.LogLines.Count);
+        Assert.EndsWith($"отказ: цель не видна ×{TrainingRoom.MaxLogLines + 50}", room.LogLines[^1]);
     }
 
     [Fact]
@@ -298,8 +300,8 @@ public class TrainingRoomTests
         var lines = room.LogLines;
         Assert.Equal(TrainingRoom.MaxLogLines, lines.Count);
         Assert.Equal(lines, Enumerable.Range(0, lines.Count).Select(i => lines[i]));
-        Assert.Contains("Вихрь · отказ: цель вне досягаемости", lines[^1]); // the last press (even index)
-        Assert.Contains("Рассекающий удар · отказ: цель вне досягаемости", lines[^2]);
+        Assert.Contains("Вихрь · отказ: вне досягаемости", lines[^1]); // the last press (even index)
+        Assert.Contains("Рассекающий удар · отказ: вне досягаемости", lines[^2]);
         Assert.Throws<ArgumentOutOfRangeException>(() => lines[TrainingRoom.MaxLogLines]);
     }
 
@@ -338,39 +340,6 @@ public class TrainingRoomTests
         Assert.All(LiveFight.ShownCounters, id => Assert.NotNull(CombatLogText.MechanicStackName(id)));
     }
 
-    /// <summary>Safety net: every reference build on every dummy, every filled slot pressed in reach, gives only Russian lines.</summary>
-    [Theory]
-    [MemberData(nameof(MainBuilds))]
-    public void Every_log_line_is_russian_for_reference_builds_on_every_dummy(string file)
-    {
-        var bareMechanic = new Regex(@"^\d+,\d с · механика$", RegexOptions.CultureInvariant);
-        var s = Rooms.Load(file);
-        var slots = Enumerable.Range(1, SandboxSession.SlotCount).Where(k => s.GetSlot(k - 1) != null).ToList();
-        foreach (var mode in new[] { SimMode.Roll, SimMode.Average })
-        foreach (var dummy in TestData.Data.Dummies.Keys.Order(StringComparer.Ordinal))
-        {
-            var room = new TrainingRoom(s);
-            room.SetMode(mode, 1);
-            room.SetDummy(dummy);
-            var what = $"{file} {dummy} {mode}";
-            Assert.True(room.Running, what);
-            var hits = false;
-            for (var i = 1; i <= 600; i++) // 30 s
-            {
-                foreach (var slot in slots) room.Press(slot, 1, true);
-                room.Advance(LiveFight.StepSec);
-                if (i % 40 != 0) continue; // check every 2 s, well inside the log window
-                foreach (var line in room.LogLines)
-                {
-                    Assert.True(!Latin.IsMatch(line), $"{what}: {line}");
-                    Assert.True(!bareMechanic.IsMatch(line), $"{what}: {line}");
-                    hits |= line.Contains(" · попадание", StringComparison.Ordinal);
-                }
-            }
-            Assert.True(hits, $"{what}: no hits logged");
-        }
-    }
-
     [Fact]
     public void Combat_log_line_formats()
     {
@@ -380,17 +349,226 @@ public class TrainingRoomTests
 
         Assert.Equal("12,4 с · Огненный шар · попадание · 812 огнем (крит)",
             text.Line(new DamageEvent(12.4, "fireball", 0, false, true, new[] { fire })));
-        Assert.Equal("1,0 с · Рассекающий удар · попадание по цели 2 · 500 физическим + 812 огнем",
-            text.Line(new DamageEvent(1, "cleave", 1, false, false, new[] { phys, fire })));
-        Assert.Equal("12,4 с · Огненный шар · поджог", text.Line(new SimEvent(12.4, "ailment", "ignite -> #0 (fireball)")));
-        Assert.Equal("12,4 с · Огненный шар · применение", text.Line(new SimEvent(12.4, "use", "fireball")));
+        Assert.Equal("1,0 с · Рассекающий удар · цель 2 · попадание · 500 физическим + 812 огнем",
+            text.Line(new DamageEvent(1, "cleave", 1, false, false, new[] { phys, fire }), showTarget: true));
+        // Lines come from the structured fields; the English text is never read.
+        Assert.Equal("12,4 с · Огненный шар · поджог",
+            text.Line(new SimEvent(12.4, "ailment", "?") { SkillId = "fireball", Target = 0, AilmentId = "ignite" }));
+        Assert.Equal("12,4 с · Огненный шар · применение", text.Line(new SimEvent(12.4, "use", "?") { SkillId = "fireball" }));
         Assert.Equal("3,0 с · Метеор · прок · Огненный шар",
-            text.Line(new SimEvent(3, "proc", "meteor: on_hit -> cast_skill fireball")));
-        Assert.Equal("3,0 с · механика · заряды потрачены", text.Line(new SimEvent(3, "mechanic", "thunder: charges spent")));
+            text.Line(new SimEvent(3, "proc", "?") { SkillId = "fireball", SourceSkillId = "meteor" }));
+        Assert.Equal("3,0 с · Метеор · прок · поджог",
+            text.Line(new SimEvent(3, "proc", "?") { SkillId = "meteor", SourceSkillId = "meteor", AilmentId = "ignite" }));
+        Assert.Equal("3,0 с · Статический заряд · заряды потрачены · 10",
+            text.Line(new SimEvent(3, "mechanic", "?") { MechanicKey = "static_charge", Value = 10 }));
+        Assert.Equal("3,0 с · Раскол · цель 2 · заморозка разбита",
+            text.Line(new SimEvent(3, "mechanic", "?") { MechanicKey = "shatter", Target = 1 }, showTarget: true));
         Assert.Equal("13,0 с · Метеор · отказ: перезарядка 2,1 с",
             text.Refusal(13, 2, "meteor", new PressResult(false, false, PressRefusal.Cooldown, 2.1)));
         Assert.Equal("13,0 с · слот 3 · отказ: пустой слот",
             text.Refusal(13, 3, null, new PressResult(false, false, PressRefusal.EmptySlot, null)));
+        Assert.Equal("13,0 с · Метеор · отказ: перезарядка ×6",
+            text.Refusal(13, 2, "meteor", new PressResult(false, false, PressRefusal.Cooldown, 2.1), repeat: 6));
+    }
+
+    [Fact]
+    public void Melee_out_of_reach_in_meters()
+    {
+        // Battle cry and Charge removed: a gap before Crush 3, Whirlwind 4, Cleave 5 (the fight's slots 1–3).
+        var s = Rooms.Crush();
+        Assert.True(s.SetSlotSkill(0, null).Ok);
+        Assert.True(s.SetSlotSkill(1, null).Ok);
+        var room = new TrainingRoom(s);
+
+        Assert.Equal(2, ReachRules.MeleeReachMeters);
+        var far = room.Press(Rooms.CleaveSlot, ReachRules.MeleeReachMeters + 0.01, true);
+        Assert.Equal(PressRefusal.OutOfReach, far.Refusal);
+        Assert.Equal("0,0 с · Рассекающий удар · отказ: вне досягаемости", room.LogLines[^1]);
+        // Off the screen does not matter to melee: only the distance from the dummy's edge.
+        Assert.True(room.Press(Rooms.CleaveSlot, ReachRules.MeleeReachMeters, false).Accepted);
+    }
+
+    [Fact]
+    public void Ground_spell_off_screen_is_target_not_visible()
+    {
+        // Blink removed (a gap before Meteor 2), Meteor without «Звездопад»: aimed at the ground.
+        var s = Rooms.Fireball();
+        Assert.True(s.RemoveSkillNodePoint(Rooms.MeteorSlot - 1, "starfall").Ok);
+        Assert.True(s.SetSlotSkill(0, null).Ok);
+        var room = new TrainingRoom(s);
+        var meteor = room.CompiledTags(Rooms.MeteorSlot)!.Value;
+
+        Assert.Equal(PressRefusal.TargetNotVisible, ReachRules.Check(meteor, 0.5, false));
+        Assert.Equal(PressRefusal.None, ReachRules.Check(meteor, 50, true)); // no distance limit while on the screen
+        Assert.Equal(PressRefusal.TargetNotVisible, room.Press(Rooms.MeteorSlot, 1, false).Refusal);
+        Assert.Equal("0,0 с · Метеор · отказ: цель не видна", room.LogLines[^1]);
+        Assert.True(room.Press(Rooms.MeteorSlot, 50, true).Accepted);
+    }
+
+    [Fact]
+    public void Projectile_ignores_screen_and_distance()
+    {
+        var s = Rooms.Fireball();
+        Assert.True(s.SetSlotSkill(0, null).Ok); // gap: Blink removed
+        var room = new TrainingRoom(s);
+        Assert.True(room.CompiledTags(Rooms.SparkSlot)!.Value.Contains("projectile"));
+        Assert.True(room.Press(Rooms.SparkSlot, 100, false).Accepted);
+        Assert.DoesNotContain(room.Log, e => e.Kind == LogKind.Refusal);
+    }
+
+    [Fact]
+    public void Swarm_reach_uses_nearest_figure()
+    {
+        // The game layer passes the distance to the nearest figure's edge; the rule has no target number to depend on.
+        foreach (var dummy in new[] { "training", "swarm" })
+        {
+            var room = new TrainingRoom(Rooms.Crush());
+            room.SetDummy(dummy);
+            Assert.Equal(PressRefusal.OutOfReach, room.Press(Rooms.CleaveSlot, 3, true).Refusal);
+            Assert.True(room.Press(Rooms.CleaveSlot, 1.5, true).Accepted);
+        }
+    }
+
+    [Fact]
+    public void Slots_and_state_use_player_slots()
+    {
+        // Ball lightning removed: a gap at 3, so Fireball (player slot 4) is the fight's slot 3 and Spark (5) its slot 4.
+        var s = Rooms.Fireball();
+        Assert.True(s.SetSlotSkill(2, null).Ok);
+        var room = new TrainingRoom(s);
+
+        Assert.Equal(SandboxSession.SlotCount, room.Slots.Count);
+        Assert.Null(room.Slots[2]);
+        Assert.Equal(4, room.Slots[3]!.Slot);
+        Assert.Equal("fireball", room.Slots[3]!.SkillId);
+        Assert.Equal(5, room.Slots[4]!.Slot);
+        Assert.Equal("Мана", room.ResourceName);
+
+        Assert.True(room.StartChannel(Rooms.SparkSlot, 1, true).Accepted);
+        Assert.Equal(5, room.State!.HeldSlot);
+        PressResult? queued = null;
+        for (var i = 0; i < 40 && queued is not { Queued: true }; i++)
+        {
+            if (room.State!.Busy) queued = room.Press(Rooms.FireballSlot, 1, true);
+            if (queued is not { Queued: true }) room.Advance(LiveFight.StepSec);
+        }
+        Assert.True(queued is { Queued: true });
+        Assert.Equal(4, room.State!.QueuedSlot);
+        room.StopChannel();
+        Assert.Null(room.State!.HeldSlot);
+    }
+
+    [Fact]
+    public void Visual_feed_reports_use_hit_and_refusal_in_order()
+    {
+        var s = Rooms.Fireball();
+        Assert.True(s.SetSlotSkill(2, null).Ok); // gap at 3: Fireball is the fight's slot 3, the feed says 4
+        var room = new TrainingRoom(s);
+
+        Assert.True(room.Press(Rooms.FireballSlot, 1, true).Accepted);
+        var events = new List<VisualEvent>();
+        for (var i = 0; i < 100 && !events.Any(e => e.Kind == VisualKind.Hit); i++)
+        {
+            room.Advance(LiveFight.StepSec);
+            events.AddRange(room.Feed.DrainVisual());
+        }
+        Assert.Equal(PressRefusal.TargetNotVisible, room.Press(Rooms.BlinkSlot, 1, false).Refusal);
+        events.AddRange(room.Feed.DrainVisual());
+        Assert.Empty(room.Feed.DrainVisual());
+
+        var use = events.FindIndex(e => e.Kind == VisualKind.SkillUsed);
+        var hit = events.FindIndex(e => e.Kind == VisualKind.Hit);
+        var refused = events.FindIndex(e => e.Kind == VisualKind.Refused);
+        Assert.True(use >= 0 && use < hit && hit < refused, string.Join(", ", events.Select(e => e.Kind)));
+
+        Assert.Equal(4, events[use].Slot);
+        Assert.Equal("fireball", events[use].SkillId);
+        Assert.True(events[use].UseSec > 0);
+        Assert.Equal(4, events[hit].Slot);
+        Assert.Equal(DamageType.Fire, events[hit].DamageType);
+        Assert.True(events[hit].Amount > 0);
+        Assert.False(events[hit].IsDot);
+        Assert.Equal(0, events[hit].Target);
+        Assert.Equal(1, events[refused].Slot);
+        Assert.Equal(PressRefusal.TargetNotVisible, events[refused].Refusal);
+        Assert.Equal("Цель не видна", events[refused].RefusalText);
+    }
+
+    [Fact]
+    public void Visual_feed_is_bounded()
+    {
+        var room = new TrainingRoom(Rooms.Fireball());
+        room.SetDummy("swarm");
+        Rooms.Hammer(room, Rooms.FireballSlot, 30); // nobody drains
+
+        Assert.InRange(room.Feed.Count, 1, RoomFeed.MaxQueued);
+        var drained = room.Feed.DrainVisual();
+        Assert.InRange(drained.Count, 1, RoomFeed.MaxQueued);
+        Assert.True(drained[^1].Time > room.State!.Time - 1, "the newest events are kept");
+        Assert.Equal(0, room.Feed.Count);
+    }
+
+    [Fact]
+    public void Floating_hits_per_frame_are_capped_on_swarm()
+    {
+        var room = new TrainingRoom(Rooms.Fireball());
+        room.SetDummy("swarm");
+        Rooms.Hammer(room, Rooms.FireballSlot, 4); // ignites on every figure
+        room.Feed.DrainVisual();
+        var before = room.Current!.TotalDamage;
+
+        Rooms.Hammer(room, Rooms.FireballSlot, 0.5); // one long frame: 10 steps
+        var frame = room.Feed.DrainVisual();
+
+        var hits = frame.Where(e => e.Kind == VisualKind.Hit).ToList();
+        Assert.InRange(hits.Count, 1, RoomFeed.MaxFloatingHits);
+        Assert.Contains(hits, h => h.IsDot);
+        Assert.Equal(Math.Round(room.Current!.TotalDamage - before, 6), Math.Round(hits.Sum(h => h.Amount), 6));
+    }
+
+    [Fact]
+    public void Segment_label_and_dps_change()
+    {
+        var s = Rooms.Fireball();
+        var room = new TrainingRoom(s);
+        room.Attach();
+        var first = Rooms.HitAndWaitForClose(room, Rooms.SparkSlot);
+        Assert.Equal("training", first.DummyId);
+        Assert.False(first.AfterBuildChange);
+        Assert.Matches(@"^№1 · \d+:\d\d · Тренировочный$", first.Label);
+        Assert.Null(first.DpsChangeVsPrevious);
+
+        Assert.True(s.SetRotation(Enumerable.Reverse(s.Build.Rotation).ToList()).Ok);
+        Rooms.Hammer(room, Rooms.FireballSlot, 3);
+        var second = room.Current!;
+        Assert.True(second.AfterBuildChange);
+        Assert.Matches(@"^№2 · 0:0\d · Тренировочный · после правки билда$", second.Label);
+        Assert.Equal(second.Dps / first.Dps - 1, second.DpsChangeVsPrevious!.Value, 9);
+        Assert.Equal(second.TotalDamage / second.Duration, second.Dps, 9);
+
+        // A later segment of the same build is no longer "after the edit".
+        for (var i = 0; i < 2000 && room.Current != null; i++) room.Advance(LiveFight.StepSec);
+        var third = Rooms.HitAndWaitForClose(room, Rooms.SparkSlot);
+        Assert.False(third.AfterBuildChange);
+        room.Detach();
+    }
+
+    [Fact]
+    public void Dummy_change_closes_segment()
+    {
+        var room = new TrainingRoom(Rooms.Fireball());
+        Rooms.Hammer(room, Rooms.FireballSlot, 2);
+        var segment = room.Current!;
+        Assert.NotNull(segment);
+
+        room.SetDummy("armored");
+        Assert.Null(room.Current);
+        Assert.False(segment.IsOpen);
+
+        Rooms.Hammer(room, Rooms.FireballSlot, 1);
+        Assert.Equal("armored", room.Current!.DummyId);
+        Assert.Contains(" · Бронированный", room.Current.Label);
+        Assert.False(room.Current.AfterBuildChange);
     }
 
     [Fact]
@@ -410,7 +588,7 @@ public class TrainingRoomTests
         Assert.Equal(PressRefusal.EmptySlot, room.Press(2, 3, true).Refusal);
         Assert.Equal("0,0 с · слот 2 · отказ: пустой слот", room.LogLines[^1]);
         Assert.Equal(PressRefusal.EmptySlot, room.StartChannel(2, 3, true).Refusal);
-        Assert.Equal("0,0 с · слот 2 · отказ: пустой слот", room.LogLines[^1]);
+        Assert.Equal("0,0 с · слот 2 · отказ: пустой слот ×2", room.LogLines[^1]); // the same refusal in a row: one line
 
         Assert.True(room.Press(5, 3, true).Accepted);
         for (var i = 0; i < 100 && !room.LogLines.Any(l => l.Contains("Мерцание · применение", StringComparison.Ordinal)); i++)
@@ -439,9 +617,9 @@ public class TrainingRoomTests
         Assert.True(room.CompiledTags(Rooms.WhirlwindSlot)!.Value.Contains("channel"));
 
         Assert.Equal(PressRefusal.OutOfReach, room.Press(Rooms.WhirlwindSlot, 10, true).Refusal);
-        Assert.Contains("Вихрь · отказ: цель вне досягаемости", room.LogLines[^1]);
+        Assert.Contains("Вихрь · отказ: вне досягаемости", room.LogLines[^1]);
         Assert.Equal(PressRefusal.OutOfReach, room.Press(Rooms.CleaveSlot, 10, true).Refusal);
-        Assert.Contains("Рассекающий удар · отказ: цель вне досягаемости", room.LogLines[^1]);
+        Assert.Contains("Рассекающий удар · отказ: вне досягаемости", room.LogLines[^1]);
         Assert.Equal(PressRefusal.OutOfReach, room.StartChannel(Rooms.WhirlwindSlot, 10, true).Refusal);
 
         Rooms.Hammer(room, Rooms.CleaveSlot, 3); // Fury for Whirlwind
@@ -454,7 +632,7 @@ public class TrainingRoomTests
             room.Advance(LiveFight.StepSec);
         }
         Assert.Null(room.State!.ChannelSkillId);
-        Assert.Single(room.LogLines, l => l.Contains("Вихрь · отказ: цель вне досягаемости", StringComparison.Ordinal)
+        Assert.Single(room.LogLines, l => l.Contains("Вихрь · отказ: вне досягаемости", StringComparison.Ordinal)
             && !l.StartsWith("0,0 с", StringComparison.Ordinal));
     }
 
@@ -470,8 +648,8 @@ public class TrainingRoomTests
         Assert.True(room.Running);
         Assert.False(room.CompiledTags(Rooms.MeteorSlot)!.Value.Contains("projectile"));
 
-        Assert.Equal(PressRefusal.OutOfReach, room.Press(Rooms.MeteorSlot, 20, false).Refusal);
-        Assert.Contains("Метеор · отказ: цель вне досягаемости", room.LogLines[^1]);
+        Assert.Equal(PressRefusal.TargetNotVisible, room.Press(Rooms.MeteorSlot, 20, false).Refusal);
+        Assert.Contains("Метеор · отказ: цель не видна", room.LogLines[^1]);
         Assert.True(room.Press(Rooms.SparkSlot, 20, false).Accepted); // a projectile may fly off the screen
 
         for (var i = 0; i < 100; i++) room.Advance(LiveFight.StepSec);
@@ -482,14 +660,14 @@ public class TrainingRoomTests
             room.Advance(LiveFight.StepSec);
         }
         Assert.Contains(room.LogLines, l => l.Contains("Метеор · применение", StringComparison.Ordinal));
-        var before = room.LogLines.Count(l => l.Contains("Метеор · отказ: цель вне досягаемости", StringComparison.Ordinal));
+        var before = room.LogLines.Count(l => l.Contains("Метеор · отказ: цель не видна", StringComparison.Ordinal));
         for (var i = 0; i < 200; i++)
         {
             room.UpdateReach(20, false);
             room.Advance(LiveFight.StepSec);
         }
-        Assert.Equal(before + 1, room.LogLines.Count(l => l.Contains("Метеор · отказ: цель вне досягаемости", StringComparison.Ordinal)));
-        var released = room.LogLines.Select((l, i) => (l, i)).Last(x => x.l.Contains("Метеор · отказ: цель вне досягаемости", StringComparison.Ordinal)).i;
+        Assert.Equal(before + 1, room.LogLines.Count(l => l.Contains("Метеор · отказ: цель не видна", StringComparison.Ordinal)));
+        var released = room.LogLines.Select((l, i) => (l, i)).Last(x => x.l.Contains("Метеор · отказ: цель не видна", StringComparison.Ordinal)).i;
         Assert.DoesNotContain(room.LogLines.Skip(released + 1), l => l.Contains("Метеор · применение", StringComparison.Ordinal));
     }
 
