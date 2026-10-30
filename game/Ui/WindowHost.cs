@@ -77,6 +77,9 @@ public partial class WindowHost : Control
     /// <summary>The x a bottom-left window must end at on a screen of the given size (the combat screen's left edge minus a gap), or null.</summary>
     public Func<Vector2, float>? LeftBottomRightLimit { get; set; }
 
+    /// <summary>The narrowest the log is made to clear the combat screen sideways; below it the log stands above the combat screen.</summary>
+    public const float MinNarrowLog = 440;
+
     /// <summary>True while a window's text field has focus (keys go to the field, not to the fight or the hotkeys).</summary>
     public static bool TextFieldFocused(Viewport viewport) => viewport.GuiGetFocusOwner() is LineEdit or TextEdit or SpinBox;
 
@@ -260,13 +263,21 @@ public partial class WindowHost : Control
         var bottom = screen.Y - BottomInset() - Margin;
         // A side window takes at most a third of the screen, so the hero and the dummy next to him stay in sight.
         var width = Mathf.Min(Mathf.Min(spec.Width, screen.X * MaxSideFraction), screen.X - 2 * Margin);
-        // The bottom-left window (the log) ends left of the combat screen, so the two never overlap on a narrow screen (1366).
+        // The bottom-left window (the log) never overlaps the combat screen: it ends 8 px left of it while it can stay at least
+        // MinNarrowLog wide (1600: 492 px); on a narrower screen (1366) it keeps its width and stands on the combat screen's top
+        // instead (a 375 px log squeezed the event column to a word per line; UI review of task 11).
+        var lift = false;
         if (spec.Edge == WindowEdge.LeftBottom && LeftBottomRightLimit?.Invoke(screen) is { } limit)
-            width = Mathf.Max(MinSize.X, Mathf.Min(width, limit - Margin));
+        {
+            var fit = limit - Margin;
+            if (fit >= Mathf.Min(MinNarrowLog, width)) width = Mathf.Min(width, fit);
+            else lift = true;
+        }
         var fullHeight = Mathf.Max(MinSize.Y, bottom - top);
         var height = spec.Height > 0 ? Mathf.Min(spec.Height, fullHeight) : fullHeight;
+        if (lift) height = Mathf.Max(MinSize.Y, Mathf.Min(height, fullHeight / 2)); // the charts above it keep half
         var x = spec.Edge is WindowEdge.Left or WindowEdge.LeftBottom ? Margin : screen.X - Margin - width;
-        var y = spec.Edge == WindowEdge.LeftBottom ? screen.Y - Margin - height : top;
+        var y = spec.Edge == WindowEdge.LeftBottom ? (lift ? bottom : screen.Y - Margin) - height : top;
         return new Rect2(x, y, width, height);
     }
 

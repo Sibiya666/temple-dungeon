@@ -188,6 +188,12 @@ public partial class CombatHud : Control
         foreach (var slot in _slots) slot.ShowKey(gamepad ? ButtonPrompts.SlotGlyph(slot.Number) : slot.Number.ToString());
     }
 
+    public void HideToast()
+    {
+        _toastLeft = 0;
+        _toast.Visible = false;
+    }
+
     public void ShowToast(string text)
     {
         _toast.Text = text;

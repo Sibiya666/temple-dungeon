@@ -39,6 +39,7 @@ public sealed partial class SelfTest
             Host.FocusCombat();
             _main.CloseAllWindows();
             Device.Set(InputKind.KeyboardMouse);
+            _main.Hud!.HideToast();
             await CombatRestore();
         });
     }
@@ -682,6 +683,7 @@ public sealed partial class SelfTest
             }
             Device.Set(InputKind.KeyboardMouse);
             UseSelfTestWindowConfig();
+            _main.Hud!.HideToast();
             await Settle();
             _main.OpenWindow(WindowIds.Log);
             _main.OpenWindow(WindowIds.Meter);
@@ -690,12 +692,15 @@ public sealed partial class SelfTest
             var log = Host.Window(WindowIds.Log).GetGlobalRect();
             var hud = _main.Hud!.BottomRect;
             GD.Print($"SELFTEST NOTE 1366: экран {screen}, журнал {log}, панель боя {hud}, измеритель {Host.Window(WindowIds.Meter).GetGlobalRect()}");
-            Check(log.End.X <= hud.Position.X - CombatHud.WindowGap + 0.5f && !log.Intersects(hud), $"журнал не пересекает панель боя: журнал {log}, панель {hud}");
+            Check(!log.Grow(CombatHud.WindowGap - 0.5f).Intersects(hud) && log.Size.X >= WindowHost.MinNarrowLog - 0.5f, $"журнал не пересекает панель боя: журнал {log}, панель {hud}");
+            var charts = Host.DefaultRect(WindowHost.SpecOf(WindowIds.Charts));
+            Check(!charts.Intersects(log), $"графики {charts} заходят на журнал {log}");
             var meter = Host.Window(WindowIds.Meter).GetGlobalRect();
             Check(meter.Size.X <= screen.X * WindowHost.MaxSideFraction + 0.5f, $"измеритель шире трети: {meter.Size.X} из {screen.X}");
             if (_screenshotDir != null && !headless)
             {
                 PlaceNearDummy();
+                Directory.CreateDirectory(_screenshotDir);
                 await Shot("task-13-log-hud-1366-keyboard");
             }
         }
