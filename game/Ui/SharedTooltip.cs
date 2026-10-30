@@ -6,8 +6,8 @@ namespace Dialoid.Game.Ui;
 /// The room's one tooltip (spec §4 «Подсказки»), the same panel for the mouse and the gamepad. Godot's own tooltips are off
 /// (gui/timers/tooltip_delay_sec). On the mouse the text of the control under it shows after <see cref="HoverDelaySec"/>,
 /// below-right of the cursor, and a press hides it. On the gamepad the focused control's text shows outside its window, but only
-/// where it keeps <see cref="HeroClearance"/> px on both sides of the hero free; otherwise it goes inside the window, in the half
-/// away from the focused control (above the prompt bar or under the title), so it never covers the control or the
+/// where it keeps <see cref="HeroClearance"/> px on both sides of the hero free; otherwise it goes inside the window, at the spot
+/// (under or over the focused control, at the bottom or the top) that covers the fewest controls and never the focused one or the
 /// neighbour the stick goes to next. Both read the same source (<see cref="TipOf"/>).
 /// </summary>
 public partial class SharedTooltip : PanelContainer
@@ -88,9 +88,9 @@ public partial class SharedTooltip : PanelContainer
 
     /// <summary>
     /// The gamepad: the focused control's text beside its window when that keeps the hero's sides free, else inside the window in
-    /// the half away from the control; under the top bar for the bar.
+    /// the spot covering the fewest controls (neighbours weigh ten times); under the top bar for the bar.
     /// </summary>
-    public void ShowForFocus(Control root, Control? focus, bool topBar, float? heroX, Rect2? inside, Vector2 screen, float top)
+    public void ShowForFocus(Control root, Control? focus, bool topBar, float? heroX, Rect2? inside, Vector2 screen, float top, IReadOnlyList<Rect2>? avoid = null)
     {
         var size = Show(focus == null ? "" : TipOf(focus));
         if (size == Vector2.Zero) return;
@@ -108,11 +108,19 @@ public partial class SharedTooltip : PanelContainer
         else if (left >= 0 && Clear(left)) PlaceAt(new Vector2(left, at.Position.Y), size, screen, top);
         else
         {
-            // Inside the window: the half the focused control is not in.
+            // Inside the window: under the focused control, over it, at the bottom or at the top — whichever covers the fewest
+            // controls, the neighbours the stick goes to next (within a row or two) counting ten times.
             var box = inside ?? area;
-            var lower = at.GetCenter().Y > box.GetCenter().Y;
-            var y = lower ? box.Position.Y + 4 : box.End.Y - size.Y - 4;
-            PlaceAt(new Vector2(box.Position.X + 4, y), new Vector2(Mathf.Min(size.X, box.Size.X - 8), size.Y), screen, top);
+            var tip = new Vector2(Mathf.Min(size.X, box.Size.X - 8), size.Y);
+            var spots = new[] { at.End.Y + 4, at.Position.Y - tip.Y - 4, box.End.Y - tip.Y - 4, box.Position.Y + 4 }
+                .Where(y => y >= box.Position.Y && y + tip.Y <= box.End.Y + 0.5f)
+                .Select(y => new Rect2(box.Position.X + 4, y, tip))
+                .Where(r => !r.Intersects(at))
+                .ToList();
+            float Cost(Rect2 r) => (avoid ?? []).Where(a => a.Intersects(r))
+                .Sum(a => Mathf.Abs(a.GetCenter().Y - at.GetCenter().Y) < 80 ? 10f : 1f);
+            var best = spots.Count > 0 ? spots.MinBy(Cost) : new Rect2(box.Position.X + 4, box.Position.Y + 4, tip);
+            PlaceAt(best.Position, tip, screen, top);
         }
     }
 

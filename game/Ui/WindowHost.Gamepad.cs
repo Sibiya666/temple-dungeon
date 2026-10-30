@@ -871,7 +871,8 @@ public partial class WindowHost
     private void UpdateTooltip(Control root, Control? focus)
     {
         var inside = root is GameWindow w ? (Rect2?)w.Content.GetGlobalRect() : null;
-        _tip.ShowForFocus(root, focus, root == Bar, HeroScreenX?.Invoke(), inside, Size, TopInset());
+        var avoid = ButtonPrompts.Targets(root).Where(c => c != focus).Select(c => c.GetGlobalRect()).ToList();
+        _tip.ShowForFocus(root, focus, root == Bar, HeroScreenX?.Invoke(), inside, Size, TopInset(), avoid);
     }
 
     /// <summary>Where the hero stands on screen (x), so the focus tooltip keeps his sides free; null when unknown.</summary>

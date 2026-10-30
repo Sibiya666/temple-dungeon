@@ -808,6 +808,7 @@ public sealed partial class SelfTest
             view.FitToView();
             view.GrabFocus();
             if (view.Nodes.FirstOrDefault(n => n.Caption != null && view.StateOf(n.Id) == TreeNodeState.Available) is { } node) view.PadSelect(node.Id);
+            view.PadFocusZoom(); // as the focus entering the tree does
             await Shot("task-13-passives-gamepad");
             // The same zoom with the mouse: captions that show here must not vanish on the pad (curator round 1).
             Device.Set(InputKind.KeyboardMouse);
