@@ -480,7 +480,9 @@ public partial class TreeView : Control, IPadControl
             }
         }
 
-        foreach (var (id, rect, size) in LayoutCaptions())
+        // The gamepad's plates are laid out first: a plated node gets no regular caption, and regular captions avoid the plates.
+        var plates = HasFocus() && Dialoid.Game.Input.InputDevice.Gamepad ? PadCaptions() : Array.Empty<(string Id, Rect2 Rect)>();
+        foreach (var (id, rect, size) in LayoutCaptions(plates))
         {
             var caption = _byId[id].Caption!;
             var lineHeight = font.GetHeight(size);
@@ -490,7 +492,7 @@ public partial class TreeView : Control, IPadControl
                 DrawString(font, rect.Position + new Vector2(0, font.GetAscent(size) + i * lineHeight), lines[i], HorizontalAlignment.Left, -1,
                     size, CaptionColor);
         }
-        if (HasFocus() && Dialoid.Game.Input.InputDevice.Gamepad) DrawPadCaptions(font, fontSize);
+        DrawPadCaptions(plates, font, fontSize);
     }
 
     /// <summary>Plate colour of the gamepad captions (the focused node and where the stick goes next).</summary>
@@ -500,43 +502,102 @@ public partial class TreeView : Control, IPadControl
     public string NameOf(string id) => _byId.TryGetValue(id, out var n) ? n.Caption ?? n.Tooltip.Split('\n')[0] : id;
 
     /// <summary>
-    /// The gamepad's captions (curator, task 13 round 1): the focused node and its neighbours in the four directions always get
-    /// their name on a dark plate, past the caption layout, each on its own side (the focused one above), kept inside the view.
+    /// The gamepad's captions (curator, task 13 rounds 1–2): the focused node and its neighbours in the four directions always get
+    /// their name on a dark plate. Plates are laid out before the regular captions, in the captions' order of sides (right, left,
+    /// above, below, then the same sides slid along the node), at the first spot inside the view that covers no node circle and
+    /// no other plate (then the nearest free place within ~200 px, with a thin leader), trying the full font, a smaller one and two
+    /// lines. A neighbour with no free place gets no plate; the focused node (placed first) keeps the cheapest place.
     /// </summary>
     public IReadOnlyList<(string Id, Rect2 Rect)> PadCaptions()
     {
-        var plates = new List<(string, Rect2)>();
+        var plates = new List<(string Id, Rect2 Rect)>();
         if (HoveredId == null || !_byId.ContainsKey(HoveredId)) return plates;
         var font = GetThemeDefaultFont();
         var size = GetThemeDefaultFontSize();
-        var items = new List<(string Id, Vector2 Side)> { (HoveredId, Vector2.Up) };
+        var ids = new List<string> { HoveredId };
         foreach (var dir in new[] { Vector2.Up, Vector2.Down, Vector2.Left, Vector2.Right })
-            if (NeighbourOf(HoveredId, dir) is { } next && items.All(i => i.Id != next)) items.Add((next, dir));
-        foreach (var (id, side) in items)
+            // A neighbour outside the view gets no plate (a plate slid in from the edge would name a node nobody sees).
+            if (NeighbourOf(HoveredId, dir) is { } next && !ids.Contains(next) && new Rect2(Vector2.Zero, Size).HasPoint(WorldToLocal(_byId[next].Position))) ids.Add(next);
+        var circles = _nodes.Select(n => (Center: WorldToLocal(n.Position), R: Mathf.Max(n.Radius * Zoom, 3f))).ToList();
+        var view = new Rect2(Vector2.Zero, Size);
+        _plateText.Clear();
+        foreach (var id in ids)
         {
             var c = WorldToLocal(_byId[id].Position);
             var r = Mathf.Max(_byId[id].Radius * Zoom, 3f) + 4;
-            var text = NameOf(id);
-            var extent = font.GetStringSize(text, HorizontalAlignment.Left, -1, size) + new Vector2(10, 4);
-            var at = side == Vector2.Up ? new Vector2(c.X - extent.X / 2, c.Y - r - extent.Y)
-                : side == Vector2.Down ? new Vector2(c.X - extent.X / 2, c.Y + r)
-                : side == Vector2.Left ? new Vector2(c.X - r - extent.X, c.Y - extent.Y / 2)
-                : new Vector2(c.X + r, c.Y - extent.Y / 2);
-            at = new Vector2(Mathf.Clamp(at.X, 2, Mathf.Max(2, Size.X - extent.X - 2)), Mathf.Clamp(at.Y, 2, Mathf.Max(2, Size.Y - extent.Y - 2)));
-            plates.Add((id, new Rect2(at, extent)));
+            var name = NameOf(id);
+            int Cost(Rect2 rect) =>
+                circles.Count(o => CircleHitsRect(o.Center, o.R, rect.Grow(1))) * 10 + plates.Count(p => p.Rect.Intersects(rect)) * 100 + (view.Encloses(rect) ? 0 : 1000);
+            // Variants until one finds a free place: the full font, a smaller one, the name in two lines.
+            var small = Mathf.Max(8, (int)(size * SmallCaptionScale));
+            var split = SplitCaption(name);
+            var variants = new List<(int Size, string[] Lines)> { (size, [name]), (small, [name]) };
+            if (split.Second.Length > 0) variants.Add((small, [split.First, split.Second]));
+            Rect2? chosen = null;
+            (int Size, string[] Lines) style = variants[0];
+            var cheapest = (Rect: new Rect2(), Cost: int.MaxValue, Style: variants[0]);
+            foreach (var v in variants)
+            {
+                var widest = v.Lines.Max(l => font.GetStringSize(l, HorizontalAlignment.Left, -1, v.Size).X);
+                var e = new Vector2(widest + 10, font.GetHeight(v.Size) * v.Lines.Length + 4);
+                Vector2[] spots =
+                {
+                    new(c.X + r, c.Y - e.Y / 2), new(c.X - r - e.X, c.Y - e.Y / 2), new(c.X - e.X / 2, c.Y - r - e.Y), new(c.X - e.X / 2, c.Y + r),
+                    new(c.X + r, c.Y - e.Y * 1.5f), new(c.X + r, c.Y + e.Y * 0.5f), new(c.X - r - e.X, c.Y - e.Y * 1.5f), new(c.X - r - e.X, c.Y + e.Y * 0.5f),
+                    new(c.X - e.X / 2, c.Y - r - 2 * e.Y), new(c.X - e.X / 2, c.Y + r + e.Y),
+                };
+                var best = spots.Select(p => new Rect2(p, e)).MinBy(Cost);
+                if (Cost(best) > 0)
+                {
+                    // Crowded: the nearest free place around the node (a 12 px grid within ~200 px).
+                    var near = new List<Rect2>();
+                    for (var dy = -200f; dy <= 200f; dy += 12)
+                        for (var dx = -200f - e.X; dx <= 200f; dx += 12)
+                            near.Add(new Rect2(new Vector2(c.X + dx, c.Y + dy), e));
+                    var found = near.Where(rect => !rect.Grow(1).HasPoint(c)).MinBy(rect => Cost(rect) * 10000f + rect.GetCenter().DistanceTo(c));
+                    if (Cost(found) < Cost(best)) best = found;
+                }
+                if (Cost(best) == 0)
+                {
+                    chosen = best;
+                    style = v;
+                    break;
+                }
+                if (Cost(best) < cheapest.Cost) cheapest = (best, Cost(best), v);
+            }
+            if (chosen == null)
+            {
+                // No free place even small or in two lines: a neighbour goes without a plate (its regular caption may still fit);
+                // the focused node keeps the cheapest place, slid inside the view.
+                if (id != HoveredId) continue;
+                var e = cheapest.Rect.Size;
+                chosen = new Rect2(new Vector2(Mathf.Clamp(cheapest.Rect.Position.X, 0, Mathf.Max(0, Size.X - e.X)), Mathf.Clamp(cheapest.Rect.Position.Y, 0, Mathf.Max(0, Size.Y - e.Y))), e);
+                style = cheapest.Style;
+            }
+            _plateText[id] = style;
+            plates.Add((id, chosen.Value));
         }
         return plates;
     }
 
-    private void DrawPadCaptions(Font font, int fontSize)
+    /// <summary>The font size and lines of each plate of the last <see cref="PadCaptions"/>.</summary>
+    private readonly Dictionary<string, (int Size, string[] Lines)> _plateText = new();
+
+    private void DrawPadCaptions(IReadOnlyList<(string Id, Rect2 Rect)> plates, Font font, int fontSize)
     {
-        foreach (var (id, rect) in PadCaptions())
+        foreach (var (id, rect) in plates)
         {
             var focused = id == HoveredId;
+            // A plate moved away from a crowded node keeps a thin leader to it.
+            var c = WorldToLocal(_byId[id].Position);
+            var edge = new Vector2(Mathf.Clamp(c.X, rect.Position.X, rect.End.X), Mathf.Clamp(c.Y, rect.Position.Y, rect.End.Y));
+            if (edge.DistanceTo(c) > Mathf.Max(_byId[id].Radius * Zoom, 3f) + 8) DrawLine(c, edge, focused ? WindowHost.FocusFrame : EdgeColor, 1f, true);
             DrawRect(rect, PlateColor);
             DrawRect(rect, focused ? WindowHost.FocusFrame : EdgeColor, false, 1f);
-            DrawString(font, rect.Position + new Vector2(5, 2 + font.GetAscent(fontSize)), NameOf(id), HorizontalAlignment.Left, -1, fontSize,
-                focused ? WindowHost.FocusFrame : CaptionColor);
+            var (size, lines) = _plateText.TryGetValue(id, out var t) ? t : (fontSize, new[] { NameOf(id) });
+            for (int i = 0; i < lines.Length; i++)
+                DrawString(font, rect.Position + new Vector2(5, 2 + font.GetAscent(size) + i * font.GetHeight(size)), lines[i], HorizontalAlignment.Left, -1, size,
+                    focused ? WindowHost.FocusFrame : CaptionColor);
         }
     }
 
@@ -564,7 +625,10 @@ public partial class TreeView : Control, IPadControl
     /// (<see cref="SmallCaptionScale"/>); one with no free position even then is left out (its text stays in the hover line
     /// and tooltip). Deterministic: the same graph, states, zoom and pan give the same layout.
     /// </summary>
-    public IReadOnlyList<(string Id, Rect2 Rect, int FontSize)> LayoutCaptions()
+    public IReadOnlyList<(string Id, Rect2 Rect, int FontSize)> LayoutCaptions() => LayoutCaptions(Array.Empty<(string Id, Rect2 Rect)>());
+
+    /// <summary>The layout with the gamepad's plates as obstacles: a plated node gets no caption, no caption covers a plate.</summary>
+    public IReadOnlyList<(string Id, Rect2 Rect, int FontSize)> LayoutCaptions(IReadOnlyList<(string Id, Rect2 Rect)> plates)
     {
         var placed = new List<(string Id, Rect2 Rect, int FontSize)>();
         if (_nodes.Count == 0) return placed;
@@ -581,7 +645,7 @@ public partial class TreeView : Control, IPadControl
         foreach (var size in new[] { fontSize, Mathf.Max(8, (int)(fontSize * SmallCaptionScale)) })
         foreach (var n in order)
         {
-            if (placed.Any(p => p.Id == n.Id)) continue;
+            if (placed.Any(p => p.Id == n.Id) || plates.Any(p => p.Id == n.Id)) continue;
             var c = WorldToLocal(n.Position);
             float r = Mathf.Max(n.Radius * Zoom, 3f);
             if (r < CaptionMinPixels) continue;
@@ -606,7 +670,7 @@ public partial class TreeView : Control, IPadControl
                 // A visible node's caption cut by the edge reads as a broken word («нная кожа»); off-view nodes do not matter.
                 if (view.HasPoint(c) && !view.Encloses(rect)) return false;
                 var padded = rect.Grow(1f);
-                return !placed.Any(p => p.Rect.Intersects(padded)) && !circles.Any(o => CircleHitsRect(o.Center, o.R, padded));
+                return !placed.Any(p => p.Rect.Intersects(padded)) && !plates.Any(p => p.Rect.Intersects(padded)) && !circles.Any(o => CircleHitsRect(o.Center, o.R, padded));
             }
             var spot = corners.Concat(slid).Select(p => new Rect2(p, w, h)).Cast<Rect2?>().FirstOrDefault(rect => Fits(rect!.Value));
             // Still no place (a side node among dots): the caption in two lines, under or over the node, slid inside the view.

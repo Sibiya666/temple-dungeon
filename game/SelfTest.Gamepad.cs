@@ -419,6 +419,18 @@ public sealed partial class SelfTest
         var b = view.Nodes.First(n => n.Id == expected).Position;
         Check(b.X > a.X, $"узел {expected} не правее {from.Id}");
         Check(view.NodeLocalPosition(expected) is { } shown && new Rect2(Vector2.Zero, view.Size).HasPoint(shown), "выбранный узел вне вида");
+        // The plates come first: the focused node's name is drawn once, plates cover no caption and no node.
+        var plates = view.PadCaptions();
+        var captions = view.LayoutCaptions(plates);
+        var once = plates.Count(p => p.Id == expected) + captions.Count(c => c.Id == expected);
+        Check(once == 1, $"подпись выбранного узла нарисована {once} раз");
+        foreach (var (plateId, plate) in plates)
+        {
+            var covered = captions.FirstOrDefault(c => c.Rect.Intersects(plate));
+            Check(covered.Id == null, $"плашка «{view.NameOf(plateId)}» закрывает подпись «{covered.Id}»");
+            var hit = view.Nodes.FirstOrDefault(n => view.NodeLocalPosition(n.Id) is { } np && TreeView.CircleHitsRect(np, Mathf.Max(n.Radius * view.Zoom, 3f), plate));
+            Check(hit == null, $"плашка «{view.NameOf(plateId)}» {plate} закрывает узел {hit?.Id} {(hit != null ? view.NodeLocalPosition(hit.Id) : null)} r={(hit?.Radius ?? 0) * view.Zoom}; вид {view.Size}, узел плашки {view.NodeLocalPosition(plateId)}");
+        }
 
         // A = click: take an available node, then the mouse path drops it, then A takes it again.
         var available = view.Nodes.FirstOrDefault(n => view.StateOf(n.Id) == TreeNodeState.Available) ?? throw new Failure("нет доступного узла");
@@ -662,6 +674,9 @@ public sealed partial class SelfTest
         var viewport = _main.GetViewport();
         viewport.PushInput(new InputEventMouseMotion { Relative = new Vector2(3, 0), Position = new Vector2(400, 400) });
         Check(Device.Active == InputKind.Gamepad, "сдвиг мыши на 3 px переключил на мышь");
+        // A fresh travel window: the 5 px move alone must switch (3 + 5 together would pass even with doubled counting).
+        var travelFrom = Time.GetTicksMsec();
+        while (Time.GetTicksMsec() - travelFrom < (ulong)(InputDevice.MouseWindowSec * 1000) + 60) await NextFrame();
         viewport.PushInput(new InputEventMouseMotion { Relative = new Vector2(5, 0), Position = new Vector2(410, 400) });
         await NextFrame();
         Check(Device.Active == InputKind.KeyboardMouse, "сдвиг мыши на 5 px не переключил на мышь");
@@ -713,7 +728,22 @@ public sealed partial class SelfTest
         Check(Training.State!.HeldSlot == ww, "Вихрь не зажат");
         Axis(JoyAxis.LeftX, 0.8f);
         Check(Room.Hero.MoveInput != Vector2.Zero, "стик не двигает");
-        Device.OnJoyConnectionChanged(0, false);
+        // Another pad still connected: nothing is let go and the gamepad stays active; the disconnecting id never counts.
+        Check(InputDevice.OthersConnected([0, 1], 0) && !InputDevice.OthersConnected([0], 0) && !InputDevice.OthersConnected([], 0), "подсчет оставшихся геймпадов");
+        var pads = Device.ConnectedPads;
+        try
+        {
+            Device.ConnectedPads = () => [0, 1];
+            Device.OnJoyConnectionChanged(0, false);
+            await Run(0.2);
+            Check(Device.Active == InputKind.Gamepad && Training.State!.HeldSlot == ww, "отключение одного из двух геймпадов отпустило канал или сменило устройство");
+            Device.ConnectedPads = () => [0]; // Godot still lists the disconnecting pad
+            Device.OnJoyConnectionChanged(0, false);
+        }
+        finally
+        {
+            Device.ConnectedPads = pads;
+        }
         await Run(0.3);
         Check(Training.State!.HeldSlot == null, "канал не отпущен при отключении");
         Check(Room.Hero.MoveInput == Vector2.Zero, "движение не обнулено");

@@ -118,14 +118,21 @@ public partial class InputDevice : Node
             Say(ConnectedText);
             return;
         }
-        // Another pad may still be connected: then nothing is let go (its own buttons still count).
-        if (Godot.Input.GetConnectedJoypads().Count == 0)
+        // Another pad may still be connected: then nothing is let go (its own buttons still count). The disconnecting id does not
+        // count even if Godot still lists it while this signal runs.
+        if (!OthersConnected(ConnectedPads(), device))
         {
             GamepadLost?.Invoke();
             Set(InputKind.KeyboardMouse);
         }
         Say(DisconnectedText);
     }
+
+    /// <summary>The connected pad ids (Godot's list; the self-test injects its own).</summary>
+    public Func<IEnumerable<int>> ConnectedPads { get; set; } = () => Godot.Input.GetConnectedJoypads();
+
+    /// <summary>A pad other than <paramref name="device"/> is connected.</summary>
+    public static bool OthersConnected(IEnumerable<int> connected, long device) => connected.Any(d => d != device);
 
     private void Say(string text)
     {
