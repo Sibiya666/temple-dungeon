@@ -32,6 +32,12 @@
       "per_point": 0.1
     },
     {
+      "attribute": "int",
+      "stat": "resist_dark",
+      "kind": "flat",
+      "per_point": 0.1
+    },
+    {
       "attribute": "will",
       "stat": "resource_gen",
       "kind": "increased",

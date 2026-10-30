@@ -8,7 +8,7 @@ namespace Dialoid.Core.Data;
 /// </summary>
 public static class RequiredStats
 {
-    private static readonly string[] Elements = { "fire", "cold", "lightning", "poison" };
+    private static readonly string[] Elements = { "fire", "cold", "lightning", "poison", "dark" };
     private static readonly string[] Ailments = { "bleed", "ignite", "poison", "shock", "chill", "freeze" };
 
     public static IReadOnlyList<string> All { get; } = Build();

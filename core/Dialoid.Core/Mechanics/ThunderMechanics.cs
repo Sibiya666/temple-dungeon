@@ -68,7 +68,7 @@ public sealed class Grounding : IMechanic
 }
 
 /// <summary>
-/// The damage type <c>type</c> (physical, lightning, cold, fire, poison) of the ground zone of the skills it reaches
+/// The damage type <c>type</c> (physical, lightning, cold, fire, poison, dark) of the ground zone of the skills it reaches
 /// (Разряд: "грозовая земля" is lightning even on a physical skill). Without it a zone takes the hit's largest share.
 /// </summary>
 public sealed class GroundType : IMechanic

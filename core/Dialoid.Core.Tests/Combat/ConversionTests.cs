@@ -1,5 +1,7 @@
 using Dialoid.Core.Combat;
 using Dialoid.Core.Data;
+using Dialoid.Core.Effects;
+using Dialoid.Core.Skills;
 using Dialoid.Core.Stats;
 using Dialoid.Core.Tests.Fixtures;
 using System.Text.Json.Nodes;
@@ -83,5 +85,45 @@ public class ConversionTests
         var res = DataLoader.Load(dir);
         Assert.Null(res.Data);
         Assert.Contains(res.Errors, e => e.File == "skills.json");
+    }
+
+    [Fact]
+    public void Dark_is_last_in_conversion_order()
+    {
+        Assert.Equal(5, (int)DamageType.Dark);
+        Assert.Equal(DamageType.Dark, Enum.GetValues<DamageType>().Last());
+    }
+
+    private static MechanicSkillDraft Draft()
+    {
+        var b = new SkillBase(new Dictionary<DamageType, (double, double)>(), null, 100, 1, 1, null, 0, 0, 0, 1,
+            new Dictionary<string, double>(), new Dictionary<string, double>(), Array.Empty<string>());
+        var skill = new CompiledSkill("s", 1, false, TagSet.Of(), null, b, new Dictionary<string, double>(),
+            Array.Empty<Conversion>(), 0, 0, Array.Empty<Modifier>(), Array.Empty<GrantProcEffect>(),
+            Array.Empty<MechanicEffect>(), new Dictionary<string, int>());
+        var data = DataLoader.Load(FixturePaths.Tiny).Data!;
+        return new MechanicSkillDraft(skill, new StatEvaluator(data.Stats, Array.Empty<Modifier>()), data);
+    }
+
+    [Fact]
+    public void Any_type_converts_to_dark_and_dark_never_out()
+    {
+        var src = new SourceRef("passive", "n", "n");
+        var draft = Draft();
+        foreach (var from in new[] { DamageType.Physical, DamageType.Fire, DamageType.Poison })
+            draft.AddConversion(from, DamageType.Dark, 50, src);
+        Assert.Throws<ArgumentException>(() => draft.AddConversion(DamageType.Dark, DamageType.Fire, 50, src));
+        Assert.Throws<ArgumentException>(() => draft.AddConversion(DamageType.Dark, DamageType.Dark, 50, src));
+
+        var r = ConversionResolver.Apply(new[] { P(DamageType.Poison, 100, 100) }, new[] { C(DamageType.Poison, DamageType.Dark, 40) });
+        Assert.Equal(40, r.Single(x => x.Type == DamageType.Dark).Min, 9);
+        Assert.Equal(60, r.Single(x => x.Type == DamageType.Poison).Min, 9);
+    }
+
+    [Fact]
+    public void IsElemental_only_fire_cold_lightning()
+    {
+        foreach (var t in Enum.GetValues<DamageType>())
+            Assert.Equal(t is DamageType.Fire or DamageType.Cold or DamageType.Lightning, DamageTypes.IsElemental(t));
     }
 }

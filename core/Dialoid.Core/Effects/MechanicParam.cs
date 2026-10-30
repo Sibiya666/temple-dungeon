@@ -20,7 +20,7 @@ public enum MechanicParamKind
     Skill,
     /// <summary>One skill id or an array of skill ids.</summary>
     SkillList,
-    /// <summary>A damage type: physical, fire, cold, lightning or poison.</summary>
+    /// <summary>A damage type: physical, fire, cold, lightning, poison or dark.</summary>
     DamageType,
     /// <summary>An attribute stat id: str, int, will or dex.</summary>
     Attribute,
@@ -101,7 +101,7 @@ public static class MechanicParamSchema
             MechanicParamKind.Stat when !data.Stats.ContainsKey(s) => $"ссылается на неизвестный стат «{s}»",
             MechanicParamKind.Ailment when !data.Ailments.ContainsKey(s) => $"ссылается на неизвестный недуг «{s}»",
             MechanicParamKind.Skill when !data.Skills.ContainsKey(s) => $"ссылается на неизвестный скилл «{s}»",
-            MechanicParamKind.DamageType when !IsDamageType(s) => $"«{s}» — неизвестный тип урона (physical, fire, cold, lightning или poison)",
+            MechanicParamKind.DamageType when !IsDamageType(s) => $"«{s}» — неизвестный тип урона (physical, fire, cold, lightning, poison или dark)",
             MechanicParamKind.Attribute when !Attributes.Contains(s) => $"«{s}» — неизвестный атрибут (str, int, will или dex)",
             MechanicParamKind.Condition when !ConditionCatalog.IsKnown(s) => $"«{s}» — неизвестное условие",
             _ => null,

@@ -12,7 +12,7 @@ public static class CharacterSheet
         { Character.Attribute.Str, Character.Attribute.Int, Character.Attribute.Will, Character.Attribute.Dex };
 
     private static readonly (string Element, string Label)[] Resists =
-        { ("fire", "огню"), ("cold", "холоду"), ("lightning", "молнии"), ("poison", "яду") };
+        { ("fire", "огню"), ("cold", "холоду"), ("lightning", "молнии"), ("poison", "яду"), ("dark", "тьме") };
 
     public static IReadOnlyList<NumberLine> Describe(CompiledCharacter ch, GameData data)
     {

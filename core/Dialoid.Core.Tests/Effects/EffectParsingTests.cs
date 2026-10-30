@@ -105,6 +105,25 @@ public class EffectParsingTests
     }
 
     [Fact]
+    public void Dark_damage_type_parses_in_effects()
+    {
+        var (set, e1) = Parse("{\"type\":\"set_damage_type\",\"to\":\"dark\"}");
+        Assert.Empty(e1);
+        Assert.Equal(DamageType.Dark, Assert.IsType<SetDamageTypeEffect>(set).To);
+        var (conv, e2) = Parse("{\"type\":\"add_conversion\",\"from\":\"physical\",\"to\":\"dark\",\"percent\":30}");
+        Assert.Empty(e2);
+        Assert.Equal(DamageType.Dark, Assert.IsType<AddConversionEffect>(conv).To);
+    }
+
+    [Fact]
+    public void Unknown_damage_type_message_lists_dark()
+    {
+        var (e, errs) = Parse("{\"type\":\"set_damage_type\",\"to\":\"water\"}");
+        Assert.Null(e);
+        Assert.Contains("ожидается physical, lightning, cold, fire, poison или dark", Assert.Single(errs).Message);
+    }
+
+    [Fact]
     public void ParseList_collects_valid_effects_and_errors()
     {
         using var doc = JsonDocument.Parse("[{\"type\":\"add_tag\",\"tag\":\"a\"},{\"type\":\"zzz\"}]");

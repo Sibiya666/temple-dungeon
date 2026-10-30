@@ -165,4 +165,12 @@ public class BreakdownTextTests
         var defended = plain with { Defense = new DefenseTotals(1, 0, new Dictionary<Dialoid.Core.Combat.DamageType, double>(), 0, 0, 0) };
         Assert.Equal("Время до смерти: персонаж выжил", BreakdownText.NoTimeToDeath(true, defended));
     }
+
+    [Fact]
+    public void Dark_type_names()
+    {
+        Assert.Equal("тьма", Texts.DamageTypeName(Dialoid.Core.Combat.DamageType.Dark));
+        Assert.Equal("тьмой", Texts.DamageTypeInstrumental(Dialoid.Core.Combat.DamageType.Dark));
+        Assert.Equal("Сопротивление тьме", Texts.StatTitle("resist_dark"));
+    }
 }

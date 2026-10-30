@@ -429,7 +429,7 @@ internal sealed class CombatEngine
         // Character damage_taken (percentage points, e.g. a risk node's +10%) applies after mitigation.
         var takenMult = 1 + Math.Max(-100, ev.Evaluate("damage_taken", default, _conditions).Value) / 100;
 
-        // Armor applies to physical hits; a mechanic rule can make a share of it mitigate elemental hits too (stone_skin).
+        // Armor applies to physical hits; a mechanic rule can make a share of it mitigate elemental and poison hits too (stone_skin); dark is never armored.
         var armor = ev.Evaluate("armor", default, _conditions).Value;
         var elementalArmor = _character.Rules.GetValueOrDefault(CharacterRules.ElementalArmorFraction);
 
@@ -452,7 +452,7 @@ internal sealed class CombatEngine
                 var cap = ev.Evaluate("resist_" + name + "_max", default, _conditions).Value;
                 taken = hit * Mitigation.ResistMultiplier(Math.Min(resist, cap), 0);
                 _mitigatedByResist += hit - taken;
-                if (elementalArmor > 0)
+                if (elementalArmor > 0 && (DamageTypes.IsElemental(type) || type == DamageType.Poison))
                 {
                     var afterResist = taken;
                     taken *= 1 - Mitigation.ArmorReduction(armor * elementalArmor, hit);

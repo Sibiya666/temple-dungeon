@@ -25,6 +25,7 @@
 
 ### tags.json (обязательный)
 - **Формат:** `[{"id":"fire","name":"Огонь"}]`.
+- **Теги типов урона:** `physical`, `lightning`, `cold`, `fire`, `poison`, `dark` (тьма).
 - **Правило:** любой тег, упомянутый в данных, должен быть здесь. Исключение — динамический тег `skill:<id>`.
 
 ### ailments.json (обязательный)
@@ -37,7 +38,7 @@
 - **Поля бонуса:** `attribute` — `str|int|will|dex`; `kind` — `flat|increased|more` (не `override`).
 - **В фикстуре tiny:**
   - `str` → `armor` flat 2;
-  - `int` → `resist_fire`/`resist_cold`/`resist_lightning`/`resist_poison` flat 0.1;
+  - `int` → `resist_fire`/`resist_cold`/`resist_lightning`/`resist_poison`/`resist_dark` flat 0.1;
   - `will` → `resource_gen` increased 0.2 и `life_regen_pct` increased 0.2;
   - `dex` → `dodge_chance` flat 0.05.
 
@@ -125,7 +126,7 @@
   - `pack_radius` — по умолчанию 4;
   - `life_per_target` — `null` означает бессмертного; иначе умножается на `Gear(L)`;
   - `respawn`, `armor`;
-  - `resists` — `{type: −100..100}`;
+  - `resists` — `{type: −100..100}` (типы: physical, lightning, cold, fire, poison, dark; тьма в пресетах равна яду);
   - `freeze_duration_multiplier`;
   - `attack` — `{"damage_per_hit":{"physical":14,"fire":9},"interval_sec":3.5}`, урон умножается на `Gear(L)`.
 
@@ -139,7 +140,7 @@
 | `add_tag` / `remove_tag` | `tag`; снятие `area` удаляет и `area_radius` |
 | `set_behavior` | `param`, `value` |
 | `add_behavior` | `param`, `delta`, `per_point` по умолчанию true |
-| `add_conversion` | `from`, `to`, `percent`; только вправо: physical → lightning → cold → fire → poison |
+| `add_conversion` | `from`, `to`, `percent`; только вправо: physical → lightning → cold → fire → poison → dark |
 | `set_damage_type` | `to` |
 | `set_resource` | `field` (`cost`\|`gain`), `value` |
 | `grant_proc` | `trigger`, `action` |
@@ -180,8 +181,8 @@
 ## 5. Обязательные статы (`Data/RequiredStats.cs`)
 
 - **Основные:** `life`, `life_regen_pct`, `armor`, `dodge_chance`, `dodge_chance_max`, `damage`, `damage_taken`, `crit_chance`, `crit_damage`, `resource_max`, `resource_regen`, `resource_gen`, `resource_cost`, `cast_speed`, `attack_speed`, `cooldown_recovery`, `area`, `shock_effect`, `freeze_duration`, `str`, `int`, `will`, `dex`.
-- **Сопротивления:** `resist_<e>` и `resist_<e>_max` для огня, холода, молнии и яда.
-- **По типам урона:** `added_<t>_damage_min/max` и `penetration_<t>` для всех пяти типов.
+- **Сопротивления:** `resist_<e>` и `resist_<e>_max` для огня, холода, молнии, яда и тьмы (`dark`).
+- **По типам урона:** `added_<t>_damage_min/max` и `penetration_<t>` для всех шести типов урона (physical, lightning, cold, fire, poison, dark).
 - **По недугам:** `<a>_chance` и `<a>_max_stacks` для всех шести.
 - **В `data/stats.json`** все они есть, плюс `duration`, `projectile_count`, `pierce_count`, `chain_count`.
 

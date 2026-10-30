@@ -89,7 +89,7 @@ public static class EffectJson
         {
             var v = Req(name);
             if (v == null) return null;
-            if (!TryDamageType(v, out var d)) { Err($"Неизвестный тип урона «{v}» (ожидается physical, lightning, cold, fire или poison)"); return null; }
+            if (!TryDamageType(v, out var d)) { Err($"Неизвестный тип урона «{v}» (ожидается physical, lightning, cold, fire, poison или dark)"); return null; }
             return d;
         }
 
@@ -129,7 +129,7 @@ public static class EffectJson
                 var from = Dmg("from"); var to = Dmg("to"); double pct = Num("percent");
                 if (from != null && to != null && errors.Count == before)
                 {
-                    if (to.Value <= from.Value) Err("Конверсия возможна только вправо: physical → lightning → cold → fire → poison");
+                    if (to.Value <= from.Value) Err("Конверсия возможна только вправо: physical → lightning → cold → fire → poison → dark");
                     else result = new AddConversionEffect(from.Value, to.Value, pct, scope, perPoint ?? true);
                 }
                 break;
@@ -277,6 +277,7 @@ public static class EffectJson
             case "cold": d = DamageType.Cold; return true;
             case "fire": d = DamageType.Fire; return true;
             case "poison": d = DamageType.Poison; return true;
+            case "dark": d = DamageType.Dark; return true;
         }
         d = default; return false;
     }

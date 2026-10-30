@@ -257,4 +257,27 @@ public class KeystoneTests
         Assert.Equal(fire * (1 - 87 / (87 + 10 * fire)), r.DamageTaken[DamageType.Fire], 9);
         Assert.Equal(fire * (1 - 0.008), plainRun.DamageTaken![DamageType.Fire], 9);
     }
+
+    [Fact]
+    public void Stone_skin_does_not_armor_dark_hits()
+    {
+        var d = Keystone("stone_skin", dir =>
+        {
+            Edit(dir, "classes.json", n => Find(n, "test_warrior")["class_bonuses"]!.AsArray()
+                .Add(JsonNode.Parse("{\"stat\":\"armor\",\"kind\":\"flat\",\"value\":140}")));
+            Edit(dir, "dummies.json", n =>
+            {
+                var atk = Find(n, "test_attacker")["attack"]!;
+                atk["damage_per_hit"] = JsonNode.Parse("{\"dark\":100,\"fire\":100}");
+            });
+        });
+        var plainRun = Run(d, Make("test_warrior", 2, false, null), "test_attacker", attacks: true, cap: 4);
+        var r = Run(d, Make("test_warrior", 2, true, null), "test_attacker", attacks: true, cap: 4);
+        double hit = 100 * 1.06;
+        // Dark is not elemental: no armor against it, with or without the keystone; fire gets half of the armor (174 / 2).
+        Assert.Equal(hit, plainRun.DamageTaken![DamageType.Dark], 9);
+        Assert.Equal(hit, r.DamageTaken![DamageType.Dark], 9);
+        Assert.Equal(hit * (1 - 87 / (87 + 10 * hit)), r.DamageTaken[DamageType.Fire], 9);
+        Assert.True(r.DamageTaken[DamageType.Fire] < r.DamageTaken[DamageType.Dark]);
+    }
 }
