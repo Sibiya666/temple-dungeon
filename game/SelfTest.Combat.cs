@@ -522,9 +522,17 @@ public sealed partial class SelfTest
             await Run(1.5, _ => { if (Training.State is { Busy: false }) driver.PressSlot(spark); });
             await Run(2.0, until: () => Training.State is { Busy: false });
             driver.PressSlot(spark);
-            await Run(1.0, until: () => driver.LastShownHit is { IsDot: false, DamageType: DamageType.Lightning });
-            await Run(0.04);
+            await Run(1.5, until: () => room.Effects.Active.Any(e => e.Name.ToString().Contains("Arc")));
+            await Run(0.03);
             await Shot("task-9-elemental");
+
+            // Physical: the thrown axe and warm sparks «from metal» on impact.
+            await LoadForCombat("warrior_berserker_whirlwind.json");
+            room.PlaceHero(room.Dummy.TargetPosition(0) + TowardsCamera * 4f + right * 1.5f);
+            Check(driver.PressSlot(SlotOf("throwing_axe")).Accepted, "Метательный топор не принят");
+            await Run(2.0, until: () => driver.LastShownHit is { IsDot: false, DamageType: DamageType.Physical });
+            await Run(0.06);
+            await Shot("task-9-axe-sparks");
 
             await LoadForCombat(WarriorMelee);
             driver.SetDummy("boss");
