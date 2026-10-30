@@ -16,17 +16,17 @@ public class ReachRulesTests
         Assert.True(cleave.Contains("melee"));
         Assert.False(cleave.Contains("projectile"));
 
-        var far = room.Press(Rooms.CleaveSlot, ReachRules.MeleeTiles + 0.5, true);
+        var far = room.Press(Rooms.CleaveSlot, ReachRules.MeleeReachMeters + 0.5, true);
         Assert.False(far.Accepted);
         Assert.Equal(PressRefusal.OutOfReach, far.Refusal);
-        Assert.Equal("0,0 с · Рассекающий удар · отказ: цель вне досягаемости", room.LogLines[^1]);
+        Assert.Equal("0,0 с · Рассекающий удар · отказ: вне досягаемости", room.LogLines[^1]);
 
         var held = room.StartChannel(Rooms.WhirlwindSlot, 5, true);
         Assert.Equal(PressRefusal.OutOfReach, held.Refusal);
         Rooms.Steps(room, 10);
         Assert.Null(room.Current);
 
-        var near = room.Press(Rooms.CleaveSlot, ReachRules.MeleeTiles, false);
+        var near = room.Press(Rooms.CleaveSlot, ReachRules.MeleeReachMeters, false);
         Assert.True(near.Accepted);
     }
 
@@ -53,10 +53,10 @@ public class ReachRulesTests
         var meteor = Tags(s, Rooms.MeteorSlot);
         Assert.False(meteor.Contains("projectile"));
 
-        Assert.Equal(PressRefusal.OutOfReach, ReachRules.Check(meteor, 5, false));
+        Assert.Equal(PressRefusal.TargetNotVisible, ReachRules.Check(meteor, 5, false));
         Assert.Equal(PressRefusal.None, ReachRules.Check(meteor, 30, true));
         // Poison fog (loot skill): a ground spell too.
-        Assert.Equal(PressRefusal.OutOfReach, ReachRules.Check(TagSet.Of("spell", "area", "poison", "dot"), 1, false));
+        Assert.Equal(PressRefusal.TargetNotVisible, ReachRules.Check(TagSet.Of("spell", "area", "poison", "dot"), 1, false));
     }
 
     [Fact]

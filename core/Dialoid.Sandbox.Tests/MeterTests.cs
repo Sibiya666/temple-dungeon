@@ -1,3 +1,4 @@
+using Dialoid.Core.Combat;
 using Dialoid.Core.Simulation;
 using Dialoid.Sandbox;
 
@@ -83,10 +84,14 @@ public class MeterTests
         Assert.NotNull(seg);
 
         var before = seg.Damage.Sum(d => d.Parts.Sum(p => p.BeforeDefense));
-        var rows = seg.Mitigation();
+        var all = seg.Mitigation();
+        var rows = all.Where(r => !r.IsBonus).ToList();
+        var bonus = all.Where(r => r.IsBonus).ToList();
         Assert.Equal(new[] { "дошло", "броня", "сопротивления", "множитель получаемого урона", "обнулено" }, rows.Select(r => r.Label));
-        Near(before, rows.Sum(r => r.Value));
-        Near(1, rows.Sum(r => r.Share));
+        // Bonus rows (vulnerability, penetration below zero) come after the losses and add damage: losses − bonuses = before defense.
+        Assert.Equal(all.Take(5), rows);
+        Near(before, rows.Sum(r => r.Value) - bonus.Sum(r => r.Value));
+        Near(1, rows.Sum(r => r.Share) - bonus.Sum(r => r.Share));
         Near(Rooms.FinalSum(seg.Damage), rows[0].Value);
         Assert.True(rows[1].Value > 0, "boss armor takes some physical damage");
         Assert.True(rows[2].Value > 0, "boss resistances take some lightning damage");
@@ -96,5 +101,75 @@ public class MeterTests
             Near(p.BeforeDefense - p.ByArmor - p.ByResist - p.ByTakenMultiplier - p.Nullified, p.Final);
             Near(seg.Damage.Where(d => d.SkillId == skill).Sum(d => d.Parts.Sum(x => x.BeforeDefense)), p.BeforeDefense);
         }
+    }
+
+    private static FightSegment Segment(params DamagePart[] parts)
+    {
+        var seg = new FightSegment(1, 0, new CombatLogText(TestData.Data));
+        foreach (var p in parts) seg.Add(new DamageEvent(0, "spark", 0, false, false, new[] { p }));
+        return seg;
+    }
+
+    [Fact]
+    public void Vulnerability_is_a_positive_bonus_row()
+    {
+        // 1000 lightning, shocked: the multiplier adds 250 (a negative loss); a chilled hit loses 100 to a weaker multiplier.
+        var seg = Segment(
+            new DamagePart(DamageType.Lightning, 1000, 0, 0, -250, 0, 1250),
+            new DamagePart(DamageType.Lightning, 1000, 0, 0, 100, 0, 900));
+
+        var rows = seg.Mitigation();
+        Assert.Equal(100, rows.Single(r => r.Key == "taken_multiplier").Value, 9); // only the loss
+        var bonus = rows.Single(r => r.IsBonus);
+        Assert.Equal("vulnerability", bonus.Key);
+        Assert.Equal(250, bonus.Value, 9);
+        Assert.Equal("+250 от уязвимости", bonus.Label);
+        Assert.Equal(0.125, bonus.Share, 9);
+        Assert.Same(rows[^1], bonus);
+        Near(2000, rows.Where(r => !r.IsBonus).Sum(r => r.Value) - bonus.Value);
+        Assert.Contains("100", CombatLogText.MeterModeHint(MeterMode.Mitigation));
+        Assert.Null(CombatLogText.MeterModeHint(MeterMode.DpsBySkill));
+
+        // No vulnerability: no bonus row.
+        Assert.DoesNotContain(Segment(new DamagePart(DamageType.Fire, 100, 0, 10, 0, 0, 90)).Mitigation(), r => r.IsBonus);
+    }
+
+    [Fact]
+    public void Negative_resist_loss_is_a_penetration_bonus_row()
+    {
+        // Penetration pushes the resistance below zero: −1500 "lost" is 1500 more damage, shown in the meter's short form.
+        var seg = Segment(
+            new DamagePart(DamageType.Fire, 10000, 0, -1500, 0, 0, 11500),
+            new DamagePart(DamageType.Cold, 1000, 0, 300, 0, 0, 700));
+
+        var rows = seg.Mitigation();
+        Assert.Equal(300, rows.Single(r => r.Key == "resist").Value, 9);
+        var bonus = rows.Single(r => r.IsBonus);
+        Assert.Equal("penetration", bonus.Key);
+        Assert.Equal(1500, bonus.Value, 9);
+        Assert.Equal("+1,5 тыс. от пробивания", bonus.Label);
+        Near(11000, rows.Where(r => !r.IsBonus).Sum(r => r.Value) - bonus.Value);
+    }
+
+    [Fact]
+    public void Per_skill_damage_over_time_sums_to_skill_total()
+    {
+        var room = new TrainingRoom(Rooms.Fireball());
+        Rooms.Hammer(room, Rooms.MeteorSlot, 1); // a newer press replaces a queued one: Meteor first, alone
+        Rooms.Hammer(room, Rooms.FireballSlot, 5);
+        var seg = room.Current!;
+        var total = seg.DamageOverTime(1);
+        var bySkill = seg.DamageBySkill();
+        Assert.True(bySkill.Count >= 2);
+
+        foreach (var row in bySkill)
+        {
+            var series = seg.DamageOverTime(1, row.Key);
+            Assert.Equal(total.Select(p => p.Time), series.Select(p => p.Time));
+            Near(row.Value, series.Sum(p => p.Damage));
+        }
+        for (var i = 0; i < total.Count; i++)
+            Near(total[i].Damage, bySkill.Sum(r => seg.DamageOverTime(1, r.Key)[i].Damage));
+        Assert.All(seg.DamageOverTime(1, "no_such_skill"), p => Assert.Equal(0, p.Damage));
     }
 }

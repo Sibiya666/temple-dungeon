@@ -165,14 +165,21 @@ internal static class Texts
     public const string LogSeparator = " · ";
     public static string LogTime(string seconds) => $"{seconds} с";
     public const string LogHit = "попадание";
-    public static string LogHitOnTarget(int target) => $"попадание по цели {target + 1}";
-    public const string LogDot = "урон со временем";
-    public static string LogDotOnTarget(int target) => $"урон со временем по цели {target + 1}";
+    public static string LogTarget(int target) => $"цель {target + 1}";
     public const string LogCritMark = "(крит)";
-    public const string LogMechanic = "механика";
     public const string LogBuff = "бафф";
     public static string LogSlot(int slot) => $"слот {slot}";
     public static string LogRefusal(string reason) => $"отказ: {reason}";
+    public static string LogRepeat(string line, int repeat) => $"{line} ×{repeat}";
+
+    private static readonly Dictionary<string, string> AilmentDamageNames = new(StringComparer.Ordinal)
+    {
+        ["bleed"] = "урон кровотечения", ["ignite"] = "урон поджога", ["poison"] = "урон отравления",
+    };
+
+    /// <summary>An aggregated DoT line: «урон поджога» for an ailment, «урон зоны» for a ground zone.</summary>
+    public static string LogDotTick(string? ailmentId) =>
+        ailmentId == null ? "урон зоны" : AilmentDamageNames.GetValueOrDefault(ailmentId, "урон со временем");
 
     public const string BuildChangedRestart = "Билд изменен — бой начат заново";
     public static string DummyChangedRestart(string dummyName) => $"Манекен «{dummyName}» — бой начат заново";
@@ -188,10 +195,26 @@ internal static class Texts
         Dialoid.Core.Simulation.PressRefusal.BuffActive => "бафф уже действует",
         Dialoid.Core.Simulation.PressRefusal.WeaponMismatch => "не подходит оружие",
         Dialoid.Core.Simulation.PressRefusal.TriggeredOnly => "скилл только срабатывает от других",
-        Dialoid.Core.Simulation.PressRefusal.OutOfReach => "цель вне досягаемости",
+        Dialoid.Core.Simulation.PressRefusal.OutOfReach => "вне досягаемости",
+        Dialoid.Core.Simulation.PressRefusal.TargetNotVisible => "цель не видна",
         Dialoid.Core.Simulation.PressRefusal.FightOver => "бой не идет",
         _ => "отказ",
     };
+
+    private static readonly Dictionary<string, string> ResourceGenitive = new(StringComparer.Ordinal)
+    {
+        ["mana"] = "маны", ["fury"] = "ярости",
+    };
+
+    /// <summary>The short text over the hero (spec 4, «Экран боя»): «Перезарядка 2,1 с», «Не хватает маны», «Цель не видна».</summary>
+    public static string RefusalPopup(Dialoid.Core.Simulation.PressRefusal r, string? cooldownLeft, string? resourceId)
+    {
+        var text = r == Dialoid.Core.Simulation.PressRefusal.NotEnoughResource && resourceId != null
+                   && ResourceGenitive.TryGetValue(resourceId, out var resource)
+            ? $"не хватает {resource}"
+            : RefusalReason(r, cooldownLeft);
+        return char.ToUpperInvariant(text[0]) + text[1..];
+    }
 
     /// <summary>"812 огнем": the damage type in the instrumental case.</summary>
     public static string DamageTypeInstrumental(Dialoid.Core.Combat.DamageType t) => t switch
@@ -213,17 +236,46 @@ internal static class Texts
     /// <summary>Russian ailment name; an unknown id gives the generic «недуг».</summary>
     public static string AilmentName(string id) => AilmentNames.GetValueOrDefault(id, EventKindName("ailment"));
 
-    /// <summary>Known mechanic log texts in Russian (by the text after "mechanic_id: "); null for an unknown one.</summary>
-    public static string? MechanicText(string text) =>
-        text == "charges spent" ? "заряды потрачены"
-        : text.StartsWith("freeze on #", StringComparison.Ordinal) && text.EndsWith(" shattered", StringComparison.Ordinal) ? "заморозка разбита"
-        : null;
+    // Every mechanic that writes a log event (MechanicSimContext.Log) needs its name and event text here.
+    private static readonly Dictionary<string, (string Name, string Event)> MechanicEvents = new(StringComparer.Ordinal)
+    {
+        ["static_charge"] = ("Статический заряд", "заряды потрачены"),
+        ["shatter"] = ("Раскол", "заморозка разбита"),
+    };
+
+    /// <summary>A mechanic log event by its <see cref="Dialoid.Core.Simulation.SimEvent.MechanicKey"/>: the mechanic's Russian name and
+    /// what happened; null for an unknown key.</summary>
+    public static (string Name, string Event)? MechanicEvent(string key) =>
+        MechanicEvents.TryGetValue(key, out var e) ? e : null;
+
+    // Every id of LiveFight.ShownCounters (and every mechanic debuff on a target) needs its Russian name here.
+    private static readonly Dictionary<string, string> MechanicStackNames = new(StringComparer.Ordinal)
+    {
+        ["static_charge:charges"] = "Статический заряд",
+    };
+
+    /// <summary>Russian name of a shown mechanic stack or target debuff (<see cref="Dialoid.Core.Simulation.TimedEffect.Id"/>);
+    /// null for an unknown one.</summary>
+    public static string? MechanicStackName(string id) => MechanicStackNames.GetValueOrDefault(id);
 
     public const string MitigationFinal = "дошло";
     public const string MitigationArmor = "броня";
     public const string MitigationResist = "сопротивления";
     public const string MitigationTaken = "множитель получаемого урона";
     public const string MitigationNullified = "обнулено";
+    public static string MitigationVulnerability(string amount) => $"+{amount} от уязвимости";
+    public static string MitigationPenetration(string amount) => $"+{amount} от пробивания";
+
+    /// <summary>The note under a meter mode; null when the mode needs none.</summary>
+    public static string? MeterModeHint(MeterMode mode) => mode == MeterMode.Mitigation
+        ? "Прибавки от уязвимости и пробивания — отдельные полосы, поэтому проценты не дают в сумме 100"
+        : null;
+
+    public static string SegmentLabel(int index, string duration, string dummyName, bool afterBuildChange) =>
+        $"№{index}{LogSeparator}{duration}{LogSeparator}{dummyName}" + (afterBuildChange ? $"{LogSeparator}после правки билда" : "");
+
+    /// <summary>"DPS +12%" next to a segment's label.</summary>
+    public static string DpsChange(string percent) => $"DPS {percent}%";
 
     public static string MeterModeName(MeterMode mode) => mode switch
     {

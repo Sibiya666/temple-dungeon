@@ -65,6 +65,24 @@ public class ThunderTests
     }
 
     [Fact]
+    public void Static_charge_spent_event_carries_the_charges_before_the_reset()
+    {
+        var proc = "{\"type\":\"grant_proc\",\"trigger\":\"on_use\",\"action\":{\"cast_skill\":{\"id\":\"test_slash\",\"damage_percent\":100}},\"scope\":\"skill:test_slam\"}";
+        var d = Asc(StormWeapon + "," + proc + "," + Mech("static_charge"),
+            dir => Edit(dir, "skills.json", s => Find(s, "test_slam")["resource_cost"] = 0));
+
+        var r = Run(d, Warrior(true, "test_greataxe", "test_slam"), duration: 25);
+
+        var spent = r.Log.Where(e => e.Kind == "mechanic").ToList();
+        Assert.Equal(2, spent.Count);
+        Assert.All(spent, e =>
+        {
+            Assert.Equal("static_charge", e.MechanicKey);
+            Assert.Equal(10, e.Value);
+        });
+    }
+
+    [Fact]
     public void Grounding_gives_shocks_at_least_20_effect_and_5_seconds()
     {
         GameData Data(string extra) => Asc(StormWeapon + extra,

@@ -1,4 +1,5 @@
 using Dialoid.Core.Character;
+using Dialoid.Core.Combat;
 using Dialoid.Core.Effects;
 using Dialoid.Core.Simulation;
 using Dialoid.Core.Tests.Content;
@@ -296,6 +297,140 @@ public class LiveFightTests
         Assert.True(s.Life > 0);
         Assert.True(s.ResourceMax > 0);
         Assert.Null(fight.Snapshot().TimeToDeath);
+    }
+
+    private static readonly string[] MainBuildPaths =
+    {
+        "warrior_berserker_whirlwind", "warrior_thunderer_crush", "warrior_fire_cleave_crit",
+        "sorcerer_pyromancer_fireball", "sorcerer_cryomancer_ice_lance", "sorcerer_spark_hybrid",
+    };
+
+    [Fact]
+    public void Structured_fields_are_set_on_use_hit_ailment_proc_and_mechanic_events()
+    {
+        var sim = new Simulator(ContentHarness.Data, MechanicRegistry.Default);
+        var kinds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var path in MainBuildPaths)
+        foreach (var dummy in new[] { "training", "swarm" })
+        {
+            var log = sim.Run(ContentHarness.LoadBuild(path), new SimConfig(dummy, SimMode.Roll, Seed: 1)).Log;
+            SimEvent? lastHit = null;
+            foreach (var e in log)
+            {
+                var what = $"{path} {dummy} {e}";
+                kinds.Add(e.Kind);
+                switch (e.Kind)
+                {
+                    case "use":
+                        Assert.True(e.SkillId == e.Text, what);
+                        Assert.True(e.UseSec > 0, what);
+                        break;
+                    case "hit":
+                        Assert.True(e.SkillId != null && e.Target != null, what);
+                        Assert.True(e.Text.StartsWith($"{e.SkillId} -> #{e.Target}:", StringComparison.Ordinal), what);
+                        // A hit with no damage part at all (Blink without damage nodes) has no damage event, so no sequence number.
+                        Assert.True(e.DamageSeq != null || e.Text.EndsWith(": 0", StringComparison.Ordinal), what);
+                        lastHit = e;
+                        break;
+                    case "crit":
+                        Assert.True(e.SkillId != null && e.Target != null, what);
+                        Assert.True(lastHit != null && lastHit.DamageSeq == e.DamageSeq && lastHit.Target == e.Target, what);
+                        break;
+                    case "ailment":
+                        Assert.True(e.SkillId != null && e.AilmentId != null && e.Target != null, what);
+                        Assert.True(e.Text.StartsWith($"{e.AilmentId} -> #{e.Target} ({e.SkillId}", StringComparison.Ordinal), what);
+                        break;
+                    case "proc":
+                        Assert.True(e.SkillId != null && e.SourceSkillId != null, what);
+                        Assert.True(e.Text.StartsWith(e.SourceSkillId + ": ", StringComparison.Ordinal), what);
+                        break;
+                    case "mechanic":
+                        Assert.True(e.MechanicKey != null && e.Text.StartsWith(e.MechanicKey + ": ", StringComparison.Ordinal), what);
+                        break;
+                    case "kill":
+                        Assert.True(e.Target != null && e.Text == $"#{e.Target}", what);
+                        break;
+                }
+            }
+        }
+        foreach (var kind in new[] { "use", "hit", "crit", "ailment", "proc", "mechanic", "kill" }) Assert.Contains(kind, kinds);
+    }
+
+    [Fact]
+    public void Every_hit_has_exactly_one_damage_event_with_same_seq()
+    {
+        foreach (var path in MainBuildPaths)
+        foreach (var dummy in new[] { "training", "swarm" })
+        {
+            var fight = Start(ContentHarness.LoadBuild(path), new LiveFightConfig(dummy, SimMode.Roll));
+            var rotation = fight.Setup.Rotation();
+            var events = new List<SimEvent>();
+            var damage = new List<DamageEvent>();
+            for (var i = 0; i < 400; i++)
+            {
+                fight.Step(rotation);
+                events.AddRange(fight.DrainEvents());
+                damage.AddRange(fight.DrainDamage());
+            }
+            var what = $"{path} {dummy}";
+            Assert.Equal(damage.Count, damage.Select(d => d.Seq).Distinct().Count());
+            Assert.True(damage.Zip(damage.Skip(1)).All(p => p.First.Seq < p.Second.Seq), what);
+            Assert.DoesNotContain(damage, d => d.Seq <= 0);
+
+            var hits = damage.Where(d => !d.IsDot).ToDictionary(d => d.Seq);
+            var hitEvents = events.Where(e => e.Kind == "hit" && e.DamageSeq != null).ToList();
+            Assert.NotEmpty(hitEvents);
+            Assert.Equal(hits.Count, hitEvents.Count);
+            foreach (var e in hitEvents)
+            {
+                Assert.True(hits.TryGetValue(e.DamageSeq!.Value, out var d), $"{what}: {e}");
+                Assert.True(d.SkillId == e.SkillId && d.Target == e.Target && d.Time == e.Time, $"{what}: {e} vs {d}");
+            }
+            // A crit on a hit without any damage part (no damage event) has no number either.
+            var crits = events.Where(e => e.Kind == "crit" && e.DamageSeq != null).Select(e => e.DamageSeq!.Value).ToHashSet();
+            Assert.Equal(crits.Order(), hits.Values.Where(d => d.IsCrit).Select(d => d.Seq).Order());
+        }
+    }
+
+    [Fact]
+    public void Dot_damage_events_carry_ailment_or_zone_id()
+    {
+        bool ailments = false, zones = false;
+        foreach (var path in MainBuildPaths)
+        {
+            var fight = Start(ContentHarness.LoadBuild(path), new LiveFightConfig("swarm", SimMode.Average));
+            var rotation = fight.Setup.Rotation();
+            for (var i = 0; i < 400; i++)
+            {
+                fight.Step(rotation);
+                foreach (var d in fight.DrainDamage())
+                {
+                    if (!d.IsDot)
+                    {
+                        Assert.True(d.AilmentId == null && d.ZoneId == null, $"{path}: {d}");
+                        continue;
+                    }
+                    Assert.True((d.AilmentId == null) != (d.ZoneId == null), $"{path}: {d}");
+                    if (d.AilmentId != null) Assert.Contains(d.AilmentId, ContentHarness.Data.Ailments.Keys);
+                    if (d.ZoneId != null) Assert.Equal(d.SkillId, d.ZoneId); // one zone per skill
+                    ailments |= d.AilmentId != null;
+                    zones |= d.ZoneId != null;
+                }
+            }
+        }
+        Assert.True(ailments, "no ailment tick");
+        Assert.True(zones, "no zone tick");
+    }
+
+    [Fact]
+    public void Use_event_carries_the_busy_time_of_that_use()
+    {
+        var fight = Start("sorcerer_pyromancer_fireball");
+        Assert.True(fight.Press(Fireball).Accepted);
+        fight.Step();
+        var use = fight.DrainEvents().Single(e => e.Kind == "use");
+        Assert.Equal(fight.Sim.BusyUntil - use.Time, use.UseSec!.Value, 9);
+        Assert.Equal(fight.Slots[Fireball - 1].UseTimeSec, use.UseSec!.Value, 9); // no conditional speed bonus at the start
     }
 
     private static LiveFight Start(string buildPath) =>

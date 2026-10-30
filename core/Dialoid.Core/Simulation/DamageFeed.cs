@@ -14,6 +14,7 @@ internal sealed class DamageFeed
     private readonly DamagePartSum _total = new();
     private readonly List<DamageEvent>? _pending;
     private readonly int _keep;
+    private long _seq;
 
     /// <param name="keep">0: totals only; otherwise how many undrained events are kept (see the class summary).</param>
     public DamageFeed(int keep = 0)
@@ -23,19 +24,23 @@ internal sealed class DamageFeed
         if (keep > 0) _pending = new List<DamageEvent>();
     }
 
-    /// <summary>One hit or tick. A hit with no damage part at all (a skill that deals no damage) is not an event.</summary>
-    public void Add(double time, string skillId, int target, bool isDot, bool isCrit, IReadOnlyList<DamagePart> parts)
+    /// <summary>One hit or tick. A hit with no damage part at all (a skill that deals no damage) is not an event. Returns the
+    /// event's <see cref="DamageEvent.Seq"/> (numbered with or without a keep), or null when it was not an event.</summary>
+    public long? Add(double time, string skillId, int target, bool isDot, bool isCrit, IReadOnlyList<DamagePart> parts,
+        string? ailmentId = null, string? zoneId = null)
     {
-        if (parts.Count == 0) return;
+        if (parts.Count == 0) return null;
+        var seq = ++_seq;
         if (!_bySkill.TryGetValue(skillId, out var sum)) _bySkill[skillId] = sum = new DamagePartSum();
         foreach (var p in parts)
         {
             sum.Add(p);
             _total.Add(p);
         }
-        if (_pending == null) return;
-        _pending.Add(new DamageEvent(time, skillId, target, isDot, isCrit, parts));
+        if (_pending == null) return seq;
+        _pending.Add(new DamageEvent(time, skillId, target, isDot, isCrit, parts) { Seq = seq, AilmentId = ailmentId, ZoneId = zoneId });
         if (_pending.Count >= 2 * _keep) _pending.RemoveRange(0, _pending.Count - _keep); // in batches: amortized O(1)
+        return seq;
     }
 
     /// <summary>The events since the previous call (oldest first); always empty without a keep.</summary>
