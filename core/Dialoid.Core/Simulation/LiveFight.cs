@@ -33,12 +33,12 @@ public sealed class LiveFight
 
     /// <summary>With infinite life, a preset immortal in the data gets this preset's life per target (× G(level)) instead, so
     /// its life bar drops and refills and "target below X %" behaves as on it (owner decision 2026-10-30).</summary>
-    public const string ImmortalStandInDummyId = "boss";
+    internal const string ImmortalStandInDummyId = "boss";
 
     /// <summary>The mechanic counters (keys "mechanic_id:key" of global mechanics) shown as stacks in
     /// <see cref="LiveState.HeroEffects"/>; every other counter is bookkeeping (soul_heat's use counter, static_charge's flags...).
-    /// The sandbox names each of them in Russian.</summary>
-    public static IReadOnlyList<string> ShownCounters { get; } = new[] { "static_charge:charges" };
+    /// The sandbox names each of them in Russian. Read-only (not a castable array).</summary>
+    public static IReadOnlyList<string> ShownCounters { get; } = Array.AsReadOnly(new[] { "static_charge:charges" });
 
     private LiveState? _state; // cached until the next step or command
 

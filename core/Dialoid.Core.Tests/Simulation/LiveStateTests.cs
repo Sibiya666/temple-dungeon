@@ -227,6 +227,14 @@ public class LiveStateTests
             build.WeaponId != null ? data.Weapons[build.WeaponId] : null);
     }
 
+    [Fact]
+    public void Shown_counters_cannot_be_changed_and_target_not_visible_is_the_last_refusal()
+    {
+        Assert.False(LiveFight.ShownCounters is string[]);
+        Assert.Throws<NotSupportedException>(() => ((IList<string>)LiveFight.ShownCounters)[0] = "x");
+        Assert.Equal(PressRefusal.TargetNotVisible, Enum.GetValues<PressRefusal>()[^1]);
+    }
+
     private static double Line(IReadOnlyList<NumberLine> lines, string key) => lines.Single(l => l.Key == key).Value;
 
     private static LiveFight Start(string buildPath) =>

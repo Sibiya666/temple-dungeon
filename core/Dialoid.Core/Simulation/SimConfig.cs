@@ -36,4 +36,8 @@ public sealed record SimEvent(double Time, string Kind, string Text)
     /// <summary>use: how long the character is busy with this use (seconds, after conditional speed bonuses and the channel ramp,
     /// at least one step). The game layer stretches the animation to it.</summary>
     public double? UseSec { get; init; }
+
+    /// <summary>mechanic: the number the event is about, taken at the moment of the event before any reset (static_charge: the
+    /// charges spent); null when the event has none (shatter).</summary>
+    public double? Value { get; init; }
 }

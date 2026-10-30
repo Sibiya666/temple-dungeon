@@ -9,8 +9,10 @@ namespace Dialoid.Core.Simulation;
 /// "target below X %" behaves as on that preset).</param>
 public sealed record LiveFightConfig(string DummyId, SimMode Mode, int Seed = 1, int? PackSizeOverride = null, bool InfiniteLife = true);
 
-/// <summary>Why a key press was not taken (spec 6.2c). <see cref="OutOfReach"/> is set by the sandbox; the core never returns it.</summary>
-public enum PressRefusal { None, EmptySlot, Cooldown, NotEnoughResource, Busy, BuffActive, WeaponMismatch, TriggeredOnly, OutOfReach, FightOver }
+/// <summary>Why a key press was not taken (spec 6.2c). <see cref="OutOfReach"/> (a melee skill too far from the dummy) and
+/// <see cref="TargetNotVisible"/> (a spell aimed at the dummy or the ground while the dummy is off the screen) are set by the
+/// sandbox's reach rule (spec 6.3); the core never returns them.</summary>
+public enum PressRefusal { None, EmptySlot, Cooldown, NotEnoughResource, Busy, BuffActive, WeaponMismatch, TriggeredOnly, OutOfReach, FightOver, TargetNotVisible }
 
 /// <summary>The answer to a key press.</summary>
 /// <param name="Accepted">The skill will be used at the next step the character is free.</param>
