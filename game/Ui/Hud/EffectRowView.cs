@@ -99,8 +99,21 @@ public partial class EffectRowView : HFlowContainer
             else if (_chips[i].Visible) _chips[i].Visible = false;
         }
         if (_more.Visible != fold) _more.Visible = fold;
-        if (fold) _more.ShowOverflow(effects.Count - shown, FullList(Kind, effects));
+        if (fold) _more.ShowOverflow(effects.Count - shown, ListFor(effects));
         else if (_more.HasFocus()) _more.ReleaseFocus();
+    }
+
+    private string[] _listTexts = Array.Empty<string>();
+    private string _list = "";
+
+    /// <summary>The full list, rebuilt only when a text changed (the rows refresh every frame; code review, task 14 round 1).</summary>
+    private string ListFor(IReadOnlyList<EffectChipData> effects)
+    {
+        var same = _listTexts.Length == effects.Count;
+        for (int i = 0; same && i < effects.Count; i++) same = _listTexts[i] == effects[i].Text;
+        if (same) return _list;
+        _listTexts = effects.Select(e => e.Text).ToArray();
+        return _list = FullList(Kind, effects);
     }
 
     /// <summary>Puts the focus on «+N» (its full list shows; the game's gamepad layout reaches the row this way). False when
@@ -144,12 +157,12 @@ public partial class EffectChip : PanelContainer
         _style = new StyleBoxFlat
         {
             BgColor = torn ? new Color(0.1f, 0.04f, 0.035f, 0.93f) : new Color(0.07f, 0.065f, 0.06f, 0.92f),
-            ContentMarginLeft = torn ? 9 : 7, ContentMarginRight = torn ? 8 : 6, ContentMarginTop = torn ? 3 : 1, ContentMarginBottom = torn ? 4 : 2,
+            ContentMarginLeft = torn ? 9 : 7, ContentMarginRight = torn ? 8 : 6, ContentMarginTop = torn ? 4 : 1, ContentMarginBottom = torn ? 5 : 2,
         };
         switch (frame)
         {
             case ChipFrame.Bronze:
-                _style.SetBorderWidthAll(1);
+                _style.SetBorderWidthAll(2); // a visible bronze frame all round, no kind colour (UI review, task 14 round 1)
                 _style.BorderWidthLeft = 4;
                 _style.BorderColor = HudColors.Bronze;
                 _style.SetCornerRadiusAll(2);
@@ -181,7 +194,8 @@ public partial class EffectChip : PanelContainer
         if (name.Length > 0) name = char.ToUpperInvariant(name[0]) + name[1..]; // ailment names are lowercase («поджог»)
         if (e.Kind == TimedEffectKind.MechanicStack) return $"{name}: {RuNumber.Format(e.Stacks, "0")}";
         var text = e.Stacks > 1 ? $"{name} ×{RuNumber.Format(e.Stacks, "0")}" : name;
-        if (e.TimeLeft is not { } t || double.IsInfinity(t)) return text;
+        // A timer about to end (under 0,05 s) is not shown: no «Заморозка 0,0 с».
+        if (e.TimeLeft is not { } t || double.IsInfinity(t) || t < 0.05) return text;
         // Stacks and timer are two numbers: a dot keeps «×2» and «3,1 с» apart.
         return e.Stacks > 1 ? $"{text} · {HudFormat.Seconds(t)} с" : $"{text} {HudFormat.Seconds(t)} с";
     }
@@ -236,7 +250,7 @@ public partial class EffectChip : PanelContainer
                 _style.BorderColor = color;
                 break;
             case ChipFrame.Bronze:
-                // The bronze frame stays; the thick left edge carries the kind (buff green, stack gold).
+                // The bronze frame stays; the kind is not coloured (a green edge read like poison's).
                 _style.BorderColor = HudColors.Bronze;
                 break;
         }
@@ -246,20 +260,21 @@ public partial class EffectChip : PanelContainer
     public override void _Draw()
     {
         var size = Size;
-        if (Frame == ChipFrame.Bronze)
-            DrawRect(new Rect2(0, 0, 4, size.Y), IsOverflow ? HudColors.Bronze : _accent); // the kind's edge inside the bronze frame
         if (Frame == ChipFrame.Torn)
         {
-            DrawPolyline(TornOutline(size), HudColors.DebuffFrame, 1.5f, antialiased: true);
+            DrawPolyline(TornOutline(size), HudColors.DebuffFrame, TornWidth, antialiased: true);
             DrawRect(new Rect2(3, 4, 3, size.Y - 8), IsOverflow ? HudColors.DebuffFrame : _accent);
         }
         if (HasFocus()) DrawRect(new Rect2(Vector2.Zero, size).Grow(-1), WindowHost.FocusFrame, filled: false, width: 2);
     }
 
-    /// <summary>The torn frame: top and bottom edges jagged (teeth every 5 px), the sides with one notch each.</summary>
+    /// <summary>Torn frame: teeth every <see cref="TornStep"/> px, <see cref="TornDepth"/> px deep, a <see cref="TornWidth"/> px line.</summary>
+    public const float TornStep = 6, TornDepth = 3, TornWidth = 2;
+
+    /// <summary>The torn frame: top and bottom edges jagged, the sides with one notch each.</summary>
     public static Vector2[] TornOutline(Vector2 size)
     {
-        const float tooth = 5, depth = 2.2f, inset = 1.5f;
+        const float tooth = TornStep, depth = TornDepth, inset = 1.5f;
         var points = new List<Vector2>();
         float l = inset, r = size.X - inset, t = inset, b = size.Y - inset;
         int teeth = Math.Max(2, (int)((r - l) / tooth));

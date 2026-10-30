@@ -11,7 +11,7 @@ namespace Dialoid.Game.Ui.Hud;
 public partial class TargetPlateView : PanelContainer
 {
     public const float MinWidth = 240;
-    public const float LifeHeight = 14;
+    public const float LifeHeight = 16;
 
     private readonly Label _name;
     private readonly Control _icon;
@@ -58,12 +58,12 @@ public partial class TargetPlateView : PanelContainer
         _life.Draw += DrawLife;
         box.AddChild(_life);
         _lifeText = new Label { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
-        _lifeText.AddThemeFontSizeOverride("font_size", 12);
+        _lifeText.AddThemeFontSizeOverride("font_size", 13);
         _lifeText.AddThemeColorOverride("font_color", new Color(0.97f, 0.94f, 0.9f));
         _lifeText.AddThemeColorOverride("font_outline_color", HudColors.NumberOutline);
         _lifeText.AddThemeConstantOverride("outline_size", 4);
         _lifeText.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        (_lifeText.OffsetTop, _lifeText.OffsetBottom) = (-3, 3); // the 12 px text with its outline sits centred on the 14 px bar
+        (_lifeText.OffsetTop, _lifeText.OffsetBottom) = (-3, 3); // the 13 px text with its outline sits centred on the 16 px bar
         _life.AddChild(_lifeText);
 
         Effects = new EffectRowView(EffectRowKind.Target, maxEffects) { Name = "Effects" };

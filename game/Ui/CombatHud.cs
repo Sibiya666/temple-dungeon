@@ -62,6 +62,7 @@ public partial class CombatHud : Control
     private Func<Vector3, Vector2?> _project = null!;
     private readonly List<SkillSlotView> _slots = new();
     private Label _refusal = null!;
+    private Control _marker = null!;
     private SharedTooltip _focusTip = null!;
     private Vector2? _mouse;
     private bool _gamepad;
@@ -148,6 +149,14 @@ public partial class CombatHud : Control
 
         TargetPlate = new TargetPlateView(PlateRowMax) { Name = "DummyPlate" };
         AddChild(TargetPlate);
+        _marker = new Control { Name = "PlateMarker", MouseFilter = MouseFilterEnum.Ignore, Visible = false, Size = new Vector2(2 * MarkerHeight, MarkerHeight) };
+        _marker.Draw += () =>
+        {
+            var pts = new[] { Vector2.Zero, new Vector2(2 * MarkerHeight, 0), new Vector2(MarkerHeight, MarkerHeight) };
+            _marker.DrawColoredPolygon(pts, new Color(1f, 0.93f, 0.82f, 0.9f));
+            _marker.DrawPolyline([.. pts, pts[0]], new Color(0, 0, 0, 0.8f), 1);
+        };
+        AddChild(_marker);
 
         // The refusal text over the hero is drawn here, after the plate, so a plate next to the hero never covers it.
         _refusal = new Label { Name = "Refusal", MouseFilter = MouseFilterEnum.Ignore, Visible = false, HorizontalAlignment = HorizontalAlignment.Center };
@@ -192,6 +201,7 @@ public partial class CombatHud : Control
     public void ShowDevice(bool gamepad)
     {
         _gamepad = gamepad;
+        if (gamepad) _mouse = null; // the hidden cursor hovers nothing
         foreach (var slot in _slots) slot.ShowKey(KeyOf(slot.Number, gamepad));
     }
 
@@ -230,6 +240,19 @@ public partial class CombatHud : Control
         if (e is InputEventMouse mouse) _mouse = mouse.Position;
     }
 
+    public override void _Notification(int what)
+    {
+        // A cursor that left the window hovers nothing (code review, task 14 round 1).
+        if (what is (int)NotificationWMMouseExit or (int)NotificationWMWindowFocusOut) _mouse = null;
+    }
+
+    /// <summary>Forgets the cursor (it left the room).</summary>
+    public void ClearHover() => _mouse = null;
+
+    /// <summary>The «+N» icons the gamepad can visit now, top to bottom: the plate's, the debuffs', the buffs' (folded rows only).</summary>
+    public IReadOnlyList<Control> PadTargets() =>
+        new[] { TargetPlate.Effects, HeroDebuffs, HeroBuffs }.Where(r => r.Overflow.Visible && r.Overflow.IsVisibleInTree()).Select(r => (Control)r.Overflow).ToList();
+
     public override void _Process(double delta)
     {
         Refresh(delta);
@@ -254,19 +277,26 @@ public partial class CombatHud : Control
     /// <summary>The hero's ailments and debuffs: none in the room (the dummy never hits) unless the self-test shows stand-ins.</summary>
     public IReadOnlyList<EffectChipData> DebuffData() => _previewDebuffs ?? Array.Empty<EffectChipData>();
 
-    public TargetPlateData? PlateData(int? target) => target is { } t
-        ? TargetPlateData.From(_driver.Training.State, t, BreakdownText.DummyName(_session.Data, _driver.Training.DummyId), _names)
-        : null;
+    public TargetPlateData? PlateData(int? target) => target is { } t ? TargetPlateData.From(_driver.Training.State, t, PlateNameOf(t), _names) : null;
+
+    /// <summary>The preset's name; on a pack with the log's numbering: «Рой · цель 3».</summary>
+    public string PlateNameOf(int target)
+    {
+        var name = BreakdownText.DummyName(_session.Data, _driver.Training.DummyId);
+        return _driver.Dummy.FigureCount > 1 ? $"{name} · цель {target + 1}" : name; // the log numbers targets from 1 (Texts.LogTarget)
+    }
 
     /// <summary>
-    /// Whose plate (HUD spec §4 item 8): with the mouse the figure under the cursor, else the figure the last skill hit; with the
-    /// gamepad the target RB chose, else the last hit. In the room the fight always runs against the pack's first target, so
-    /// before any hit the plate is that target's (the room's builder decision: «no target» only when there is no figure).
+    /// Whose plate (HUD spec §4 item 8, the ring's target): with the mouse the figure under the cursor, else the ring's figure —
+    /// the newer of the last hit and the Tab choice; with the gamepad the ring's figure, which holds the RB target until the next
+    /// RB (<see cref="CombatDriver"/>). In the room the fight always runs against the pack's first target, so before any hit the
+    /// plate is that target's (the room's builder decision: «no target» only when there is no figure; the tower's world layer
+    /// needs a real no-target state).
     /// </summary>
-    public static int? ChooseTarget(bool gamepad, int? hovered, int? selected, int? lastHit, int figures)
+    public static int? ChooseTarget(bool gamepad, int? hovered, int? ring, int figures)
     {
         if (figures <= 0) return null;
-        var target = gamepad ? selected ?? lastHit : hovered ?? lastHit;
+        var target = gamepad ? ring : hovered ?? ring;
         return Math.Clamp(target ?? 0, 0, figures - 1);
     }
 
@@ -292,7 +322,7 @@ public partial class CombatHud : Control
         HeroDebuffs.Show(debuffs);
 
         var dummy = _driver.Dummy;
-        var target = ChooseTarget(_gamepad, HoveredFigure(), _driver.SelectedTarget, _driver.LastHitFigure, dummy.FigureCount);
+        var target = ChooseTarget(_gamepad, HoveredFigure(), dummy.RingTarget, dummy.FigureCount);
         TargetPlate.Show(PlateData(target));
         PlacePlate(target);
         PlaceRefusal();
@@ -310,6 +340,15 @@ public partial class CombatHud : Control
         }
         var size = _focusTip.Show(focused.Overflow.TooltipText);
         var at = focused.Overflow.GetGlobalRect();
+        if (focused == TargetPlate.Effects)
+        {
+            // Beside the plate, its top level with the plate's.
+            var plate = TargetPlate.GetGlobalRect();
+            var right = plate.End.X + 8;
+            var x = right + size.X <= Size.X ? right : plate.Position.X - 8 - size.X;
+            _focusTip.PlaceAt(new Vector2(x, plate.Position.Y), size, Size, TopBar.Height + 4);
+            return;
+        }
         // Beside the bottom column (it never covers the rows' other icons), its bottom level with the «+N».
         _focusTip.PlaceAt(new Vector2(Mathf.Max(at.End.X, BottomRect.End.X) + 8, at.End.Y - size.Y), size, Size, 0);
     }
@@ -358,9 +397,23 @@ public partial class CombatHud : Control
         var size = TargetPlate.GetCombinedMinimumSize();
         var width = Mathf.Max(size.X, TargetPlateView.MinWidth);
         TargetPlate.Size = new Vector2(width, size.Y);
+        // On a pack a small pale chevron over the plate's figure tells which one it is (UI review, task 14 round 1).
+        var pack = dummy.FigureCount > 1;
+        var lift = pack ? MarkerHeight + 2 : 0;
         // Never under the top bar (a far figure's head near the top edge): then the plate covers the head instead.
-        TargetPlate.Position = new Vector2(p.X - width / 2, Mathf.Max(p.Y - size.Y, TopBar.Height + 4));
+        var y = p.Y - size.Y - lift;
+        var clamped = y < TopBar.Height + 4;
+        TargetPlate.Position = new Vector2(p.X - width / 2, clamped ? TopBar.Height + 4 : y);
+        _marker.Visible = pack && !clamped;
+        if (_marker.Visible) _marker.Position = new Vector2(p.X - MarkerHeight, p.Y - MarkerHeight);
     }
+
+    /// <summary>Height of the chevron over the plate's figure on a pack, pixels.</summary>
+    public const float MarkerHeight = 8;
+
+    /// <summary>The chevron over the plate's figure is shown (packs only).</summary>
+    public bool MarkerShown => _marker.Visible;
+    public Vector2 MarkerTip => _marker.Position + new Vector2(MarkerHeight, MarkerHeight);
 
     /// <summary>Pixels between the hero's feet and a refusal text placed under them (clear of the target ring).</summary>
     public const float FeetGap = 20;

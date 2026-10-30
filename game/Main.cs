@@ -129,6 +129,9 @@ public partial class Main : Control
         Room!.CameraRig.InputBlocked = () => Windows.WindowHasFocus;
         Windows.LeftBottomRightLimit = screen => CombatHud.LeftEdge(screen.X) - CombatHud.WindowGap;
         Windows.HeroScreenX = () => RoomToScreen(Combat.Hero.Position)?.X;
+        // Start, then ↓ from the top bar: the combat screen's folded rows (their full lists) on the gamepad.
+        Windows.HudRoot = Hud;
+        Windows.HudTargets = () => Hud?.PadTargets() ?? (IReadOnlyList<Control>)Array.Empty<Control>();
         if (Dialoid.Game.Input.InputDevice.Instance is { } device)
         {
             device.GamepadLost += Combat.ReleaseAll;

@@ -289,7 +289,7 @@ public partial class CombatDriver : Node
         var anim = Animations.For(skillId, tags);
         var channel = tags.Contains("channel");
         var visual = VisualOf(tags);
-        Hero.FaceTowards(Dummy.TargetPosition(Dummy.RingTarget ?? 0)); // the target the core hit last (on «Рой» not always figure 0)
+        Hero.FaceTowards(Dummy.TargetPosition(LastHitFigure ?? Dummy.RingTarget ?? 0)); // the target the core hit last (on «Рой» not always figure 0)
         Hero.PlayAttack(anim.ClipId, useSec);
         var start = _visualTime;
         var use = new PendingUse
@@ -402,7 +402,8 @@ public partial class CombatDriver : Node
     {
         var target = hit.Target ?? 0;
         var kind = DamageVisuals.Of(hit.DamageType);
-        Dummy.MarkTarget(target);
+        // The ring marks the last hit, except on the gamepad after RB: it holds the RB target until the next RB (the plate too).
+        if (!HoldRing) Dummy.MarkTarget(target);
         LastHitFigure = Dummy.FigureOf(target);
         Dummy.Flash(Effects, target, kind, hit.IsCrit, hit.IsDot);
         if (!hit.IsDot && !channel) Dummy.React(target, _visualTime);
@@ -610,6 +611,9 @@ public partial class CombatDriver : Node
     /// <summary>The figure RB (or Tab) chose for LB / F, or null (then the nearest one).</summary>
     public int? SelectedTarget { get; private set; }
 
+    /// <summary>The ring holds the RB target (gamepad mode after an RB): hits do not move it.</summary>
+    public bool HoldRing => InputDevice.Gamepad && SelectedTarget != null;
+
     /// <summary>The figure the last shown hit landed on (a skill's hit or a single target's tick), or null before the first hit.</summary>
     public int? LastHitFigure { get; private set; }
 
@@ -643,6 +647,7 @@ public partial class CombatDriver : Node
     public void OnDeviceChanged(InputKind kind)
     {
         if (kind == InputKind.Gamepad) _leftHeld = false;
+        if (HoldRing && SelectedTarget is { } s) Dummy.MarkTarget(s); // back on the gamepad the ring returns to the RB target
     }
 
     /// <summary>A click on the floor walks there (held: runs after the cursor); on a dummy figure — walks into melee reach of it.</summary>

@@ -23,6 +23,7 @@ public sealed partial class SelfTest
         yield return new("hud.resource-colours", HudResourceColours);
         yield return new("hud.rows-fold-and-list", HudRowsFold);
         yield return new("hud.plate-target-rule", HudPlateTargetRule);
+        yield return new("hud.pad-rows-route", HudPadRowsRoute);
         yield return new("hud.restore", async () =>
         {
             _main.Hud!.PreviewHeroRows(null, null);
@@ -33,16 +34,14 @@ public sealed partial class SelfTest
 
     // ---------- stand-in data ----------
 
-    private static readonly Color BuffGreen = new(0.42f, 0.78f, 0.38f);
-
     /// <summary><paramref name="count"/> stand-in buffs with long Russian names, stacks and timers.</summary>
     private static List<EffectChipData> StandInBuffs(int count)
     {
         var names = new[]
         {
-            "Безумие", "Неистовство", "Посвящение", "Боевой клич", "Воодушевление", "Кровавая жатва", "Ярость предков", "Клич стойкости",
+            "Безумие", "Неистовство", "Посвящение", "Боевой клич", "Воодушевление", "Кровавая жатва", "Ярость предков", "Клич несокрушимой стойкости",
             "Каменная кожа", "Жажда битвы", "Отголосок клинка", "Пепельный доспех", "Знак охотника", "Вихрь стали", "Последний рубеж",
-            "Песнь войны", "Сила зверя", "Огненная кровь",
+            "Песнь войны", "Сила зверя", "Огненная кровь", "Благословение древних курганов", "Неудержимый натиск",
         };
         return Enumerable.Range(0, count).Select(i =>
         {
@@ -59,6 +58,9 @@ public sealed partial class SelfTest
             ("chill", "охлаждение", TimedEffectKind.Ailment, 1), ("ignite", "поджог", TimedEffectKind.Ailment, 3), ("bleed", "кровотечение", TimedEffectKind.Ailment, 2),
             ("poison", "яд", TimedEffectKind.Ailment, 5), ("shackles", "Оковы", TimedEffectKind.Debuff, 1), ("shock", "шок", TimedEffectKind.Ailment, 1),
             ("weakness", "Слабость", TimedEffectKind.Debuff, 1), ("rot", "Гниль", TimedEffectKind.Debuff, 2), ("freeze", "заморозка", TimedEffectKind.Ailment, 1),
+            ("blind", "Ослепление", TimedEffectKind.Debuff, 1), ("curse", "Проклятие немощи", TimedEffectKind.Debuff, 1), ("mark", "Метка обреченной жертвы", TimedEffectKind.Debuff, 1),
+            ("stupor", "Оцепенение", TimedEffectKind.Debuff, 1), ("wound", "Гниющая рана", TimedEffectKind.Debuff, 3), ("sunder", "Разлом брони", TimedEffectKind.Debuff, 1),
+            ("drain", "Иссушение воли", TimedEffectKind.Debuff, 1),
         };
         return Enumerable.Range(0, count).Select(i =>
         {
@@ -110,7 +112,13 @@ public sealed partial class SelfTest
             Check(buffs.ShownTexts.SequenceEqual(b.Select(x => x.Text)) && debuffs.ShownTexts.SequenceEqual(d.Select(x => x.Text)), "ряды показывают не те эффекты");
             Check(buffs.Frame == ChipFrame.Bronze && debuffs.Frame == ChipFrame.Torn, $"рамки рядов {buffs.Frame} / {debuffs.Frame}");
             Check(d.Any(x => x.Text == "Поджог ×3 · 2,5 с") && d.Any(x => x.Text.StartsWith("Охлаждение ", StringComparison.Ordinal)), "тексты недугов: " + string.Join(", ", d.Select(x => x.Text)));
-            Check(EffectChip.TornOutline(new Vector2(80, 22)).Length > 20, "у рваной рамки нет зубцов");
+            var torn = EffectChip.TornOutline(new Vector2(80, 24));
+            Check(torn.Length > 20 && EffectChip.TornDepth >= 3 && EffectChip.TornWidth >= 2 && EffectChip.TornStep <= 6, "у рваной рамки мелкие зубцы");
+            // Buffs carry no kind colour (a green edge read like poison's); the debuffs keep the damage type's edge.
+            var buffChip = buffs.GetChildren().OfType<EffectChip>().First(c => c.Visible && !c.IsOverflow);
+            var style = (StyleBoxFlat)buffChip.GetThemeStylebox("panel");
+            Check(style.BorderColor == HudColors.Bronze && style.BorderWidthTop >= 2, "у баффа не бронзовая рамка");
+            Check(EffectChip.TextOf(new TimedEffect("freeze", 0.03, 1) { Kind = TimedEffectKind.Ailment }, "заморозка") == "Заморозка", "таймер 0,0 с показан");
 
             var plate = new TargetPlateView(6);
             box.AddChild(plate);
@@ -246,17 +254,16 @@ public sealed partial class SelfTest
     }
 
     /// <summary>
-    /// Whose plate: with the mouse the figure under the cursor, else the last hit; with the gamepad the RB target, else the last
-    /// hit (the rule itself, then on «Рой» through the real cursor path and RB).
+    /// Whose plate: with the mouse the figure under the cursor, else the ring's (the newer of the last hit and Tab); with the
+    /// gamepad the ring's, which holds the RB target (the rule itself, then on «Рой» through the real cursor path, Tab and RB).
     /// </summary>
     private async Task HudPlateTargetRule()
     {
-        Check(CombatHud.ChooseTarget(false, 3, 1, 2, 5) == 3, "мышь: не фигура под курсором");
-        Check(CombatHud.ChooseTarget(false, null, 1, 2, 5) == 2, "мышь: не последняя под ударом");
-        Check(CombatHud.ChooseTarget(true, 3, 1, 2, 5) == 1, "геймпад: не цель RB");
-        Check(CombatHud.ChooseTarget(true, 3, null, 2, 5) == 2, "геймпад без RB: не последняя под ударом");
-        Check(CombatHud.ChooseTarget(false, null, null, null, 1) == 0, "до первого удара нет плашки манекена");
-        Check(CombatHud.ChooseTarget(false, 0, 0, 0, 0) == null, "без фигур есть плашка");
+        Check(CombatHud.ChooseTarget(false, 3, 2, 5) == 3, "мышь: не фигура под курсором");
+        Check(CombatHud.ChooseTarget(false, null, 2, 5) == 2, "мышь: не фигура кольца");
+        Check(CombatHud.ChooseTarget(true, 3, 1, 5) == 1, "геймпад: не фигура кольца");
+        Check(CombatHud.ChooseTarget(false, null, null, 1) == 0, "до первого удара нет плашки манекена");
+        Check(CombatHud.ChooseTarget(false, 0, 0, 0) == null, "без фигур есть плашка");
 
         var hud = _main.Hud!;
         await LoadForCombat(WarriorMelee);
@@ -268,49 +275,121 @@ public sealed partial class SelfTest
         Room.CameraRig.Follow();
         await Fight(2.5, close: false);
         await Settle();
-        Check(Driver.LastHitFigure != null, "по «Рою» не было попаданий");
+        Check(Driver.LastHitFigure != null && dummy.RingTarget == Driver.LastHitFigure, $"по «Рою» не было попаданий или кольцо {dummy.RingTarget} не у последней {Driver.LastHitFigure}");
         var last = Driver.LastHitFigure!.Value;
         hud.Refresh();
-        Check(hud.PlateTarget == last, $"без курсора плашка у фигуры {hud.PlateTarget}, последняя под ударом {last}");
+        Check(hud.PlateTarget == last && hud.PlateName == $"Рой · цель {last + 1}", $"без курсора плашка «{hud.PlateName}» у фигуры {hud.PlateTarget}, кольцо {last}");
 
-        // The cursor over another figure: the plate goes there and stands over its head.
+        // The cursor over another figure: the plate goes there, over its head, with the chevron marking that figure.
+        // The hero steps behind the pack (the camera follows him), so the pack stands low on screen with room for the plate.
+        Room.PlaceHero(dummy.TargetPosition(0) - TowardsCamera * 3.0f);
+        Room.CameraRig.Follow();
+        await Settle();
+        // The lowest figure on screen that the cursor finds (its plate is least likely to meet the top bar).
         int? hovered = null;
         Vector2 at = default;
-        for (int i = 0; i < dummy.FigureCount && hovered == null; i++)
+        for (int i = 0; i < dummy.FigureCount; i++)
         {
             if (i == last || _main.RoomToScreen(dummy.HitPoint(i)) is not { } p || _main.ScreenToFigure(p) != i) continue;
-            (hovered, at) = (i, p);
+            if (hovered == null || p.Y > at.Y) (hovered, at) = (i, p);
         }
         Check(hovered != null, "ни одна фигура «Роя» не находится курсором");
         _main.GetViewport().PushInput(new InputEventMouseMotion { Position = at, GlobalPosition = at });
         await NextFrame();
         hud.Refresh();
         Check(hud.HoveredFigure() == hovered && hud.PlateTarget == hovered, $"курсор над фигурой {hovered}: под курсором {hud.HoveredFigure()}, плашка {hud.PlateTarget}");
-        var head = _main.RoomToScreen(dummy.TargetPosition(hovered!.Value) + new Vector3(0, dummy.Figures[hovered.Value].Model.TargetHeight, 0))!.Value;
+        var head = _main.RoomToScreen(dummy.TargetPosition(hovered!.Value) + new Vector3(0, dummy.Figures[hovered.Value].Model.TargetHeight + 0.05f, 0))!.Value;
         var rect = hud.PlateRect;
-        Check(Mathf.Abs(rect.GetCenter().X - head.X) < 2 && rect.End.Y <= head.Y + 1, $"плашка {rect} не над головой фигуры {head}");
+        Check(Mathf.Abs(rect.GetCenter().X - head.X) < 2, $"плашка {rect} не над фигурой {head}");
+        if (rect.Position.Y > TopBar.Height + 4.5f)
+            Check(rect.End.Y <= head.Y + 1 && hud.MarkerShown && hud.MarkerTip.DistanceTo(head) < 2 && rect.End.Y <= hud.MarkerTip.Y - CombatHud.MarkerHeight + 0.5f,
+                $"плашка {rect} или метка {hud.MarkerTip} не над головой фигуры {head}");
+        else Check(!hud.MarkerShown, "плашка прижата к верхней панели, а метка видна"); // a head near the top edge: the plate covers it
+        GD.Print($"SELFTEST NOTE плашка «Роя» над фигурой {hovered}: {rect}, голова {head}, метка {(hud.MarkerShown ? hud.MarkerTip.ToString() : "нет")}");
         Check(hud.TargetPlate.Data!.Life == Training.State!.TargetLife[hovered.Value], "здоровье на плашке не той фигуры");
 
-        // The cursor over the floor: back to the last hit.
-        var floor = _main.RoomToScreen(Room.Hero.Position + TowardsCamera * 1.5f)!.Value;
+        // The cursor leaves the window: it hovers nothing any more.
+        hud.Notification((int)Node.NotificationWMMouseExit);
+        hud.Refresh();
+        Check(hud.HoveredFigure() == null && hud.PlateTarget == dummy.RingTarget, "курсор ушел из окна, а плашка осталась у фигуры под ним");
+
+        // Tab (newer than the last hit) moves the ring and the plate; the next hit takes them back.
+        var floor = _main.RoomToScreen(Room.Hero.Position - TowardsCamera * 1.5f)!.Value; // behind the hero, away from the pack
         _main.GetViewport().PushInput(new InputEventMouseMotion { Position = floor, GlobalPosition = floor });
         await NextFrame();
+        Driver.SelectNextTarget();
         hud.Refresh();
-        Check(hud.HoveredFigure() == null && hud.PlateTarget == (Driver.LastHitFigure ?? 0), $"курсор над полом: плашка {hud.PlateTarget}");
+        Check(hud.HoveredFigure() == null && dummy.RingTarget == Driver.SelectedTarget && hud.PlateTarget == Driver.SelectedTarget, $"Tab: кольцо {dummy.RingTarget}, плашка {hud.PlateTarget}, выбор {Driver.SelectedTarget}");
 
-        // The gamepad: the RB target, whatever lies under the (hidden) cursor.
+        // The gamepad: the ring holds the RB target through the hits until the next RB; the plate shows the ring's figure.
+        Room.PlaceHero(dummy.TargetPosition(0) + TowardsCamera * 3.2f); // back within reach: hits land again
+        Room.CameraRig.Follow();
+        await Settle();
+        at = _main.RoomToScreen(dummy.HitPoint(hovered.Value)) ?? at;
         _main.GetViewport().PushInput(new InputEventMouseMotion { Position = at, GlobalPosition = at });
         await NextFrame();
         Device.Set(InputKind.Gamepad);
         await NextFrame();
         do Driver.SelectNextTarget(); while (Driver.SelectedTarget == hovered);
+        var rb = Driver.SelectedTarget;
+        await Fight(1.5, close: false);
         hud.Refresh();
-        Check(hud.PlateTarget == Driver.SelectedTarget && hud.PlateTarget != hovered, $"геймпад: плашка {hud.PlateTarget}, цель RB {Driver.SelectedTarget}");
+        Check(dummy.RingTarget == rb && hud.PlateTarget == rb && hud.PlateTarget != hovered, $"геймпад: кольцо {dummy.RingTarget}, плашка {hud.PlateTarget}, цель RB {rb}, последний удар {Driver.LastHitFigure}");
         Device.Set(InputKind.KeyboardMouse);
         var away = new Vector2(2, _main.Size.Y - 2);
         _main.GetViewport().PushInput(new InputEventMouseMotion { Position = away, GlobalPosition = away });
         Driver.SetDummy(TrainingRoom.DefaultDummyId);
         await Settle();
+    }
+
+    /// <summary>
+    /// The gamepad reaches the folded rows with real presses: Start (top bar), ↓ to the debuff «+N» (its list shows beside the
+    /// column, the prompt row under the top bar), ↓ to the buff «+N», A keeps the list, the stick does not move the hero, B back
+    /// to the fight.
+    /// </summary>
+    private async Task HudPadRowsRoute()
+    {
+        var hud = _main.Hud!;
+        await LoadForCombat(WarriorMelee);
+        PlaceNearDummy();
+        await PadMode();
+        hud.PreviewHeroRows(StandInBuffs(16), StandInDebuffs(15));
+        await Settle();
+        Check(hud.PadTargets().SequenceEqual(new Control[] { hud.HeroDebuffs.Overflow, hud.HeroBuffs.Overflow }), "цели геймпада: " + string.Join(", ", hud.PadTargets().Select(c => c.GetParent().Name)));
+        try
+        {
+            PadTap(JoyButton.Start);
+            await Settle();
+            Check(Host.FocusedWindow == WindowHost.TopBarId && Host.BarPromptText?.Contains("Эффекты") == true, $"Start: фокус {Host.FocusedWindow}, строка «{Host.BarPromptText}»");
+            PadTap(JoyButton.DpadDown);
+            await Settle();
+            Check(Host.FocusedWindow == WindowHost.HudId && FocusOwner == hud.HeroDebuffs.Overflow, $"↓: фокус {Host.FocusedWindow}, {FocusOwner?.Name}");
+            Check(hud.FocusTooltip == hud.HeroDebuffs.Overflow.TooltipText && Host.FocusTooltip == null, $"список дебаффов по фокусу «{hud.FocusTooltip}»");
+            Check(Host.BarPromptText == ButtonPrompts.Line(WindowHost.HudPrompts), $"строка кнопок «{Host.BarPromptText}»");
+            var tip = hud.FocusTooltipRect;
+            Check(!tip.Intersects(hud.HeroDebuffs.GetGlobalRect()) && !tip.Intersects(hud.HeroBuffs.GetGlobalRect()), $"список {tip} закрывает ряды");
+            PadTap(JoyButton.DpadDown);
+            await Settle();
+            Check(FocusOwner == hud.HeroBuffs.Overflow && hud.FocusTooltip == hud.HeroBuffs.Overflow.TooltipText, $"второе ↓: фокус {FocusOwner?.Name}");
+            PadTap(JoyButton.A);
+            await Settle();
+            Check(Host.FocusedWindow == WindowHost.HudId && hud.FocusTooltip == hud.HeroBuffs.Overflow.TooltipText, "A сбросил список");
+            var from = Room.Hero.Position;
+            Axis(JoyAxis.LeftX, 1f);
+            for (int i = 0; i < 20; i++) { Driver.Tick(FrameSec); }
+            await NextFrame();
+            Check(Room.Hero.MoveInput == Vector2.Zero && Room.Hero.Position.DistanceTo(from) < 0.01f, $"герой идет, пока фокус на «+N»: {Room.Hero.MoveInput}");
+            Axis(JoyAxis.LeftX, 0f);
+            PadTap(JoyButton.B);
+            await Settle();
+            Check(Host.FocusedWindow == null && FocusOwner == null && hud.FocusTooltip == null && Host.BarPromptText == null, $"B: фокус {Host.FocusedWindow}, {FocusOwner?.Name}");
+        }
+        finally
+        {
+            Host.FocusCombat();
+            hud.PreviewHeroRows(null, null);
+            Device.Set(InputKind.KeyboardMouse);
+        }
     }
 
     /// <summary>Screenshots for `dialoid-ui-curator` and `dialoid-art-curator` (window run only).</summary>
@@ -352,12 +431,24 @@ public sealed partial class SelfTest
 
             Device.Set(InputKind.Gamepad);
             await Shot("task-14-hud-gamepad");
+            // The gamepad's way to a full list: Start, ↓ (the prompt row hangs under the top bar).
+            hud.PreviewHeroRows(StandInBuffs(16), StandInDebuffs(15));
+            PadTap(JoyButton.Start);
+            await Settle();
+            PadTap(JoyButton.DpadDown);
+            await Shot("task-14-pad-rows-focus");
+            PadTap(JoyButton.B);
+            await Settle();
+            hud.PreviewHeroRows(null, null);
             Device.Set(InputKind.KeyboardMouse);
 
             driver.SetDummy("swarm");
             var dummy = room.Dummy;
             room.PlaceHero(dummy.TargetPosition(0) + TowardsCamera * 3.2f);
             await Fight(3.0, close: false);
+            room.PlaceHero(dummy.TargetPosition(0) - TowardsCamera * 3.0f); // behind the pack: it stands low on screen, the plate clear of the top bar
+            room.CameraRig.Follow();
+            await Settle();
             var last = driver.LastHitFigure ?? 0;
             for (int i = 0; i < dummy.FigureCount; i++)
             {

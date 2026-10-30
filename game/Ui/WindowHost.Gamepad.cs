@@ -159,14 +159,89 @@ public partial class WindowHost
 
     private Control? FocusRoot => FocusedWindow == null ? null
         : FocusedWindow == TopBarId ? Bar
+        : FocusedWindow == HudId ? HudRoot
         : _windows.TryGetValue(FocusedWindow, out var w) ? w : null;
+
+    // ---------- the combat screen's «+N» rows (HUD spec §4 item 7, task 14 fix round 1) ----------
+
+    /// <summary>The focus id of the combat screen's folded rows: Start, then ↓ from the top bar.</summary>
+    public const string HudId = "hud";
+
+    /// <summary>The combat screen (the root of its «+N» icons), set by the scene.</summary>
+    public Control? HudRoot { get; set; }
+
+    /// <summary>The «+N» icons the gamepad can visit now, top to bottom (only folded rows), set by the scene.</summary>
+    public Func<IReadOnlyList<Control>>? HudTargets { get; set; }
+
+    /// <summary>The prompt row under the top bar while a «+N» has the focus.</summary>
+    public static readonly (string Button, string Label)[] HudPrompts = [("[↑/↓]", "Ряд"), ("[B]", "Назад")];
+
+    private IReadOnlyList<Control> HudTargetsNow() => HudTargets?.Invoke() ?? Array.Empty<Control>();
+
+    /// <summary>The gamepad focus on a «+N» (its full list shows over the row); the fight takes no buttons meanwhile.</summary>
+    public void FocusHud(Control target)
+    {
+        StopHold();
+        SetFocused(HudId);
+        _tip.Visible = false;
+        target.FocusMode = FocusModeEnum.All;
+        target.GrabFocus();
+    }
+
+    /// <summary>↑/↓ between the folded rows; ↑ from the top one goes back to the top bar.</summary>
+    private void HudCommand(PadCommand command)
+    {
+        var targets = HudTargetsNow();
+        if (targets.Count == 0)
+        {
+            FocusCombat();
+            return;
+        }
+        var at = GetViewport().GuiGetFocusOwner() is { } f ? targets.ToList().IndexOf(f) : -1;
+        switch (command)
+        {
+            case PadCommand.Down:
+                FocusHud(targets[Math.Min(at + 1, targets.Count - 1)]);
+                break;
+            case PadCommand.Up when at <= 0:
+                FocusBar();
+                break;
+            case PadCommand.Up:
+                FocusHud(targets[at - 1]);
+                break;
+        }
+    }
+
+    /// <summary>Each frame while a «+N» has the focus: a row that unfolded hands the focus on; the prompt row hangs under the top bar.</summary>
+    private void ProcessHud()
+    {
+        var targets = HudTargetsNow();
+        var focus = GetViewport().GuiGetFocusOwner();
+        if (focus == null || !targets.Contains(focus))
+        {
+            if (targets.Count == 0)
+            {
+                FocusCombat();
+                return;
+            }
+            FocusHud(targets[0]);
+        }
+        if (_tip.Visible) _tip.Visible = false; // the combat screen shows the list itself, beside its row
+        _barPrompt.Visible = Bar != null;
+        if (Bar == null) return;
+        var text = ButtonPrompts.Line(HudPrompts);
+        if (_barPrompt.Text != text) _barPrompt.Text = text;
+        _barPrompt.ResetSize();
+        _barPrompt.Position = new Vector2(Margin, Bar.Size.Y + 2) - GlobalPosition;
+        MoveChild(_barPrompt, GetChildCount() - 1);
+    }
 
     private void SetFocused(string? id, bool release = true)
     {
         if (FocusedWindow == id) return;
         CancelEdit();
         FocusedWindow = id;
-        if (id != null && id != TopBarId) _lastFocused = id;
+        if (id != null && id != TopBarId && id != HudId) _lastFocused = id;
         foreach (var (wid, w) in _windows) w.SetPadFocused(wid == id);
         if (id == null)
         {
@@ -231,7 +306,7 @@ public partial class WindowHost
     /// <summary>LB (-1) or RB (+1) in a window: the neighbour in the ring opens if needed and takes the focus; the current one stays open.</summary>
     public void RingStep(int step)
     {
-        if (FocusedWindow is not { } current || current == TopBarId) return;
+        if (FocusedWindow is not { } current || current == TopBarId || current == HudId) return;
         var ring = Ring().ToList();
         if (ring.Count == 0) return;
         var i = ring.IndexOf(current);
@@ -503,6 +578,17 @@ public partial class WindowHost
     /// <summary>A direction, X, Y, a trigger or R3 in the focused window (public for the self-test, which also pushes real events).</summary>
     public void Command(PadCommand command)
     {
+        if (FocusedWindow == HudId)
+        {
+            HudCommand(command);
+            return;
+        }
+        // ↓ from the top bar reaches the combat screen's folded rows (their full lists), when there are any.
+        if (FocusedWindow == TopBarId && command == PadCommand.Down && HudTargetsNow() is { Count: > 0 } hud)
+        {
+            FocusHud(hud[0]);
+            return;
+        }
         if (FocusRoot is not { } root) return;
         var focus = FocusOwnerIn(root);
         var direction = command is PadCommand.Up or PadCommand.Down or PadCommand.Left or PadCommand.Right;
@@ -556,6 +642,7 @@ public partial class WindowHost
     /// <summary>A: edit mode on and off, the pad control's own A, else (false) the GUI presses the focused control.</summary>
     private bool Accept()
     {
+        if (FocusedWindow == HudId) return true; // the list already shows on the focus
         if (FocusRoot is not { } root) return true;
         var focus = FocusOwnerIn(root);
         if (focus == null)
@@ -602,6 +689,11 @@ public partial class WindowHost
         if (FocusedWindow == TopBarId)
         {
             LeaveBar();
+            return;
+        }
+        if (FocusedWindow == HudId)
+        {
+            FocusCombat();
             return;
         }
         if (Panel?.PadBack() == true) return;
@@ -766,6 +858,11 @@ public partial class WindowHost
             _barPrompt.Visible = false;
             return;
         }
+        if (FocusedWindow == HudId)
+        {
+            ProcessHud();
+            return;
+        }
         if (FocusRoot is not { } root || !root.IsVisibleInTree())
         {
             FocusCombat();
@@ -856,9 +953,14 @@ public partial class WindowHost
         _barPrompt.Visible = root == Bar;
         if (root == Bar && Bar != null)
         {
-            _barPrompt.Text = ButtonPrompts.Line(Bar.WindowOf(focus!) != null || focus == null
-                ? new[] { ("[A]", "Открыть"), ("[←/→]", "Выбор"), ("[B]", "Назад") }
-                : new[] { ("[A]", "Список"), ("[←/→]", "Выбор"), ("[B]", "Назад") });
+            var prompts = new List<(string, string)>
+            {
+                ("[A]", Bar.WindowOf(focus!) != null || focus == null ? "Открыть" : "Список"), ("[←/→]", "Выбор"),
+            };
+            if (HudTargetsNow().Count > 0) prompts.Add(("[↓]", "Эффекты")); // the folded rows of the combat screen
+            prompts.Add(("[B]", "Назад"));
+            var text = ButtonPrompts.Line(prompts);
+            if (_barPrompt.Text != text) _barPrompt.Text = text;
             _barPrompt.ResetSize();
             _barPrompt.Position = new Vector2(Margin, Bar.Size.Y + 2) - GlobalPosition;
             MoveChild(_barPrompt, GetChildCount() - 1);
