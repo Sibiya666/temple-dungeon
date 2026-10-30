@@ -545,6 +545,8 @@ public class TrainingRoomTests
         Assert.Matches(@"^№2 · 0:0\d · Тренировочный · после правки билда$", second.Label);
         Assert.Equal(second.Dps / first.Dps - 1, second.DpsChangeVsPrevious!.Value, 9);
         Assert.Equal(second.TotalDamage / second.Duration, second.Dps, 9);
+        Assert.Equal("DPS +12%", CombatLogText.DpsChange(0.12));
+        Assert.Equal("DPS −5%", CombatLogText.DpsChange(-0.05));
 
         // A later segment of the same build is no longer "after the edit".
         for (var i = 0; i < 2000 && room.Current != null; i++) room.Advance(LiveFight.StepSec);
