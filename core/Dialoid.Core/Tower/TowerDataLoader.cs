@@ -56,6 +56,7 @@ public static class TowerDataLoader
         int minLevel = Req(j.ExchangeMinLevel, "exchange_min_level");
         double xpPer = Req(j.XpPenaltyPerLevel, "xp_penalty_per_level");
         double xpCap = Req(j.XpPenaltyCap, "xp_penalty_cap");
+        double rank1Drop = Req(j.Rank1DropMultiplier, "rank1_drop_multiplier");
         if (errors.Count > before) return null;
 
         if (floors < 1) Err("«floors» должно быть положительным");
@@ -79,11 +80,12 @@ public static class TowerDataLoader
         if (minLevel < 2) Err("«exchange_min_level» должен быть не меньше 2: валюта уровня 1 не обменивается");
         if (xpPer < 0) Err("«xp_penalty_per_level» не может быть отрицательным");
         if (xpCap is < 0 or > 1) Err("«xp_penalty_cap» должен быть от 0 до 1");
+        if (!(rank1Drop >= 1)) Err("«rank1_drop_multiplier» должен быть не меньше 1: ранг 1 щедрый, а не скупой");
 
         var ranks = LoadRanks(j.Ranks, Err);
         if (errors.Count > before) return null;
         return new TowerRules(floors, floorSlots, towerSlots, heights, summit, c, divPer, divCap, shuffleBonus, noDeath, qualityCap,
-            shuffleCosts, ratio, minLevel, xpPer, xpCap, ranks);
+            shuffleCosts, ratio, minLevel, xpPer, xpCap, ranks, rank1Drop);
     }
 
     private static List<RankDef> LoadRanks(List<RankJson>? src, Action<string> err)

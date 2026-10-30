@@ -30,10 +30,14 @@ public sealed record CurrencyDef(string Id, string Name, CurrencyOp Op, ModKind?
 /// <summary>Rank row (spec 6.1, 6.3). ZoneLevel is 0 for ranks 1–5 (computed from the character level) and 60 + (rank − 5) for 6–15.</summary>
 public sealed record RankDef(int Rank, int LevelMin, int LevelMax, int ZoneLevel, IReadOnlySet<ModKind> ModKinds, int MaxTier);
 
-/// <summary>Tower-wide numbers from data/tower/rules.json.</summary>
+/// <summary>
+/// Tower-wide numbers from data/tower/rules.json. <see cref="Rank1DropMultiplier"/> (≥ 1) scales every currency drop on rank 1 only
+/// (spec 8.3: rank 1 is generous; its level-1 currency cannot be exchanged up, so the bonus does not leak to rank 2).
+/// </summary>
 public sealed record TowerRules(int Floors, int FloorSlots, int TowerSlots, IReadOnlyList<double> HeightMultipliers, double SummitBonus,
     double DiminishingC, double DiversityBonusPerType, int DiversityBonusTypesCap, double ShuffleBonus, double NoDeathBonus, double QualityCap,
-    IReadOnlyList<int> ShuffleCosts, int ExchangeRatio, int ExchangeMinLevel, double XpPenaltyPerLevel, double XpPenaltyCap, IReadOnlyList<RankDef> Ranks);
+    IReadOnlyList<int> ShuffleCosts, int ExchangeRatio, int ExchangeMinLevel, double XpPenaltyPerLevel, double XpPenaltyCap, IReadOnlyList<RankDef> Ranks,
+    double Rank1DropMultiplier);
 
 /// <summary>Immutable tower catalogs. Lists keep file order (deterministic iteration); lookups are by id.</summary>
 public sealed class TowerData

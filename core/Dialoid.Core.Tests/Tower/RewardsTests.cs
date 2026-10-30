@@ -168,6 +168,27 @@ public class RewardsTests
     }
 
     [Fact]
+    public void Rank1_drop_is_scaled_by_rank1_multiplier_only()
+    {
+        Assert.True(D.Rules.Rank1DropMultiplier > 1);
+        foreach (int? place in new int?[] { 0, 4, null })
+        {
+            foreach (var (id, value) in Rewards.ExpectedCurrencyDrop(D, 1, place))
+            {
+                var c = D.Currency(id);
+                double mult = place is int i ? D.Rules.HeightMultipliers[i] : c.SummitMultiplier;
+                Assert.Equal(c.DropBase * mult * D.Rules.Rank1DropMultiplier, value, 12);
+            }
+            foreach (var (id, value) in Rewards.ExpectedCurrencyDrop(D, 2, place))
+            {
+                var c = D.Currency(id);
+                double mult = place is int i ? D.Rules.HeightMultipliers[i] : c.SummitMultiplier;
+                Assert.Equal(c.DropBase * c.DropGrowth * mult, value, 12);
+            }
+        }
+    }
+
+    [Fact]
     public void Summit_drops_more_than_any_floor()
     {
         var summit = Rewards.ExpectedCurrencyDrop(D, 6, null);

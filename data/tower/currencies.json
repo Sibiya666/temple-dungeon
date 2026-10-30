@@ -1,10 +1,10 @@
 [
   { "id": "imbue", "name": "Наложение", "op": "add_mod", "mod_kind": "general", "has_level": true,
-    "drops_from_rank": 1, "drop_base": 1.6, "drop_growth": 1.02, "summit_multiplier": 3.0 },
+    "drops_from_rank": 1, "drop_base": 1.64, "drop_growth": 1.01, "summit_multiplier": 3.0 },
   { "id": "imbue_type", "name": "Наложение под тип", "op": "add_mod", "mod_kind": "floor_type", "has_level": true,
-    "drops_from_rank": 3, "drop_base": 0.8, "drop_growth": 1.02, "summit_multiplier": 3.0 },
+    "drops_from_rank": 3, "drop_base": 0.24, "drop_growth": 1.01, "summit_multiplier": 3.0 },
   { "id": "imbue_tower", "name": "Наложение на башню", "op": "add_mod", "mod_kind": "tower", "has_level": true,
-    "drops_from_rank": 4, "drop_base": 0.25, "drop_growth": 1.02, "summit_multiplier": 3.0 },
+    "drops_from_rank": 4, "drop_base": 0.21, "drop_growth": 1.01, "summit_multiplier": 3.0 },
   { "id": "clear", "name": "Очищение", "op": "clear", "has_level": false,
     "drops_from_rank": 1, "drop_base": 0.15, "drop_growth": 1.01, "summit_multiplier": 2.0 },
   { "id": "shuffle", "name": "Перемешивание", "op": "shuffle", "has_level": false,

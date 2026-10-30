@@ -185,6 +185,26 @@ public class TowerDataLoaderTests
     }
 
     [Fact]
+    public void Rank1_drop_multiplier_below_one_is_rejected()
+    {
+        var dir = FixturePaths.CopyTowerFixture();
+        Edit(dir, "rules.json", n => n["rank1_drop_multiplier"] = 0.9);
+        var (data, errors) = TowerDataLoader.Load(dir);
+        Assert.Null(data);
+        Assert.Contains(errors, x => x.File == "rules.json" && x.Message.Contains("rank1_drop_multiplier"));
+    }
+
+    [Fact]
+    public void Rank1_drop_multiplier_is_required()
+    {
+        var dir = FixturePaths.CopyTowerFixture();
+        Edit(dir, "rules.json", n => n.AsObject().Remove("rank1_drop_multiplier"));
+        var (data, errors) = TowerDataLoader.Load(dir);
+        Assert.Null(data);
+        Assert.Contains(errors, x => x.File == "rules.json" && x.Message.Contains("rank1_drop_multiplier"));
+    }
+
+    [Fact]
     public void Height_multipliers_must_match_floors()
     {
         var dir = FixturePaths.CopyTowerFixture();

@@ -103,16 +103,20 @@ public static class Rewards
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    /// <summary>Expected drop per currency in data file order; currencies not yet dropping at this rank are absent. Mods do not matter.</summary>
+    /// <summary>
+    /// Expected drop per currency in data file order; currencies not yet dropping at this rank are absent. Mods do not matter.
+    /// On rank 1 everything is scaled by <see cref="TowerRules.Rank1DropMultiplier"/>.
+    /// </summary>
     public static IReadOnlyDictionary<string, double> ExpectedCurrencyDrop(TowerData d, int rank, int? floorIndex)
     {
         double height = floorIndex.HasValue ? d.Rules.HeightMultipliers[floorIndex.Value] : 0;
+        double rankBonus = rank == 1 ? d.Rules.Rank1DropMultiplier : 1;
         var map = new OrderedMap();
         foreach (var c in d.Currencies)
         {
             if (c.DropsFromRank > rank) continue;
             double mult = floorIndex.HasValue ? height : c.SummitMultiplier;
-            map.Add(c.Id, c.DropBase * Math.Pow(c.DropGrowth, rank - 1) * mult);
+            map.Add(c.Id, c.DropBase * Math.Pow(c.DropGrowth, rank - 1) * mult * rankBonus);
         }
         return map;
     }

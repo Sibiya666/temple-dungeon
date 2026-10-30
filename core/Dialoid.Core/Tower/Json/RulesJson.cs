@@ -20,7 +20,7 @@ internal sealed class RulesJson
 {
     private static readonly HashSet<string> Allowed = StrictJson.Fields("floors", "floor_slots", "tower_slots", "height_multipliers",
         "summit_bonus", "diminishing_c", "diversity_bonus_per_type", "diversity_bonus_types_cap", "shuffle_bonus", "no_death_bonus",
-        "quality_cap", "shuffle_costs", "exchange_ratio", "exchange_min_level", "xp_penalty_per_level", "xp_penalty_cap", "ranks");
+        "quality_cap", "shuffle_costs", "exchange_ratio", "exchange_min_level", "xp_penalty_per_level", "xp_penalty_cap", "rank1_drop_multiplier", "ranks");
 
     public int? Floors { get; set; }
     public int? FloorSlots { get; set; }
@@ -38,6 +38,7 @@ internal sealed class RulesJson
     public int? ExchangeMinLevel { get; set; }
     public double? XpPenaltyPerLevel { get; set; }
     public double? XpPenaltyCap { get; set; }
+    public double? Rank1DropMultiplier { get; set; }
     public List<RankJson>? Ranks { get; set; }
 
     /// <summary>Reads the file; unknown fields of the root and of each rank are reported. Returns null after reporting a problem.</summary>
