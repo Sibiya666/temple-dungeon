@@ -105,9 +105,13 @@ public partial class WindowHost : Control
     public static Theme WindowTheme()
     {
         var theme = new Theme();
+        var defaults = ThemeDB.GetDefaultTheme().GetStylebox("normal", "Button");
         StyleBoxFlat Face(Color bg, Color border)
         {
-            var box = new StyleBoxFlat { BgColor = bg, BorderColor = border, ContentMarginLeft = 10, ContentMarginRight = 10, ContentMarginTop = 4, ContentMarginBottom = 4 };
+            // The default button's margins: a flat button (every NumberLabel) draws no face but keeps these margins, so it must not widen.
+            var box = new StyleBoxFlat { BgColor = bg, BorderColor = border };
+            foreach (var side in new[] { Side.Left, Side.Right, Side.Top, Side.Bottom })
+                box.SetContentMargin(side, defaults.GetContentMargin(side));
             box.SetBorderWidthAll(1);
             box.SetCornerRadiusAll(3);
             return box;

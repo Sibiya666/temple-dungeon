@@ -100,6 +100,11 @@ public partial class CombatDriver : Node
     /// <summary>An extra hook: true when the interface owns the keys now; a focused text field always blocks.</summary>
     public Func<bool>? InputBlocked { get; set; }
 
+    /// <summary>Moves where a floating number starts (the combat screen lifts it above the dummy plate, which would cover it).</summary>
+    public Func<Vector3, Vector3>? NumberLift { get; set; }
+
+    private Vector3 Lift(Vector3 at) => NumberLift?.Invoke(at) ?? at;
+
     /// <summary>A press was refused (the combat screen blinks its slot; the text over the hero is shown here).</summary>
     public event Action<VisualEvent>? Refused;
 
@@ -396,7 +401,7 @@ public partial class CombatDriver : Node
         Dummy.Flash(Effects, target, kind, hit.IsCrit, hit.IsDot);
         if (!hit.IsDot && !channel) Dummy.React(target, _visualTime);
         // Tick numbers start lower than hit numbers so the two streams do not cover each other.
-        if (hit.Amount > 0) Numbers.Show(Dummy.HitPoint(target) + new Vector3(0, hit.IsDot ? 0.05f : 0.6f, 0), hit.Amount, kind, hit.IsCrit, hit.IsDot);
+        if (hit.Amount > 0) Numbers.Show(Lift(Dummy.HitPoint(target) + new Vector3(0, hit.IsDot ? 0.05f : 0.6f, 0)), hit.Amount, kind, hit.IsCrit, hit.IsDot);
         LastShownHit = hit;
         return !hit.IsDot;
     }
@@ -422,7 +427,7 @@ public partial class CombatDriver : Node
                 var kind = DamageVisuals.Of(sum.Type);
                 var centre = Dummy.PackHitPoint();
                 Effects.Impact(kind, centre, crit: false, tick: true);
-                Numbers.Show(centre + new Vector3(0, 0.05f, 0), sum.Amount, kind, crit: false, tick: true);
+                Numbers.Show(Lift(centre + new Vector3(0, 0.05f, 0)), sum.Amount, kind, crit: false, tick: true);
             }
             else
             {

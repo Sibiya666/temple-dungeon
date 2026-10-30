@@ -85,7 +85,7 @@ public partial class TopBar : PanelContainer
     /// <summary>The key after the title, smaller and dimmer («Персонаж C»), in room the button keeps at its right; padding 4 px.</summary>
     private void AddKey(Button button, string key)
     {
-        const int keySize = 12;
+        const int keySize = 13;
         var keyWidth = ThemeDB.FallbackFont.GetStringSize(key, HorizontalAlignment.Left, -1, keySize).X;
         foreach (var state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled", "focus" })
         {
@@ -96,7 +96,7 @@ public partial class TopBar : PanelContainer
         }
         var label = new Label { Name = "Key", Text = key, MouseFilter = MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
         label.AddThemeFontSizeOverride("font_size", keySize);
-        label.AddThemeColorOverride("font_color", new Color(0.72f, 0.64f, 0.5f, 0.85f));
+        label.AddThemeColorOverride("font_color", new Color(0.62f, 0.6f, 0.56f)); // about 60 % of the title's brightness
         button.AddChild(label);
         label.SetAnchorsAndOffsetsPreset(LayoutPreset.RightWide);
         label.OffsetLeft = -(KeyPadding + keyWidth);

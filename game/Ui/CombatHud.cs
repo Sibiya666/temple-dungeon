@@ -139,6 +139,7 @@ public partial class CombatHud : Control
         _refusal.AddThemeConstantOverride("shadow_offset_y", 2);
         AddChild(_refusal);
         driver.Hero.DrawRefusal3D = false;
+        driver.NumberLift = LiftAbovePlate;
 
         driver.Refused += e =>
         {
@@ -181,13 +182,14 @@ public partial class CombatHud : Control
         _refusal.Modulate = new Color(1, 1, 1, hero.RefusalAlpha);
         var size = _refusal.GetCombinedMinimumSize();
         _refusal.Size = size;
-        // Over the head; when that would touch the dummy plate (the hero beside the dummy), at chest level, then under the feet.
+        // Over the head; when that would touch the dummy plate (the hero beside the dummy), under the feet below the target ring;
+        // at chest level (across the figures) only as the last resort.
         var plate = _plate.Visible ? new Rect2(_plate.Position, _plate.Size).Grow(4) : new Rect2();
         var chest = _project(hero.Position + new Vector3(0, HeroView.Height * 0.6f, 0));
         var feet = _project(hero.Position);
         var spots = new List<Vector2> { p - size / 2 };
+        if (feet is { } f) spots.Add(new Vector2(f.X - size.X / 2, f.Y + FeetGap));
         if (chest is { } c) spots.Add(c - size / 2);
-        if (feet is { } f) spots.Add(new Vector2(f.X - size.X / 2, f.Y + 6));
         _refusal.Position = spots.FirstOrDefault(s => !plate.Intersects(new Rect2(s, size)), spots[^1]);
     }
 
@@ -235,6 +237,26 @@ public partial class CombatHud : Control
         var width = Mathf.Max(size.X, 150);
         _plate.Size = new Vector2(width, size.Y);
         _plate.Position = new Vector2(p.X - width / 2, p.Y - size.Y);
+    }
+
+    /// <summary>Pixels between the hero's feet and a refusal text placed under them (clear of the target ring).</summary>
+    public const float FeetGap = 20;
+
+    /// <summary>Pixels a floating number starts above the plate's top edge.</summary>
+    public const float NumberGap = 8;
+
+    /// <summary>
+    /// Where a floating number starts: a start the plate would cover (at or below its top edge, beside it within 60 px) is lifted
+    /// straight up so it starts <see cref="NumberGap"/> above the plate and floats up from there.
+    /// </summary>
+    public Vector3 LiftAbovePlate(Vector3 at)
+    {
+        if (!_plate.Visible || _project(at) is not { } p || _project(at + Vector3.Up) is not { } up) return at;
+        var rect = new Rect2(_plate.Position, _plate.Size);
+        var perMetre = p.Y - up.Y; // screen pixels per metre of height
+        var limit = rect.Position.Y - NumberGap;
+        if (perMetre < 0.1f || p.Y <= limit || p.X < rect.Position.X - 60 || p.X > rect.End.X + 60) return at;
+        return at + Vector3.Up * ((p.Y - limit) / perMetre);
     }
 
     /// <summary>Seconds with one decimal under 10, whole above: «2,1», «14».</summary>

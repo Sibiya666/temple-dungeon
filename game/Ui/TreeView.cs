@@ -35,6 +35,9 @@ public partial class TreeView : Control
 
     private const float FitMargin = 24f;
 
+    /// <summary>Most extra room kept at each side by <see cref="FitToView"/> for side captions, pixels.</summary>
+    public const float CaptionRoom = 110f;
+
     /// <summary>Pixels of pan per unit of a trackpad pan gesture (two-finger scroll on macOS).</summary>
     public const float PanGestureSpeed = 12f;
 
@@ -126,7 +129,6 @@ public partial class TreeView : Control
 
     public TreeNodeState StateOf(string id) => _states.TryGetValue(id, out var s) ? s : TreeNodeState.Unavailable;
 
-    /// <summary>Fits the whole graph into the control (no-op until the control has a size).</summary>
     /// <summary>Fits the tree once the current layout has settled (a window that just opened or changed size).</summary>
     public void RequestFit()
     {
@@ -134,11 +136,23 @@ public partial class TreeView : Control
         Callable.From(FitToView).CallDeferred();
     }
 
+    /// <summary>
+    /// Fits the whole graph into the control (no-op until the control has a size). Up to <see cref="CaptionRoom"/> more is kept free
+    /// at the left and right for the captions of the side nodes, but never so much that captioned nodes shrink below
+    /// <see cref="CaptionMinPixels"/> (then every caption would vanish).
+    /// </summary>
     public void FitToView()
     {
         if (Size.X <= 1 || Size.Y <= 1 || _nodes.Count == 0) return;
-        var avail = Size - Vector2.One * FitMargin * 2;
         var span = new Vector2(Mathf.Max(_bounds.Size.X, 1f), Mathf.Max(_bounds.Size.Y, 1f));
+        var side = FitMargin;
+        var captioned = _nodes.Where(n => n.Caption != null).Select(n => n.Radius).DefaultIfEmpty(0).Min();
+        if (captioned > 0)
+        {
+            var zoomNeeded = (CaptionMinPixels + 0.5f) / captioned;
+            side = Mathf.Clamp((Size.X - span.X * zoomNeeded) / 2, FitMargin, FitMargin + CaptionRoom);
+        }
+        var avail = Size - new Vector2(side, FitMargin) * 2;
         Zoom = Mathf.Clamp(Mathf.Min(avail.X / span.X, avail.Y / span.Y), MinZoom, MaxZoom);
         Pan = Size / 2 - _bounds.GetCenter() * Zoom;
         _fitted = true;
@@ -324,15 +338,23 @@ public partial class TreeView : Control
         }
 
         foreach (var (id, rect, size) in LayoutCaptions())
-            DrawString(font, rect.Position + new Vector2(0, font.GetAscent(size)), _byId[id].Caption!, HorizontalAlignment.Left, -1,
-                size, CaptionColor);
+        {
+            var caption = _byId[id].Caption!;
+            var lineHeight = font.GetHeight(size);
+            // A rect two lines high holds the caption split in two (LayoutCaptions' last resort).
+            var lines = rect.Size.Y > lineHeight * 1.5f && SplitCaption(caption) is var (a, b) && b.Length > 0 ? new[] { a, b } : new[] { caption };
+            for (int i = 0; i < lines.Length; i++)
+                DrawString(font, rect.Position + new Vector2(0, font.GetAscent(size) + i * lineHeight), lines[i], HorizontalAlignment.Left, -1,
+                    size, CaptionColor);
+        }
     }
 
     /// <summary>
     /// Where each caption goes now, in this control's coordinates. Captions are placed in a fixed order (bigger nodes first,
     /// taken before the rest, then by id) at the first of the candidate positions around the node (right, left, above,
     /// below, the diagonals, then the same sides slid along the node) whose rectangle overlaps neither an already placed
-    /// caption nor any drawn node. Captions that found no place get a second pass in a smaller font
+    /// caption nor any drawn node; then, slid inside the view, below or above the node, and as a last resort in two lines there
+    /// (a node at the edge among dots). Captions that found no place get a second pass in a smaller font
     /// (<see cref="SmallCaptionScale"/>); one with no free position even then is left out (its text stays in the hover line
     /// and tooltip). Deterministic: the same graph, states, zoom and pan give the same layout.
     /// </summary>
@@ -370,19 +392,37 @@ public partial class TreeView : Control
                 new(midX + w / 3, above), new(midX - w / 3, above), new(midX + w / 3, below), new(midX - w / 3, below),
                 new(midX, above - h), new(midX, below + h),
             };
-            foreach (var corner in corners)
+            // A node at the view's edge: its caption below or above it, slid inside the view (a centred one would be cut).
+            var inside = Mathf.Clamp(midX, 0, Mathf.Max(0, Size.X - w));
+            var slid = new[] { below, above, below + h, above - h, below + 2 * h, above - 2 * h }.Select(y => new Vector2(inside, y));
+            bool Fits(Rect2 rect)
             {
-                var rect = new Rect2(corner, w, h);
                 // A visible node's caption cut by the edge reads as a broken word («нная кожа»); off-view nodes do not matter.
-                if (view.HasPoint(c) && !view.Encloses(rect)) continue;
+                if (view.HasPoint(c) && !view.Encloses(rect)) return false;
                 var padded = rect.Grow(1f);
-                if (placed.Any(p => p.Rect.Intersects(padded))) continue;
-                if (circles.Any(o => CircleHitsRect(o.Center, o.R, padded))) continue;
-                placed.Add((n.Id, rect, size));
-                break;
+                return !placed.Any(p => p.Rect.Intersects(padded)) && !circles.Any(o => CircleHitsRect(o.Center, o.R, padded));
             }
+            var spot = corners.Concat(slid).Select(p => new Rect2(p, w, h)).Cast<Rect2?>().FirstOrDefault(rect => Fits(rect!.Value));
+            // Still no place (a side node among dots): the caption in two lines, under or over the node, slid inside the view.
+            if (spot == null && SplitCaption(n.Caption!) is var (first, second) && second.Length > 0)
+            {
+                var w2 = Mathf.Max(font.GetStringSize(first, HorizontalAlignment.Left, -1, size).X, font.GetStringSize(second, HorizontalAlignment.Left, -1, size).X);
+                var x2 = Mathf.Clamp(c.X - w2 / 2, 0, Mathf.Max(0, Size.X - w2));
+                spot = new[] { new Rect2(x2, below, w2, 2 * h), new Rect2(x2, c.Y - r - gap - 2 * h, w2, 2 * h) }
+                    .Cast<Rect2?>().FirstOrDefault(rect => Fits(rect!.Value));
+            }
+            if (spot is { } found) placed.Add((n.Id, found, size));
         }
         return placed;
+    }
+
+    /// <summary>A caption cut in two at the space nearest its middle («Каменная» / «кожа»); the second part is empty without a space.</summary>
+    public static (string First, string Second) SplitCaption(string caption)
+    {
+        var best = -1;
+        for (int i = 0; i < caption.Length; i++)
+            if (caption[i] == ' ' && (best < 0 || Math.Abs(i - caption.Length / 2) < Math.Abs(best - caption.Length / 2))) best = i;
+        return best < 0 ? (caption, "") : (caption[..best], caption[(best + 1)..]);
     }
 
     /// <summary>True when the circle and the rectangle overlap.</summary>

@@ -98,6 +98,11 @@ public sealed partial class SelfTest
         var font = level.GetThemeFont("font");
         var textWidth = font.GetStringSize(level.Text, HorizontalAlignment.Left, -1, level.GetThemeFontSize("font_size")).X;
         Check(level.IsVisibleInTree() && level.Size.X >= textWidth, $"число уровня «{level.Text}» шириной {level.Size.X} при тексте {textWidth}");
+        // The window theme gives plain buttons a face; a flat NumberLabel keeps the default margins (it does not widen).
+        var defaults = ThemeDB.GetDefaultTheme().GetStylebox("normal", "Button");
+        var hover = level.GetThemeStylebox("hover");
+        Check(level.Flat && hover.GetContentMargin(Side.Left) == defaults.GetContentMargin(Side.Left),
+            $"поля числа {hover.GetContentMargin(Side.Left)} вместо {defaults.GetContentMargin(Side.Left)}");
         Check(bar.Buttons.Values.All(b => b.ButtonPressed), "кнопки открытых окон не нажаты");
         windows.CloseAll();
         await Settle();
@@ -327,6 +332,12 @@ public sealed partial class SelfTest
         Check(blinking.FrameColor != SlotView.ShortColor || blinking.ResourceShort, "мигание отказа выглядит как нехватка ресурса");
         // The refusal text never lies on the dummy plate (the hero stands beside the dummy here).
         Check(!hud.PlateShown || !hud.RefusalRect.Intersects(hud.PlateRect), $"текст отказа {hud.RefusalRect} на плашке {hud.PlateRect}");
+        // A damage number never starts under the plate: it is lifted above the plate's top edge.
+        if (hud.PlateShown)
+        {
+            var start = _main.RoomToScreen(hud.LiftAbovePlate(Room.Dummy.HitPoint(0) + new Vector3(0, 0.6f, 0)));
+            Check(start is { } s && s.Y <= hud.PlateRect.Position.Y - CombatHud.NumberGap + 0.5f, $"число начинается в {start}, плашка {hud.PlateRect}");
+        }
         Check(Room.Hero.RefusalText != null && hud.RefusalShown == Room.Hero.RefusalText, $"над героем текст отказа «{hud.RefusalShown}», у героя «{Room.Hero.RefusalText}»");
 
         // The held channel, then a press queued while busy.
@@ -441,6 +452,10 @@ public sealed partial class SelfTest
             await Settle();
             _main.Passives!.View.FitToView();
             await Shot("task-10-passives-window");
+            var view = _main.Passives.View;
+            var shown = view.LayoutCaptions().Select(p => p.Id).ToHashSet();
+            GD.Print("SELFTEST NOTE подписи в окне пассивок: нет " + string.Join(", ", view.Nodes.Where(n => n.Caption != null && !shown.Contains(n.Id))
+                .Select(n => $"{n.Caption} {view.NodeLocalPosition(n.Id)} r={n.Radius * view.Zoom:0.0}")) + $" (вид {view.Size})");
 
             _main.CloseAllWindows();
             _main.OpenWindow(WindowIds.Character);
