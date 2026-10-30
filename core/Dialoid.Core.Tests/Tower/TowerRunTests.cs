@@ -426,4 +426,16 @@ public class TowerRunTests
         Assert.Throws<InvalidOperationException>(() => run2.Die());
         Assert.Throws<InvalidOperationException>(() => run2.Exit());
     }
+
+    [Fact]
+    public void Enter_refuses_hard_counter_below_rank_5()
+    {
+        var hard = D.Mods.First(m => m.Kind == ModKind.General && m.HardCounter != HardCounter.None).Id;
+        FloorSpec[] Floors() => new[] { Floor("clear", Max(hard)), Floor(), Floor(), Floor(), Floor() };
+
+        Assert.Equal(TowerRefusal.ModAboveRank, TowerRun.TryEnter(D, Asm(Spec(4, Floors())), Unlocked(4), 60, Rng(), out var run));
+        Assert.Null(run);
+        Assert.Equal(TowerRefusal.None, TowerRun.TryEnter(D, Asm(Spec(5, Floors())), Unlocked(5), 60, Rng(), out run));
+        Assert.NotNull(run);
+    }
 }

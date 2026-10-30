@@ -43,7 +43,7 @@ public static class Crafting
                 if (!RankRules.CanApply(data.Rules, tower.Rank, kind, 1)) return TowerRefusal.KindNotAllowed;
                 int slots = floor == null ? data.Rules.TowerSlots : data.Rules.FloorSlots;
                 if (mods.Count >= slots) return TowerRefusal.SlotFull;
-                var pool = Pool(data, kind, floor, mods);
+                var pool = Pool(data, kind, floor, mods, tower.Rank);
                 if (pool.Count == 0) return TowerRefusal.PoolEmpty;
                 if (!CanPay()) return TowerRefusal.NotEnoughCurrency;
 
@@ -63,7 +63,7 @@ public static class Crafting
                 int i = TowerRandom.Pick(rng, mods.Count);
                 var removed = mods[i];
                 var others = mods.Where((_, j) => j != i).ToList();
-                var pool = Pool(data, data.Mod(removed.ModId).Kind, floor, others);
+                var pool = Pool(data, data.Mod(removed.ModId).Kind, floor, others, tower.Rank);
                 if (pool.Any(m => m.Id != removed.ModId)) pool = pool.Where(m => m.Id != removed.ModId).ToList();
                 if (pool.Count == 0) return TowerRefusal.PoolEmpty; // unreachable for valid data: the removed mod still fits
                 var result = mods.ToArray();
@@ -133,9 +133,10 @@ public static class Crafting
 
     /// <summary>
     /// Mods of <paramref name="kind"/> that fit the target: for a floor, its type (and variant); for the tower, tower mods.
-    /// Mods whose group is already taken by <paramref name="present"/>, or that are already present, are left out. File order.
+    /// Mods whose group is already taken by <paramref name="present"/>, or that are already present, are left out; hard counters only from
+    /// <see cref="TowerRules.HardCounterFromRank"/>. File order.
     /// </summary>
-    private static List<FloorModDef> Pool(TowerData data, ModKind kind, FloorSpec? floor, IReadOnlyList<ModInstance> present)
+    private static List<FloorModDef> Pool(TowerData data, ModKind kind, FloorSpec? floor, IReadOnlyList<ModInstance> present, int rank)
     {
         var defs = present.Select(m => data.Mod(m.ModId)).ToList();
         var groups = defs.Where(d => d.Group != null).Select(d => d.Group!).ToHashSet(StringComparer.Ordinal);
@@ -143,6 +144,7 @@ public static class Crafting
         return data.Mods.Where(m =>
             m.Kind == kind
             && !ids.Contains(m.Id)
+            && (m.HardCounter == HardCounter.None || RankRules.AllowsHardCounter(data.Rules, rank))
             && (m.Group == null || !groups.Contains(m.Group))
             && (floor == null || FitsFloor(m, floor))).ToList();
     }

@@ -369,4 +369,31 @@ public class CraftingTests
         Assert.Equal(Run(42), Run(42));
         Assert.NotEqual(Run(42), Run(43));
     }
+
+    private static bool HasHardCounter(TowerAssembly a) =>
+        a.Spec.Floors[0].Mods.Any(m => D.Mod(m.ModId).HardCounter != HardCounter.None);
+
+    [Fact]
+    public void Imbue_never_yields_hard_counter_on_rank_4()
+    {
+        for (int seed = 0; seed < 1000; seed++)
+        {
+            var a = WithFloor(4, seed, "clear");
+            Assert.Equal(TowerRefusal.None, Crafting.Apply(D, a, Rich(D), "imbue", 0));
+            Assert.False(HasHardCounter(a), $"seed {seed}");
+        }
+    }
+
+    [Fact]
+    public void Imbue_can_yield_hard_counter_on_rank_5()
+    {
+        bool seen = false;
+        for (int seed = 0; seed < 1000 && !seen; seed++)
+        {
+            var a = WithFloor(5, seed, "clear");
+            Assert.Equal(TowerRefusal.None, Crafting.Apply(D, a, Rich(D), "imbue", 0));
+            seen = HasHardCounter(a);
+        }
+        Assert.True(seen);
+    }
 }

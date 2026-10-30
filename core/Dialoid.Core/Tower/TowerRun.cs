@@ -74,7 +74,7 @@ public sealed class TowerRun
     /// Entry check, the last filter for hand-built and imported towers. Order: <see cref="TowerRefusal.RankLocked"/>,
     /// <see cref="TowerRefusal.EmptySlot"/>, <see cref="TowerRefusal.InvalidMods"/> (slot overflow, unknown id, mod of the wrong kind or
     /// not fitting the floor type and variant, tier that does not exist, value outside the tier, duplicate id or group on one target),
-    /// <see cref="TowerRefusal.ModAboveRank"/> (kind or tier the rank does not allow), <see cref="TowerRefusal.NoUberBoss"/>.
+    /// <see cref="TowerRefusal.ModAboveRank"/> (kind or tier the rank does not allow, or a hard counter below its rank), <see cref="TowerRefusal.NoUberBoss"/>.
     /// </summary>
     public static TowerRefusal TryEnter(TowerData d, TowerAssembly assembly, TowerProgress progress, int characterLevel, IRandomSource rng, out TowerRun? run)
     {
@@ -87,7 +87,9 @@ public sealed class TowerRun
             if (!d.TryGetFloorType(f.TypeId!, out var type) || !FloorModsValid(d, type, f)) return TowerRefusal.InvalidMods;
         if (!ModsValid(d, spec.TowerMods, d.Rules.TowerSlots, def => def.Kind == ModKind.Tower)) return TowerRefusal.InvalidMods;
 
-        if (spec.Floors.SelectMany(f => f.Mods).Concat(spec.TowerMods).Any(m => !RankRules.CanApply(d.Rules, spec.Rank, d.Mod(m.ModId).Kind, m.Tier)))
+        if (spec.Floors.SelectMany(f => f.Mods).Concat(spec.TowerMods).Any(m =>
+                !RankRules.CanApply(d.Rules, spec.Rank, d.Mod(m.ModId).Kind, m.Tier)
+                || (d.Mod(m.ModId).HardCounter != HardCounter.None && !RankRules.AllowsHardCounter(d.Rules, spec.Rank))))
             return TowerRefusal.ModAboveRank;
 
         if (spec.UberBossId == null) return TowerRefusal.NoUberBoss;

@@ -45,11 +45,13 @@ public sealed record RankDef(int Rank, int LevelMin, int LevelMax, int ZoneLevel
 /// Tower-wide numbers from data/tower/rules.json. <see cref="Rank1DropMultiplier"/> (≥ 1) scales drops of levelled currencies on rank 1 only
 /// (spec 8.3: rank 1 is generous; its level-1 currency cannot be exchanged up, so the bonus does not leak to rank 2; levelless currencies
 /// work on any rank, so they get no bonus).
+/// <see cref="HardCounterFromRank"/>: hard-counter mods (spec 9.3) enter the mod pool and are accepted on entry only from this rank,
+/// the rank where the targeted-removal currency starts dropping.
 /// </summary>
 public sealed record TowerRules(int Floors, int FloorSlots, int TowerSlots, IReadOnlyList<double> HeightMultipliers, double SummitBonus,
     double DiminishingC, double DiversityBonusPerType, int DiversityBonusTypesCap, double ShuffleBonus, double NoDeathBonus, double QualityCap,
     IReadOnlyList<int> ShuffleCosts, int ExchangeRatio, int ExchangeMinLevel, double XpPenaltyPerLevel, double XpPenaltyCap, IReadOnlyList<RankDef> Ranks,
-    double Rank1DropMultiplier);
+    double Rank1DropMultiplier, int HardCounterFromRank);
 
 /// <summary>Immutable tower catalogs. Lists keep file order (deterministic iteration); lookups are by id.</summary>
 public sealed class TowerData

@@ -16,6 +16,7 @@
   "xp_penalty_per_level": 0.10,
   "xp_penalty_cap": 0.5,
   "rank1_drop_multiplier": 1.7,
+  "hard_counter_from_rank": 5,
   "ranks": [
     { "rank": 1,  "level_min": 1,  "level_max": 12, "mod_kinds": ["general"], "max_tier": 1 },
     { "rank": 2,  "level_min": 12, "level_max": 24, "mod_kinds": ["general"], "max_tier": 1 },
