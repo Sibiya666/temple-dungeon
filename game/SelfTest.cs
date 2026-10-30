@@ -1052,16 +1052,18 @@ public sealed partial class SelfTest
         OpenBreakdown(mult!);
         await Shot("08-breakdown-hit-multiplier");
         await CombatScreenshots();
+        await WindowScreenshots();
         _main.CloseAllWindows();
     }
 
     /// <summary>Waits until the current tab is drawn and saves the viewport as DIR/name.png (downscaled to the window width).</summary>
-    private async Task Shot(string name)
+    private async Task Shot(string name, int cropHeight = 0)
     {
         await Settle();
         await _main.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         var image = _main.GetViewport().GetTexture().GetImage();
         Check(image != null && image.GetWidth() > 0, "пустой кадр");
+        if (cropHeight > 0) image = image!.GetRegion(new Rect2I(0, 0, image.GetWidth(), Math.Min(cropHeight * image.GetWidth() / ScreenshotWindow.X, image.GetHeight())));
         if (image!.GetWidth() > ScreenshotWindow.X)
             image.Resize(ScreenshotWindow.X, image.GetHeight() * ScreenshotWindow.X / image.GetWidth(), Image.Interpolation.Lanczos);
         var path = Path.Combine(_screenshotDir!, name + ".png");

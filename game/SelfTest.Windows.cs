@@ -1,6 +1,7 @@
-using Dialoid.Core.Simulation;
+﻿using Dialoid.Core.Simulation;
 using Dialoid.Game.Room;
 using Dialoid.Game.Ui;
+using Dialoid.Sandbox;
 using Godot;
 
 namespace Dialoid.Game;
@@ -92,6 +93,13 @@ public sealed partial class SelfTest
         windows.CloseAll();
         await Settle();
         Check(bar.Buttons.Values.All(b => !b.ButtonPressed) && windows.OpenWindows.Count == 0, "окна не закрылись");
+        // The dummy list: the presets of data/dummies.json in file order; choosing one restarts the fight on it.
+        Check(bar.DummyIds.SequenceEqual(_main.Session!.Data.Dummies.Keys), "список манекенов не из dummies.json");
+        bar.SelectDummy("swarm");
+        Check(Training.DummyId == "swarm" && Room.Dummy.PresetId == "swarm", $"выбор «Рой» в списке не сменил манекен: {Training.DummyId}");
+        bar.SelectDummy(TrainingRoom.DefaultDummyId);
+        await Settle();
+        Check(bar.DummyOptions.Selected == bar.DummyIds.ToList().IndexOf(TrainingRoom.DefaultDummyId), "список не вернулся к тренировочному");
         // Every button's caption fits: the bar is not wider than the screen.
         Check(bar.GetCombinedMinimumSize().X <= screen.X + 0.5f, $"верхняя панель шире экрана: {bar.GetCombinedMinimumSize().X} > {screen.X}");
     }
@@ -190,6 +198,11 @@ public sealed partial class SelfTest
             PushKey(Key.Enter);
             await Settle();
             Check(!field.HasFocus(), "Enter не снял фокус с поля");
+            field.GrabFocus();
+            await NextFrame();
+            PushButton(new Vector2(_main.Size.X * 0.5f, _main.Size.Y * 0.4f), MouseButton.Left);
+            await NextFrame();
+            Check(!field.HasFocus(), "клик по полу не снял фокус с поля");
 
             PushKey(digit, (char)('0' + slot));
             await Run(0.4);
@@ -290,7 +303,7 @@ public sealed partial class SelfTest
         await Run(FrameSec * 2);
         hud.Refresh();
         Check(hud.Slots[cry - 1].BlinkLeft > 0, "слот не мигнул при отказе");
-        Check(Room.Hero.RefusalText != null, "над героем нет текста отказа");
+        Check(Room.Hero.RefusalText != null && hud.RefusalShown == Room.Hero.RefusalText, $"над героем текст отказа «{hud.RefusalShown}», у героя «{Room.Hero.RefusalText}»");
 
         // The held channel, then a press queued while busy.
         var ww = SlotOf("whirlwind");
@@ -364,5 +377,52 @@ public sealed partial class SelfTest
         var feet = _main.RoomToScreen(room.Dummy.TargetPosition(0));
         Check(feet is { } f && screen.HasPoint(f), $"ноги манекена вне кадра: {feet}");
         GD.Print($"SELFTEST NOTE плашка при появлении: {plate}, ноги манекена {feet}, экран {_main.Size}");
+    }
+
+    /// <summary>
+    /// Screenshots for the UI review (window run only): the room at the spawn with the combat screen; the screen mid-fight
+    /// (a slot on cooldown, Battle Cry's buff with its timer, ignite on the dummy plate, a refusal over the hero); the passives
+    /// window over the room; the character and the breakdown side by side; the top bar.
+    /// </summary>
+    private async Task WindowScreenshots()
+    {
+        var room = Room;
+        var driver = Driver;
+        try
+        {
+            await LoadForCombat(WarriorMelee);
+            _main.CloseAllWindows();
+            room.PlaceHero(room.HeroSpawn);
+            room.CameraRig.ResetZoom();
+            await Shot("task-10-room-spawn-hud");
+            await Shot("task-10-top-bar", cropHeight: 64);
+
+            room.PlaceHero(room.Dummy.TargetPosition(0) + new Vector3(1, 0, -1).Normalized() * 1.3f + TowardsCamera * 0.4f); // beside the dummy, both visible
+            int cry = SlotOf("battle_cry"), cleave = SlotOf("cleave");
+            Check(driver.PressSlot(cry).Accepted, "Боевой клич не принят");
+            await Run(0.7); // the press fires at the next free step; a newer press would replace it
+            await Run(6.0, _ => { if (Training.State is { Busy: false }) driver.PressSlot(cleave); },
+                until: () => Training.State!.Time > 3 && Training.State.TargetEffects.Count > 0 && Training.State.TargetEffects[0].Any(e => e.Id == "ignite"));
+            await Run(0.6, until: () => Training.State is { Busy: false });
+            var again = driver.PressSlot(cry); // refused: on cooldown, the buff still runs
+            GD.Print($"SELFTEST NOTE кадр боя: время {Training.State!.Time:0.00}, повторный клич {again.Refusal}, перезарядка {Training.State.CooldownLeftBySlot.GetValueOrDefault(cry):0.0}, баффы {string.Join(", ", Training.State.HeroEffects.Select(e => e.Id + "=" + e.TimeLeft))}");
+            await Run(FrameSec * 3);
+            await Shot("task-10-hud-fight");
+
+            _main.OpenWindow(WindowIds.Passives);
+            await Settle();
+            _main.Passives!.View.FitToView();
+            await Shot("task-10-passives-window");
+
+            _main.CloseAllWindows();
+            _main.OpenWindow(WindowIds.Character);
+            _main.Character!.NumberFor("life")!.Open();
+            await Shot("task-10-two-windows");
+        }
+        finally
+        {
+            _main.CloseAllWindows();
+            await CombatRestore();
+        }
     }
 }

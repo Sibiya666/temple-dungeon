@@ -17,7 +17,9 @@ namespace Dialoid.Game.Room;
 /// time scale and the tree are never touched; the fight keeps its own clock.</para>
 /// <para>Keys 1–5 press slots (a channel skill: <see cref="TrainingRoom.StartChannel"/> on press, <see cref="TrainingRoom.StopChannel"/>
 /// on release, one call per press), WASD and the left button move the hero. Input arrives only as events the interface did not
-/// take, and none while a text field has focus (<see cref="InputBlocked"/>, task 10 adds windows).</para>
+/// take (<see cref="_UnhandledInput"/> inside the room's viewport: a window over the room stops mouse events in the GUI, so a
+/// click or the wheel over a window never reaches here), and no key press while a text field (LineEdit, SpinBox, TextEdit) has
+/// focus; releases always pass. An open window by itself does not block the fight (spec §4 «Ввод»).</para>
 /// </summary>
 public partial class CombatDriver : Node
 {
@@ -95,7 +97,7 @@ public partial class CombatDriver : Node
     public EffectLayer Effects => Room.Effects;
     public FloatingNumbers Numbers => Room.Numbers;
 
-    /// <summary>True when the interface owns the keys now (task 10: an open window's text field); a focused text field always blocks.</summary>
+    /// <summary>An extra hook: true when the interface owns the keys now; a focused text field always blocks.</summary>
     public Func<bool>? InputBlocked { get; set; }
 
     /// <summary>A press was refused (the combat screen blinks its slot; the text over the hero is shown here).</summary>

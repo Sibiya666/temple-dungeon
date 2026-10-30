@@ -52,6 +52,17 @@ public partial class HeroView : CharacterBody3D
     /// <summary>The refusal text over the head now, or null.</summary>
     public string? RefusalText => _refusalLeft > 0 ? _refusal.Text : null;
 
+    /// <summary>The refusal text is drawn in the room (true) or by the combat screen over the windows' layer (task 10: in 2D it
+    /// stays above the dummy plate). Either way <see cref="RefusalText"/>, <see cref="RefusalAlpha"/> and <see cref="RefusalAnchor"/> follow it.</summary>
+    public bool DrawRefusal3D { get; set; } = true;
+
+    /// <summary>Opacity of the refusal text (it fades out) and where it floats (room space).</summary>
+    public float RefusalAlpha => _refusalLeft > 0 ? _refusal.Modulate.A : 0;
+    public Vector3 RefusalAnchor => Position + _refusal.Position;
+
+    /// <summary>The refusal text's color.</summary>
+    public static readonly Color RefusalColor = new(1f, 0.5f, 0.42f);
+
     /// <summary>The last refusal text shown.</summary>
     public string? LastRefusal { get; private set; }
 
@@ -89,7 +100,7 @@ public partial class HeroView : CharacterBody3D
             PixelSize = 0.0065f,
             OutlineSize = 12,
             OutlineModulate = new Color(0, 0, 0, 0.9f),
-            Modulate = new Color(1f, 0.5f, 0.42f),
+            Modulate = RefusalColor,
             Position = new Vector3(0, Height + 0.55f, 0),
             Visible = false,
             RenderPriority = 10,
@@ -162,7 +173,7 @@ public partial class HeroView : CharacterBody3D
     public void ShowRefusal(string text)
     {
         _refusal.Text = text;
-        _refusal.Visible = true;
+        _refusal.Visible = DrawRefusal3D;
         _refusal.Modulate = _refusal.Modulate with { A = 1 };
         _refusalLeft = RefusalSec;
         LastRefusal = text;

@@ -41,6 +41,7 @@ public partial class CombatHud : Control
     private PanelContainer _plate = null!;
     private Label _plateName = null!;
     private HFlowContainer _plateRow = null!;
+    private Label _refusal = null!;
 
     public ResourceBar Resource { get; private set; } = null!;
     public IReadOnlyList<SlotView> Slots => _slots;
@@ -57,6 +58,9 @@ public partial class CombatHud : Control
     public IEnumerable<string> PlateTexts => _plateChips.Where(c => c.Visible).Select(c => c.Text);
     public Rect2 PlateRect => _plate.GetGlobalRect();
     public Control Plate => _plate;
+
+    /// <summary>The refusal text shown over the hero now, or null.</summary>
+    public string? RefusalShown => _refusal.Visible ? _refusal.Text : null;
 
     public CombatHud()
     {
@@ -123,6 +127,15 @@ public partial class CombatHud : Control
         plateBox.AddChild(_plateRow);
         AddChild(_plate);
 
+        // The refusal text over the hero is drawn here, after the plate, so a plate next to the hero never covers it.
+        _refusal = new Label { Name = "Refusal", MouseFilter = MouseFilterEnum.Ignore, Visible = false, HorizontalAlignment = HorizontalAlignment.Center };
+        _refusal.AddThemeFontSizeOverride("font_size", 26);
+        _refusal.AddThemeColorOverride("font_color", HeroView.RefusalColor);
+        _refusal.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.9f));
+        _refusal.AddThemeConstantOverride("outline_size", 7);
+        AddChild(_refusal);
+        driver.Hero.DrawRefusal3D = false;
+
         driver.Refused += e =>
         {
             if (e.Slot is { } s && s >= 1 && s <= _slots.Count) _slots[s - 1].Blink();
@@ -147,6 +160,24 @@ public partial class CombatHud : Control
         _plateName.Text = BreakdownText.DummyName(_session.Data, training.DummyId);
         Fill(_plateRow, _plateChips, effects);
         PlacePlate();
+        PlaceRefusal();
+    }
+
+    /// <summary>The hero's refusal text («Перезарядка 2,1 с») where the hero shows it, fading as it does.</summary>
+    private void PlaceRefusal()
+    {
+        var hero = _driver.Hero;
+        if (hero.RefusalText is not { } text || _project(hero.RefusalAnchor) is not { } p)
+        {
+            _refusal.Visible = false;
+            return;
+        }
+        _refusal.Visible = true;
+        _refusal.Text = text;
+        _refusal.Modulate = new Color(1, 1, 1, hero.RefusalAlpha);
+        var size = _refusal.GetCombinedMinimumSize();
+        _refusal.Size = size;
+        _refusal.Position = p - size / 2;
     }
 
     private void Fill(HFlowContainer row, List<EffectChip> chips, IReadOnlyList<TimedEffect> effects)
@@ -182,7 +213,7 @@ public partial class CombatHud : Control
             top = Mathf.Max(top, feet.Y + dummy.Figures[i].Model.TargetHeight);
         }
         centre /= dummy.FigureCount;
-        var anchor = _project(new Vector3(centre.X, top + 0.25f, centre.Z));
+        var anchor = _project(new Vector3(centre.X, top + 0.05f, centre.Z));
         if (anchor is not { } p)
         {
             _plate.Visible = false;
@@ -247,7 +278,7 @@ public partial class SlotView : Control
         _name.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _name.OffsetLeft = 6;
         _name.OffsetRight = -6;
-        _name.OffsetTop = 12;
+        _name.OffsetTop = 17;
         _name.OffsetBottom = -3;
         AddChild(_name);
 
@@ -261,12 +292,14 @@ public partial class SlotView : Control
         _frame.Draw += DrawFrame;
         AddChild(_frame);
 
-        _cooldown = new Label { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore, Visible = false };
-        _cooldown.AddThemeFontSizeOverride("font_size", 24);
+        // The seconds sit in the top-right corner (the key is top-left), so the shaded name stays readable.
+        _cooldown = new Label { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, MouseFilter = MouseFilterEnum.Ignore, Visible = false };
+        _cooldown.AddThemeFontSizeOverride("font_size", 18);
         _cooldown.AddThemeColorOverride("font_color", Colors.White);
         _cooldown.AddThemeColorOverride("font_outline_color", Colors.Black);
         _cooldown.AddThemeConstantOverride("outline_size", 5);
-        _cooldown.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _cooldown.SetAnchorsAndOffsetsPreset(LayoutPreset.TopRight);
+        (_cooldown.OffsetLeft, _cooldown.OffsetRight, _cooldown.OffsetTop, _cooldown.OffsetBottom) = (-70, -5, -3, 22);
         AddChild(_cooldown);
     }
 
