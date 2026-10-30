@@ -1,0 +1,27 @@
+{
+  "comment": "Skill -> hero clip of the room (spec §5; game layer data, not core). clips: short name -> clip id of assets.json. contact: the fraction of the use where the blow lands (flash, number and hit-stop of a melee hit); it scales with the clip stretched to the core's UseSec. A skill missing here goes by its compiled tags: melee -> tags.melee, else tags.default.",
+  "clips": {
+    "slash": "hero_slash",
+    "attack": "hero_attack",
+    "casting": "hero_cast"
+  },
+  "skills": {
+    "cleave": { "clip": "slash", "contact": 0.45 },
+    "whirlwind": { "clip": "slash", "contact": 0.45 },
+    "crush": { "clip": "attack", "contact": 0.5 },
+    "charge": { "clip": "attack", "contact": 0.5 },
+    "battle_cry": { "clip": "casting", "contact": 0.5 },
+    "throwing_axe": { "clip": "casting", "contact": 0.5 },
+    "spark": { "clip": "casting", "contact": 0.55 },
+    "fireball": { "clip": "casting", "contact": 0.55 },
+    "ice_lance": { "clip": "casting", "contact": 0.55 },
+    "ball_lightning": { "clip": "casting", "contact": 0.55 },
+    "meteor": { "clip": "casting", "contact": 0.55 },
+    "blink": { "clip": "casting", "contact": 0.5 },
+    "poison_cloud": { "clip": "casting", "contact": 0.55 }
+  },
+  "tags": {
+    "melee": { "clip": "slash", "contact": 0.45 },
+    "default": { "clip": "casting", "contact": 0.55 }
+  }
+}

@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using Dialoid.Sandbox;
+using Godot;
 
 namespace Dialoid.Game.Room;
 
@@ -69,11 +70,19 @@ public partial class RoomView : Node3D
     public Godot.Environment Environment { get; private set; } = null!;
     public CameraRig CameraRig { get; private set; } = null!;
 
-    /// <summary>The hero's body (collisions, position); the model is <see cref="HeroModel"/>.</summary>
-    public CharacterBody3D Hero { get; private set; } = null!;
-    public CharacterModel HeroModel { get; private set; } = null!;
-    public StaticBody3D Dummy { get; private set; } = null!;
-    public CharacterModel DummyModel { get; private set; } = null!;
+    /// <summary>The hero's body (collisions, position, movement, clips); the model is <see cref="HeroModel"/>.</summary>
+    public HeroView Hero { get; private set; } = null!;
+    public CharacterModel HeroModel => Hero.Model;
+
+    /// <summary>The dummy (figures by preset, collisions, ring, own light); <see cref="DummyModel"/> is its first figure.</summary>
+    public DummyView Dummy { get; private set; } = null!;
+    public CharacterModel DummyModel => Dummy.MainModel;
+
+    /// <summary>Projectiles, ribbons, clouds and hit flashes.</summary>
+    public EffectLayer Effects { get; private set; } = null!;
+
+    /// <summary>Damage numbers over the dummy.</summary>
+    public FloatingNumbers Numbers { get; private set; } = null!;
 
     /// <summary>The hero's light circle (~8 m), the only light with a full shadow.</summary>
     public OmniLight3D HeroLight { get; private set; } = null!;
@@ -81,8 +90,8 @@ public partial class RoomView : Node3D
     /// <summary>Fill light on the hero's chest from the camera side; no shadow, outside the budget.</summary>
     public OmniLight3D FillLight { get; private set; } = null!;
 
-    /// <summary>The dummy's own light so it reads outside the hero's circle; no shadow, outside the budget.</summary>
-    public OmniLight3D DummyLight { get; private set; } = null!;
+    /// <summary>The dummy's own light so it reads outside the hero's circle (on only there); no shadow, outside the budget.</summary>
+    public OmniLight3D DummyLight => Dummy.Light;
 
     public IReadOnlyList<OmniLight3D> TorchLights => _torches.Select(t => t.Light).ToList();
     public IReadOnlyList<Occluder> Occluders => _occluders;
@@ -156,9 +165,17 @@ public partial class RoomView : Node3D
         BuildBlood(new Vector3(5.5f, 0, -3.5f), 1.4f);
         BuildHero();
         BuildDummy();
+        Effects = new EffectLayer { Name = "Effects" };
+        AddChild(Effects);
+        Numbers = new FloatingNumbers { Name = "Numbers" };
+        AddChild(Numbers);
         CameraRig = new CameraRig { Name = "CameraRig", Target = Hero };
         AddChild(CameraRig);
         CameraRig.Camera.Current = true;
+        Hero.Rig = CameraRig;
+        Effects.Camera = CameraRig.Camera;
+        Numbers.Camera = CameraRig.Camera;
+        Effects.LightsAllowed = () => ProjectileLights;
         _quality = quality;
         ApplyQuality();
         PlaceHero(HeroSpawn);
@@ -167,9 +184,9 @@ public partial class RoomView : Node3D
     /// <summary>Moves the hero (teleport) and updates the camera, the fill light, the shadow budget and the fading at once.</summary>
     public void PlaceHero(Vector3 position)
     {
+        Hero.Stop();
         Hero.Position = new Vector3(position.X, 0, position.Z);
-        var toDummy = new Vector3(DummySpot.X, 0, DummySpot.Z) - Hero.Position;
-        if (toDummy.LengthSquared() > 0.01f) Hero.Basis = Basis.LookingAt(toDummy, Vector3.Up, true);
+        Hero.SnapFacing(DummySpot);
         RefreshView();
     }
 
@@ -179,6 +196,7 @@ public partial class RoomView : Node3D
         CameraRig.Follow();
         var side = new Vector3(CameraRig.Direction.X, 0, CameraRig.Direction.Z).Normalized();
         FillLight.Position = Hero.Position + side * 1.4f + new Vector3(0, 1.3f, 0);
+        Dummy.UpdateLight(Hero.Position);
         UpdateShadowBudget();
         UpdateOcclusion();
     }
@@ -572,7 +590,7 @@ public partial class RoomView : Node3D
     private void BuildTorchStand(Vector3 p)
     {
         var iron = Plain(new Color(0.1f, 0.09f, 0.08f), 0.55f, 0.8f);
-        Cylinder(0.05f, 0.08f, 1.8f, p + new Vector3(0, 0.9f, 0), iron);
+        Cylinder(0.07f, 0.11f, 1.8f, p + new Vector3(0, 0.9f, 0), iron);
         for (int i = 0; i < 3; i++)
         {
             var leg = Box(new Vector3(0.06f, 0.06f, 0.6f), p + new Vector3(0, 0.15f, 0), iron, Mathf.Tau * i / 3f);
@@ -580,14 +598,14 @@ public partial class RoomView : Node3D
             leg.Rotation = new Vector3(-0.5f, leg.Rotation.Y, 0);
         }
         // The bowl sits under its own flame: no shadow, or it paints a dark disc on the floor (prototype).
-        var bowl = Cylinder(0.25f, 0.1f, 0.2f, p + new Vector3(0, 1.85f, 0), iron);
+        var bowl = Cylinder(0.3f, 0.12f, 0.22f, p + new Vector3(0, 1.85f, 0), iron);
         bowl.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
         var flame = Flame(new Vector3(0.08f, 0.02f, 0.08f), 18, 0.3f, 1.1f);
         AddChild(flame);
         flame.Position = p + new Vector3(0, 1.95f, 0);
         TorchLight(p + new Vector3(0, 2.3f, 0), 2.2f, 7f);
         var body = new StaticBody3D { Name = "TorchStand" };
-        body.AddChild(new CollisionShape3D { Shape = new CylinderShape3D { Radius = 0.25f, Height = 2f } });
+        body.AddChild(new CollisionShape3D { Shape = new CylinderShape3D { Radius = 0.3f, Height = 2f } });
         AddChild(body, true);
         body.Position = p + new Vector3(0, 1f, 0);
     }
@@ -617,8 +635,8 @@ public partial class RoomView : Node3D
                 var dy = (y - n / 2f) / (n / 2f);
                 var r = Mathf.Sqrt(dx * dx + dy * dy);
                 var v = (1f - r) * 1.4f + noise.GetNoise2D(x, y) * 0.9f;
-                var a = Mathf.Clamp((v - 0.35f) * 4f, 0f, 1f);
-                image.SetPixel(x, y, new Color(0.32f + 0.1f * noise.GetNoise2D(y, x), 0.015f, 0.01f, a));
+                var a = Mathf.Clamp((v - 0.3f) * 2.2f, 0f, 1f) * 0.8f; // softer edge, alpha ~0.8 (art review)
+                image.SetPixel(x, y, new Color(0.22f + 0.05f * noise.GetNoise2D(y, x), 0.02f, 0.01f, a)); // darker, browner
             }
         }
         var decal = new Decal
@@ -637,16 +655,8 @@ public partial class RoomView : Node3D
 
     private void BuildHero()
     {
-        Hero = new CharacterBody3D { Name = "Hero" };
-        Hero.AddChild(new CollisionShape3D
-        {
-            Shape = new CapsuleShape3D { Radius = 0.35f, Height = 1.85f },
-            Position = new Vector3(0, 0.925f, 0),
-        });
+        Hero = HeroView.Create(Assets);
         AddChild(Hero);
-        HeroModel = Assets.Character(AssetLibrary.HeroId);
-        Hero.AddChild(HeroModel);
-        HeroModel.Play("hero_idle");
 
         // Light circle around the hero, like D2: the only full shadow (spec §4).
         HeroLight = new OmniLight3D
@@ -675,29 +685,9 @@ public partial class RoomView : Node3D
 
     private void BuildDummy()
     {
-        Dummy = new StaticBody3D { Name = "Dummy" };
-        Dummy.AddChild(new CollisionShape3D
-        {
-            Shape = new CapsuleShape3D { Radius = 0.4f, Height = 1.8f },
-            Position = new Vector3(0, 0.9f, 0),
-        });
+        Dummy = new DummyView { Name = "Dummy" };
         AddChild(Dummy);
         Dummy.Position = DummySpot;
-        DummyModel = Assets.Character("zombie");
-        Dummy.AddChild(DummyModel);
-        DummyModel.Play("zombie_idle");
-        var toHero = Flat(HeroSpawn) - Flat(DummySpot);
-        Dummy.Basis = Basis.LookingAt(toHero, Vector3.Up, true);
-        // The dummy's own light so it reads outside the hero's circle; no shadow (spec §4).
-        DummyLight = new OmniLight3D
-        {
-            Name = "DummyLight",
-            LightColor = new Color(0.85f, 0.85f, 0.95f),
-            LightEnergy = 1.6f,
-            OmniRange = 5f,
-            ShadowEnabled = false,
-        };
-        AddChild(DummyLight);
-        DummyLight.Position = DummySpot + new Vector3(1.2f, 2.2f, 1.2f);
+        Dummy.Build(Assets, TrainingRoom.DefaultDummyId, HeroSpawn);
     }
 }

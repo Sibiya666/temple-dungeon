@@ -519,19 +519,33 @@ public partial class CharacterModel : Node3D
         }
     }
 
-    /// <summary>Plays a clip of the table from <paramref name="offset"/> seconds; false (no exception) for a stub or a missing clip.</summary>
-    public bool Play(string clipId, double offset = 0)
+    /// <summary>
+    /// Plays a clip of the table from <paramref name="offset"/> seconds at <paramref name="speed"/> (a use stretched to the core's
+    /// time), blending from the previous clip over <paramref name="blend"/> seconds (−1: the player's default); the same clip
+    /// again only restarts with <paramref name="restart"/>. False (no exception) for a stub or a missing clip.
+    /// </summary>
+    public bool Play(string clipId, double offset = 0, float speed = 1f, double blend = -1, bool restart = false)
+    {
+        if (!EnsureClip(clipId)) return false;
+        var name = $"{Library}/{clipId}";
+        var same = Player!.CurrentAnimation == name && Player.IsPlaying();
+        Player.Play(name, blend, speed);
+        if (offset > 0) Player.Seek(offset, true);
+        else if (same && restart) Player.Seek(0, true);
+        CurrentClip = clipId;
+        return true;
+    }
+
+    /// <summary>Length of a clip of the table in seconds (fitted on first use), or null for a stub or a missing clip.</summary>
+    public double? ClipLength(string clipId) => EnsureClip(clipId) ? _library!.GetAnimation(clipId).Length : null;
+
+    private bool EnsureClip(string clipId)
     {
         if (_assets == null || Player == null || _library == null) return false;
-        if (!_library.HasAnimation(clipId))
-        {
-            var anim = _assets.ClipFor(clipId, this);
-            if (anim == null) return false;
-            _library.AddAnimation(clipId, anim);
-        }
-        Player.Play($"{Library}/{clipId}");
-        if (offset > 0) Player.Seek(offset, true);
-        CurrentClip = clipId;
+        if (_library.HasAnimation(clipId)) return true;
+        var anim = _assets.ClipFor(clipId, this);
+        if (anim == null) return false;
+        _library.AddAnimation(clipId, anim);
         return true;
     }
 }

@@ -38,6 +38,12 @@ public partial class Main : Control
     /// <summary>The 3D training room on the «Комната» tab.</summary>
     public RoomView? Room { get; private set; }
 
+    /// <summary>The live fight of the room (null when the data failed to load).</summary>
+    public TrainingRoom? Training { get; private set; }
+
+    /// <summary>Wires <see cref="Training"/> to the room: input, animations, effects (null when the data failed to load).</summary>
+    public CombatDriver? Combat { get; private set; }
+
     /// <summary>The viewport the room renders into.</summary>
     public SubViewport? RoomViewport { get; private set; }
 
@@ -83,6 +89,7 @@ public partial class Main : Control
         else
         {
             BuildPanels(Session!);
+            BuildCombat(Session!);
         }
 
         if (OS.GetCmdlineUserArgs().Contains(SelfTestArg))
@@ -212,6 +219,16 @@ public partial class Main : Control
         Room.Build(Assets, RoomView.QualityFromArgs(OS.GetCmdlineUserArgs()));
         GD.Print($"Комната готова: модели {(Assets.HasModels ? "есть" : "заглушки")}, текстуры {(Assets.HasTextures ? "есть" : "однотонные")}, " +
                  $"качество {Room.Quality}, недостает ассетов: {Assets.Missing.Count}");
+    }
+
+    /// <summary>The live fight follows the session's build; the driver lives in the room's viewport (it gets the room's input).</summary>
+    private void BuildCombat(SandboxSession session)
+    {
+        Training = new TrainingRoom(session);
+        Training.Attach();
+        Combat = new CombatDriver { Name = "Combat" };
+        Room!.AddChild(Combat);
+        Combat.Setup(Room, Training, SkillAnimations.Load());
     }
 
     private (SandboxSession? Session, string? Error) LoadSession()
