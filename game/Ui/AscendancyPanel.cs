@@ -46,7 +46,7 @@ public partial class AscendancyPanel : SessionPanel
     {
         InitSession(session, withContent: false);
 
-        var top = new HBoxContainer();
+        var top = new HFlowContainer(); // wraps in a narrow window (plan 4 task 10)
         top.AddChild(new Label { Text = "Асцендант:" });
         _selector = new OptionButton();
         _selector.ItemSelected += i => SelectAscendancy(AscendancyChoices[(int)i]);

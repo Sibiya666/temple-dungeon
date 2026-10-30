@@ -98,6 +98,9 @@ public partial class CombatDriver : Node
     /// <summary>True when the interface owns the keys now (task 10: an open window's text field); a focused text field always blocks.</summary>
     public Func<bool>? InputBlocked { get; set; }
 
+    /// <summary>A press was refused (the combat screen blinks its slot; the text over the hero is shown here).</summary>
+    public event Action<VisualEvent>? Refused;
+
     /// <summary>Visual seconds: real time minus the hit-stops.</summary>
     public double VisualTime => _visualTime;
 
@@ -254,8 +257,9 @@ public partial class CombatDriver : Node
                 if (use != null) use.Hits.Add(e);
                 else Deliver(e, melee: false, channel: false);
                 break;
-            case VisualKind.Refused when e.RefusalText is { } text:
-                Hero.ShowRefusal(text);
+            case VisualKind.Refused:
+                if (e.RefusalText is { } text) Hero.ShowRefusal(text);
+                Refused?.Invoke(e);
                 break;
         }
     }
@@ -558,7 +562,7 @@ public partial class CombatDriver : Node
     {
         if (InputBlocked?.Invoke() == true) return true;
         var focus = GetTree()?.Root.GuiGetFocusOwner();
-        return focus is LineEdit or TextEdit;
+        return focus is LineEdit or TextEdit or SpinBox;
     }
 
     private void ReleaseFocus() => GetTree()?.Root.GuiGetFocusOwner()?.ReleaseFocus();

@@ -55,7 +55,8 @@ public sealed partial class SelfTest
     {
         var room = Room;
         var assets = Assets;
-        Check(_main.CurrentTab == Main.RoomTab, $"первая вкладка «{_main.CurrentTab}», а не «{Main.RoomTab}»");
+        Check(_main.Windows.OpenWindows.Count == 0, $"при старте открыты окна: {string.Join(", ", _main.Windows.OpenWindows)}");
+        Check(_main.RoomContainer!.Size == _main.Size && _main.RoomContainer.Position == Vector2.Zero, $"комната не во весь экран: {_main.RoomContainer.Size} при экране {_main.Size}");
         await Settle();
         if (assets.HasModels)
         {

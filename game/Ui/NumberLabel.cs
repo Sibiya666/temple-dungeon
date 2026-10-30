@@ -33,7 +33,12 @@ public partial class NumberLabel : Button
     /// <summary>A label for the line; <paramref name="open"/> is <see cref="Main.ShowBreakdown"/>.</summary>
     public static NumberLabel For(NumberLine line, Action<NumberLine, string?> open, string? context = null)
     {
-        var label = new NumberLabel { Flat = true, Alignment = HorizontalAlignment.Left, _open = open, Context = context };
+        // In a narrow window a long line ends in «…» instead of widening the window over the room (plan 4 task 10).
+        var label = new NumberLabel
+        {
+            Flat = true, Alignment = HorizontalAlignment.Left, _open = open, Context = context,
+            TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
+        };
         label.SetLine(line);
         label.Pressed += label.Open;
         return label;
@@ -58,7 +63,9 @@ public partial class NumberLabel : Button
     {
         Line = line;
         Text = TextOf(line, Context);
-        TooltipText = line.Note ?? (line.Breakdown != null ? "Нажмите, чтобы открыть разбор" : "");
+        // The full text first: a narrow window may cut the line with «…».
+        var hint = line.Note ?? (line.Breakdown != null ? "Нажмите, чтобы открыть разбор" : "");
+        TooltipText = hint.Length > 0 ? Text + "\n" + hint : Text;
     }
 
     /// <summary>What pressing the label does; the self-test calls it directly.</summary>

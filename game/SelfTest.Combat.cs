@@ -1,6 +1,7 @@
 using Dialoid.Core.Combat;
 using Dialoid.Core.Simulation;
 using Dialoid.Game.Room;
+using Dialoid.Game.Ui;
 using Dialoid.Sandbox;
 using Godot;
 
@@ -48,7 +49,7 @@ public sealed partial class SelfTest
         var info = _main.Builds!.References.FirstOrDefault(r => r.Path.EndsWith(file, StringComparison.Ordinal));
         Check(info != null, $"нет эталона {file}");
         Check(_main.Builds.Load(info!).Ok, $"эталон {file} не загрузился");
-        _main.SelectTab(Main.RoomTab);
+        _main.CloseAllWindows();
         await Settle();
         Check(Training.Running, $"бой не начался: {string.Join("; ", Training.Violations.Select(v => v.Message))}");
         if (Driver.Dummy.PresetId != TrainingRoom.DefaultDummyId) Driver.SetDummy(TrainingRoom.DefaultDummyId);
@@ -478,19 +479,18 @@ public sealed partial class SelfTest
             field.QueueFree();
         }
 
-        // A key released while the room tab is hidden still lets go of the held channel.
+        // An open window does not block the fight (spec §4 «Ввод»): the held channel is let go by its key with the window open.
         var ww = SlotOf("whirlwind");
         Check(driver.HandleInput(new InputEventKey { PhysicalKeycode = Key.Key1 + (ww - 1), Pressed = true }), "клавиша Вихря не дошла до боя");
         await Run(0.2);
         Check(Training.State!.HeldSlot == ww, "Вихрь не зажат клавишей");
-        _main.SelectTab("Персонаж");
+        _main.OpenWindow(WindowIds.Character);
         await NextFrame();
-        Check(!room.IsShown, "комната видна на другой вкладке");
-        Check(!driver.HandleInput(new InputEventKey { PhysicalKeycode = Key.Key2, Pressed = true }), "нажатие прошло в скрытую комнату");
-        driver.HandleInput(new InputEventKey { PhysicalKeycode = Key.Key1 + (ww - 1), Pressed = false });
+        Check(room.IsShown && !driver.KeysBlocked(), "открытое окно заблокировало бой");
+        Check(driver.HandleInput(new InputEventKey { PhysicalKeycode = Key.Key1 + (ww - 1), Pressed = false }), "отпускание клавиши при открытом окне не дошло до боя");
         await Run(0.1);
-        Check(Training.State!.HeldSlot == null, "отпускание клавиши в скрытой комнате не отпустило канал");
-        _main.SelectTab(Main.RoomTab);
+        Check(Training.State!.HeldSlot == null, "отпускание клавиши при открытом окне не отпустило канал");
+        _main.CloseAllWindows();
         await NextFrame();
 
         room.PlaceHero(room.HeroSpawn);

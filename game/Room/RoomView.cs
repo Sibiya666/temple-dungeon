@@ -96,8 +96,10 @@ public partial class RoomView : Node3D
     public IReadOnlyList<OmniLight3D> TorchLights => _torches.Select(t => t.Light).ToList();
     public IReadOnlyList<Occluder> Occluders => _occluders;
 
-    /// <summary>Where the hero appears: at the front edge of the hall, facing the dummy.</summary>
-    public Vector3 HeroSpawn { get; } = new(5f, 0, 3.5f);
+    /// <summary>Where the hero appears, facing the dummy from the camera side, 4.6 m away: close enough along the view that the dummy
+    /// and its plate are fully in the frame at the default zoom (task 10 moved it 3.3 m towards the dummy from (5, 0, 3.5): the
+    /// top bar and the plate took that spot's margin).</summary>
+    public Vector3 HeroSpawn { get; } = new(2.3f, 0, 1.6f);
 
     /// <summary>Where the dummy stands: the middle of the hall.</summary>
     public Vector3 DummySpot { get; } = new(-1.5f, 0, -1f);

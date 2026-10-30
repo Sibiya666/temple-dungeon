@@ -1,0 +1,368 @@
+using Dialoid.Core.Simulation;
+using Dialoid.Game.Room;
+using Dialoid.Game.Ui;
+using Godot;
+
+namespace Dialoid.Game;
+
+/// <summary>
+/// Self-test steps of the windows over the room and the combat screen (plan 4 task 10). Keys and mouse go through the real
+/// input path (<see cref="Viewport.PushInput"/> on the main viewport: GUI, then the room's SubViewport), so the checks cover
+/// the routing between windows, text fields, the fight and the camera.
+/// </summary>
+public sealed partial class SelfTest
+{
+    /// <summary>The self-test keeps window positions in its own file, never in the owner's.</summary>
+    public const string SelfTestWindowsConfig = "user://windows-selftest.cfg";
+
+    private IEnumerable<Step> WindowSteps()
+    {
+        yield return new("windows.layout", WindowsLayout);
+        yield return new("windows.hotkeys", WindowsHotkeys);
+        yield return new("windows.remember-position", WindowsRemember);
+        yield return new("windows.focus-blocks-keys", WindowsFocusBlocksKeys);
+        yield return new("windows.mouse-over-window", WindowsMouseOverWindow);
+        yield return new("hud.combat-screen", HudCombatScreen);
+        yield return new("hud.ailment-on-plate", HudAilmentOnPlate);
+        yield return new("hud.plate-in-frame-at-spawn", HudPlateAtSpawn);
+    }
+
+    private void UseSelfTestWindowConfig()
+    {
+        var windows = _main.Windows;
+        windows.CloseAll();
+        windows.ConfigPath = SelfTestWindowsConfig;
+        var file = ProjectSettings.GlobalizePath(SelfTestWindowsConfig);
+        if (File.Exists(file)) File.Delete(file);
+        windows.LoadConfig();
+    }
+
+    private void PushKey(Key key, char unicode = '\0')
+    {
+        var viewport = _main.GetViewport();
+        viewport.PushInput(new InputEventKey { PhysicalKeycode = key, Keycode = key, Unicode = unicode, Pressed = true });
+        viewport.PushInput(new InputEventKey { PhysicalKeycode = key, Keycode = key, Unicode = unicode, Pressed = false });
+    }
+
+    private void PushButton(Vector2 at, MouseButton button)
+    {
+        var viewport = _main.GetViewport();
+        viewport.PushInput(new InputEventMouseMotion { Position = at, GlobalPosition = at });
+        viewport.PushInput(new InputEventMouseButton { ButtonIndex = button, Pressed = true, Position = at, GlobalPosition = at });
+        viewport.PushInput(new InputEventMouseButton { ButtonIndex = button, Pressed = false, Position = at, GlobalPosition = at });
+    }
+
+    /// <summary>Windows hidden at start, their edges, opaque backgrounds, the key on every top-bar button and window title.</summary>
+    private async Task WindowsLayout()
+    {
+        UseSelfTestWindowConfig();
+        var windows = _main.Windows;
+        var bar = _main.Bar ?? throw new Failure("нет верхней панели");
+        Check(WindowHost.Specs.All(s => windows.Has(s.Id)), "не у каждого окна есть панель");
+        foreach (var spec in WindowHost.Specs)
+        {
+            var key = GameWindow.KeyName(spec.Key);
+            Check(bar.Buttons[spec.Id].Text == $"{spec.Title} ({key})", $"кнопка «{bar.Buttons[spec.Id].Text}»");
+            Check(bar.Buttons[spec.Id].FocusMode == Control.FocusModeEnum.None, $"кнопка «{spec.Title}» берет фокус клавиатуры");
+            windows.OpenWindow(spec.Id);
+        }
+        await Settle();
+        var screen = _main.Size;
+        foreach (var spec in WindowHost.Specs)
+        {
+            var w = windows.Window(spec.Id);
+            var rect = w.GetGlobalRect();
+            Check(w.GetThemeStylebox("panel") is StyleBoxFlat { BgColor.A: >= 0.95f }, $"фон окна «{spec.Title}» прозрачный");
+            Check(rect.Position.Y >= bar.Size.Y - 0.5f && rect.End.X <= screen.X + 0.5f && rect.End.Y <= screen.Y + 0.5f && rect.Position.X >= -0.5f,
+                $"окно «{spec.Title}» {rect} вне экрана {screen} или под верхней панелью");
+            var left = rect.Position.X <= WindowHost.Margin + 0.5f;
+            var right = rect.End.X >= screen.X - WindowHost.Margin - 0.5f;
+            switch (spec.Edge)
+            {
+                case WindowEdge.Left: Check(left, $"окно «{spec.Title}» не у левого края: {rect}"); break;
+                case WindowEdge.Right or WindowEdge.RightTop: Check(right, $"окно «{spec.Title}» не у правого края: {rect}"); break;
+                case WindowEdge.LeftBottom:
+                    Check(left && rect.End.Y >= screen.Y - WindowHost.Margin - 0.5f, $"журнал не слева внизу: {rect}");
+                    break;
+            }
+            // The hero stands in the centre: a window at an edge never covers it.
+            Check(!rect.HasPoint(screen / 2), $"окно «{spec.Title}» закрывает центр экрана: {rect}, минимум панели {w.Content.GetCombinedMinimumSize()}");
+        }
+        Check(bar.Buttons.Values.All(b => b.ButtonPressed), "кнопки открытых окон не нажаты");
+        windows.CloseAll();
+        await Settle();
+        Check(bar.Buttons.Values.All(b => !b.ButtonPressed) && windows.OpenWindows.Count == 0, "окна не закрылись");
+        // Every button's caption fits: the bar is not wider than the screen.
+        Check(bar.GetCombinedMinimumSize().X <= screen.X + 0.5f, $"верхняя панель шире экрана: {bar.GetCombinedMinimumSize().X} > {screen.X}");
+    }
+
+    /// <summary>C opens and closes the character, N the ascendancy; Esc closes the top window; every hotkey toggles its window.</summary>
+    private async Task WindowsHotkeys()
+    {
+        var windows = _main.Windows;
+        windows.CloseAll();
+        _main.GetViewport().GuiReleaseFocus();
+        PushKey(Key.C);
+        await NextFrame();
+        Check(windows.IsOpen(WindowIds.Character), "C не открыла «Персонажа»");
+        PushKey(Key.C);
+        await NextFrame();
+        Check(!windows.IsOpen(WindowIds.Character), "C не закрыла «Персонажа»");
+
+        PushKey(Key.N);
+        PushKey(Key.C);
+        await NextFrame();
+        Check(windows.IsOpen(WindowIds.Ascendancy) && windows.IsOpen(WindowIds.Character), "N и C не открыли асцендант и персонажа");
+        Check(windows.TopWindow == WindowIds.Character, $"верхнее окно {windows.TopWindow}, а не персонаж");
+        PushKey(Key.Escape);
+        await NextFrame();
+        Check(!windows.IsOpen(WindowIds.Character) && windows.IsOpen(WindowIds.Ascendancy), "Esc закрыл не верхнее окно");
+        PushKey(Key.Escape);
+        await NextFrame();
+        Check(windows.OpenWindows.Count == 0, "второй Esc не закрыл асцендант");
+
+        foreach (var spec in WindowHost.Specs)
+        {
+            PushKey(spec.Key);
+            await NextFrame();
+            Check(windows.IsOpen(spec.Id), $"клавиша {GameWindow.KeyName(spec.Key)} не открыла «{spec.Title}»");
+            PushKey(spec.Key);
+            await NextFrame();
+            Check(!windows.IsOpen(spec.Id), $"клавиша {GameWindow.KeyName(spec.Key)} не закрыла «{spec.Title}»");
+        }
+        Check(WindowHost.Specs.All(s => s.Key != Key.D && s.Key != Key.A && s.Key != Key.W && s.Key != Key.S), "клавиша окна занята шагом");
+        Check(WindowHost.Specs.Select(s => s.Key).Distinct().Count() == WindowHost.Specs.Count, "у двух окон одна клавиша");
+    }
+
+    /// <summary>A moved window opens where it was left, also after the file is read again.</summary>
+    private async Task WindowsRemember()
+    {
+        var windows = _main.Windows;
+        windows.OpenWindow(WindowIds.Builds);
+        await Settle();
+        var target = new Vector2(240, _main.Bar!.Size.Y + 60);
+        windows.MoveWindow(WindowIds.Builds, target);
+        windows.CloseWindow(WindowIds.Builds);
+        windows.LoadConfig(); // as at the next start
+        Check(windows.RememberedPosition(WindowIds.Builds) == target, $"в {SelfTestWindowsConfig} позиция {windows.RememberedPosition(WindowIds.Builds)}");
+        windows.OpenWindow(WindowIds.Builds);
+        await Settle();
+        Check(windows.Window(WindowIds.Builds).Position == target, $"окно открылось в {windows.Window(WindowIds.Builds).Position}, а не в {target}");
+        windows.CloseAll();
+        UseSelfTestWindowConfig(); // the default edges again for the other steps
+    }
+
+    /// <summary>
+    /// Review Focus 3: with the focus in the seed field, digit 1 goes into the field and not into the fight, C types a letter
+    /// instead of opening a window; Enter takes the focus off, and then 1 reaches the fight.
+    /// </summary>
+    private async Task WindowsFocusBlocksKeys()
+    {
+        await LoadForCombat(WarriorMelee);
+        PlaceNearDummy();
+        var slot = SlotOf("battle_cry");
+        var digit = Key.Key1 + (slot - 1);
+        var windows = _main.Windows;
+        windows.OpenWindow(WindowIds.Simulation);
+        await Settle();
+        var field = _main.Simulation!.Seed.GetLineEdit();
+        var before = field.Text;
+        var seedBefore = _main.Simulation.Seed.Value;
+        try
+        {
+            field.GrabFocus();
+            await NextFrame();
+            var typedOn = field.Text; // the SpinBox keeps its value in the field
+            field.CaretColumn = typedOn.Length;
+            var lines = Training.Log.Count;
+            PushKey(digit, (char)('0' + slot));
+            PushKey(Key.C, 'c');
+            await Run(0.4);
+            Check(field.Text == $"{typedOn}{slot}c", $"в поле сида «{field.Text}», а не «{typedOn}{slot}c»");
+            Check(Training.Log.Count == lines && Training.State!.CooldownLeftBySlot.GetValueOrDefault(slot) == 0, "цифра при фокусе в поле ушла в бой");
+            Check(!windows.IsOpen(WindowIds.Character), "C при фокусе в поле открыла окно");
+
+            PushKey(Key.Escape);
+            await NextFrame();
+            Check(!field.HasFocus() && windows.IsOpen(WindowIds.Simulation), "Esc в поле не снял фокус или закрыл окно");
+            field.GrabFocus();
+            await NextFrame();
+            PushKey(Key.Enter);
+            await Settle();
+            Check(!field.HasFocus(), "Enter не снял фокус с поля");
+
+            PushKey(digit, (char)('0' + slot));
+            await Run(0.4);
+            Check(Training.Log.Count > lines, "без фокуса цифра не дошла до боя");
+        }
+        finally
+        {
+            field.ReleaseFocus();
+            field.Text = before;
+            _main.Simulation.Seed.Value = seedBefore;
+            windows.CloseAll();
+        }
+    }
+
+    /// <summary>A click and the wheel over a window neither move the hero nor zoom; outside the windows they do.</summary>
+    private async Task WindowsMouseOverWindow()
+    {
+        await LoadForCombat(WarriorMelee);
+        Driver.SetProcess(true);
+        var room = Room;
+        var rig = room.CameraRig;
+        room.PlaceHero(room.HeroSpawn);
+        rig.ResetZoom();
+        var windows = _main.Windows;
+        windows.OpenWindow(WindowIds.Character);
+        await Settle();
+        // The window's own margin (no button there: a click on a number would open «Разбор»).
+        var rect = windows.Window(WindowIds.Character).GetGlobalRect();
+        var over = new Vector2(rect.Position.X + 3, rect.End.Y - 5);
+        var start = room.Hero.Position;
+        PushButton(over, MouseButton.Left);
+        PushButton(over, MouseButton.WheelUp);
+        PushButton(over, MouseButton.WheelDown);
+        PushButton(over, MouseButton.WheelDown);
+        await Settle();
+        Check(room.Hero.MoveTarget == null && room.Hero.Position.DistanceTo(start) < 0.01f, "клик над окном сдвинул героя");
+        Check(Mathf.IsEqualApprox(rig.Zoom, CameraRig.DefaultZoom), $"колесо над окном изменило зум: {rig.Zoom}");
+
+        // The same events over the floor reach the camera and the hero (the routing works at all).
+        var floor = new Vector2(_main.Size.X * 0.68f, _main.Size.Y * 0.42f);
+        Check(windows.WindowAt(floor) == null, $"точка пола {floor} под окном {windows.WindowAt(floor)}: {windows.Window(WindowIds.Character).GetGlobalRect()}");
+        PushButton(floor, MouseButton.WheelDown);
+        await NextFrame();
+        Check(rig.Zoom > CameraRig.DefaultZoom, "колесо над полом не изменило зум");
+        PushButton(floor, MouseButton.Left);
+        await NextFrame();
+        Check(room.Hero.MoveTarget != null, "клик по полу не повел героя");
+        rig.ResetZoom();
+        room.PlaceHero(room.HeroSpawn);
+        windows.CloseAll();
+        Driver.SetProcess(false);
+        await Settle();
+    }
+
+    /// <summary>
+    /// The slot bar follows <see cref="TrainingRoom.State"/>: cooldown seconds equal the state's, a red frame when the resource
+    /// is short, the queued press and the held channel highlighted, a blink on a refusal; Battle Cry's buff with its timer.
+    /// </summary>
+    private async Task HudCombatScreen()
+    {
+        var hud = _main.Hud ?? throw new Failure("нет экрана боя");
+        await LoadForCombat(WarriorMelee);
+        PlaceNearDummy();
+        hud.Refresh();
+        var state = Training.State!;
+        Check(hud.Resource.Text == ResourceBar.TextOf(Training.ResourceName, state.Resource, state.ResourceMax) && hud.Resource.Text.StartsWith(Training.ResourceName, StringComparison.Ordinal),
+            $"полоса ресурса «{hud.Resource.Text}»");
+        var shortSeen = false;
+        foreach (var view in hud.Slots)
+        {
+            var info = Training.Slots[view.Number - 1];
+            Check(view.Info == info, $"слот {view.Number} показывает не тот скилл");
+            Check(view.NameText == (info?.Name ?? "пусто"), $"слот {view.Number}: «{view.NameText}»");
+            var expectShort = info != null && info.Cost > 0 && state.Resource < info.Cost;
+            Check(view.ResourceShort == expectShort, $"слот {view.Number}: красная рамка {view.ResourceShort}, ресурс {state.Resource}, стоимость {info?.Cost}");
+            shortSeen |= expectShort;
+            if (info != null)
+                Check(view.TooltipText.Contains("Стоимость", StringComparison.Ordinal) && view.TooltipText.Contains("Перезарядка", StringComparison.Ordinal)
+                      && (view.TooltipText.Contains("Время применения", StringComparison.Ordinal) || view.TooltipText.Contains("Канал", StringComparison.Ordinal)),
+                    $"подсказка слота {view.Number}: «{view.TooltipText}»");
+        }
+        if (!shortSeen) GD.Print($"SELFTEST NOTE экран боя: в начале боя ресурса ({state.Resource}) хватает на все слоты");
+
+        var cry = SlotOf("battle_cry");
+        Check(Driver.PressSlot(cry).Accepted, "Боевой клич не принят");
+        await Run(0.8);
+        hud.Refresh();
+        state = Training.State!;
+        var view1 = hud.Slots[cry - 1];
+        Check(state.CooldownLeftBySlot.TryGetValue(cry, out var left) && left > 0, "у Боевого клича нет перезарядки в State");
+        Check(view1.CooldownLeft == left && view1.CooldownText == CombatHud.Seconds(left), $"слот показывает {view1.CooldownLeft} «{view1.CooldownText}», в State {left}");
+        var buff = hud.HeroEffects.FirstOrDefault(e => e.Id == "battle_cry");
+        Check(buff is { TimeLeft: > 0 }, "бафф Боевого клича не показан с таймером: " + string.Join(", ", hud.HeroTexts));
+        Check(hud.HeroTexts.Any(t => t.StartsWith("Боевой клич ", StringComparison.Ordinal) && t.EndsWith(" с", StringComparison.Ordinal)), "текст баффа: " + string.Join(", ", hud.HeroTexts));
+
+        // A refusal blinks the slot (the text over the hero comes from the same event).
+        Check(!Driver.PressSlot(cry).Accepted, "повторный клич принят");
+        await Run(FrameSec * 2);
+        hud.Refresh();
+        Check(hud.Slots[cry - 1].BlinkLeft > 0, "слот не мигнул при отказе");
+        Check(Room.Hero.RefusalText != null, "над героем нет текста отказа");
+
+        // The held channel, then a press queued while busy.
+        var ww = SlotOf("whirlwind");
+        await Run(1.5, until: () => Training.State is { Busy: false });
+        Driver.PressSlot(ww);
+        await Run(0.3, until: () => Training.State?.HeldSlot == ww);
+        hud.Refresh();
+        Check(Training.State!.HeldSlot == ww && hud.Slots[ww - 1].Held, "зажатый канал не подсвечен");
+        Driver.ReleaseSlot(ww);
+        await Run(0.05);
+
+        var cleave = SlotOf("cleave");
+        await Run(2.0, until: () => Training.State is { Busy: false });
+        Driver.PressSlot(cleave);
+        await Run(FrameSec * 3);
+        var queued = false;
+        for (int i = 0; i < 30 && !queued; i++)
+        {
+            if (Training.State is { Busy: true }) queued = Driver.PressSlot(cleave).Queued;
+            if (!queued) await Run(FrameSec);
+        }
+        hud.Refresh();
+        Check(queued && Training.State!.QueuedSlot == cleave && hud.Slots[cleave - 1].Queued, "нажатие в очереди не подсвечено");
+        await Run(1.0);
+    }
+
+    /// <summary>Ignite from the fire builds is on the dummy plate with stacks and timer.</summary>
+    private async Task HudAilmentOnPlate()
+    {
+        var hud = _main.Hud!;
+        foreach (var (file, skill) in new[] { (WarriorMelee, "cleave"), (Pyromancer, "fireball") })
+        {
+            await LoadForCombat(file);
+            PlaceNearDummy(skill == "fireball" ? 4f : 1f);
+            var slot = SlotOf(skill);
+            await Run(10.0, _ => { if (Training.State is { Busy: false }) Driver.PressSlot(slot); },
+                until: () => Training.State!.TargetEffects.Count > 0 && Training.State.TargetEffects[0].Any(e => e.Id == "ignite"));
+            if (Training.State!.TargetEffects.Count == 0 || Training.State.TargetEffects[0].All(e => e.Id != "ignite")) continue;
+            hud.Refresh();
+            var ignite = Training.State.TargetEffects[0].First(e => e.Id == "ignite");
+            var text = EffectChip.TextOf(ignite, BreakdownTextAilment("ignite"));
+            Check(hud.PlateTexts.Contains(text), $"на плашке нет «{text}»: " + string.Join(", ", hud.PlateTexts));
+            Check(text.StartsWith("Поджог", StringComparison.Ordinal) && (ignite.TimeLeft == null || text.EndsWith(" с", StringComparison.Ordinal)), $"текст поджога «{text}»");
+            Check(hud.PlateName == Dialoid.Sandbox.BreakdownText.DummyName(_main.Session!.Data, Training.DummyId), $"имя на плашке «{hud.PlateName}»");
+            GD.Print($"SELFTEST NOTE плашка манекена ({file}): {hud.PlateName}: {string.Join(", ", hud.PlateTexts)}");
+            return;
+        }
+        throw new Failure("поджог не наложился ни огненным Рассечением, ни Огненным шаром за 10 с");
+    }
+
+    private static string BreakdownTextAilment(string id) => Dialoid.Sandbox.BreakdownText.AilmentName(id);
+
+    /// <summary>The art review's check: at the spawn and the default zoom the dummy and its plate are fully in the frame.</summary>
+    private async Task HudPlateAtSpawn()
+    {
+        var hud = _main.Hud!;
+        await LoadForCombat(WarriorMelee);
+        _main.CloseAllWindows();
+        var room = Room;
+        room.PlaceHero(room.HeroSpawn);
+        room.CameraRig.ResetZoom();
+        room.CameraRig.Follow();
+        await Settle();
+        hud.Refresh();
+        await NextFrame();
+        hud.Refresh();
+        var screen = new Rect2(0, _main.Bar!.Size.Y, _main.Size.X, _main.Size.Y - _main.Bar.Size.Y);
+        Check(hud.PlateShown, "плашка манекена не видна");
+        var plate = hud.PlateRect;
+        Check(screen.Encloses(plate), $"плашка {plate} не целиком в кадре {screen}");
+        var feet = _main.RoomToScreen(room.Dummy.TargetPosition(0));
+        Check(feet is { } f && screen.HasPoint(f), $"ноги манекена вне кадра: {feet}");
+        GD.Print($"SELFTEST NOTE плашка при появлении: {plate}, ноги манекена {feet}, экран {_main.Size}");
+    }
+}

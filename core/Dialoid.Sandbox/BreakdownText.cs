@@ -36,6 +36,12 @@ public static class BreakdownText
         : result.Defense == null ? Texts.TimeToDeathDummyHasNoAttack
         : Texts.TimeToDeathSurvived;
 
+    /// <summary>Russian ailment name (the combat screen's icons); an unknown id gives the generic «недуг».</summary>
+    public static string AilmentName(string id) => Texts.AilmentName(id);
+
+    /// <summary>Russian name of a shown mechanic stack or target debuff (the combat screen's icons); null for an unknown one.</summary>
+    public static string? MechanicStackName(string id) => Texts.MechanicStackName(id);
+
     /// <summary>The dummy's name from the data; unknown ids are returned as is.</summary>
     public static string DummyName(Dialoid.Core.Data.GameData data, string id) => Texts.DummyName(data, id);
 
