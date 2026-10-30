@@ -1,5 +1,6 @@
 using Dialoid.Core.Data;
 using Dialoid.Core.Explain;
+using Dialoid.Game.Room;
 using Dialoid.Game.Ui;
 using Dialoid.Sandbox;
 using Godot;
@@ -24,9 +25,21 @@ public partial class Main : Control
     /// <summary>Class of the session created at start.</summary>
     public const string StartClassId = "warrior";
 
-    /// <summary>Tab titles in display order (spec §13).</summary>
+    /// <summary>Title of the 3D room tab (plan 4 tasks 8–9; task 10 replaces the tabs with windows over the room).</summary>
+    public const string RoomTab = "Комната";
+
+    /// <summary>Tab titles in display order (spec §13), the 3D room first.</summary>
     public static readonly IReadOnlyList<string> TabTitles =
-        ["Персонаж", "Пассивки", "Асцендант", "Скиллы", "Симуляция", "Разбор", "Билды"];
+        [RoomTab, "Персонаж", "Пассивки", "Асцендант", "Скиллы", "Симуляция", "Разбор", "Билды"];
+
+    /// <summary>The room's assets (stubs for whatever is missing in res://vendor/).</summary>
+    public AssetLibrary? Assets { get; private set; }
+
+    /// <summary>The 3D training room on the «Комната» tab.</summary>
+    public RoomView? Room { get; private set; }
+
+    /// <summary>The viewport the room renders into.</summary>
+    public SubViewport? RoomViewport { get; private set; }
 
     /// <summary>The editing session, or null when the data failed to load.</summary>
     public SandboxSession? Session { get; private set; }
@@ -59,6 +72,7 @@ public partial class Main : Control
     public override void _Ready()
     {
         BuildLayout();
+        BuildRoom();
         (Session, LoadError) = LoadSession();
         if (LoadError != null)
         {
@@ -162,6 +176,42 @@ public partial class Main : Control
             _tabs.AddChild(page);
             _pages[title] = page;
         }
+    }
+
+    /// <summary>
+    /// The «Комната» tab: a SubViewport with its own 3D world and a shadow atlas sized for the budget (one 2048 slot for the
+    /// hero light, eight 1024 slots, sixteen 512 slots; spec §4), FXAA, and the room in it.
+    /// </summary>
+    private void BuildRoom()
+    {
+        RoomViewport = new SubViewport
+        {
+            Name = "RoomViewport",
+            OwnWorld3D = true,
+            PositionalShadowAtlasSize = 4096,
+            ScreenSpaceAA = Viewport.ScreenSpaceAAEnum.Fxaa,
+            HandleInputLocally = true,
+        };
+        RoomViewport.SetPositionalShadowAtlasQuadrantSubdiv(0, Viewport.PositionalShadowAtlasQuadrantSubdiv.Subdiv1);
+        RoomViewport.SetPositionalShadowAtlasQuadrantSubdiv(1, Viewport.PositionalShadowAtlasQuadrantSubdiv.Subdiv4);
+        RoomViewport.SetPositionalShadowAtlasQuadrantSubdiv(2, Viewport.PositionalShadowAtlasQuadrantSubdiv.Subdiv4);
+        RoomViewport.SetPositionalShadowAtlasQuadrantSubdiv(3, Viewport.PositionalShadowAtlasQuadrantSubdiv.Subdiv16);
+        var container = new SubViewportContainer
+        {
+            Name = "RoomContainer",
+            Stretch = true,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            SizeFlagsVertical = SizeFlags.ExpandFill,
+        };
+        container.AddChild(RoomViewport);
+        Page(RoomTab).AddChild(container);
+
+        Assets = new AssetLibrary(AssetLibrary.LoadTable());
+        Room = new RoomView { Name = "Room" };
+        RoomViewport.AddChild(Room);
+        Room.Build(Assets, RoomView.QualityFromArgs(OS.GetCmdlineUserArgs()));
+        GD.Print($"Комната готова: модели {(Assets.HasModels ? "есть" : "заглушки")}, текстуры {(Assets.HasTextures ? "есть" : "однотонные")}, " +
+                 $"качество {Room.Quality}, недостает ассетов: {Assets.Missing.Count}");
     }
 
     private (SandboxSession? Session, string? Error) LoadSession()

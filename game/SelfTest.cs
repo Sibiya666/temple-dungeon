@@ -1,4 +1,4 @@
-using Dialoid.Core.Builds;
+﻿using Dialoid.Core.Builds;
 using Dialoid.Core.Effects;
 using Dialoid.Core.Passives;
 using Dialoid.Core.Simulation;
@@ -17,7 +17,7 @@ namespace Dialoid.Game;
 /// The acceptance steps (spec §15.4) print the table «билд → DPS до/после, узел» after the results.
 /// With <c>-- --selftest --screenshots DIR</c> in a real window (not headless) it also saves one PNG per tab into DIR.
 /// </summary>
-public sealed class SelfTest
+public sealed partial class SelfTest
 {
     /// <summary>A failed check; its message is printed after the step name.</summary>
     public sealed class Failure(string message) : Exception(message);
@@ -113,6 +113,8 @@ public sealed class SelfTest
                 return Task.CompletedTask;
             }),
         };
+
+        steps.AddRange(RoomSteps());
 
         var mains = _main.Builds?.References.Where(r => r.Group == ReferenceBuilds.MainGroup).ToList() ?? new();
         steps.Add(new("builds.main-listed", () =>
@@ -1006,7 +1008,7 @@ public sealed class SelfTest
 
         _main.Passives!.View.FitToView();
         _main.Character!.NumberFor("life")!.Open(); // the plain «Разбор» shot shows the life breakdown
-        var names = new[] { "01-character", "02-passives", "03-ascendancy", "04-skills", "05-simulation", "06-breakdown", "07-builds" };
+        var names = new[] { "00-room", "01-character", "02-passives", "03-ascendancy", "04-skills", "05-simulation", "06-breakdown", "07-builds" };
         for (int i = 0; i < Main.TabTitles.Count; i++)
         {
             if (Main.TabTitles[i] == "Скиллы") await ShowSkill(slot);

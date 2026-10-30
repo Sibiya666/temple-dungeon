@@ -1,6 +1,7 @@
 ﻿# Build and headless check of the Godot debug scene (spec §3.2), Windows PowerShell 5.1 version
 # of tools/godot_check.sh (same steps, limits and exit codes):
-#   dotnet build -> godot --headless --import -> godot --headless --quit (or -- --selftest),
+#   dotnet build -> tools/sync_assets.ps1 (room assets into game/vendor/) -> godot --headless --import
+#   -> godot --headless --quit (or -- --selftest),
 # then the log is checked. Every step runs under a time limit.
 #
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1
@@ -156,6 +157,11 @@ Print $r.Output
 if ($r.Code -ne 0) { Fail-Step $r.Code 'Сборка не прошла' }
 
 $Log = ''
+
+# Room assets (not in git) are copied into game/vendor/ before the import; without them the room draws stubs.
+Step 'sync assets'
+& (Join-Path $PSScriptRoot 'sync_assets.ps1')
+if ($LASTEXITCODE -ne 0) { Fail-Step $LASTEXITCODE 'Синхронизация ассетов не прошла' }
 
 Step 'godot --import'
 $r = Run-Limited $ImportTimeoutSec $Godot @('--headless', '--path', $Game, '--import')
