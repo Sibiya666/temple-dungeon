@@ -60,6 +60,7 @@ public partial class CombatDriver : Node
         public required double End { get; init; }
         public bool Released { get; set; }
         public bool Delivered { get; set; }
+        public ProjectileView? Projectile { get; set; }
         public List<VisualEvent> Hits { get; } = new();
     }
 
@@ -113,6 +114,10 @@ public partial class CombatDriver : Node
     public double Advanced { get; private set; }
     public double AdvancedWhileFrozen { get; private set; }
 
+    /// <summary>For each projectile use whose hits were shown: whether its ball had landed by then (true unless the
+    /// <see cref="MaxHitDelaySec"/> fallback fired). The latest 64, for checks.</summary>
+    public List<bool> ProjectileLandings { get; } = new();
+
     /// <summary>The last melee use's timeline.</summary>
     public MeleeTimeline? LastMelee { get; private set; }
 
@@ -147,6 +152,7 @@ public partial class CombatDriver : Node
         if (fightTime < _lastFightTime) ResetVisuals();
         _lastFightTime = fightTime;
         SyncDummy();
+        if ((_moveKeys.Count > 0 || _channelSlot != null) && KeysBlocked()) ReleaseHeldKeys(); // focus moved to a text field
         Training.UpdateReach(HeroDistance(), TargetOnScreen());
         Training.Advance(delta); // the real frame time: hit-stop never slows the fight
         Advanced += delta;
@@ -260,13 +266,14 @@ public partial class CombatDriver : Node
         if (e.SkillId is not { } skillId || e.Slot is not { } slot) return;
         var tags = Training.CompiledTags(slot) ?? TagSet.Empty;
         var useSec = e.UseSec ?? 0.5;
-        // An older use of the same skill shows its hits now (a channel tick replaces the previous one).
-        foreach (var old in _uses.Where(u => u.SkillId == skillId && !u.Delivered).ToList()) Release(old, force: true);
+        // An older use of the same skill that has not reached its contact frame reaches it now (a channel tick replaces the
+        // previous one); a ball already flying keeps flying: its hits land on arrival (or after MaxHitDelaySec).
+        foreach (var old in _uses.Where(u => u.SkillId == skillId && !u.Released).ToList()) Release(old);
 
         var anim = Animations.For(skillId, tags);
         var channel = tags.Contains("channel");
         var visual = VisualOf(tags);
-        Hero.FaceTowards(Dummy.TargetPosition(0));
+        Hero.FaceTowards(Dummy.TargetPosition(Dummy.RingTarget ?? 0)); // the target the core hit last (on «Рой» not always figure 0)
         Hero.PlayAttack(anim.ClipId, useSec);
         var start = _visualTime;
         var use = new PendingUse
@@ -310,39 +317,37 @@ public partial class CombatDriver : Node
         for (int i = 0; i < _uses.Count; i++)
         {
             var u = _uses[i];
-            if (!u.Released && _visualTime >= u.Contact) Release(u, force: false);
+            if (!u.Released && _visualTime >= u.Contact) Release(u);
             if (!u.Delivered && _visualTime >= u.End + MaxHitDelaySec) Deliver(u);
             if (u.Delivered && _visualTime >= u.End) _uses.RemoveAt(i--);
         }
     }
 
-    /// <summary>The contact frame: melee and instant hits land, a projectile or ribbon starts; <paramref name="force"/> lands everything now.</summary>
-    private void Release(PendingUse u, bool force)
+    /// <summary>The contact frame (once): melee and instant hits land, a projectile or ribbon starts.</summary>
+    private void Release(PendingUse u)
     {
-        if (u.Released && !force) return;
-        var first = !u.Released;
+        if (u.Released) return;
         u.Released = true;
         var target = u.Hits.FirstOrDefault()?.Target ?? Dummy.RingTarget ?? 0;
         var to = Dummy.HitPoint(target);
-        if (force || u.Visual is UseVisual.Melee or UseVisual.Instant)
+        if (u.Visual is UseVisual.Melee or UseVisual.Instant)
         {
             Deliver(u);
             return;
         }
-        if (!first) return;
         var from = Hero.Position + new Vector3(0, 1.3f, 0) + Hero.Basis.Z * 0.4f;
         switch (u.Visual)
         {
             case UseVisual.Projectile:
             {
                 var flight = Math.Min(MaxFlightSec, from.DistanceTo(to) / ProjectileSpeed);
-                var p = Effects.Projectile(u.Kind, from, to, flight);
+                var p = u.Projectile = Effects.Projectile(u.Kind, from, to, flight);
                 p.Landed = () => Deliver(u);
                 break;
             }
             case UseVisual.Fall:
             {
-                var p = Effects.Projectile(u.Kind, to + new Vector3(0.6f, 6f, 0.6f), to, 0.35);
+                var p = u.Projectile = Effects.Projectile(u.Kind, to + new Vector3(0.6f, 6f, 0.6f), to, 0.35);
                 p.Landed = () => Deliver(u);
                 break;
             }
@@ -366,7 +371,12 @@ public partial class CombatDriver : Node
         var shown = false;
         foreach (var hit in u.Hits) shown |= Deliver(hit, melee, u.Channel);
         u.Hits.Clear();
-        if (melee && !u.Channel && LastMelee is { } m && m.SkillId == u.SkillId && m.Start == u.Start)
+        if (u.Projectile != null && shown)
+        {
+            ProjectileLandings.Add(u.Projectile.Arrived);
+            if (ProjectileLandings.Count > 64) ProjectileLandings.RemoveAt(0);
+        }
+        if (shown && melee && !u.Channel && LastMelee is { } m && m.SkillId == u.SkillId && m.Start == u.Start)
             LastMelee = m with { FlashAt = _visualTime };
         if (melee && !u.Channel && shown) HitStop();
     }
@@ -388,7 +398,8 @@ public partial class CombatDriver : Node
     /// <summary>A DoT tick: summed per target; <see cref="ShowDots"/> turns the sum into one weak flash and one small number at most every <see cref="DotShowSec"/>.</summary>
     private void AddDot(VisualEvent tick)
     {
-        var target = tick.Target ?? 0;
+        // On a pack («Рой») the ticks of every figure become one number over the pack centre.
+        var target = Dummy.FigureCount > 1 ? PackKey : tick.Target ?? 0;
         if (!_dots.TryGetValue(target, out var sum)) _dots[target] = sum = new DotSum();
         sum.Amount += tick.Amount;
         if (tick.Amount >= sum.Largest) (sum.Largest, sum.Type) = (tick.Amount, tick.DamageType);
@@ -400,12 +411,33 @@ public partial class CombatDriver : Node
         foreach (var (target, sum) in _dots)
         {
             if (sum.Amount <= 0 || _visualTime - sum.ShownAt < DotShowSec) continue;
-            var hit = new VisualEvent(VisualKind.Hit, 0, null, null, target) { DamageType = sum.Type, Amount = sum.Amount, IsDot = true };
-            Deliver(hit, melee: false, channel: false);
+            if (target == PackKey)
+            {
+                var kind = DamageVisuals.Of(sum.Type);
+                var centre = Dummy.PackHitPoint();
+                Effects.Impact(kind, centre, crit: false, tick: true);
+                Numbers.Show(centre + new Vector3(0, 0.05f, 0), sum.Amount, kind, crit: false, tick: true);
+            }
+            else
+            {
+                var hit = new VisualEvent(VisualKind.Hit, 0, null, null, target) { DamageType = sum.Type, Amount = sum.Amount, IsDot = true };
+                Deliver(hit, melee: false, channel: false);
+            }
             DotNumbers++;
             DotAmountShown += sum.Amount;
             (sum.Amount, sum.Largest, sum.ShownAt) = (0, 0, _visualTime);
         }
+    }
+
+    /// <summary>The key of the pack-wide tick sum.</summary>
+    private const int PackKey = -1;
+
+    /// <summary>Lets go of held move keys and the held channel (focus moved to a text field).</summary>
+    private void ReleaseHeldKeys()
+    {
+        _moveKeys.Clear();
+        Hero.SetMoveInput(Vector2.Zero);
+        if (_channelSlot is { } slot) ReleaseSlot(slot);
     }
 
     // ---------- hit-stop ----------
@@ -435,7 +467,9 @@ public partial class CombatDriver : Node
     /// <summary>The fight's reaction to one input event the interface did not take; true when it used it.</summary>
     public bool HandleInput(InputEvent e)
     {
-        if (Room == null || !Room.IsShown) return false;
+        if (Room == null) return false;
+        // A hidden room takes no presses, but releases always pass (a held channel or move key is never stuck).
+        if (!Room.IsShown && e.IsPressed()) return false;
         switch (e)
         {
             case InputEventKey key:
@@ -448,7 +482,7 @@ public partial class CombatDriver : Node
                 if (!button.Pressed)
                 {
                     _leftHeld = false;
-                    return true;
+                    return Room.IsShown;
                 }
                 if (KeysBlocked()) ReleaseFocus();
                 Click(button.Position);

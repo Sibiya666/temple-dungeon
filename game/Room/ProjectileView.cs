@@ -145,9 +145,15 @@ public sealed partial class ProjectileView : VisualEffect
                 });
                 break;
             default: // fire and anything else: a ball with a yellow centre, fire gets the flame tail
-                p.AddChild(EffectLayer.Sphere(0.1f, layer.Glow(kind == EffectKind.Fire ? new Color(1f, 0.78f, 0.3f) : DamageVisuals.Core(kind), 1.8f)));
+                // Fire: a yellow-orange centre (not white: a low glow energy) inside the red-orange ball, and a flame tail.
+                p.AddChild(EffectLayer.Sphere(0.1f, layer.Glow(kind == EffectKind.Fire ? new Color(1f, 0.8f, 0.25f) : DamageVisuals.Core(kind), kind == EffectKind.Fire ? 1f : 1.8f)));
                 p.AddChild(EffectLayer.Sphere(0.24f, layer.Halo(DamageVisuals.Core(kind), 0.75f)));
-                if (kind == EffectKind.Fire) p.AddChild(FireTail());
+                if (kind == EffectKind.Fire)
+                {
+                    p.AddChild(FireTail());
+                    p.AddChild(Streak(layer, new Color(1f, 0.4f, 0.08f), 0.55f, 0.2f, 0.75f));
+                    p.AddChild(Streak(layer, new Color(1f, 0.75f, 0.25f), 0.6f, 0.1f, 0.35f));
+                }
                 break;
         }
         if (lit)
@@ -159,7 +165,7 @@ public sealed partial class ProjectileView : VisualEffect
     {
         Position = _from;
         var dir = _to - _from;
-        if (dir.LengthSquared() > 1e-4f && Mathf.Abs(dir.Normalized().Y) < 0.99f) Basis = Basis.LookingAt(dir, Vector3.Up);
+        if (dir.LengthSquared() > 1e-4f) Basis = Basis.LookingAt(dir, Mathf.Abs(dir.Normalized().Y) < 0.99f ? Vector3.Up : Vector3.Right);
     }
 
     public override bool Step(double dt)
@@ -174,6 +180,18 @@ public sealed partial class ProjectileView : VisualEffect
         Landed?.Invoke();
         return false;
     }
+
+    /// <summary>A translucent cone behind the ball along the flight (wide at the ball): the flight direction reads at once.</summary>
+    private static MeshInstance3D Streak(EffectLayer layer, Color c, float alpha, float radius, float length) => new()
+    {
+        Name = "Streak",
+        Mesh = new CylinderMesh { TopRadius = 0.01f, BottomRadius = radius, Height = length, RadialSegments = 12, Rings = 1 },
+        MaterialOverride = layer.Halo(c, alpha),
+        CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+        // The cylinder's axis is Y; turned onto +Z (behind: the ball flies along −Z), its narrow top end trails behind.
+        Rotation = new Vector3(Mathf.Pi / 2, 0, 0),
+        Position = new Vector3(0, 0, length / 2),
+    };
 
     /// <summary>The fire tail: soft blobs left behind in world space, red-orange, alpha blended (spec §5: no additive).</summary>
     private static GpuParticles3D FireTail()
@@ -422,15 +440,16 @@ public sealed partial class EffectLayer : Node3D
                     Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
                     BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
                     AlbedoTexture = BlobMaterial.AlbedoTexture,
-                    AlbedoColor = DamageVisuals.Core(kind) with { A = 0.9f },
+                    AlbedoColor = DamageVisuals.Core(kind) with { A = 0.45f },
                 };
-                var size = 1.1f * big;
+                // The glow must let the target show through: centre alpha ≤ 0.45, a crit only 1.3× larger (the rest is the brighter core and light).
+                var size = 1.1f * Mathf.Min(big, 1.3f);
                 var burst = new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(size, size) }, MaterialOverride = material, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
-                var core = Sphere(0.09f * big, Glow(kind == EffectKind.Fire ? new Color(1f, 0.72f, 0.3f) : DamageVisuals.Core(kind), 1.8f));
+                var core = Sphere(0.09f * big, Glow(kind == EffectKind.Fire ? new Color(1f, 0.72f, 0.3f) : DamageVisuals.Core(kind), crit ? 2.4f : 1.6f));
                 var fx = new TweenEffect(0.16, t =>
                 {
                     burst.Scale = Vector3.One * (0.6f + 0.9f * t);
-                    material.AlbedoColor = material.AlbedoColor with { A = 0.9f * (1 - t * t) };
+                    material.AlbedoColor = material.AlbedoColor with { A = 0.45f * (1 - t * t) };
                     core.Visible = t < 0.5f;
                 }) { Name = "Burst" };
                 fx.AddChild(burst);
@@ -445,14 +464,14 @@ public sealed partial class EffectLayer : Node3D
     private void Sparks(Vector3 at, Color c, int n, float big)
     {
         var material = Glow(c, 2f);
-        var mesh = new BoxMesh { Size = new Vector3(0.025f, 0.025f, 0.22f * big) };
+        var mesh = new BoxMesh { Size = new Vector3(0.025f, 0.025f, 0.33f * big) };
         var sparks = new (MeshInstance3D Mesh, Vector3 Dir, float Reach)[n];
         for (int i = 0; i < n; i++)
         {
             var dir = new Vector3((float)_rng.RandfRange(-1, 1), (float)_rng.RandfRange(-0.2f, 1), (float)_rng.RandfRange(-1, 1)).Normalized();
             var spark = new MeshInstance3D { Mesh = mesh, MaterialOverride = material, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
             spark.Basis = Basis.LookingAt(dir, Mathf.Abs(dir.Y) < 0.95f ? Vector3.Up : Vector3.Right);
-            sparks[i] = (spark, dir, (float)_rng.RandfRange(0.5f, 0.9f) * big);
+            sparks[i] = (spark, dir, (float)_rng.RandfRange(0.6f, 1.05f) * big);
         }
         var fx = new TweenEffect(0.16, t =>
         {

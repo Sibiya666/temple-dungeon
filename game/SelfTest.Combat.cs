@@ -32,6 +32,7 @@ public sealed partial class SelfTest
         yield return new("combat.channel-walk-away", CombatChannelWalkAway);
         yield return new("combat.hit-stop", CombatHitStop);
         yield return new("combat.melee-contact", CombatMeleeContact);
+        yield return new("combat.projectile-lands-first", CombatProjectileLandsFirst);
         yield return new("combat.ticks-no-reaction", CombatTicks);
         yield return new("combat.swarm-ring", CombatSwarmRing);
         yield return new("combat.dummy-light", CombatDummyLight);
@@ -286,6 +287,41 @@ public sealed partial class SelfTest
         GD.Print($"SELFTEST NOTE контакт: применение {m.End - m.Start:0.###} с, контакт {m.Contact - m.Start:0.###} с, вспышка {m.FlashAt - m.Start:0.###} с");
     }
 
+    /// <summary>
+    /// The same projectile cast again while its previous ball is still flying (from ~8.5 m): every projectile's flash and number
+    /// come after its own ball landed — the next cast never shows them early.
+    /// </summary>
+    private async Task CombatProjectileLandsFirst()
+    {
+        await LoadForCombat(Pyromancer);
+        PlaceNearDummy(8.5f); // the longest flight (0.6 s), so the next cast comes while the ball flies
+        var driver = Driver;
+        var room = Room;
+        driver.ProjectileLandings.Clear();
+        var fireball = SlotOf("fireball");
+        var casts = 0;
+        var castsDuringFlight = 0;
+        var attacks = room.Hero.AttackCount;
+        await Run(4.0, _ =>
+        {
+            if (room.Hero.AttackCount != attacks)
+            {
+                attacks = room.Hero.AttackCount;
+                casts++;
+                if (room.Effects.Projectiles > 0) castsDuringFlight++;
+            }
+            // Pressed again while busy: the press waits in the queue and the next cast starts right at the end of this one.
+            if (casts < 3) driver.PressSlot(fireball);
+        });
+        await Run(1.0);
+        Check(casts >= 2, $"Огненный шар применен {casts} раз");
+        Check(castsDuringFlight >= 1, $"ни один каст не пришелся на полет прошлого шара (проверка ничего не проверила): кастов {casts}, применение {Room.Hero.LastAttack?.UseSec:0.###} с, расстояние {Driver.HeroDistance():0.#} м");
+        Check(driver.ProjectileLandings.Count >= 2, $"показаны попадания {driver.ProjectileLandings.Count} шаров");
+        Check(driver.ProjectileLandings.All(x => x), $"попадание показано до прилета шара: {string.Join(", ", driver.ProjectileLandings)}");
+        GD.Print($"SELFTEST NOTE снаряды: {casts} каста подряд с 8,5 м, из них во время полета прошлого шара {castsDuringFlight}; " +
+                 $"попаданий после прилета {driver.ProjectileLandings.Count(x => x)} из {driver.ProjectileLandings.Count}");
+    }
+
     /// <summary>A second of ignite ticks starts no reaction; with hits mixed in the dummy reacts at most three times a second.</summary>
     private async Task CombatTicks()
     {
@@ -353,7 +389,8 @@ public sealed partial class SelfTest
         Check(dummy.RingTarget == dummy.FigureOf(last!.Target!.Value), $"кольцо под фигурой {dummy.RingTarget}, последний удар по цели {last.Target}");
         Check(dummy.Ring.Visible && dummy.Ring.Position.IsEqualApprox(dummy.Figures[dummy.RingTarget!.Value].Root.Position + new Vector3(0, 0.03f, 0)), "кольцо не под фигурой");
         // The ring follows the core's target, whichever it is.
-        Driver.Show(new VisualEvent(VisualKind.Hit, Training.State.Time, null, "cleave", 3) { DamageType = DamageType.Physical, Amount = 10 });
+        // A skill id in no use and a slot, so the hit cannot join a pending use: it is shown at once.
+        Driver.Show(new VisualEvent(VisualKind.Hit, Training.State.Time, 1, "selftest_marker", 3) { DamageType = DamageType.Physical, Amount = 10 });
         Check(dummy.RingTarget == 3, "кольцо не перешло под цель 3");
         GD.Print($"SELFTEST NOTE «Рой»: попадания по целям {string.Join(", ", targets.OrderBy(x => x))}");
         Driver.SetDummy(TrainingRoom.DefaultDummyId);
@@ -441,6 +478,21 @@ public sealed partial class SelfTest
             field.QueueFree();
         }
 
+        // A key released while the room tab is hidden still lets go of the held channel.
+        var ww = SlotOf("whirlwind");
+        Check(driver.HandleInput(new InputEventKey { PhysicalKeycode = Key.Key1 + (ww - 1), Pressed = true }), "клавиша Вихря не дошла до боя");
+        await Run(0.2);
+        Check(Training.State!.HeldSlot == ww, "Вихрь не зажат клавишей");
+        _main.SelectTab("Персонаж");
+        await NextFrame();
+        Check(!room.IsShown, "комната видна на другой вкладке");
+        Check(!driver.HandleInput(new InputEventKey { PhysicalKeycode = Key.Key2, Pressed = true }), "нажатие прошло в скрытую комнату");
+        driver.HandleInput(new InputEventKey { PhysicalKeycode = Key.Key1 + (ww - 1), Pressed = false });
+        await Run(0.1);
+        Check(Training.State!.HeldSlot == null, "отпускание клавиши в скрытой комнате не отпустило канал");
+        _main.SelectTab(Main.RoomTab);
+        await NextFrame();
+
         room.PlaceHero(room.HeroSpawn);
         var start = room.Hero.Position;
         room.Hero.MoveTo(start + new Vector3(-2f, 0, 0), run: false);
@@ -507,7 +559,7 @@ public sealed partial class SelfTest
 
             await LoadForCombat(WarriorMelee);
             driver.SetDummy("swarm");
-            room.PlaceHero(room.Dummy.TargetPosition(0) + TowardsCamera * 2.6f + right * 0.5f);
+            room.PlaceHero(room.Dummy.TargetPosition(0) + TowardsCamera * 3.1f + right * 0.9f);
             await Run(3.0, _ => { if (Training.State is { Busy: false }) driver.PressSlot(cleave); });
             await Run(2.0, until: () => Training.State is { Busy: false });
             var previous = driver.LastMelee;

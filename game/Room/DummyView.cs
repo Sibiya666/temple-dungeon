@@ -61,6 +61,12 @@ public partial class DummyView : Node3D
     /// <summary>The first figure's model (the only one but on «Рой»).</summary>
     public CharacterModel MainModel => _figures[0].Model;
 
+    /// <summary>The target ring: pale red, lighter than the red floor light of a fire hit.</summary>
+    public static readonly Color RingColor = new(1f, 0.6f, 0.52f, 0.9f);
+
+    /// <summary>A weak shadowless fill that is always on (a dark figure stays readable near the hero too).</summary>
+    public OmniLight3D Fill { get; private set; } = null!;
+
     /// <summary>The dummy's own light (no shadow, outside the shadow budget).</summary>
     public OmniLight3D Light { get; private set; } = null!;
 
@@ -107,21 +113,51 @@ public partial class DummyView : Node3D
         };
         AddChild(Light);
         Light.Position = new Vector3(1.2f, 2.2f, 1.2f);
+        // A weak shadowless fill always on the figures, so a dark dummy (the elemental zombie under a lightning ribbon) never
+        // sinks into the floor; the stronger DummyLight joins only outside the hero's circle.
+        Fill = new OmniLight3D
+        {
+            Name = "DummyFill",
+            LightColor = new Color(0.8f, 0.82f, 0.9f),
+            LightEnergy = 0.55f,
+            OmniRange = 3.6f,
+            OmniAttenuation = 1.5f,
+            ShadowEnabled = false,
+        };
+        AddChild(Fill);
+        Fill.Position = new Vector3(0.9f, 2.4f, 0.9f);
+        // The ring is drawn after every other transparent thing (high render priority: hit glows and blood never cover it) but
+        // keeps the depth test, so a figure or the hero standing in it still hides its back part; pale red with a thin dark rim.
         _ringMaterial = new StandardMaterial3D
         {
             ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-            AlbedoColor = new Color(0.95f, 0.35f, 0.25f, 0.75f),
+            AlbedoColor = RingColor,
             Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            RenderPriority = 20,
         };
         Ring = new MeshInstance3D
         {
             Name = "TargetRing",
-            Mesh = new TorusMesh { InnerRadius = 0.55f, OuterRadius = 0.62f, Rings = 48, RingSegments = 8 },
+            Mesh = new TorusMesh { InnerRadius = 0.55f, OuterRadius = 0.67f, Rings = 48, RingSegments = 8 },
             MaterialOverride = _ringMaterial,
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
             Visible = false,
         };
         AddChild(Ring);
+        Ring.AddChild(new MeshInstance3D
+        {
+            Name = "Rim",
+            Mesh = new TorusMesh { InnerRadius = 0.53f, OuterRadius = 0.69f, Rings = 48, RingSegments = 8 },
+            MaterialOverride = new StandardMaterial3D
+            {
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                AlbedoColor = new Color(0.08f, 0.02f, 0.02f, 0.85f),
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                RenderPriority = 19,
+            },
+            CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+            Position = new Vector3(0, -0.005f, 0),
+        });
         SetPreset(presetId);
     }
 
@@ -170,7 +206,10 @@ public partial class DummyView : Node3D
         if (runes) BuildRunes();
         var ring = (TorusMesh)Ring.Mesh;
         ring.InnerRadius = radius + 0.2f;
-        ring.OuterRadius = radius + 0.28f;
+        ring.OuterRadius = radius + 0.32f; // 0.12 m wide (art review: 1.5× the first 0.08)
+        var rim = (TorusMesh)((MeshInstance3D)Ring.GetChild(0)).Mesh;
+        rim.InnerRadius = radius + 0.18f;
+        rim.OuterRadius = radius + 0.34f;
     }
 
     /// <summary>Two pale-gold rings with rune marks at the feet, turning slowly in opposite directions (not a damage type's look).</summary>
@@ -230,7 +269,7 @@ public partial class DummyView : Node3D
             Runes.GetChild<Node3D>(1).Rotation = new Vector3(0, (float)(-_time * 0.22), 0);
         }
         if (Ring.Visible)
-            _ringMaterial.AlbedoColor = _ringMaterial.AlbedoColor with { A = 0.6f + 0.2f * Mathf.Sin((float)_time * 5f) };
+            _ringMaterial.AlbedoColor = _ringMaterial.AlbedoColor with { A = 0.8f + 0.15f * Mathf.Sin((float)_time * 5f) };
     }
 
     /// <summary>The figure of a core target (0 is the first pack member); targets past the figures wrap around.</summary>
@@ -244,6 +283,14 @@ public partial class DummyView : Node3D
 
     /// <summary>Where hits land on the target figure (chest height).</summary>
     public Vector3 HitPoint(int target) => TargetPosition(target) + new Vector3(0, _figures[FigureOf(target)].Model.TargetHeight * 0.62f, 0);
+
+    /// <summary>Over the middle of the pack at chest height (the pack-wide tick number on «Рой»).</summary>
+    public Vector3 PackHitPoint()
+    {
+        var sum = Vector3.Zero;
+        for (int i = 0; i < _figures.Count; i++) sum += HitPoint(i);
+        return _figures.Count == 0 ? Position : sum / _figures.Count;
+    }
 
     /// <summary>Distance from <paramref name="point"/> to the collision edge of the nearest figure, metres (0 inside), and that figure.</summary>
     public (float Distance, int Target) Nearest(Vector3 point)

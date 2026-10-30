@@ -458,10 +458,10 @@ public partial class RoomView : Node3D
         foreach (var z in new[] { -5f, 0f, 5f }) Solid(new Vector3(1.6f, 3, 1.4f), new Vector3(-HalfX, 1.5f, z), "Pilaster");
         foreach (var x in new[] { -6f, 0f, 6f }) Solid(new Vector3(1.4f, 3, 1.6f), new Vector3(x, 1.5f, -HalfZ), "Pilaster");
 
-        BuildSconce(new Vector3(-HalfX + 0.3f, 2.6f, -2.5f));
-        BuildSconce(new Vector3(-HalfX + 0.3f, 2.6f, 2.5f));
-        BuildSconce(new Vector3(-3f, 2.6f, -HalfZ + 0.3f));
-        BuildSconce(new Vector3(3f, 2.6f, -HalfZ + 0.3f));
+        BuildSconce(new Vector3(-HalfX + 0.3f, 2.6f, -2.5f), Vector3.Right);
+        BuildSconce(new Vector3(-HalfX + 0.3f, 2.6f, 2.5f), Vector3.Right);
+        BuildSconce(new Vector3(-3f, 2.6f, -HalfZ + 0.3f), Vector3.Back);
+        BuildSconce(new Vector3(3f, 2.6f, -HalfZ + 0.3f), Vector3.Back);
     }
 
     private static Transform3D At(Vector3 v) => new(Basis.Identity, v);
@@ -568,7 +568,7 @@ public partial class RoomView : Node3D
         };
     }
 
-    private OmniLight3D TorchLight(Vector3 pos, float energy, float range)
+    private OmniLight3D TorchLight(Vector3 pos, float energy, float range, float attenuation = 1.4f)
     {
         var light = new OmniLight3D
         {
@@ -576,7 +576,7 @@ public partial class RoomView : Node3D
             LightColor = TorchColor,
             LightEnergy = energy,
             OmniRange = range,
-            OmniAttenuation = 1.4f,
+            OmniAttenuation = attenuation,
             ShadowEnabled = false,
             ShadowOpacity = TorchShadowOpacity,
             LightVolumetricFogEnergy = 1.5f,
@@ -610,7 +610,7 @@ public partial class RoomView : Node3D
         body.Position = p + new Vector3(0, 1f, 0);
     }
 
-    private void BuildSconce(Vector3 p)
+    private void BuildSconce(Vector3 p, Vector3 awayFromWall)
     {
         var iron = Plain(new Color(0.1f, 0.09f, 0.08f), 0.55f, 0.8f);
         var cup = Cylinder(0.16f, 0.07f, 0.2f, p, iron);
@@ -618,7 +618,8 @@ public partial class RoomView : Node3D
         var flame = Flame(new Vector3(0.05f, 0.02f, 0.05f), 20, 0.25f, 0.9f);
         AddChild(flame);
         flame.Position = p + new Vector3(0, 0.12f, 0);
-        TorchLight(p + new Vector3(0, 0.4f, 0), 1.4f, 5f);
+        // The light hangs 0.6 m off the wall, weaker and with a steeper falloff: a warm halo on the wall, no whitish hot spot (art review).
+        TorchLight(p + awayFromWall * 0.6f + new Vector3(0, 0.3f, 0), 0.9f, 5f, 2f);
     }
 
     /// <summary>Procedural blood decal (prototype `_blood`): radial falloff times noise, dark red; projects onto the floor only.</summary>
