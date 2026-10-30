@@ -47,7 +47,13 @@ internal sealed class Rotation : ICommandSource
         if (!skill.WeaponFits(weapon)) return PressRefusal.WeaponMismatch;
         if (skill.OwnBuffIds.Any(id => s.Buffs.TryGetValue(id, out var left) && left > 0)) return PressRefusal.BuffActive;
         if (s.CooldownReadyAt.TryGetValue(skill.Id, out var ready) && ready > readyBy + Eps) return PressRefusal.Cooldown;
-        if (skill.Cost(c) / skill.TickSpeed(s, s.Time) > s.Resource + Eps) return PressRefusal.NotEnoughResource;
+        if (ResourceShort(skill, s, c)) return PressRefusal.NotEnoughResource;
         return PressRefusal.None;
     }
+
+    /// <summary>What one use (a channel: the next tick) costs now: the skill's cost under the live conditions over the tick speed.</summary>
+    public static double EffectiveCost(SkillRuntime skill, SimState s, IConditionContext c) => skill.Cost(c) / skill.TickSpeed(s, s.Time);
+
+    /// <summary>The resource check of <see cref="Refusal"/>: the resource is below <see cref="EffectiveCost"/>.</summary>
+    public static bool ResourceShort(SkillRuntime skill, SimState s, IConditionContext c) => EffectiveCost(skill, s, c) > s.Resource + Eps;
 }
