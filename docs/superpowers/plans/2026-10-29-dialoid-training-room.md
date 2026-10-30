@@ -437,6 +437,23 @@ game/Main.cs, game/SelfTest.cs                  переделка корня; �
   - Снять узел пассивок в окне P, ударить снова: новый сегмент с подписью «после правки билда», его DPS отличается от прошлого.
 - [ ] **Step 3:** `tools/godot_check.ps1 -SelfTest` — 0. **Step 4: Commit** `feat(game): combat log, damage meter and charts`.
 
+### Task 13: Геймпад (выполняется после задачи 11 и до задачи 12)
+
+Решение владельца 2026-10-30: геймпад нужен везде, включая комнату. Требования, раскладка и шаги самопроверки — в приложении `docs/superpowers/plans/2026-10-30-dialoid-training-room-gamepad.md` (предложение `dialoid-ui-curator`); пункты **[Владельцу]** до ответа владельца исполняются как предложено.
+
+**Files:**
+- Create: `game/Input/InputDevice.cs` (автозагрузка: активное устройство, сигнал смены, подключение/отключение), `game/Input/InputActions.cs` (действия InputMap с двумя привязками), `game/Ui/ButtonPrompts.cs` (подписи и строка подсказок по устройству), `game/SelfTest.Gamepad.cs`
+- Modify: `game/project.godot` (действия и автозагрузка), `game/Room/CombatDriver.cs`, `HeroView.cs`, `CameraRig.cs` (ввод через действия, стик, LB/RB, зум стиком), `game/Ui/WindowHost.cs`, `TopBar.cs`, `CombatHud.cs` (фокус окон, D-pad, Start/View/LB/RB, значки), `game/Ui/TreeView.cs` (выбор узла направлением, A/X, LT/RT, слежение), панели окон (`FocusMode`, рамка фокуса, подсказка по фокусу, `follow_focus`), `MeterWindow.cs`, `CombatLogWindow.cs`, `ChartsWindow.cs`, README (управление с геймпада)
+
+**Interfaces:**
+- Consumes: `TrainingRoom` (как в задачах 9–11), `WindowHost`, `CombatDriver`, `TreeView`.
+- Produces: `InputDevice.Active` (`KeyboardMouse`/`Gamepad`), `InputDevice.Changed`, `InputDevice.OnJoyConnectionChanged(int device, bool connected)` (публичный, для теста); все игровые и оконные действия — имена InputMap; клавиатурное поведение задач 8–11 не меняется (старые шаги самопроверки зеленые).
+
+- [ ] **Step 1:** реализовать по приложению, разделы 0–3, минимум приемки из раздела 4.
+- [ ] **Step 2: Самопроверка** — все пункты раздела 5 приложения (синтетические события геймпада), плюс все старые шаги зеленые с полными ассетами, без ассетов и с `--quality low`.
+- [ ] **Step 3:** снимки в режиме геймпада (рамка фокуса, значки, строка подсказок; окна пассивок, измерителя, журнала) — `dialoid-ui-curator`.
+- [ ] **Step 4:** `tools/godot_check.ps1 -SelfTest` — 0. **Step 5: Commit** `feat(game): gamepad in the training room`.
+
 ### Task 12: Приемка, скриншоты, нагрузка, README
 
 **Files:**
@@ -478,3 +495,4 @@ game/Main.cs, game/SelfTest.cs                  переделка корня; �
 | §9 ассеты вне git, заглушки, лицензии | 8, 12 |
 | §10 приемка | 1–4, 7 (тесты), 5, 12 |
 | Windows как основная платформа | 5 |
+| Геймпад везде (решение владельца 2026-10-30) | 13, 12 (приемка) |
