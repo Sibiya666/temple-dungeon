@@ -47,6 +47,7 @@ public sealed partial class SelfTest
         var args = OS.GetCmdlineUserArgs();
         var at = Array.IndexOf(args, ScreenshotsArg);
         if (at >= 0) _screenshotDir = at + 1 < args.Length ? Path.GetFullPath(args[at + 1]) : "";
+        _perf = args.Contains(PerfArg);
     }
 
     /// <summary>Runs every step after the first frame, prints the results and quits the scene.</summary>
@@ -125,6 +126,12 @@ public sealed partial class SelfTest
                 return Task.CompletedTask;
             }),
         };
+        // The load run (spec §10.8): only the measurement, in a real window.
+        if (_perf)
+        {
+            steps.Add(new("perf", Perf));
+            return steps;
+        }
 
         steps.AddRange(RoomSteps());
 
@@ -165,6 +172,7 @@ public sealed partial class SelfTest
             steps.AddRange(MeterSteps());
             steps.AddRange(GamepadSteps());
             steps.AddRange(HudSteps());
+            steps.AddRange(AcceptanceSteps());
             steps.Add(new("windows.restore", CombatRestore));
         }
         if (_screenshotDir != null)
@@ -1023,6 +1031,10 @@ public sealed partial class SelfTest
         Check(!string.IsNullOrEmpty(_screenshotDir), $"после {ScreenshotsArg} нет каталога");
         Check(pyro != null, "нет эталона sorcerer_pyromancer_fireball");
         Directory.CreateDirectory(_screenshotDir!);
+        // The committed set (the plan-3 windows and the §10.7 acceptance shots) at 2560×1440; then the task review shots in the
+        // run's own window, into review/.
+        await UseFrame(FinalFrame);
+        UseSelfTestWindowConfig();
         Check(_main.Builds!.Load(pyro!).Ok, "эталон не загрузился");
         await Settle();
         var outcome = await SimulateTraining();
@@ -1045,21 +1057,24 @@ public sealed partial class SelfTest
                 await Settle();
                 _main.Passives.View.FitToView();
             }
-            await Shot(name);
+            await Shot(name, full: true);
         }
 
         // The room with the hero next to the dummy (the combat spot), then back at the spawn.
         var room = Room;
         _main.CloseAllWindows();
         room.PlaceHero(room.DummySpot + TowardsCamera * 2.2f + new Vector3(0.6f, 0, -0.6f));
-        await Shot("00-room-dummy");
+        await Shot("00-room-dummy", full: true);
         room.PlaceHero(room.HeroSpawn);
 
         var labels = await ShowSkill(slot);
         var mult = labels.FirstOrDefault(l => l.Line.Key.StartsWith("hit_mult_", StringComparison.Ordinal));
         Check(mult != null, "у главного скилла нет множителя урона попадания");
         OpenBreakdown(mult!);
-        await Shot("08-breakdown-hit-multiplier");
+        await Shot("08-breakdown-hit-multiplier", full: true);
+        await AcceptanceScreenshots();
+
+        await RestoreFrame();
         await CombatScreenshots();
         await WindowScreenshots();
         await MeterScreenshots();
@@ -1068,18 +1083,28 @@ public sealed partial class SelfTest
         _main.CloseAllWindows();
     }
 
-    /// <summary>Waits until the current tab is drawn and saves the viewport as DIR/name.png (downscaled to the window width).</summary>
-    private async Task Shot(string name, int cropHeight = 0)
+    /// <summary>
+    /// Waits until the current tab is drawn and saves the viewport into DIR. The task review shots («task-…», «00-…») go to
+    /// DIR/review/ (PNG, not committed) downscaled to the window width; the acceptance set (<paramref name="full"/>, JPEG) stays in DIR at the
+    /// frame's full size (2560×1440, spec §10.7).
+    /// </summary>
+    private async Task Shot(string name, int cropHeight = 0, bool full = false)
     {
         await Settle();
         await _main.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         var image = _main.GetViewport().GetTexture().GetImage();
         Check(image != null && image.GetWidth() > 0, "пустой кадр");
         if (cropHeight > 0) image = image!.GetRegion(new Rect2I(0, 0, image.GetWidth(), Math.Min(cropHeight * image.GetWidth() / ScreenshotWindow.X, image.GetHeight())));
-        if (image!.GetWidth() > ScreenshotWindow.X)
+        if (!full && image!.GetWidth() > ScreenshotWindow.X)
             image.Resize(ScreenshotWindow.X, image.GetHeight() * ScreenshotWindow.X / image.GetWidth(), Image.Interpolation.Lanczos);
-        var path = Path.Combine(_screenshotDir!, name + ".png");
-        Check(image.SavePng(path) == Error.Ok, $"не сохранен {path}");
+        var review = name.StartsWith("task-", StringComparison.Ordinal) || name.StartsWith("00-", StringComparison.Ordinal);
+        var dir = review ? Path.Combine(_screenshotDir!, ReviewSubdir) : _screenshotDir!;
+        Directory.CreateDirectory(dir);
+        // The committed set is JPEG (quality 92): a 2560×1440 PNG of the room is ~3.5 MB, the whole set ~90 MB per regeneration.
+        var committed = !review && full;
+        var path = Path.Combine(dir, name + (committed ? ".jpg" : ".png"));
+        var saved = committed ? image!.SaveJpg(path, 0.92f) : image!.SavePng(path);
+        Check(saved == Error.Ok, $"не сохранен {path}");
         GD.Print($"SELFTEST SCREENSHOT {path} {image.GetWidth()}x{image.GetHeight()}");
     }
 

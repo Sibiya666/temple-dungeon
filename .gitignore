@@ -11,3 +11,6 @@ assets/
 spike-3d/
 .claude/settings.local.json
 game/vendor/
+
+# task review screenshots of the -Screenshots run (the committed set is the folder itself)
+docs/superpowers/debug-scene-screenshots/review/
