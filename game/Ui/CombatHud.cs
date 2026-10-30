@@ -244,6 +244,7 @@ public partial class SlotView : Control
     private readonly Label _cooldown;
     private readonly Control _frame;
     private string _tooltipFor = "";
+    private bool? _empty;
 
     public int Number { get; }
     public SlotInfo? Info { get; private set; }
@@ -311,7 +312,11 @@ public partial class SlotView : Control
         Info = info;
         BlinkLeft = Math.Max(0, BlinkLeft - delta);
         _name.Text = info?.Name ?? "пусто";
-        _name.AddThemeColorOverride("font_color", info == null ? new Color(0.5f, 0.47f, 0.42f) : new Color(0.93f, 0.9f, 0.84f));
+        if (_empty != (info == null)) // a theme override relayouts: only when it changes
+        {
+            _empty = info == null;
+            _name.AddThemeColorOverride("font_color", info == null ? new Color(0.5f, 0.47f, 0.42f) : new Color(0.93f, 0.9f, 0.84f));
+        }
         CooldownLeft = info != null && state != null && state.CooldownLeftBySlot.TryGetValue(Number, out var left) && left > 0 ? left : null;
         ResourceShort = info != null && state != null && info.Cost > 0 && state.Resource < info.Cost;
         Queued = state?.QueuedSlot == Number;
@@ -326,7 +331,6 @@ public partial class SlotView : Control
             TooltipText = Tooltip(Number, info, resourceName);
         }
         _frame.QueueRedraw();
-        QueueRedraw();
     }
 
     /// <summary>The slot's tooltip: name, key, cost, cooldown, use time (from the core's <see cref="SlotInfo"/>).</summary>
@@ -472,7 +476,8 @@ public partial class EffectChip : PanelContainer
         Visible = true;
         Effect = effect;
         _label.Text = TextOf(effect, name);
-        _style.BorderColor = ColorOf(effect);
+        var color = ColorOf(effect);
+        if (_style.BorderColor != color) _style.BorderColor = color;
     }
 
     /// <summary>Buffs green, stacks gold, ailments by their damage colour (spec §4 «Читаемость боя»), debuffs grey.</summary>
