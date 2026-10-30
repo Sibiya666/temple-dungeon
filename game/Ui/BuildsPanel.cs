@@ -43,7 +43,7 @@ public partial class BuildsPanel : SessionPanel
         InitSession(session, withContent: false);
         References = dataDirectory == null ? Array.Empty<ReferenceBuildInfo>() : ReferenceBuilds.List(dataDirectory);
 
-        AddChild(new Label { Text = "Эталонные билды (data/builds). Двойной щелчок или «Загрузить»:" });
+        AddChild(new Label { Text = "Эталонные билды (data/builds). Двойной щелчок или «Загрузить»:", AutowrapMode = TextServer.AutowrapMode.WordSmart });
         _tree = new Tree
         {
             HideRoot = true,

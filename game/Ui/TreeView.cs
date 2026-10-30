@@ -127,6 +127,13 @@ public partial class TreeView : Control
     public TreeNodeState StateOf(string id) => _states.TryGetValue(id, out var s) ? s : TreeNodeState.Unavailable;
 
     /// <summary>Fits the whole graph into the control (no-op until the control has a size).</summary>
+    /// <summary>Fits the tree once the current layout has settled (a window that just opened or changed size).</summary>
+    public void RequestFit()
+    {
+        _fitted = false;
+        Callable.From(FitToView).CallDeferred();
+    }
+
     public void FitToView()
     {
         if (Size.X <= 1 || Size.Y <= 1 || _nodes.Count == 0) return;
@@ -342,6 +349,7 @@ public partial class TreeView : Control
             .OrderByDescending(n => n.Radius)
             .ThenBy(n => StateOf(n.Id) == TreeNodeState.Taken ? 0 : 1)
             .ThenBy(n => n.Id, StringComparer.Ordinal).ToList();
+        var view = new Rect2(Vector2.Zero, Size);
         foreach (var size in new[] { fontSize, Mathf.Max(8, (int)(fontSize * SmallCaptionScale)) })
         foreach (var n in order)
         {
@@ -365,6 +373,8 @@ public partial class TreeView : Control
             foreach (var corner in corners)
             {
                 var rect = new Rect2(corner, w, h);
+                // A visible node's caption cut by the edge reads as a broken word («нная кожа»); off-view nodes do not matter.
+                if (view.HasPoint(c) && !view.Encloses(rect)) continue;
                 var padded = rect.Grow(1f);
                 if (placed.Any(p => p.Rect.Intersects(padded))) continue;
                 if (circles.Any(o => CircleHitsRect(o.Center, o.R, padded))) continue;

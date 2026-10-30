@@ -113,7 +113,8 @@ public partial class CharacterPanel : SessionPanel
             Step = 1,
             Value = build.Level,
             Scrollable = false,
-            CustomMinimumSize = new Vector2(400, 0),
+            CustomMinimumSize = new Vector2(120, 0),
+            SizeFlagsHorizontal = SizeFlags.ExpandFill, // fills the row; the window is a third of the screen
             SizeFlagsVertical = SizeFlags.ShrinkCenter,
         };
         bool dragging = false;
@@ -209,7 +210,12 @@ public partial class CharacterPanel : SessionPanel
         var row = new HBoxContainer();
         row.AddChild(new Label { Text = caption + ":", CustomMinimumSize = new Vector2(240, 0) });
         foreach (var c in controls)
-            if (c != null) row.AddChild(c);
+        {
+            if (c == null) continue;
+            // A number beside a control (the level) keeps its whole text: «…» there would hide the number.
+            if (c is NumberLabel number) number.TextOverrunBehavior = TextServer.OverrunBehavior.NoTrimming;
+            row.AddChild(c);
+        }
         Content!.AddChild(row);
     }
 }

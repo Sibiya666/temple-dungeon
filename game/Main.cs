@@ -104,6 +104,12 @@ public partial class Main : Control
             bar.Setup(Windows, Session, () => Training!.DummyId, id => Combat!.SetDummy(id));
             Windows.TopInset = () => bar.Size.Y;
             Windows.BottomInset = () => CombatHud.ReservedHeight;
+            // A tree opens fitted to its window (captions inside the view).
+            Windows.Opened += id =>
+            {
+                if (id == WindowIds.Passives) Passives!.View.RequestFit();
+                else if (id == WindowIds.Ascendancy) AscendancyView!.View.RequestFit();
+            };
             BuildError();
         }
 

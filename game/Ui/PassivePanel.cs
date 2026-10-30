@@ -48,7 +48,7 @@ public partial class PassivePanel : SessionPanel
     {
         InitSession(session, withContent: false);
 
-        var top = new HBoxContainer();
+        var top = new HFlowContainer(); // wraps in a window a third of the screen wide (plan 4 task 10)
         _points = new Label { CustomMinimumSize = new Vector2(220, 0) };
         top.AddChild(_points);
         var fit = new Button { Text = "Вписать дерево" };

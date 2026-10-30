@@ -4,7 +4,7 @@ using Godot;
 namespace Dialoid.Game.Ui;
 
 /// <summary>
-/// The bar over the room (spec §4): one toggle button per window, captioned with its key («Пассивки (P)»), and the dummy preset
+/// The bar over the room (spec §4): one toggle button per window, captioned with its title and, smaller and dimmer, its key («Пассивки P»), and the dummy preset
 /// list from data/dummies.json (choosing one restarts the fight on that preset). The buttons never take keyboard focus, so the
 /// keys keep going to the fight after a click.
 /// </summary>
@@ -13,6 +13,7 @@ public partial class TopBar : PanelContainer
     public const float Height = 40;
 
     private readonly Dictionary<string, Button> _buttons = new();
+    private readonly Dictionary<Button, Label> _keys = new();
     private readonly List<string> _dummyIds = new();
     private WindowHost _host = null!;
     private Func<string>? _currentDummy;
@@ -44,16 +45,19 @@ public partial class TopBar : PanelContainer
         foreach (var spec in WindowHost.Specs)
         {
             if (!host.Has(spec.Id)) continue;
+            // Build windows left of the separator, analysis windows (log, meter, charts) right of it.
+            if (spec.Id == WindowIds.Log) row.AddChild(new VSeparator { Name = "AnalysisSeparator" });
             var button = new Button
             {
                 Name = "Open_" + spec.Id,
-                Text = $"{spec.Title} ({GameWindow.KeyName(spec.Key)})",
+                Text = spec.Title,
                 ToggleMode = true,
                 FocusMode = FocusModeEnum.None,
                 TooltipText = $"Открыть или закрыть окно «{spec.Title}» — клавиша {GameWindow.KeyName(spec.Key)}",
             };
             var id = spec.Id;
             button.Pressed += () => host.ToggleWindow(id);
+            AddKey(button, GameWindow.KeyName(spec.Key));
             _buttons[id] = button;
             row.AddChild(button);
         }
@@ -77,6 +81,34 @@ public partial class TopBar : PanelContainer
         host.Changed += Sync;
         Sync();
     }
+
+    /// <summary>The key after the title, smaller and dimmer («Персонаж C»), in room the button keeps at its right; padding 4 px.</summary>
+    private void AddKey(Button button, string key)
+    {
+        const int keySize = 12;
+        var keyWidth = ThemeDB.FallbackFont.GetStringSize(key, HorizontalAlignment.Left, -1, keySize).X;
+        foreach (var state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled", "focus" })
+        {
+            if (button.GetThemeStylebox(state, "Button")?.Duplicate() is not StyleBox box) continue;
+            box.ContentMarginLeft = KeyPadding;
+            box.ContentMarginRight = KeyPadding + 4 + keyWidth;
+            button.AddThemeStyleboxOverride(state, box);
+        }
+        var label = new Label { Name = "Key", Text = key, MouseFilter = MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
+        label.AddThemeFontSizeOverride("font_size", keySize);
+        label.AddThemeColorOverride("font_color", new Color(0.72f, 0.64f, 0.5f, 0.85f));
+        button.AddChild(label);
+        label.SetAnchorsAndOffsetsPreset(LayoutPreset.RightWide);
+        label.OffsetLeft = -(KeyPadding + keyWidth);
+        label.OffsetRight = -KeyPadding;
+        _keys[button] = label;
+    }
+
+    /// <summary>Inner padding of a window button, pixels.</summary>
+    public const int KeyPadding = 4;
+
+    /// <summary>The key caption of a window button.</summary>
+    public Label KeyLabel(string windowId) => _keys[_buttons[windowId]];
 
     /// <summary>Chooses a preset as the list does.</summary>
     public void SelectDummy(string dummyId)

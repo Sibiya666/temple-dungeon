@@ -51,6 +51,9 @@ public partial class WindowHost : Control
         new(WindowIds.Charts, "Графики", Key.G, WindowEdge.Right, 660, 460),
     ];
 
+    /// <summary>The widest a side window opens, as a share of the screen width (owner's ruling: about 530 px at 1600).</summary>
+    public const float MaxSideFraction = 0.33f;
+
     /// <summary>Gap between a window and the screen edge, pixels.</summary>
     public const float Margin = 8;
 
@@ -79,6 +82,9 @@ public partial class WindowHost : Control
     /// <summary>Raised after a window opened or closed (the top bar follows).</summary>
     public event Action? Changed;
 
+    /// <summary>Raised when a closed window opens (its panel may refit to the new size).</summary>
+    public event Action<string>? Opened;
+
     public WindowHost()
     {
         MouseFilter = MouseFilterEnum.Ignore;
@@ -88,14 +94,42 @@ public partial class WindowHost : Control
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         LoadConfig();
-        GetViewport().SizeChanged += ClampAll;
+        Resized += ClampAll; // the host follows the screen (and the self-test's headless root size)
+        Theme = WindowTheme();
+    }
+
+    /// <summary>
+    /// The windows' theme: a plain button gets a visible raised face and border (on the dark window the default face blended in,
+    /// so «Вписать дерево» read as text). Flat buttons (every NumberLabel) stay flat; other controls keep the default theme.
+    /// </summary>
+    public static Theme WindowTheme()
+    {
+        var theme = new Theme();
+        StyleBoxFlat Face(Color bg, Color border)
+        {
+            var box = new StyleBoxFlat { BgColor = bg, BorderColor = border, ContentMarginLeft = 10, ContentMarginRight = 10, ContentMarginTop = 4, ContentMarginBottom = 4 };
+            box.SetBorderWidthAll(1);
+            box.SetCornerRadiusAll(3);
+            return box;
+        }
+        theme.SetStylebox("normal", "Button", Face(new Color(0.24f, 0.2f, 0.16f), Border));
+        theme.SetStylebox("hover", "Button", Face(new Color(0.31f, 0.26f, 0.2f), new Color(0.7f, 0.56f, 0.36f)));
+        theme.SetStylebox("pressed", "Button", Face(new Color(0.17f, 0.14f, 0.11f), new Color(0.7f, 0.56f, 0.36f)));
+        theme.SetStylebox("hover_pressed", "Button", Face(new Color(0.2f, 0.17f, 0.13f), new Color(0.7f, 0.56f, 0.36f)));
+        theme.SetStylebox("disabled", "Button", Face(new Color(0.15f, 0.14f, 0.13f), new Color(0.3f, 0.27f, 0.24f)));
+        // Check boxes would inherit the face from Button: they keep their plain look.
+        foreach (var type in new[] { "CheckBox", "CheckButton" })
+            foreach (var state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled" })
+                theme.SetStylebox(state, type, new StyleBoxEmpty { ContentMarginLeft = 4, ContentMarginRight = 4, ContentMarginTop = 2, ContentMarginBottom = 2 });
+        return theme;
     }
 
     /// <summary>Re-reads <see cref="ConfigPath"/> (the self-test points it to its own file first).</summary>
     public void LoadConfig()
     {
         _config = new ConfigFile();
-        if (Godot.FileAccess.FileExists(ConfigPath)) _config.Load(ConfigPath);
+        if (Godot.FileAccess.FileExists(ConfigPath) && _config.Load(ConfigPath) != Error.Ok)
+            _config = new ConfigFile(); // a broken file: the default edges, overwritten at the next drag
     }
 
     /// <summary>Adds the window <paramref name="id"/> holding <paramref name="content"/> (hidden until opened).</summary>
@@ -136,6 +170,7 @@ public partial class WindowHost : Control
         {
             Place(window);
             window.Visible = true;
+            Opened?.Invoke(id);
         }
         Raise(id);
         Changed?.Invoke();
@@ -177,7 +212,8 @@ public partial class WindowHost : Control
         var screen = Size;
         var top = TopInset() + Margin;
         var bottom = screen.Y - BottomInset() - Margin;
-        var width = Mathf.Min(spec.Width, screen.X - 2 * Margin);
+        // A side window takes at most a third of the screen, so the hero and the dummy next to him stay in sight.
+        var width = Mathf.Min(Mathf.Min(spec.Width, screen.X * MaxSideFraction), screen.X - 2 * Margin);
         var fullHeight = Mathf.Max(MinSize.Y, bottom - top);
         var height = spec.Height > 0 ? Mathf.Min(spec.Height, fullHeight) : fullHeight;
         var x = spec.Edge is WindowEdge.Left or WindowEdge.LeftBottom ? Margin : screen.X - Margin - width;
@@ -213,6 +249,7 @@ public partial class WindowHost : Control
         var size = new Vector2(Mathf.Clamp(window.Size.X, MinSize.X, Mathf.Max(MinSize.X, screen.X)),
             Mathf.Clamp(window.Size.Y, MinSize.Y, Mathf.Max(MinSize.Y, screen.Y - top)));
         window.Size = size;
+        size = window.Size; // read back: a panel's minimum size may have kept it larger
         window.Position = new Vector2(Mathf.Clamp(window.Position.X, 0, Mathf.Max(0, screen.X - size.X)),
             Mathf.Clamp(window.Position.Y, top, Mathf.Max(top, screen.Y - size.Y)));
     }

@@ -63,7 +63,7 @@ public sealed partial class SelfTest
         foreach (var spec in WindowHost.Specs)
         {
             var key = GameWindow.KeyName(spec.Key);
-            Check(bar.Buttons[spec.Id].Text == $"{spec.Title} ({key})", $"кнопка «{bar.Buttons[spec.Id].Text}»");
+            Check(bar.Buttons[spec.Id].Text == spec.Title && bar.KeyLabel(spec.Id).Text == key, $"кнопка «{bar.Buttons[spec.Id].Text}» с клавишей «{bar.KeyLabel(spec.Id).Text}»");
             Check(bar.Buttons[spec.Id].FocusMode == Control.FocusModeEnum.None, $"кнопка «{spec.Title}» берет фокус клавиатуры");
             windows.OpenWindow(spec.Id);
         }
@@ -86,9 +86,18 @@ public sealed partial class SelfTest
                     Check(left && rect.End.Y >= screen.Y - WindowHost.Margin - 0.5f, $"журнал не слева внизу: {rect}");
                     break;
             }
-            // The hero stands in the centre: a window at an edge never covers it.
+            // The hero stands in the centre: a window at an edge never covers it; a side window takes at most a third.
             Check(!rect.HasPoint(screen / 2), $"окно «{spec.Title}» закрывает центр экрана: {rect}, минимум панели {w.Content.GetCombinedMinimumSize()}");
+            Check(rect.Size.X <= screen.X * WindowHost.MaxSideFraction + 0.5f, $"окно «{spec.Title}» шире трети экрана: {rect.Size.X}, минимум панели {w.Content.GetCombinedMinimumSize()}");
         }
+        GD.Print("SELFTEST NOTE ширина окон: " + string.Join(", ", WindowHost.Specs.Select(s => $"{s.Title} {windows.Window(s.Id).Size.X:0}")) +
+                 $"; верхняя панель {bar.GetCombinedMinimumSize().X:0}");
+
+        // The level number beside the slider is shown whole (no «…»).
+        var level = _main.Character!.NumberFor(CharacterPanel.LevelKey) ?? throw new Failure("нет числа уровня");
+        var font = level.GetThemeFont("font");
+        var textWidth = font.GetStringSize(level.Text, HorizontalAlignment.Left, -1, level.GetThemeFontSize("font_size")).X;
+        Check(level.IsVisibleInTree() && level.Size.X >= textWidth, $"число уровня «{level.Text}» шириной {level.Size.X} при тексте {textWidth}");
         Check(bar.Buttons.Values.All(b => b.ButtonPressed), "кнопки открытых окон не нажаты");
         windows.CloseAll();
         await Settle();
@@ -276,15 +285,19 @@ public sealed partial class SelfTest
             var info = Training.Slots[view.Number - 1];
             Check(view.Info == info, $"слот {view.Number} показывает не тот скилл");
             Check(view.NameText == (info?.Name ?? "пусто"), $"слот {view.Number}: «{view.NameText}»");
-            var expectShort = info != null && info.Cost > 0 && state.Resource < info.Cost;
-            Check(view.ResourceShort == expectShort, $"слот {view.Number}: красная рамка {view.ResourceShort}, ресурс {state.Resource}, стоимость {info?.Cost}");
+            // The red frame is the core's own resource check (live costs and buffs), never a formula of the game layer.
+            var expectShort = info != null && state.ResourceShortSlots.Contains(view.Number);
+            Check(view.ResourceShort == expectShort && (view.FrameColor == SlotView.ShortColor) == expectShort,
+                $"слот {view.Number}: красная рамка {view.ResourceShort}, в State {expectShort}");
+            Check(info == null || view.CostNow == state.CostBySlot[view.Number], $"слот {view.Number}: стоимость {view.CostNow}");
             shortSeen |= expectShort;
             if (info != null)
                 Check(view.TooltipText.Contains("Стоимость", StringComparison.Ordinal) && view.TooltipText.Contains("Перезарядка", StringComparison.Ordinal)
                       && (view.TooltipText.Contains("Время применения", StringComparison.Ordinal) || view.TooltipText.Contains("Канал", StringComparison.Ordinal)),
                     $"подсказка слота {view.Number}: «{view.TooltipText}»");
         }
-        if (!shortSeen) GD.Print($"SELFTEST NOTE экран боя: в начале боя ресурса ({state.Resource}) хватает на все слоты");
+        // Fury starts empty: the spenders must be short at the start of the fight.
+        Check(state.Resource == 0 && shortSeen, $"в начале боя (ярость {state.Resource}) нет слота с красной рамкой");
 
         var cry = SlotOf("battle_cry");
         Check(Driver.PressSlot(cry).Accepted, "Боевой клич не принят");
@@ -297,12 +310,23 @@ public sealed partial class SelfTest
         var buff = hud.HeroEffects.FirstOrDefault(e => e.Id == "battle_cry");
         Check(buff is { TimeLeft: > 0 }, "бафф Боевого клича не показан с таймером: " + string.Join(", ", hud.HeroTexts));
         Check(hud.HeroTexts.Any(t => t.StartsWith("Боевой клич ", StringComparison.Ordinal) && t.EndsWith(" с", StringComparison.Ordinal)), "текст баффа: " + string.Join(", ", hud.HeroTexts));
+        // «Воодушевление» (−20 % cost) runs: the slot's cost is the core's live one, below the sheet's, and the frame follows it.
+        if (state.Buffs.ContainsKey("inspiration"))
+        {
+            var spender = hud.Slots.First(v => v.Info is { Cost: > 0, IsChannel: false });
+            Check(spender.CostNow < spender.Info!.Cost && spender.ResourceShort == state.ResourceShortSlots.Contains(spender.Number),
+                $"«{spender.Info.Name}»: стоимость {spender.CostNow} при листе {spender.Info.Cost}, рамка {spender.ResourceShort}");
+        }
 
         // A refusal blinks the slot (the text over the hero comes from the same event).
         Check(!Driver.PressSlot(cry).Accepted, "повторный клич принят");
         await Run(FrameSec * 2);
         hud.Refresh();
-        Check(hud.Slots[cry - 1].BlinkLeft > 0, "слот не мигнул при отказе");
+        var blinking = hud.Slots[cry - 1];
+        Check(blinking.BlinkLeft > 0, "слот не мигнул при отказе");
+        Check(blinking.FrameColor != SlotView.ShortColor || blinking.ResourceShort, "мигание отказа выглядит как нехватка ресурса");
+        // The refusal text never lies on the dummy plate (the hero stands beside the dummy here).
+        Check(!hud.PlateShown || !hud.RefusalRect.Intersects(hud.PlateRect), $"текст отказа {hud.RefusalRect} на плашке {hud.PlateRect}");
         Check(Room.Hero.RefusalText != null && hud.RefusalShown == Room.Hero.RefusalText, $"над героем текст отказа «{hud.RefusalShown}», у героя «{Room.Hero.RefusalText}»");
 
         // The held channel, then a press queued while busy.
@@ -403,6 +427,10 @@ public sealed partial class SelfTest
             await Run(0.7); // the press fires at the next free step; a newer press would replace it
             await Run(6.0, _ => { if (Training.State is { Busy: false }) driver.PressSlot(cleave); },
                 until: () => Training.State!.Time > 3 && Training.State.TargetEffects.Count > 0 && Training.State.TargetEffects[0].Any(e => e.Id == "ignite"));
+            // Spend the fury on Crush until some spender is short (a red frame in the shot).
+            var crush = SlotOf("crush");
+            await Run(5.0, _ => { if (Training.State is { Busy: false }) driver.PressSlot(crush); },
+                until: () => Training.State!.ResourceShortSlots.Count > 0);
             await Run(0.6, until: () => Training.State is { Busy: false });
             var again = driver.PressSlot(cry); // refused: on cooldown, the buff still runs
             GD.Print($"SELFTEST NOTE кадр боя: время {Training.State!.Time:0.00}, повторный клич {again.Refusal}, перезарядка {Training.State.CooldownLeftBySlot.GetValueOrDefault(cry):0.0}, баффы {string.Join(", ", Training.State.HeroEffects.Select(e => e.Id + "=" + e.TimeLeft))}");
