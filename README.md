@@ -73,7 +73,7 @@ dotnet tools/BuildOptimizer/bin/Release/net8.0/BuildOptimizer.dll suite --all
 
 ## Отладочная сцена
 
-Godot-проект `game/` — отладочная сцена (спека §13): тонкий слой отрисовки над `Dialoid.Sandbox`, правил игры в нём нет. Интерфейс строится кодом в `Main._Ready()`, вкладки: «Персонаж», «Пассивки», «Асцендант», «Скиллы», «Симуляция», «Разбор», «Билды».
+Godot-проект `game/` — отладочная сцена (спека §13): тонкий слой отрисовки над `Dialoid.Sandbox`, правил игры в нём нет. Интерфейс строится кодом в `Main._Ready()`, вкладки: «Комната» (3D-комната тренировки, план 4), «Персонаж», «Пассивки», «Асцендант», «Скиллы», «Симуляция», «Разбор», «Билды». Рендерер Forward+, физика 3D — Jolt Physics.
 
 Разработка и приемка идут на Windows (PowerShell 5.1). Нужен Godot 4.7 .NET, консольная сборка `Godot_v4.7.2-stable_mono_win64_console.exe` (версия `Godot.NET.Sdk` в `game/Dialoid.Game.csproj` совпадает с редактором), и .NET SDK (`dotnet`). Где ищется Godot: переменная `GODOT`, иначе `C:\Users\sibiya666\Tools\Godot_v4.7.2-stable_mono_win64\Godot_v4.7.2-stable_mono_win64_console.exe`, иначе `godot` из PATH. Другой путь:
 
@@ -90,7 +90,7 @@ dotnet build game/Dialoid.Game.csproj
 
 Данные сцена ищет сама: ближайший `data/` с `classes.json` вверх от `game/`. Другой каталог данных задаётся переменной `DIALOID_DATA`. Если данные не найдены или не загрузились, сцена показывает ошибку и проверенные пути, а в лог пишет строку `DIALOID_LOAD_FAILED: <причина>`.
 
-Проверка сборки без окна (`dotnet build` 600 с → `godot --headless --import` 600 с → `godot --headless --quit` 60 с; каждый шаг под лимитом, при превышении процесс и его дочерние убиваются):
+Проверка сборки без окна (`dotnet build` 600 с → `tools/sync_assets.ps1` → `godot --headless --import` 600 с → `godot --headless --quit` 60 с; каждый шаг под лимитом, при превышении процесс и его дочерние убиваются):
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1
@@ -101,6 +101,30 @@ Remove-Item Env:DIALOID_DATA
 # первый импорт десятков FBX долгий: лимит импорта в секундах
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1 -ImportTimeoutSec 1200
 ```
+
+### Ассеты комнаты
+
+Модели, анимации и текстуры в git не кладутся (лицензии). Сцена ищет их в папке из переменной `DIALOID_ASSETS`, иначе в `assets/` в корне репозитория (она в `.gitignore`). Таблица «id → файл» — `game/data/assets.json` (имена файлов как на диске). Перед импортом `tools/godot_check.ps1` вызывает `tools/sync_assets.ps1`: он копирует в `game/vendor/` (вне git) **только файлы из таблицы**, если их там нет или исходник новее, с нормализованными именами (нижний регистр, пробелы и скобки → `_`: `sword and shield slash (2).fbx` → `sword_and_shield_slash_2.fbx`), печатает отсутствующие и предупреждает, если нет учета лицензий `LICENSES.md`. Файл, исчезнувший из ассетов, убирается и из `game/vendor/`. Вручную:
+
+```powershell
+$env:DIALOID_ASSETS = 'D:\dialoid-assets'   # не обязательно: по умолчанию assets/ в корне
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/sync_assets.ps1
+```
+
+Без ассетов комната рисуется заглушками (капсулы того же роста, однотонные материалы), самопроверка проходит. На каждый отсутствующий файл в логе одна строка `ASSET_MISSING: …` (не `ERROR`). Настройки импорта FBX не хранятся в `.import` (папка вне git): имя клипа берется из имени файла (в Mixamo все клипы называются `mixamo.com`), зацикливание стойки, ходьбы и бега, прибитый корень (у бедер обнуляются X и Z), перепись путей костей под скелет модели (`mixamorig:`, `mixamorig1:`, … ) и масштаб по измеренной высоте модели делаются в коде (`game/Room/AssetLibrary.cs`). Текстурам скрипт пишет `.import` со сжатием VRAM и мипмапами.
+
+Что скачать и куда положить:
+
+| Что | Откуда, настройки | Куда |
+|---|---|---|
+| Персонажи `Paladin WProp J Nordstrom` (герой), `Skeletonzombie T Avelange` (мертвец), `Warrok W Kurniawan` (орк и босс) | mixamo.com, Download: Format **FBX Binary**, Pose **T-pose**, Skin **With Skin** | `assets/mixamo/characters/` |
+| Пакет `Sword And Shield Pack` (стойка, ходьба, бег, удары, каст, реакция на удар) | mixamo.com, Download: **FBX Binary**, Skin **Without Skin**, **30 fps**; распаковать | `assets/mixamo/anims/sword/` |
+| Пакет `Scary Zombie Pack` (стойка, ходьба, атака мертвеца) | так же, **Without Skin**, **30 fps** | `assets/mixamo/anims/zombie/` |
+| Текстуры `monastery_stone_floor` (пол), `castle_wall_slates` (стены), `medieval_blocks_02` (колонны, пилястры), `medieval_wood` (бочки) | polyhaven.com, CC0, **2K JPG**: `diff`, `nor_gl`, `rough` | `assets/polyhaven/<имя>/diff.jpg`, `nor_gl.jpg`, `rough.jpg` |
+
+Учет лицензий — `assets/LICENSES.md` (Mixamo: условия и ссылка; Poly Haven: CC0, страницы текстур; кровь — процедурная). Без него сборки с ассетами не публикуются.
+
+Качество графики: по умолчанию высокое; `-- --quality low` (минимальные требования: GTX 1050 Ti / RX 560, 1080p ≥ 30 кадров/с) выключает SSAO, тени факелов, объемный туман и свет снарядов — остаются тень героя и контур.
 
 ### Самопроверка
 
