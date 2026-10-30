@@ -156,6 +156,7 @@ public sealed partial class SelfTest
         if (mains.Count > 0)
         {
             steps.AddRange(WindowSteps());
+            steps.AddRange(MeterSteps());
             steps.Add(new("windows.restore", CombatRestore));
         }
         if (_screenshotDir != null)
@@ -1053,6 +1054,7 @@ public sealed partial class SelfTest
         await Shot("08-breakdown-hit-multiplier");
         await CombatScreenshots();
         await WindowScreenshots();
+        await MeterScreenshots();
         _main.CloseAllWindows();
     }
 

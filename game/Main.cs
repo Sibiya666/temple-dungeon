@@ -73,10 +73,10 @@ public partial class Main : Control
     public SkillsPanel? Skills { get; private set; }
     public SimulationPanel? Simulation { get; private set; }
 
-    /// <summary>Placeholders of the log, meter and charts windows (their contents are plan 4 task 11).</summary>
-    public Control? LogView { get; private set; }
-    public Control? MeterView { get; private set; }
-    public Control? ChartsView { get; private set; }
+    /// <summary>The combat log, the damage meter and the charts (plan 4 task 11); null when the data failed to load.</summary>
+    public CombatLogWindow? LogView { get; private set; }
+    public MeterWindow? MeterView { get; private set; }
+    public ChartsWindow? ChartsView { get; private set; }
 
     private Label _errorLabel = null!;
 
@@ -165,23 +165,21 @@ public partial class Main : Control
         Builds.Setup(session, DataDirectory);
         Windows.Add(WindowIds.Builds, Builds);
 
-        LogView = Placeholder("LogView", "Журнал боя появится здесь в следующей задаче: строки событий боя с фильтрами по видам и скиллам.");
+        LogView = new CombatLogWindow { Name = "LogView" };
+        LogView.Setup(session, Training!);
         Windows.Add(WindowIds.Log, LogView);
-        MeterView = Placeholder("MeterView", "Измеритель появится здесь в следующей задаче: урон и DPS текущего боя по скиллам и типам.");
+        MeterView = new MeterWindow { Name = "MeterView" };
+        MeterView.Setup(session, Training!, ShowBreakdown, Combat?.Numbers, () => OpenWindow(WindowIds.Charts));
         Windows.Add(WindowIds.Meter, MeterView);
-        ChartsView = Placeholder("ChartsView", "Графики появятся здесь в следующей задаче: урон и ресурс по времени за сегменты боя.");
+        ChartsView = new ChartsWindow { Name = "ChartsView" };
+        var meter = MeterView;
+        ChartsView.Setup(session, Training!, () => meter.SelectedSegment);
+        MeterView.SelectionChanged += ChartsView.MarkDirty;
         Windows.Add(WindowIds.Charts, ChartsView);
 
         // A replaced build makes the old breakdown history meaningless (spec §13.6 history is per build).
         Builds.BuildReplaced += Breakdown.ClearHistory;
         Character.BuildReplaced += Breakdown.ClearHistory;
-    }
-
-    private static Control Placeholder(string name, string text)
-    {
-        var box = new VBoxContainer { Name = name };
-        box.AddChild(new Label { Text = text, AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = SizeFlags.ExpandFill });
-        return box;
     }
 
     private void BuildError()

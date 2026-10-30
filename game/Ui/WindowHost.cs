@@ -47,8 +47,9 @@ public partial class WindowHost : Control
         new(WindowIds.Breakdown, "Разбор", Key.R, WindowEdge.Right, 540),
         new(WindowIds.Simulation, "Симуляция", Key.M, WindowEdge.Right, 640),
         new(WindowIds.Log, "Журнал", Key.L, WindowEdge.LeftBottom, 560, 280),
-        new(WindowIds.Meter, "Измеритель", Key.T, WindowEdge.RightTop, 420, 380),
-        new(WindowIds.Charts, "Графики", Key.G, WindowEdge.Right, 660, 460),
+        new(WindowIds.Meter, "Измеритель", Key.T, WindowEdge.RightTop, 440, 470),
+        // On the left, above the log: the charts sit beside the meter they follow (plan 4 task 11).
+        new(WindowIds.Charts, "Графики", Key.G, WindowEdge.Left, 660, 520),
     ];
 
     /// <summary>The widest a side window opens, as a share of the screen width (owner's ruling: about 530 px at 1600).</summary>
