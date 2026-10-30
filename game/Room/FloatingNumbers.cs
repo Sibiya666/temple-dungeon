@@ -73,7 +73,7 @@ public sealed partial class FloatingNumbers : Node3D
         };
         // The icon left of the text, along the camera's horizontal (the camera never rotates, only follows).
         var right = Camera != null ? Camera.GlobalBasis.X : new Vector3(1, 0, -1).Normalized();
-        var textWidth = text.Length * size * PixelSize * 0.55f;
+        var textWidth = text.Length * size * PixelSize * 0.45f;
         var iconSize = size * PixelSize * 0.8f;
         var icon = new Sprite3D
         {

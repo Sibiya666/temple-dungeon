@@ -51,6 +51,7 @@ public sealed partial class SelfTest
         await Settle();
         Check(Training.Running, $"бой не начался: {string.Join("; ", Training.Violations.Select(v => v.Message))}");
         if (Driver.Dummy.PresetId != TrainingRoom.DefaultDummyId) Driver.SetDummy(TrainingRoom.DefaultDummyId);
+        Driver.ResetVisuals();
         Driver.SetProcess(false); // the steps drive the frames themselves
     }
 
@@ -293,9 +294,10 @@ public sealed partial class SelfTest
         var dummy = Room.Dummy;
         var reactions = dummy.ReactionCount;
         var flashes = dummy.FlashCount;
+        var (numbers, amount) = (Driver.DotNumbers, Driver.DotAmountShown);
         var next = 0.0;
         var injected = 0;
-        // About twenty ignite ticks in one second through the feed's path: flashes, no reaction.
+        // About twenty ignite ticks in one second through the feed's path: a few summed small numbers and weak flashes, no reaction.
         await Run(1.0, t =>
         {
             if (t < next - 1e-9) return;
@@ -305,7 +307,11 @@ public sealed partial class SelfTest
                 { DamageType = DamageType.Fire, Amount = 40, IsDot = true });
         });
         Check(dummy.ReactionCount == reactions, $"тики запустили реакцию {dummy.ReactionCount - reactions} раз");
-        Check(injected >= 15 && dummy.FlashCount - flashes == injected, $"вспышек от тиков {dummy.FlashCount - flashes} из {injected}");
+        var shown = Driver.DotNumbers - numbers;
+        Check(injected >= 15 && shown is >= 2 and <= 4 && dummy.FlashCount - flashes == shown,
+            $"{injected} тиков дали {shown} чисел и {dummy.FlashCount - flashes} вспышек (ждали по одному в {CombatDriver.DotShowSec} с)");
+        await Run(CombatDriver.DotShowSec + 0.05);
+        Check(Math.Abs(Driver.DotAmountShown - amount - injected * 40) < 1e-6, $"сумма чисел тиков {Driver.DotAmountShown - amount}, а тиков {injected * 40}");
         // A second of fireballs pressed every 0.1 s plus ticks: at most three reactions.
         var fireball = SlotOf("fireball");
         await Run(1.5); // whatever was pending lands before the window
@@ -323,7 +329,7 @@ public sealed partial class SelfTest
         });
         var inWindow = dummy.ReactionCount - reactions;
         Check(inWindow <= 3, $"за 1 с реакций {inWindow}");
-        GD.Print($"SELFTEST NOTE тики: {injected} тиков без реакции, за секунду с ударами реакций {inWindow}");
+        GD.Print($"SELFTEST NOTE тики: {injected} тиков → {shown} чисел без реакции, за секунду с ударами реакций {inWindow}");
     }
 
     /// <summary>On «Рой» the ring stands under the figure of the last hit the core reported.</summary>
@@ -455,5 +461,82 @@ public sealed partial class SelfTest
         room.PlaceHero(room.HeroSpawn);
         Driver.SetProcess(true);
         await Settle();
+    }
+}
+
+public sealed partial class SelfTest
+{
+    /// <summary>
+    /// Combat screenshots for the art review (window run only): a melee hit on the training dummy, a crit number, Fireball in
+    /// flight and its flash, «Рой» with the ring, «Стихийный» with runes, the boss. Frames are stepped by hand, so each shot
+    /// catches the moment it names.
+    /// </summary>
+    private async Task CombatScreenshots()
+    {
+        var room = Room;
+        var driver = Driver;
+        var right = new Vector3(1, 0, -1).Normalized(); // the screen's horizontal on the floor
+        try
+        {
+            await LoadForCombat(WarriorMelee);
+            room.PlaceHero(room.Dummy.TargetPosition(0) + right * 1.25f + TowardsCamera * 0.35f);
+            var cleave = SlotOf("cleave");
+            driver.PressSlot(cleave);
+            await Run(2.0, until: () => driver.LastMelee is { FlashAt: not null });
+            await Run(0.09); // past the 40 ms hit-stop, sparks flying
+            await Shot("task-9-melee-training");
+
+            VisualEvent? crit = null;
+            await Run(12.0, t =>
+            {
+                if (Training.State is { Busy: false }) driver.PressSlot(cleave);
+            }, until: () => (crit = driver.LastShownHit) is { IsCrit: true });
+            Check(crit is { IsCrit: true }, "крит за 12 с не выпал");
+            await Run(0.12);
+            await Shot("task-9-crit");
+
+            await LoadForCombat(Pyromancer);
+            room.PlaceHero(room.Dummy.TargetPosition(0) + TowardsCamera * 5.5f + right * 1.5f);
+            var fireball = SlotOf("fireball");
+            Check(driver.PressSlot(fireball).Accepted, "Огненный шар не принят");
+            await Run(3.0, until: () => room.Effects.Active.OfType<ProjectileView>().Any(p => p.Age >= p.FlightSec * 0.45));
+            await Shot("task-9-fireball-projectile");
+            await Run(1.0, until: () => driver.LastShownHit is { IsDot: false, DamageType: DamageType.Fire });
+            await Run(0.05);
+            await Shot("task-9-fireball-flash");
+
+            await LoadForCombat(WarriorMelee);
+            driver.SetDummy("swarm");
+            room.PlaceHero(room.Dummy.TargetPosition(0) + TowardsCamera * 2.6f + right * 0.5f);
+            await Run(3.0, _ => { if (Training.State is { Busy: false }) driver.PressSlot(cleave); });
+            await Run(2.0, until: () => Training.State is { Busy: false });
+            var previous = driver.LastMelee;
+            driver.PressSlot(cleave);
+            await Run(2.0, until: () => driver.LastMelee is { FlashAt: not null } m && !ReferenceEquals(m, previous) && driver.VisualTime > m.FlashAt + 0.1);
+            await Shot("task-9-swarm");
+
+            await LoadForCombat(Pyromancer);
+            driver.SetDummy("elemental");
+            room.PlaceHero(room.Dummy.TargetPosition(0) + TowardsCamera * 3.5f + right * 1.2f);
+            var spark = SlotOf("spark");
+            await Run(1.5, _ => { if (Training.State is { Busy: false }) driver.PressSlot(spark); });
+            await Run(2.0, until: () => Training.State is { Busy: false });
+            driver.PressSlot(spark);
+            await Run(1.0, until: () => driver.LastShownHit is { IsDot: false, DamageType: DamageType.Lightning });
+            await Run(0.04);
+            await Shot("task-9-elemental");
+
+            await LoadForCombat(WarriorMelee);
+            driver.SetDummy("boss");
+            room.PlaceHero(room.Dummy.TargetPosition(0) + right * 1.9f + TowardsCamera * 0.6f);
+            driver.PressSlot(cleave);
+            await Run(2.0, until: () => driver.LastMelee is { FlashAt: not null });
+            await Run(0.09);
+            await Shot("task-9-boss");
+        }
+        finally
+        {
+            await CombatRestore();
+        }
     }
 }

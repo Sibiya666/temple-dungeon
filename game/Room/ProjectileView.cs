@@ -415,9 +415,26 @@ public sealed partial class EffectLayer : Node3D
                 break;
             default:
             {
-                var burst = Sphere(0.28f * big, Halo(DamageVisuals.Core(kind), 0.7f));
-                var fx = new TweenEffect(0.12, t => burst.Scale = Vector3.One * (1 + t)) { Name = "Burst" };
+                // A soft round glow facing the camera that swells and fades (a hard sphere read as a flat disc).
+                var material = new StandardMaterial3D
+                {
+                    ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                    Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                    BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    AlbedoTexture = BlobMaterial.AlbedoTexture,
+                    AlbedoColor = DamageVisuals.Core(kind) with { A = 0.9f },
+                };
+                var size = 1.1f * big;
+                var burst = new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(size, size) }, MaterialOverride = material, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
+                var core = Sphere(0.09f * big, Glow(kind == EffectKind.Fire ? new Color(1f, 0.72f, 0.3f) : DamageVisuals.Core(kind), 1.8f));
+                var fx = new TweenEffect(0.16, t =>
+                {
+                    burst.Scale = Vector3.One * (0.6f + 0.9f * t);
+                    material.AlbedoColor = material.AlbedoColor with { A = 0.9f * (1 - t * t) };
+                    core.Visible = t < 0.5f;
+                }) { Name = "Burst" };
                 fx.AddChild(burst);
+                fx.AddChild(core);
                 Add(fx);
                 fx.Position = at;
                 break;

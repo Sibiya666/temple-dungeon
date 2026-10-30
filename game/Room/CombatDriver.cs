@@ -26,6 +26,9 @@ public partial class CombatDriver : Node
     public const float ProjectileSpeed = 14f;
     public const double HoldToRunSec = 0.25;
 
+    /// <summary>DoT ticks of a target (the core sends one per step) become one weak flash and one small number this often (spec §5: ticks are small numbers, no reaction).</summary>
+    public const double DotShowSec = 0.4;
+
     /// <summary>Hits of a use never wait longer than its end plus this (a lost projectile, a skipped frame).</summary>
     public const double MaxHitDelaySec = MaxFlightSec + 0.3;
 
@@ -60,11 +63,21 @@ public partial class CombatDriver : Node
         public List<VisualEvent> Hits { get; } = new();
     }
 
+    /// <summary>DoT ticks of one target waiting for their next number: summed, the largest type, when the last number was shown.</summary>
+    private sealed class DotSum
+    {
+        public double Amount;
+        public double Largest;
+        public Dialoid.Core.Combat.DamageType? Type;
+        public double ShownAt = double.NegativeInfinity;
+    }
+
     /// <summary>A melee use's timeline in visual seconds, for checks: the flash must fall between the contact frame and the use's end.</summary>
     public sealed record MeleeTimeline(string SkillId, double Start, double Contact, double End, double? FlashAt);
 
     private readonly List<PendingUse> _uses = new();
     private readonly HashSet<Key> _moveKeys = new();
+    private readonly Dictionary<int, DotSum> _dots = new();
     private double _visualTime;
     private double _freezeLeft;
     private int? _channelSlot;
@@ -91,6 +104,10 @@ public partial class CombatDriver : Node
     public bool Frozen => _freezeLeft > 0;
 
     public int HitStops { get; private set; }
+
+    /// <summary>Small tick numbers shown and the damage they carried (for checks: the sums equal the core's ticks).</summary>
+    public int DotNumbers { get; private set; }
+    public double DotAmountShown { get; private set; }
 
     /// <summary>Real seconds passed to <see cref="TrainingRoom.Advance"/> in total and while frozen (for checks).</summary>
     public double Advanced { get; private set; }
@@ -127,7 +144,7 @@ public partial class CombatDriver : Node
 
         // A restarted fight (build edit, dummy or mode change) starts at 0: what the old one left pending is gone.
         var fightTime = Training.State?.Time ?? 0;
-        if (fightTime < _lastFightTime) ClearPending();
+        if (fightTime < _lastFightTime) ResetVisuals();
         _lastFightTime = fightTime;
         SyncDummy();
         Training.UpdateReach(HeroDistance(), TargetOnScreen());
@@ -138,6 +155,7 @@ public partial class CombatDriver : Node
 
         _visualTime += visualDt;
         UpdateUses();
+        ShowDots();
         if (_leftHeld)
         {
             _leftHeldFor += delta;
@@ -195,12 +213,18 @@ public partial class CombatDriver : Node
     {
         if (Dummy.PresetId == Training.DummyId) return;
         Dummy.SetPreset(Training.DummyId);
-        ClearPending();
+        ResetVisuals();
     }
 
-    private void ClearPending()
+    /// <summary>Forgets what the previous fight left: pending hits, tick sums, effects, numbers, the refusal text.</summary>
+    public void ResetVisuals()
     {
+        _lastFightTime = Training.State?.Time ?? 0;
         _uses.Clear();
+        _dots.Clear();
+        LastMelee = null;
+        LastShownHit = null;
+        Hero.ClearRefusal();
         _channelSlot = null;
         Effects.Clear();
         Numbers.Clear();
@@ -217,7 +241,7 @@ public partial class CombatDriver : Node
                 OnUse(e);
                 break;
             case VisualKind.Hit when e.IsDot:
-                Deliver(e, melee: false, channel: false);
+                AddDot(e);
                 break;
             case VisualKind.Hit:
                 var use = PendingFor(e);
@@ -232,9 +256,9 @@ public partial class CombatDriver : Node
 
     private void OnUse(VisualEvent e)
     {
-        if (e.SkillId is not { } skillId) return;
-        var tags = e.Slot is { } slot ? Training.CompiledTags(slot) ?? TagSet.Empty : TagSet.Empty;
-        if (e.Slot == null && Training.Slots.FirstOrDefault(s => s?.SkillId == skillId) is { } info) tags = info.Tags;
+        // A use without a slot is a triggered copy (Fireball's explosion): the hero did not swing; its hits join the latest use.
+        if (e.SkillId is not { } skillId || e.Slot is not { } slot) return;
+        var tags = Training.CompiledTags(slot) ?? TagSet.Empty;
         var useSec = e.UseSec ?? 0.5;
         // An older use of the same skill shows its hits now (a channel tick replaces the previous one).
         foreach (var old in _uses.Where(u => u.SkillId == skillId && !u.Delivered).ToList()) Release(old, force: true);
@@ -355,9 +379,33 @@ public partial class CombatDriver : Node
         Dummy.MarkTarget(target);
         Dummy.Flash(Effects, target, kind, hit.IsCrit, hit.IsDot);
         if (!hit.IsDot && !channel) Dummy.React(target, _visualTime);
-        if (hit.Amount > 0) Numbers.Show(Dummy.HitPoint(target) + new Vector3(0, 0.6f, 0), hit.Amount, kind, hit.IsCrit, hit.IsDot);
+        // Tick numbers start lower than hit numbers so the two streams do not cover each other.
+        if (hit.Amount > 0) Numbers.Show(Dummy.HitPoint(target) + new Vector3(0, hit.IsDot ? 0.05f : 0.6f, 0), hit.Amount, kind, hit.IsCrit, hit.IsDot);
         LastShownHit = hit;
         return !hit.IsDot;
+    }
+
+    /// <summary>A DoT tick: summed per target; <see cref="ShowDots"/> turns the sum into one weak flash and one small number at most every <see cref="DotShowSec"/>.</summary>
+    private void AddDot(VisualEvent tick)
+    {
+        var target = tick.Target ?? 0;
+        if (!_dots.TryGetValue(target, out var sum)) _dots[target] = sum = new DotSum();
+        sum.Amount += tick.Amount;
+        if (tick.Amount >= sum.Largest) (sum.Largest, sum.Type) = (tick.Amount, tick.DamageType);
+    }
+
+    /// <summary>Shows the summed ticks of each target whose last tick number is older than <see cref="DotShowSec"/>.</summary>
+    private void ShowDots()
+    {
+        foreach (var (target, sum) in _dots)
+        {
+            if (sum.Amount <= 0 || _visualTime - sum.ShownAt < DotShowSec) continue;
+            var hit = new VisualEvent(VisualKind.Hit, 0, null, null, target) { DamageType = sum.Type, Amount = sum.Amount, IsDot = true };
+            Deliver(hit, melee: false, channel: false);
+            DotNumbers++;
+            DotAmountShown += sum.Amount;
+            (sum.Amount, sum.Largest, sum.ShownAt) = (0, 0, _visualTime);
+        }
     }
 
     // ---------- hit-stop ----------

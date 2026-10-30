@@ -151,6 +151,13 @@ public partial class HeroView : CharacterBody3D
         LastAttack = (clipId, useSec, speed);
     }
 
+    /// <summary>Hides the refusal text (a restarted fight).</summary>
+    public void ClearRefusal()
+    {
+        _refusalLeft = 0;
+        _refusal.Visible = false;
+    }
+
     /// <summary>Shows a refused press's short text over the head.</summary>
     public void ShowRefusal(string text)
     {

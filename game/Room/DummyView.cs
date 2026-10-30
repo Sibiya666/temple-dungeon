@@ -19,7 +19,7 @@ public partial class DummyView : Node3D
     public const string ReactClip = "hit_react";
 
     /// <summary>Rune rings: pale gold, colder and paler than the hero's golden outline (no purple — that is dark damage's).</summary>
-    public static readonly Color RuneColor = new(0.86f, 0.86f, 0.74f);
+    public static readonly Color RuneColor = new(0.86f, 0.83f, 0.64f);
 
     /// <summary>Character of the asset table and collision radius per preset look.</summary>
     private static (string Character, float Radius, int Count, bool Runes) Look(string presetId) => presetId switch

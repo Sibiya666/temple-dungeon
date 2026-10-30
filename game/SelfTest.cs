@@ -1029,6 +1029,7 @@ public sealed partial class SelfTest
         Check(mult != null, "у главного скилла нет множителя урона попадания");
         OpenBreakdown(mult!);
         await Shot("08-breakdown-hit-multiplier");
+        await CombatScreenshots();
         _main.SelectTab(Main.TabTitles[0]);
     }
 
