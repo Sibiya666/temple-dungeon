@@ -1,0 +1,7 @@
+[
+  { "id": "timed_run", "name": "Забег на время", "has_end_boss": true, "variants": [] },
+  { "id": "trial", "name": "Испытание", "has_end_boss": false, "variants": ["escort", "hold", "ritual", "levers"] },
+  { "id": "clear", "name": "Зачистка", "has_end_boss": false, "variants": [] },
+  { "id": "waves", "name": "Волны монстров", "has_end_boss": false, "variants": [] },
+  { "id": "bosses", "name": "Боссы", "has_end_boss": true, "variants": [] }
+]

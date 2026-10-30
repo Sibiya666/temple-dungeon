@@ -98,6 +98,7 @@ internal static class Texts
         Dialoid.Core.Combat.DamageType.Cold => "холод",
         Dialoid.Core.Combat.DamageType.Lightning => "молния",
         Dialoid.Core.Combat.DamageType.Poison => "яд",
+        Dialoid.Core.Combat.DamageType.Dark => "тьма",
         _ => t.ToString(),
     };
 
@@ -117,6 +118,7 @@ internal static class Texts
         ["resource_cost"] = "Стоимость ресурса", ["resource_gen"] = "Прирост ресурса",
         ["resist_fire"] = "Сопротивление огню", ["resist_cold"] = "Сопротивление холоду",
         ["resist_lightning"] = "Сопротивление молнии", ["resist_poison"] = "Сопротивление яду",
+        ["resist_dark"] = "Сопротивление тьме",
         ["projectile_count"] = "Снарядов", ["pierce_count"] = "Пробиваний", ["chain_count"] = "Цепей",
     };
 
@@ -224,6 +226,7 @@ internal static class Texts
         Dialoid.Core.Combat.DamageType.Cold => "холодом",
         Dialoid.Core.Combat.DamageType.Lightning => "молнией",
         Dialoid.Core.Combat.DamageType.Poison => "ядом",
+        Dialoid.Core.Combat.DamageType.Dark => "тьмой",
         _ => t.ToString(),
     };
 

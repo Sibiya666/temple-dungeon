@@ -453,7 +453,7 @@
         "max_points": 1,
         "requires": [{"node": "iron_cry", "points": 1}],
         "effects": [
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "steel_will", "duration": 8, "modifiers": [{"stat": "resist_fire", "kind": "flat", "value": 15}, {"stat": "resist_cold", "kind": "flat", "value": 15}, {"stat": "resist_lightning", "kind": "flat", "value": 15}, {"stat": "resist_poison", "kind": "flat", "value": 15}]}}}
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "steel_will", "duration": 8, "modifiers": [{"stat": "resist_fire", "kind": "flat", "value": 15}, {"stat": "resist_cold", "kind": "flat", "value": 15}, {"stat": "resist_lightning", "kind": "flat", "value": 15}, {"stat": "resist_poison", "kind": "flat", "value": 15}, {"stat": "resist_dark", "kind": "flat", "value": 15}]}}}
         ]
       },
       {
@@ -2172,7 +2172,7 @@
         "description": "После Мерцания +15% ко всем сопротивлениям на 1.5 с.",
         "max_points": 1,
         "effects": [
-          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "phase_barrier", "duration": 1.5, "modifiers": [{"stat": "resist_fire", "kind": "flat", "value": 15}, {"stat": "resist_cold", "kind": "flat", "value": 15}, {"stat": "resist_lightning", "kind": "flat", "value": 15}, {"stat": "resist_poison", "kind": "flat", "value": 15}]}}}
+          {"type": "grant_proc", "trigger": "on_use", "action": {"apply_buff": {"id": "phase_barrier", "duration": 1.5, "modifiers": [{"stat": "resist_fire", "kind": "flat", "value": 15}, {"stat": "resist_cold", "kind": "flat", "value": 15}, {"stat": "resist_lightning", "kind": "flat", "value": 15}, {"stat": "resist_poison", "kind": "flat", "value": 15}, {"stat": "resist_dark", "kind": "flat", "value": 15}]}}}
         ]
       },
       {

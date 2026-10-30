@@ -108,13 +108,22 @@ public class BerserkerTests
     }
 
     [Fact]
+    public void Reckless_zeroes_dark_resist()
+    {
+        var d = Asc(Mech("reckless"), dir => Edit(dir, "classes.json", n =>
+            Find(n, "test_warrior")["class_bonuses"]!.AsArray().Add(JsonNode.Parse("{\"stat\":\"resist_dark\",\"kind\":\"flat\",\"value\":20}"))));
+        Assert.Equal(20, Compile(d, Warrior(false, "test_sword")).Evaluator.Evaluate("resist_dark", default).Value);
+        Assert.Equal(0, Compile(d, Warrior(true, "test_sword")).Evaluator.Evaluate("resist_dark", default).Value);
+    }
+
+    [Fact]
     public void Reckless_zeroes_resists_and_gives_1_more_per_missing_life_percent_capped_at_40()
     {
         var d = Asc(Mech("reckless"));
         var plainCh = Compile(d, Warrior(false, "test_sword"));
         var ch = Compile(d, Warrior(true, "test_sword"));
         Assert.Equal(2.6, plainCh.Evaluator.Evaluate("resist_fire", default).Value, 9); // Int 26 x 0.1
-        foreach (var r in new[] { "resist_fire", "resist_cold", "resist_lightning", "resist_poison" })
+        foreach (var r in new[] { "resist_fire", "resist_cold", "resist_lightning", "resist_poison", "resist_dark" })
             Assert.Equal(0, ch.Evaluator.Evaluate(r, default).Value);
 
         double[] Hits(bool node, double lifeFraction) =>

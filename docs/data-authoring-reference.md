@@ -1,6 +1,6 @@
 # Dialoid: справочник автора данных
 
-Состояние на 2026-10-28, после плана 2 (контент и баланс; ядро `Dialoid.Core` плана 1). Справочник собран чтением кода. Если код расходится со справочником, прав код; расхождение нужно исправить здесь.
+Состояние на 2026-10-28, после плана 2 (контент и баланс; ядро `Dialoid.Core` плана 1); раздел 11 (башня) — на 2026-10-30, после плана 5. Справочник собран чтением кода. Если код расходится со справочником, прав код; расхождение нужно исправить здесь.
 
 Код: `core/Dialoid.Core/`. Фикстуры тестов: `core/Dialoid.Core.Tests/Fixtures/{tiny,data_only}/`. Реальные данные: `data/`. Спека: `docs/superpowers/specs/2026-10-25-dialoid-core-systems-design.md`.
 
@@ -25,6 +25,7 @@
 
 ### tags.json (обязательный)
 - **Формат:** `[{"id":"fire","name":"Огонь"}]`.
+- **Теги типов урона:** `physical`, `lightning`, `cold`, `fire`, `poison`, `dark` (тьма).
 - **Правило:** любой тег, упомянутый в данных, должен быть здесь. Исключение — динамический тег `skill:<id>`.
 
 ### ailments.json (обязательный)
@@ -37,7 +38,7 @@
 - **Поля бонуса:** `attribute` — `str|int|will|dex`; `kind` — `flat|increased|more` (не `override`).
 - **В фикстуре tiny:**
   - `str` → `armor` flat 2;
-  - `int` → `resist_fire`/`resist_cold`/`resist_lightning`/`resist_poison` flat 0.1;
+  - `int` → `resist_fire`/`resist_cold`/`resist_lightning`/`resist_poison`/`resist_dark` flat 0.1;
   - `will` → `resource_gen` increased 0.2 и `life_regen_pct` increased 0.2;
   - `dex` → `dodge_chance` flat 0.05.
 
@@ -125,7 +126,7 @@
   - `pack_radius` — по умолчанию 4;
   - `life_per_target` — `null` означает бессмертного; иначе умножается на `Gear(L)`;
   - `respawn`, `armor`;
-  - `resists` — `{type: −100..100}`;
+  - `resists` — `{type: −100..100}` (типы: physical, lightning, cold, fire, poison, dark; тьма в пресетах равна яду);
   - `freeze_duration_multiplier`;
   - `attack` — `{"damage_per_hit":{"physical":14,"fire":9},"interval_sec":3.5}`, урон умножается на `Gear(L)`.
 
@@ -139,7 +140,7 @@
 | `add_tag` / `remove_tag` | `tag`; снятие `area` удаляет и `area_radius` |
 | `set_behavior` | `param`, `value` |
 | `add_behavior` | `param`, `delta`, `per_point` по умолчанию true |
-| `add_conversion` | `from`, `to`, `percent`; только вправо: physical → lightning → cold → fire → poison |
+| `add_conversion` | `from`, `to`, `percent`; только вправо: physical → lightning → cold → fire → poison → dark |
 | `set_damage_type` | `to` |
 | `set_resource` | `field` (`cost`\|`gain`), `value` |
 | `grant_proc` | `trigger`, `action` |
@@ -180,8 +181,8 @@
 ## 5. Обязательные статы (`Data/RequiredStats.cs`)
 
 - **Основные:** `life`, `life_regen_pct`, `armor`, `dodge_chance`, `dodge_chance_max`, `damage`, `damage_taken`, `crit_chance`, `crit_damage`, `resource_max`, `resource_regen`, `resource_gen`, `resource_cost`, `cast_speed`, `attack_speed`, `cooldown_recovery`, `area`, `shock_effect`, `freeze_duration`, `str`, `int`, `will`, `dex`.
-- **Сопротивления:** `resist_<e>` и `resist_<e>_max` для огня, холода, молнии и яда.
-- **По типам урона:** `added_<t>_damage_min/max` и `penetration_<t>` для всех пяти типов.
+- **Сопротивления:** `resist_<e>` и `resist_<e>_max` для огня, холода, молнии, яда и тьмы (`dark`).
+- **По типам урона:** `added_<t>_damage_min/max` и `penetration_<t>` для всех шести типов урона (physical, lightning, cold, fire, poison, dark).
 - **По недугам:** `<a>_chance` и `<a>_max_stacks` для всех шести.
 - **В `data/stats.json`** все они есть, плюс `duration`, `projectile_count`, `pierce_count`, `chain_count`.
 
@@ -324,3 +325,48 @@
   - «Босс» должен умирать от среднего эталона за 20–60 с на 20 и 60 уровне;
   - выживание против «Атакующего босса» — 20–40 с;
   - ни один эталон не должен упираться в кап 180 с.
+
+## 11. Башня: `data/tower/` (`Tower/TowerDataLoader.cs`, план 5)
+
+Каталог башни грузится отдельно от остальных данных: `TowerDataLoader.Load(путь к data/tower)` → `(TowerData? Data, Errors)`. Правила загрузчика те же, что в разделе 0: snake_case, строгие поля (неизвестное поле — ошибка, у `rules.json` проверяются и объекты рангов), уникальные `id`, ошибки на русском с файлом и id, при любой ошибке `Data == null`. Все пять файлов обязательны. Порядок записей в файле сохраняется: от него зависит детерминированный порядок выпадения валют. Спека: `docs/superpowers/specs/2026-10-29-dialoid-endgame-tower-design.md`. Фикстура тестов: `core/Dialoid.Core.Tests/Fixtures/tower/` (`FixturePaths.TowerFixture`, копия для сломанных вариантов — `FixturePaths.CopyTowerFixture()`); реальные данные — `FixturePaths.RealTowerData`.
+
+### rules.json (одиночный объект)
+- **Устройство башни:** `floors` (этажей, > 0), `floor_slots` (модов на этаж, > 0), `tower_slots` (модов на башню, > 0), `height_multipliers` (по числу этажей, каждый > 0: множитель высоты этажа к награде и к выпадению валюты).
+- **Качество награды:** `summit_bonus` (> 0, высота вершины), `diminishing_c` (> 0, убывающая отдача модов `1 + c·x / (c + x)`), `diversity_bonus_per_type` и `diversity_bonus_types_cap` (≥ 0: бонус за каждый тип сверх первого, не больше cap типов), `shuffle_bonus`, `no_death_bonus` (≥ 0), `quality_cap` (> 0, потолок итогового качества).
+- **Перемешивание:** `shuffle_costs` — цены по порядку, первая обязана быть 0 (первое бесплатно), за концом списка цена удваивается.
+- **Валюта:** `exchange_ratio` (≥ 2, обмен вверх на соседний уровень N:1), `exchange_min_level` (≥ 2: валюта уровня 1 не обменивается), `rank1_drop_multiplier` (≥ 1, обязательное: на ранге 1 выпадение валют с уровнем умножается на него, валют без уровня — нет; см. «Башня: экономика» в `data/BALANCE_NOTES.md`).
+- **Жесткие контры:** `hard_counter_from_rank` (1–15, обязательное и равное `drops_from_rank` валюты `remove`): моды с заданным `hard_counter` (не null) попадают в пул и допускаются при входе только с этого ранга (на более низком вход отказывает с «ModAboveRank»).
+- **Опыт:** `xp_penalty_per_level` (≥ 0, штраф за уровень выше полосы ранга), `xp_penalty_cap` (0..1).
+- **`ranks`** — ровно 15 объектов по порядку: `rank` (1..15), `level_min` / `level_max` (полосы стыкуются, ранг 1 с 1-го уровня, ранги 6–15 — `60`–`60`), `mod_kinds` (`general` обязателен, плюс `floor_type`, `tower`), `max_tier` (1..5, не убывает). Уровень зоны рангов 6–15 вычисляется: 60 + (ранг − 5).
+- **Пример ранга:** `{ "rank": 4, "level_min": 36, "level_max": 48, "mod_kinds": ["general", "floor_type", "tower"], "max_tier": 2 }`
+
+### floor_types.json
+- **Поля:** `id`, `name`, `has_end_boss`, `variants` (id разновидностей; непустой только у семейства Испытаний, без пустых и повторов).
+- Тип `bosses` — арена вершины: моды башни, подходящие ему, действуют и на вершину.
+
+### biomes.json
+- **Поля:** `id`, `name`. Биом — только оформление, на числа не влияет. В коде — `TowerData.Biomes` (`BiomeDef(Id, Name)`, порядок файла).
+
+### floor_mods.json
+- **Поля:**
+  - `id`, `name` (текст с `{v}` — выпавшее число);
+  - `kind` — `general` | `floor_type` | `tower`;
+  - `floor_types` — пусто = подходит всем типам; у `floor_type` ровно один тип, и для типа с разновидностями нужен `variant`, для остальных его быть не должно (у других видов `variant` всегда `null`);
+  - `group` — группа несовместимости (пусто — `null`), `directions` — оси для направленных намазок, `style_tags` — метки стиля;
+  - `hard_counter` — `null` | `no_life_regen` | `no_resource_regen` | `no_healing`; у мода башни запрещен;
+  - действие на вершину не задается отдельным полем: мод башни действует на вершину (и прибавляет качество ее награды), если его `floor_types` пуст или содержит `bosses` (`FloorModDef.ActsOnSummit`); каждый такой мод обязан быть в группе `gate` — на вершине действует не больше одного (спека 5.2). На этажи мод башни действует и прибавляет качество только тем, чей тип подходит его `floor_types`. Поле `affects_summit` убрано и теперь считается неизвестным;
+  - `tiers` — ровно 5 тиров по порядку: `tier`, `min`, `max` (`0 ≤ min ≤ max`, знак задает текст мода), `quality` (> 0, вклад в качество награды; у мода с диапазоном масштабируется выпавшим числом относительно середины).
+
+### currencies.json
+- **Поля:**
+  - `id`, `name`;
+  - `op` — `add_mod` | `add_mod_biased` | `reroll_one` | `reroll_value_high` | `upgrade_tier` | `clear` | `remove_one` | `reroll_variant` | `shuffle`;
+  - `mod_kind` — только у наложений (`add_mod`, `add_mod_biased`);
+  - `bias_direction` (направление, которое есть хотя бы у одного мода) и `bias_chance` (строго между 0 и 1) — только у `add_mod_biased`;
+  - `has_level` — запрещен у `clear`, `remove_one`, `reroll_one`, `reroll_variant`, `shuffle` (они не прибавляют награды);
+  - `drops_from_rank` (1..15) — с какого ранга валюта падает и разрешена;
+  - `drop_base` (≥ 0), `drop_growth` (у валюты с уровнем > 1, у остальных ≥ 1), `summit_multiplier` (> 0) — нормы выпадения.
+- **Обязательные валюты:** `shuffle` (`shuffle`), `imbue` (`add_mod`, `general`), `imbue_type` (`add_mod`, `floor_type`), `imbue_tower` (`add_mod`, `tower`).
+- **Выпадение** (`Rewards.ExpectedCurrencyDrop`): `drop_base · drop_growth^(ранг − 1) · m`, где `m` — множитель высоты этажа или `summit_multiplier` на вершине; на ранге 1 у валюты с уровнем еще `· rank1_drop_multiplier`. Моды на количество не влияют. Бросок — целая часть плюс еще одна единица с вероятностью дробной. Уровень выпавшей валюты = ранг.
+- **Пример:** `{ "id": "imbue", "name": "Наложение", "op": "add_mod", "mod_kind": "general", "has_level": true, "drops_from_rank": 1, "drop_base": 1.64, "drop_growth": 1.01, "summit_multiplier": 3.0 }`
+- Нормы проверяет приемка экономики `core/Dialoid.Core.Tests/Tower/EconomyAcceptanceTests.cs`; после правки `drop_*` у Наложений прогнать ее.

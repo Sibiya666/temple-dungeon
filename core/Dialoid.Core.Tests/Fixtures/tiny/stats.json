@@ -184,6 +184,14 @@
     "display": "percent"
   },
   {
+    "id": "resist_dark",
+    "name": "Сопротивление тьме",
+    "default": 0,
+    "min": -100,
+    "max": 100,
+    "display": "percent"
+  },
+  {
     "id": "damage",
     "name": "Урон",
     "default": 1,
@@ -312,6 +320,14 @@
     "display": "percent"
   },
   {
+    "id": "penetration_dark",
+    "name": "Пробивание сопротивления: dark",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "percent"
+  },
+  {
     "id": "added_physical_damage_min",
     "name": "Добавленный минимальный урон: physical",
     "default": 0,
@@ -384,8 +400,24 @@
     "display": "number"
   },
   {
+    "id": "added_dark_damage_min",
+    "name": "Добавленный минимальный урон: dark",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
     "id": "added_poison_damage_max",
     "name": "Добавленный максимальный урон: poison",
+    "default": 0,
+    "min": 0,
+    "max": 1000000000.0,
+    "display": "number"
+  },
+  {
+    "id": "added_dark_damage_max",
+    "name": "Добавленный максимальный урон: dark",
     "default": 0,
     "min": 0,
     "max": 1000000000.0,
@@ -490,6 +522,14 @@
   {
     "id": "resist_poison_max",
     "name": "Максимум сопротивления яду",
+    "default": 75,
+    "min": 0,
+    "max": 100,
+    "display": "percent"
+  },
+  {
+    "id": "resist_dark_max",
+    "name": "Максимум сопротивления тьме",
     "default": 75,
     "min": 0,
     "max": 100,

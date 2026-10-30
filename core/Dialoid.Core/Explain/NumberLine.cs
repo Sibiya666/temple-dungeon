@@ -25,6 +25,7 @@ internal static class SheetFormat
         Combat.DamageType.Cold => "холод",
         Combat.DamageType.Lightning => "молния",
         Combat.DamageType.Poison => "яд",
+        Combat.DamageType.Dark => "тьма",
         _ => t.ToString(),
     };
 

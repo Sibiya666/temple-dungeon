@@ -12,15 +12,39 @@ public class CommonDataTests
     {
         var r = ContentHarness.Data.AttributeRules;
         Assert.Equal(0.25, r.PrimaryDamageMorePerPoint);
-        Assert.Equal(8, r.Bonuses.Count);
+        Assert.Equal(9, r.Bonuses.Count);
         void Has(Attr a, string stat, ModKind k, double v) =>
             Assert.Contains(r.Bonuses, b => b.Attribute == a && b.Stat == stat && b.Kind == k && b.ValuePerPoint == v);
         Has(Attr.Str, "armor", ModKind.Flat, 2);
-        foreach (var s in new[] { "resist_fire", "resist_cold", "resist_lightning", "resist_poison" })
+        foreach (var s in new[] { "resist_fire", "resist_cold", "resist_lightning", "resist_poison", "resist_dark" })
             Has(Attr.Int, s, ModKind.Flat, 0.1);
         Has(Attr.Will, "resource_gen", ModKind.Increased, 0.2);
         Has(Attr.Will, "life_regen_pct", ModKind.Increased, 0.2);
         Has(Attr.Dex, "dodge_chance", ModKind.Flat, 0.05);
+    }
+
+    [Fact]
+    public void Dummy_dark_resist_equals_poison()
+    {
+        foreach (var (id, dummy) in ContentHarness.Data.Dummies)
+            Assert.Equal(dummy.Resists.GetValueOrDefault(DamageType.Poison), dummy.Resists.GetValueOrDefault(DamageType.Dark));
+        Assert.Equal(40, ContentHarness.Data.Dummies["elemental"].Resists[DamageType.Dark]);
+        Assert.Equal(30, ContentHarness.Data.Dummies["boss"].Resists[DamageType.Dark]);
+    }
+
+    [Fact]
+    public void Int_gives_dark_resist_and_buffs_list_it()
+    {
+        var d = ContentHarness.Data;
+        Assert.Contains(d.AttributeRules.Bonuses, b => b.Attribute == Attr.Int && b.Stat == "resist_dark" && b.ValuePerPoint == 0.1);
+        foreach (var buff in new[] { "steel_will", "phase_barrier" })
+        {
+            var mods = d.Skills.Values.SelectMany(s => s.Tree).SelectMany(n => n.Effects)
+                .OfType<Dialoid.Core.Effects.GrantProcEffect>().Select(p => p.Action)
+                .OfType<Dialoid.Core.Effects.ProcAction.ApplyBuff>().Single(a => a.BuffId == buff).Mods;
+            foreach (var r in new[] { "resist_fire", "resist_cold", "resist_lightning", "resist_poison", "resist_dark" })
+                Assert.Contains(mods, m => m.Stat == r && m.Value == 15);
+        }
     }
 
     [Fact]

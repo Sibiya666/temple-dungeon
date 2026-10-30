@@ -75,7 +75,7 @@ public sealed class Insatiable : IMechanic
 /// </summary>
 public sealed class Reckless : IMechanic
 {
-    private static readonly string[] Resists = { "resist_fire", "resist_cold", "resist_lightning", "resist_poison" };
+    private static readonly string[] Resists = { "resist_fire", "resist_cold", "resist_lightning", "resist_poison", "resist_dark" };
 
     public string Id => "reckless";
 

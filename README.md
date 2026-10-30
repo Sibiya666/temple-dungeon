@@ -45,6 +45,7 @@ dotnet test core/Dialoid.sln
 - механика `chill_slow` — сила охлаждения вместо стандартных 15% (у «Вечной мерзлоты» 25%);
 - песочное правило `spread_ignite`: в паке поджог, наложенный использованием, через `delay` (1 с) считается наложенным на все живые цели пака, которых он не достал (позиций в песочнице нет, поэтому «передача соседям при смерти» не моделируется);
 - песочное правило `fire_armor`: если в слотах есть скилл, создающий горящую землю (`ground_duration` и `ground_fraction` > 0, огненная зона), персонаж получает +30% брони (Increased) и +10 к максимуму сопротивления огню.
+- тип урона «тьма» (`DamageType.Dark = 5`, последний в порядке конверсии, не стихия): отклонение от спеки ядра 6.2 (там пять типов). Конверсия в тьму возможна из любого типа, из тьмы — никуда. «Каменная кожа» бронирует только стихийные удары и яд (`DamageTypes.IsElemental`), тьму не бронирует. Места: `DamageType`, `DamageTypes`, `RequiredStats`, `EffectJsonConverter`, `CombatEngine` (правило брони), `Reckless`, `NumberLine`, `CharacterSheet`, `Sandbox/Texts`; данные: `stats`, `tags`, `attributes` (Интеллект даёт `resist_dark`), `dummies` (сопротивление тьме равно яду), баффы `steel_will` и `phase_barrier`.
 
 ## Контент
 
@@ -189,5 +190,6 @@ DIALOID_DATA=/nonexistent tools/godot_check.sh --expect-load-failure
 | План 1: движок правил Dialoid.Core | выполнен |
 | План 2: контент и баланс | выполнен (открытые вопросы — `docs/superpowers/content-owner-questions.md`) |
 | План 3: отладочная сцена Godot | выполнен (самопроверка и приемка §15.3–15.4, скриншоты в `docs/superpowers/debug-scene-screenshots/`) |
+| Башня: логика в ядре (план 5) | выполнен: `Dialoid.Core/Tower` (данные `data/tower/`, сборка, намазка, забег, награда), приемка экономики — `core/Dialoid.Core.Tests/Tower/EconomyAcceptanceTests.cs`. Активности этажей, монстры и лут — следующие планы |
 
 Этап 1 (правила, контент и баланс, отладочная сцена) завершен. Дальше — визуал отдельным этапом: 2D-пиксель-арт. Решения владельца по контенту, балансу и визуалу собираются в [docs/superpowers/content-owner-questions.md](docs/superpowers/content-owner-questions.md).

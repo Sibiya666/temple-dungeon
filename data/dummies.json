@@ -22,7 +22,7 @@
     "life_per_target": null,
     "respawn": false,
     "armor": 0,
-    "resists": { "lightning": 40, "cold": 40, "fire": 40, "poison": 40 }
+    "resists": { "lightning": 40, "cold": 40, "fire": 40, "poison": 40, "dark": 40 }
   },
   {
     "id": "swarm",
@@ -31,7 +31,7 @@
     "life_per_target": 150,
     "respawn": true,
     "armor": 200,
-    "resists": { "lightning": 10, "cold": 10, "fire": 10, "poison": 10 }
+    "resists": { "lightning": 10, "cold": 10, "fire": 10, "poison": 10, "dark": 10 }
   },
   {
     "id": "boss",
@@ -40,7 +40,7 @@
     "life_per_target": 36600,
     "respawn": false,
     "armor": 1000,
-    "resists": { "lightning": 30, "cold": 30, "fire": 30, "poison": 30 },
+    "resists": { "lightning": 30, "cold": 30, "fire": 30, "poison": 30, "dark": 30 },
     "freeze_duration_multiplier": 0.5
   },
   {
@@ -50,7 +50,7 @@
     "life_per_target": null,
     "respawn": false,
     "armor": 1000,
-    "resists": { "lightning": 30, "cold": 30, "fire": 30, "poison": 30 },
+    "resists": { "lightning": 30, "cold": 30, "fire": 30, "poison": 30, "dark": 30 },
     "freeze_duration_multiplier": 0.5,
     "attack": {
       "damage_per_hit": { "physical": 25, "fire": 16 },

@@ -10,11 +10,11 @@
 | `dialoid-art-curator` | Арт-директор: стиль, читаемость боя, ассеты, лицензии | Визуал, подборки ассетов, скриншоты |
 | `dialoid-loot-economy-designer` | Дизайнер лута и экономики: предметы, крафт, валюты | Лут, награды, валюты башни, пресеты |
 | `dialoid-encounter-designer` | Дизайнер врагов и встреч: роли монстров, боссы, сложность | Монстры, боссы, этажи башни, ранги |
-| `dialoid-ui-reviewer` | Дизайнер интерфейса: подсказки, числа, клики, русские тексты | Экраны, панели, подсказки, управление |
+| `dialoid-ui-curator` | Куратор интерфейса, хранит видение UI (гамма D2, удобство D4, геймпад наравне с мышью): подсказки, числа, нажатия, русские тексты | Экраны, окна, HUD, подсказки, управление, макеты и скриншоты |
 
 Обычные связки:
 - **Класс или скилл:** arpg-design-reviewer, dialoid-mechanics-designer, dialoid-tech-reviewer.
 - **Башня и эндгейм:** dialoid-encounter-designer, dialoid-loot-economy-designer, dialoid-tech-reviewer.
-- **Визуал и сцена:** dialoid-art-curator, dialoid-ui-reviewer.
+- **Визуал и сцена:** dialoid-art-curator, dialoid-ui-curator.
 
 Новый агент добавляется файлом в `.claude/agents/` и строкой в эту таблицу.
