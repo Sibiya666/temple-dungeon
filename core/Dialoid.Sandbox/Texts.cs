@@ -268,7 +268,7 @@ internal static class Texts
 
     /// <summary>The note under a meter mode; null when the mode needs none.</summary>
     public static string? MeterModeHint(MeterMode mode) => mode == MeterMode.Mitigation
-        ? "Прибавки от уязвимости и пробивания — отдельные полосы, поэтому проценты не дают в сумме 100"
+        ? "Проценты — от урона до защиты. Уязвимость и пробивание добавляют урон сверху, поэтому «дошло» может быть больше 100%"
         : null;
 
     public static string SegmentLabel(int index, string duration, string dummyName, bool afterBuildChange) =>

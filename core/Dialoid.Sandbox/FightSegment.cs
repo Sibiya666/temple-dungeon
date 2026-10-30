@@ -13,6 +13,15 @@ public enum MeterMode { DpsBySkill, DamageBySkill, DamageByType, Mitigation }
 public sealed record MeterRow(string Key, string Label, double Value, double Share, bool IsBonus = false);
 
 /// <summary>
+/// Where damage before defence went (spec 8.1, 8.3), with each hit part's resistance and damage-taken steps split by their sign:
+/// a loss (positive) or a bonus (penetration below zero, vulnerability), both stored positive. Identity:
+/// <see cref="BeforeDefense"/> − <see cref="Armor"/> − <see cref="ResistLoss"/> + <see cref="ResistBonus"/> − <see cref="TakenLoss"/>
+/// + <see cref="TakenBonus"/> − <see cref="Nullified"/> = <see cref="Final"/>.
+/// </summary>
+public sealed record DefenceSplit(double BeforeDefense, double Armor, double ResistLoss, double ResistBonus, double TakenLoss,
+    double TakenBonus, double Nullified, double Final);
+
+/// <summary>
 /// One fight of the training room (spec 6.4): from the first damage to the last one before <see cref="TrainingRoom.SegmentIdleSec"/>
 /// without damage. The meter (<see cref="DamageBySkill"/> and the others) sums <b>every</b> damage event of the segment as it
 /// arrives, so it stays exact however long the segment runs. The raw lists are bounded so an endless fight uses bounded memory:
@@ -178,6 +187,13 @@ public sealed class FightSegment
         return rows;
     }
 
+    /// <summary>The whole segment's defence split, each hit part counted as a loss or a bonus by its own sign.</summary>
+    public DefenceSplit DefenceTotal => _total.ToSplit();
+
+    /// <summary>Each skill's defence split, losses and bonuses summed per hit part (not netted over the skill), by skill id.</summary>
+    public IReadOnlyDictionary<string, DefenceSplit> DefenceBySkill() =>
+        new SortedDictionary<string, DefenceSplit>(_bySkill.ToDictionary(kv => kv.Key, kv => kv.Value.ToSplit()), StringComparer.Ordinal);
+
     /// <summary>The damage of each skill summed over types (Type carries no meaning), by skill id.</summary>
     public IReadOnlyDictionary<string, DamagePart> MitigationBySkill() =>
         new SortedDictionary<string, DamagePart>(_bySkill.ToDictionary(kv => kv.Key, kv => kv.Value.ToPart()), StringComparer.Ordinal);
@@ -278,5 +294,8 @@ public sealed class FightSegment
         }
 
         public DamagePart ToPart() => new(default, BeforeDefense, ByArmor, ByResist, ByTakenMultiplier, Nullified, Final);
+
+        public DefenceSplit ToSplit() =>
+            new(BeforeDefense, ByArmor, ByResistLoss, ByResistBonus, ByTakenLoss, ByTakenBonus, Nullified, Final);
     }
 }

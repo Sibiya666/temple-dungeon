@@ -40,6 +40,9 @@ public partial class CombatLogWindow : SessionPanel
     /// <summary>Rows use a slightly smaller font than the window, so the event column keeps a whole hit on one or two lines.</summary>
     public const int RowFontSize = 14;
 
+    /// <summary>Space between rows, pixels (a 14 px line plus this is a ~22 px row).</summary>
+    public const int RowPadding = 2;
+
     private static readonly System.Text.RegularExpressions.Regex DigitGroups = new(@"(?<=\d) (?=\d)", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
     private const int TimeColumn = 0, WhoColumn = 1, WhatColumn = 2;
 
@@ -63,6 +66,7 @@ public partial class CombatLogWindow : SessionPanel
     private VScrollBar? _scroll;
     private bool _followTail = true;
     private float _wrapWidth;
+    private IReadOnlyList<string> _skillOrder = Array.Empty<string>();
     private bool _rewrap;
     private bool _syncing;
     private bool _dirty = true;
@@ -180,6 +184,7 @@ public partial class CombatLogWindow : SessionPanel
         _dirty = false;
         _sinceRefresh = 0;
         SyncSkillChoices();
+        _skillOrder = MeterColors.SkillOrder(Session);
         var entries = _room.Filter(_kinds, _skillId);
         Sync(entries);
         var hidden = Kinds.Where(k => !_kinds.Contains(k.Kind)).Select(k => k.Name.ToLowerInvariant()).ToList();
@@ -252,6 +257,9 @@ public partial class CombatLogWindow : SessionPanel
             CustomMinimumSize = new Vector2(0, 80),
         };
         _tree.AddThemeFontSizeOverride("font_size", RowFontSize);
+        // A dense chat log: thin row padding and no indent (a flat list), so ~10 rows fit and the event column gets the indent.
+        _tree.AddThemeConstantOverride("v_separation", RowPadding);
+        _tree.AddThemeConstantOverride("item_margin", 0);
         _tree.SetColumnTitle(TimeColumn, "Время");
         _tree.SetColumnTitle(WhoColumn, "Кто");
         _tree.SetColumnTitle(WhatColumn, "Что произошло");
@@ -275,8 +283,12 @@ public partial class CombatLogWindow : SessionPanel
         var size = _tree.GetThemeFontSize("font_size");
         var pad = NameColumnPadding();
         _tree.SetColumnExpand(TimeColumn, false);
-        // The first column also carries the item indent.
-        _tree.SetColumnCustomMinimumWidth(TimeColumn, (int)Math.Ceiling(font.GetStringSize("999,9 с", HorizontalAlignment.Left, -1, size).X + pad + _tree.GetThemeConstant("item_margin")));
+        // As wide as the longest time or the column title, whichever is wider.
+        var titleFont = _tree.GetThemeFont("title_button_font");
+        var titleSize = _tree.GetThemeFontSize("title_button_font_size");
+        var time = Math.Max(font.GetStringSize("99,9 с", HorizontalAlignment.Left, -1, size).X,
+            titleFont.GetStringSize(_tree.GetColumnTitle(TimeColumn), HorizontalAlignment.Left, -1, titleSize).X);
+        _tree.SetColumnCustomMinimumWidth(TimeColumn, (int)Math.Ceiling(time + pad));
         _tree.SetColumnExpand(WhoColumn, false);
         _tree.SetColumnCustomMinimumWidth(WhoColumn, (int)Math.Ceiling(NameTextWidth() + pad));
         _tree.SetColumnExpand(WhatColumn, true);
@@ -401,14 +413,16 @@ public partial class CombatLogWindow : SessionPanel
         item.SetText(TimeColumn, time);
         item.SetText(WhoColumn, who);
         item.SetText(WhatColumn, Wrap(what)); // a long hit wraps instead of losing its number
-        var color = ColorOf(e.Kind);
-        foreach (var c in new[] { TimeColumn, WhoColumn, WhatColumn })
-        {
-            item.SetTooltipText(c, e.Text);
-            item.SetCustomColor(c, c == TimeColumn ? SystemColor : color);
-        }
+        // The kind colours only what happened; the name keeps its skill's colour from the meter and the charts.
+        item.SetCustomColor(TimeColumn, SystemColor);
+        item.SetCustomColor(WhoColumn, e.SkillId is { } skill ? NameColor(skill) : TextColor);
+        item.SetCustomColor(WhatColumn, ColorOf(e.Kind));
+        for (var c = TimeColumn; c <= WhatColumn; c++) item.SetTooltipText(c, e.Text);
         _shown.Add(e);
     }
+
+    /// <summary>A skill's name colour: its meter colour, lightened for text on the dark window.</summary>
+    public Color NameColor(string skillId) => MeterColors.Skill(skillId, _skillOrder).Lerp(Colors.White, 0.45f);
 
     public static Color ColorOf(LogKind kind) => kind switch
     {

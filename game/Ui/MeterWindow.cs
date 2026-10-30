@@ -59,6 +59,20 @@ public partial class MeterWindow : SessionPanel
     private Button _charts = null!;
     private CheckBox _floating = null!;
     private VBoxContainer _confirm = null!;
+    private Color? _changeColor;
+
+    /// <summary>Key of the first «Потеря на защите» row: the damage before defence, the 100% the other rows are shares of.</summary>
+    public const string BeforeKey = "before";
+
+    /// <summary>The bars of a mode: the segment's rows; «Потеря на защите» starts with a neutral «до защиты · 100%» row.</summary>
+    public static IReadOnlyList<MeterRow> RowsOf(FightSegment segment, MeterMode mode)
+    {
+        var rows = segment.Rows(mode);
+        if (mode != MeterMode.Mitigation) return rows;
+        var list = new List<MeterRow>(rows.Count + 1) { new(BeforeKey, "до защиты", segment.DefenceTotal.BeforeDefense, 1) };
+        list.AddRange(rows);
+        return list;
+    }
 
     /// <summary>The bars' mode.</summary>
     public MeterMode Mode { get; private set; } = MeterMode.DpsBySkill;
@@ -203,45 +217,68 @@ public partial class MeterWindow : SessionPanel
     {
         if (Mode is not (MeterMode.DpsBySkill or MeterMode.DamageBySkill)) return false;
         if (index < 0 || index >= _bars.Rows.Count || SelectedSegment is not { } segment) return false;
-        var (line, context) = SkillLine(segment, _bars.Rows[index].Key);
+        var key = _bars.Rows[index].Key;
+        if (MainLine(key) is { } main) _open(main, SkillName(key)); // one step back in «Разбор» history: the skill's damage line
+        var (line, context) = SkillLine(segment, key);
         _open(line, context);
         return true;
     }
 
+    /// <summary>Key of the line a skill bar opens: the bar's own number.</summary>
+    public static string BarKey(string skillId) => "meter_dps_" + skillId;
+
+    private string SkillName(string skillId) => Session.Data.Skills.TryGetValue(skillId, out var skill) ? skill.Name : skillId;
+
+    /// <summary>The skill's main damage line (<see cref="MainDamageKey"/>) of the current build, or null for a skill outside the slots.</summary>
+    public NumberLine? MainLine(string skillId)
+    {
+        for (var i = 0; i < SandboxSession.SlotCount; i++)
+            if (Session.GetSlot(i)?.SkillId == skillId)
+                return Session.SkillLines(i).FirstOrDefault(l => l.Key == MainDamageKey);
+        return null;
+    }
+
     /// <summary>
-    /// What a skill bar opens: the skill's main damage line from the current build's SkillLines with the segment's numbers added to
-    /// its note (DPS and damage with the dummy's defence, what each defence step took); a skill outside the slots (a triggered one)
-    /// gets a line of its segment DPS with the same note. The context is the skill's name.
+    /// What a skill bar opens (spec §8.1, «то же число, что на полосе»): the skill's DPS in the segment with the dummy's defence
+    /// (<see cref="FightSegment.DpsBySkill"/>), the note giving its damage and the defence split; below it the skill's main damage
+    /// line from the sheet, which <see cref="OpenRow"/> also puts into the «Разбор» history one click away. Context: the skill's name.
     /// </summary>
     public (NumberLine Line, string Context) SkillLine(FightSegment segment, string skillId)
     {
-        var name = Session.Data.Skills.TryGetValue(skillId, out var skill) ? skill.Name : skillId;
+        var dps = segment.DpsBySkill().FirstOrDefault(r => r.Key == skillId)?.Value ?? 0;
         var damage = segment.DamageBySkill().FirstOrDefault(r => r.Key == skillId)?.Value ?? 0;
-        var dps = damage / segment.Duration;
-        var note = $"В сегменте {segment.Label}: DPS {RuNumber.Grouped(dps)} и урон {RuNumber.Grouped(damage)} с учетом защиты манекена.";
-        if (segment.MitigationBySkill().TryGetValue(skillId, out var part)) note += " " + DefenceNote(part);
-        NumberLine? main = null;
-        for (var i = 0; i < SandboxSession.SlotCount && main == null; i++)
-            if (Session.GetSlot(i)?.SkillId == skillId)
-                main = Session.SkillLines(i).FirstOrDefault(l => l.Key == MainDamageKey);
-        if (main == null) return (new NumberLine("meter_dps_" + skillId, "DPS за сегмент", dps, null, note), name);
-        return (main with { Note = (main.Note is { } own ? own + ".\n" : "") + note + " Строка листа — по текущему билду." }, name);
+        var note = $"Сегмент {segment.Label}: урон {RuNumber.Grouped(damage)} за {BreakdownText.Seconds(segment.Duration)} с, с учетом защиты манекена.";
+        if (segment.DefenceBySkill().TryGetValue(skillId, out var split)) note += "\n" + DefenceNote(split);
+        if (MainLine(skillId) is { } main)
+            note += $"\nЛист скилла (текущий билд, без защиты манекена): {NumberLabel.TextOf(main)}" + (main.Note is { } own ? $" ({own})" : "") +
+                    ". Эта строка — в истории «Разбора» ниже.";
+        // No digits in the label, so the title shows the value: «Вихрь · сегмент №10 — DPS за сегмент: 1394,4».
+        return (new NumberLine(BarKey(skillId), "DPS за сегмент", dps, null, note), $"{SkillName(skillId)} · сегмент №{segment.Index}");
     }
 
-    /// <summary>«Защита манекена: до защиты 60 000, броня −5 000, сопротивления −3 000, уязвимость +1 200, обнулено 0, дошло 51 828.»</summary>
-    public static string DefenceNote(DamagePart p)
+    /// <summary>«Защита манекена: до защиты 60 000; броня −5 000; сопротивления −3 000; уязвимость +1 200; …; дошло 51 828.»</summary>
+    public static string DefenceNote(DefenceSplit p)
     {
-        static string Signed(double loss, string lossName, string bonusName) =>
-            loss >= 0 ? $"{lossName} −{RuNumber.Grouped(loss)}" : $"{bonusName} +{RuNumber.Grouped(-loss)}";
-        return $"Защита манекена: до защиты {RuNumber.Grouped(p.BeforeDefense)}, броня −{RuNumber.Grouped(p.ByArmor)}, " +
-               $"{Signed(p.ByResist, "сопротивления", "пробивание")}, {Signed(p.ByTakenMultiplier, "множитель получаемого урона", "уязвимость")}, " +
-               $"обнулено {RuNumber.Grouped(p.Nullified)}, дошло {RuNumber.Grouped(p.Final)}.";
+        var parts = new List<string> { $"до защиты {RuNumber.Grouped(p.BeforeDefense)}", $"броня −{RuNumber.Grouped(p.Armor)}" };
+        parts.Add($"сопротивления −{RuNumber.Grouped(p.ResistLoss)}");
+        if (p.ResistBonus > 0) parts.Add($"пробивание +{RuNumber.Grouped(p.ResistBonus)}");
+        parts.Add($"множитель получаемого урона −{RuNumber.Grouped(p.TakenLoss)}");
+        if (p.TakenBonus > 0) parts.Add($"уязвимость +{RuNumber.Grouped(p.TakenBonus)}");
+        parts.Add($"обнулено {RuNumber.Grouped(p.Nullified)}");
+        parts.Add($"дошло {RuNumber.Grouped(p.Final)}");
+        return "Защита манекена: " + string.Join("; ", parts) + ".";
     }
 
-    /// <summary>A segment's item text: «● » for the running one, its label, «идет», «DPS +12%».</summary>
+    /// <summary>A segment's item text: its label, «идет» for the running one, «DPS +12%» once it is closed (a running segment's
+    /// DPS is still moving, so its change is shown only beside the list, grey and marked preliminary).</summary>
     public static string SegmentText(FightSegment s) =>
-        (s.IsOpen ? "● " : "") + s.Label + (s.IsOpen ? " · идет" : "") +
-        (s.DpsChangeVsPrevious is { } change ? " · " + CombatLogText.DpsChange(change) : "");
+        s.Label + (s.IsOpen ? " · идет" : s.DpsChangeVsPrevious is { } change ? " · " + CombatLogText.DpsChange(change) : "");
+
+    /// <summary>The text beside the list: «DPS +12% к прошлому сегменту», for a running segment «… (предварительно)».</summary>
+    public static string ChangeLabel(FightSegment s) =>
+        s.DpsChangeVsPrevious is { } change
+            ? CombatLogText.DpsChange(change) + " к прошлому" + (s.IsOpen ? " (предварительно)" : " сегменту")
+            : "";
 
     /// <summary>Brings every control to the room's state now (the self-test calls it; the window at most every <see cref="RefreshSec"/>).</summary>
     public void Refresh()
@@ -261,21 +298,21 @@ public partial class MeterWindow : SessionPanel
         else
         {
             _empty.Visible = false;
-            _bars.SetRows(segment.Rows(Mode), Mode, skillMode, MeterColors.SkillOrder(Session));
+            _bars.SetRows(RowsOf(segment, Mode), Mode, skillMode, MeterColors.SkillOrder(Session));
             var seconds = (int)Math.Floor(segment.Duration);
             _total.Text = $"Урон {RuNumber.Short(segment.TotalDamage)} · DPS {RuNumber.Short(segment.Dps)} · длительность {seconds / 60}:{seconds % 60:00}";
             _total.TooltipText = $"Урон сегмента {RuNumber.Grouped(segment.TotalDamage)}, DPS {RuNumber.Grouped(segment.Dps)} (урон / длительность сегмента)";
-            if (segment.DpsChangeVsPrevious is { } change)
+            _change.Text = ChangeLabel(segment);
+            var color = segment.IsOpen || segment.DpsChangeVsPrevious is not { } change ? Grey
+                : change >= 0 ? new Color(0.55f, 0.9f, 0.55f) : new Color(1f, 0.5f, 0.45f);
+            if (_changeColor != color)
             {
-                _change.Text = CombatLogText.DpsChange(change) + " к прошлому сегменту";
-                _change.AddThemeColorOverride("font_color", change >= 0 ? new Color(0.55f, 0.9f, 0.55f) : new Color(1f, 0.5f, 0.45f));
-                _change.TooltipText = "DPS этого сегмента против предыдущего";
+                _changeColor = color;
+                _change.AddThemeColorOverride("font_color", color);
             }
-            else
-            {
-                _change.Text = "";
-                _change.TooltipText = "";
-            }
+            _change.TooltipText = segment.IsOpen
+                ? "Сегмент еще идет: его DPS меняется, окончательная разница — после 5 с без ударов"
+                : "DPS этого сегмента против предыдущего";
         }
         var hint = CombatLogText.MeterModeHint(Mode);
         _hint.Visible = hint != null && segment != null;
@@ -386,6 +423,19 @@ public partial class MeterWindow : SessionPanel
         var answers = new HBoxContainer();
         _confirm.AddChild(answers);
         var yes = new Button { Name = "Yes", Text = "Да, сбросить", FocusMode = FocusModeEnum.None };
+        // The destructive answer in a muted danger frame; «Отмена» keeps the plain face.
+        foreach (var (state, bg, edge) in new[]
+                 {
+                     ("normal", new Color(0.3f, 0.14f, 0.12f), new Color(0.72f, 0.3f, 0.25f)),
+                     ("hover", new Color(0.4f, 0.17f, 0.14f), new Color(0.9f, 0.4f, 0.32f)),
+                     ("pressed", new Color(0.22f, 0.1f, 0.09f), new Color(0.9f, 0.4f, 0.32f)),
+                 })
+        {
+            var box = new StyleBoxFlat { BgColor = bg, BorderColor = edge, ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 3, ContentMarginBottom = 3 };
+            box.SetBorderWidthAll(1);
+            box.SetCornerRadiusAll(3);
+            yes.AddThemeStyleboxOverride(state, box);
+        }
         yes.Pressed += ConfirmReset;
         answers.AddChild(yes);
         var no = new Button { Name = "No", Text = "Отмена", FocusMode = FocusModeEnum.None };
@@ -410,6 +460,12 @@ public partial class MeterBars : Control
     private IReadOnlyList<string> _skillOrder = Array.Empty<string>();
     private MeterMode _mode;
     private int _hover = -1;
+    // Per row, computed in SetRows so _Draw allocates nothing: the right-hand text, the fill colour, the text colour, the label width.
+    private string[] _values = Array.Empty<string>();
+    private Color[] _fills = Array.Empty<Color>();
+    private Color[] _texts = Array.Empty<Color>();
+    private float[] _labelWidths = Array.Empty<float>();
+    private double _max;
 
     public IReadOnlyList<MeterRow> Rows => _rows;
     public bool Clickable { get; private set; }
@@ -419,6 +475,7 @@ public partial class MeterBars : Control
     public MeterBars()
     {
         MouseFilter = MouseFilterEnum.Stop;
+        ThemeChanged += () => SetRows(_rows, _mode, Clickable, _skillOrder);
     }
 
     public void SetRows(IReadOnlyList<MeterRow> rows, MeterMode mode, bool clickable, IReadOnlyList<string>? skillOrder = null)
@@ -429,16 +486,40 @@ public partial class MeterBars : Control
         Clickable = clickable;
         MouseDefaultCursorShape = clickable ? CursorShape.PointingHand : CursorShape.Arrow;
         CustomMinimumSize = new Vector2(0, rows.Count * RowHeight);
+        var n = rows.Count;
+        _values = new string[n];
+        _fills = new Color[n];
+        _texts = new Color[n];
+        _labelWidths = new float[n];
+        _max = 0;
+        var (font, size) = Font();
+        for (var i = 0; i < n; i++)
+        {
+            var row = rows[i];
+            _values[i] = ValueText(row, mode);
+            _fills[i] = FillOf(row);
+            // A step that took nothing reads as greyed out.
+            _texts[i] = mode == MeterMode.Mitigation && row.Value == 0 ? MeterColors.Muted : MeterColors.Text;
+            _labelWidths[i] = font.GetStringSize(row.Label, HorizontalAlignment.Left, -1, size).X;
+            if (row.Value > _max) _max = row.Value;
+        }
         QueueRedraw();
     }
 
-    /// <summary>The number and share on the right of a row: «1,2 тыс. · 45,3%» (a bonus with «+»).</summary>
-    public static string ValueText(MeterRow row) =>
-        row.IsBonus
-            ? "+" + RuNumber.Format(row.Share * 100, "0.#") + "%" // the caption already says «+19,6 тыс. от уязвимости»
-            : RuNumber.Short(row.Value) + " · " + RuNumber.Format(row.Share * 100, "0.#") + "%";
+    /// <summary>The number and share on the right of a row: «1,2 тыс. · 45,3%»; a bonus shows its share only («+35%», the caption
+    /// already says «+19,6 тыс. от уязвимости»); «дошло» above 100% adds the factor («148,4% · ×1,48»).</summary>
+    public static string ValueText(MeterRow row, MeterMode mode = MeterMode.DpsBySkill)
+    {
+        var share = RuNumber.Format(row.Share * 100, "0.#") + "%";
+        if (row.IsBonus) return "+" + share;
+        var text = RuNumber.Short(row.Value) + " · " + share;
+        if (mode == MeterMode.Mitigation && row.Key == "final" && row.Share > 1) text += " · ×" + RuNumber.Format(row.Share, "0.00");
+        return text;
+    }
 
-    public Color FillOf(MeterRow row) => MeterColors.Bar(_mode, row, _skillOrder);
+    public Color FillOf(MeterRow row) => row.Key == MeterWindow.BeforeKey && _mode == MeterMode.Mitigation
+        ? MeterColors.Before
+        : MeterColors.Bar(_mode, row, _skillOrder);
 
     /// <summary>The name and the value of row <paramref name="index"/> fit side by side in the current width.</summary>
     public bool RowFits(int index)
@@ -446,9 +527,19 @@ public partial class MeterBars : Control
         var (font, size) = Font();
         var row = _rows[index];
         var need = TextInset * 2 + MinGap + font.GetStringSize(row.Label, HorizontalAlignment.Left, -1, size).X +
-                   font.GetStringSize(ValueText(row), HorizontalAlignment.Left, -1, size).X;
+                   font.GetStringSize(_values[index], HorizontalAlignment.Left, -1, size).X;
         return need <= Size.X;
     }
+
+    /// <summary>Where the caption of row <paramref name="index"/> starts: inside the fill, or past it when a bonus fill is shorter
+    /// than the caption (the caption then reads on the dark track, not half on the colour).</summary>
+    public float LabelX(int index)
+    {
+        var fill = FillWidth(index);
+        return _rows[index].IsBonus && fill > 0 && fill < _labelWidths[index] + 2 * TextInset ? fill + TextInset : TextInset;
+    }
+
+    private float FillWidth(int index) => _max > 0 ? (float)(_rows[index].Value / _max) * Size.X : 0;
 
     public int RowAt(Vector2 at) => at.Y < 0 ? -1 : (int)(at.Y / RowHeight) is var i && i < _rows.Count ? i : -1;
 
@@ -458,28 +549,25 @@ public partial class MeterBars : Control
     {
         if (_rows.Count == 0) return;
         var (font, size) = Font();
-        var max = _rows.Max(r => r.Value);
         var ascent = font.GetAscent(size);
         var textY = (RowHeight + ascent - font.GetDescent(size)) / 2;
         for (var i = 0; i < _rows.Count; i++)
         {
-            var row = _rows[i];
             var y = i * RowHeight;
             var track = new Rect2(0, y + 1, Size.X, RowHeight - 2);
             DrawRect(track, MeterColors.Track);
-            var fill = max > 0 ? (float)(row.Value / max) * Size.X : 0;
-            if (fill > 0) DrawRect(new Rect2(0, y + 1, fill, RowHeight - 2), FillOf(row));
+            var fill = FillWidth(i);
+            if (fill > 0) DrawRect(new Rect2(0, y + 1, fill, RowHeight - 2), _fills[i]);
             if (i == _hover && Clickable) DrawRect(track, MeterColors.HoverEdge, false, 1);
-            var value = ValueText(row);
-            DrawText(font, new Vector2(TextInset, y + textY), row.Label, HorizontalAlignment.Left, -1, size);
-            DrawText(font, new Vector2(TextInset, y + textY), value, HorizontalAlignment.Right, Size.X - 2 * TextInset, size);
+            DrawText(font, new Vector2(LabelX(i), y + textY), _rows[i].Label, HorizontalAlignment.Left, -1, size, _texts[i]);
+            DrawText(font, new Vector2(TextInset, y + textY), _values[i], HorizontalAlignment.Right, Size.X - 2 * TextInset, size, _texts[i]);
         }
     }
 
-    private void DrawText(Font font, Vector2 at, string text, HorizontalAlignment align, float width, int size)
+    private void DrawText(Font font, Vector2 at, string text, HorizontalAlignment align, float width, int size, Color color)
     {
         DrawString(font, at + new Vector2(1, 1), text, align, width, size, MeterColors.TextShadow);
-        DrawString(font, at, text, align, width, size, MeterColors.Text);
+        DrawString(font, at, text, align, width, size, color);
     }
 
     public override void _GuiInput(InputEvent e)
@@ -531,6 +619,10 @@ public static class MeterColors
     public static readonly Color Text = new(0.96f, 0.94f, 0.9f);
     public static readonly Color TextShadow = new(0, 0, 0, 0.85f);
     public static readonly Color BonusText = new(0.82f, 0.68f, 1f);
+    /// <summary>A row that holds zero, greyed out.</summary>
+    public static readonly Color Muted = new(0.55f, 0.53f, 0.5f);
+    /// <summary>The neutral «до защиты» base of «Потеря на защите».</summary>
+    public static readonly Color Before = new(0.36f, 0.34f, 0.31f);
 
     private static readonly Color[] Skills =
     [
@@ -557,7 +649,9 @@ public static class MeterColors
 
     public static Color Skill(string skillId, IReadOnlyList<string> order)
     {
-        var at = order.ToList().IndexOf(skillId);
+        var at = -1;
+        for (var i = 0; i < order.Count && at < 0; i++)
+            if (order[i] == skillId) at = i;
         if (at < 0) at = order.Count + (int)((uint)StableHash(skillId) % 3);
         return Skills[at % Skills.Length];
     }

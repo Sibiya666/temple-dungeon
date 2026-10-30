@@ -47,8 +47,8 @@ public partial class WindowHost : Control
         new(WindowIds.Breakdown, "Разбор", Key.R, WindowEdge.Right, 540),
         new(WindowIds.Simulation, "Симуляция", Key.M, WindowEdge.Right, 640),
         // 500 px: at 1600 the log ends left of the combat screen's buffs and slots.
-        new(WindowIds.Log, "Журнал", Key.L, WindowEdge.LeftBottom, 500, 320),
-        new(WindowIds.Meter, "Измеритель", Key.T, WindowEdge.RightTop, 440, 470),
+        new(WindowIds.Log, "Журнал", Key.L, WindowEdge.LeftBottom, 500, 380),
+        new(WindowIds.Meter, "Измеритель", Key.T, WindowEdge.RightTop, 440, 540),
         // On the left, above the log: the charts sit beside the meter they follow (plan 4 task 11).
         new(WindowIds.Charts, "Графики", Key.G, WindowEdge.Left, 660, 620),
     ];
@@ -213,9 +213,26 @@ public partial class WindowHost : Control
     }
 
     /// <summary>The rect a window gets when nothing is remembered: its edge, its default size, inside the screen.</summary>
-    public Rect2 DefaultRect(WindowSpec spec)
+    public Rect2 DefaultRect(WindowSpec spec) => DefaultRect(spec, Size);
+
+    /// <summary>
+    /// The default rect on a screen of <paramref name="screen"/>. A left window of a set height stops above the bottom-left window
+    /// (the charts above the log), so the two never overlap on a short screen.
+    /// </summary>
+    public Rect2 DefaultRect(WindowSpec spec, Vector2 screen)
     {
-        var screen = Size;
+        var rect = BaseRect(spec, screen);
+        if (spec.Edge != WindowEdge.Left || spec.Height <= 0) return rect;
+        foreach (var below in Specs.Where(s => s.Edge == WindowEdge.LeftBottom))
+        {
+            var limit = BaseRect(below, screen).Position.Y - Margin - rect.Position.Y;
+            if (rect.Size.Y > limit) rect.Size = new Vector2(rect.Size.X, Mathf.Max(MinSize.Y, limit));
+        }
+        return rect;
+    }
+
+    private Rect2 BaseRect(WindowSpec spec, Vector2 screen)
+    {
         var top = TopInset() + Margin;
         var bottom = screen.Y - BottomInset() - Margin;
         // A side window takes at most a third of the screen, so the hero and the dummy next to him stay in sight.

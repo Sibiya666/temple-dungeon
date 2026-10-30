@@ -1,4 +1,3 @@
-using Dialoid.Core.Combat;
 using Dialoid.Core.Explain;
 using Dialoid.Sandbox;
 using Godot;
@@ -8,12 +7,11 @@ namespace Dialoid.Game.Ui;
 /// <summary>One line of the damage-over-time chart: the whole segment or one skill, final damage per bucket.</summary>
 public sealed record ChartLine(string Key, string Label, Color Color, IReadOnlyList<(double Time, double Damage)> Points);
 
-/// <summary>One skill's defence split for the chart: damage before defence and what each step took (bonuses as positive numbers).</summary>
-public sealed record DefenceBar(string SkillId, string Label, Color Color, DamagePart Part)
+/// <summary>One skill's defence split for the chart (the sandbox's per-hit <see cref="DefenceSplit"/>, not netted over the skill).</summary>
+public sealed record DefenceBar(string SkillId, string Label, Color Color, DefenceSplit Split)
 {
-    public double Losses => Part.Final + Part.ByArmor + Math.Max(0, Part.ByResist) + Math.Max(0, Part.ByTakenMultiplier) + Part.Nullified;
-    public double Vulnerability => Math.Max(0, -Part.ByTakenMultiplier);
-    public double Penetration => Math.Max(0, -Part.ByResist);
+    /// <summary>The stack's length: what reached the dummy plus every loss (bonuses are drawn under it).</summary>
+    public double Stack => Split.Final + Split.Armor + Split.ResistLoss + Split.TakenLoss + Split.Nullified;
 }
 
 /// <summary>
@@ -22,8 +20,9 @@ public sealed record DefenceBar(string SkillId, string Label, Color Color, Damag
 /// shares) and the defence split of each skill (stacked bars «дошло / броня / сопротивления / множитель / обнулено», the
 /// vulnerability and penetration bonuses as a violet / teal strip under the stack). All data is the sandbox's
 /// (<see cref="FightSegment.DamageOverTime"/>, <see cref="FightSegment.DpsBySkill"/>, <see cref="FightSegment.DamageByType"/>,
-/// <see cref="FightSegment.MitigationBySkill"/>); everything is drawn on <see cref="Control._Draw"/>, numbers in
-/// <see cref="RuNumber.Short"/>. Refreshed at most every <see cref="RefreshSec"/> while open.
+/// <see cref="FightSegment.DefenceBySkill"/>); everything is drawn on <see cref="Control._Draw"/> from geometry laid out on refresh
+/// and resize (the draw itself allocates nothing), numbers in <see cref="RuNumber.Short"/>. Refreshed at most every
+/// <see cref="RefreshSec"/> while open.
 /// </summary>
 public partial class ChartsWindow : SessionPanel
 {
@@ -133,16 +132,17 @@ public partial class ChartsWindow : SessionPanel
         {
             _title.Text = "Сегмент " + MeterWindow.SegmentText(segment) + " (выбирается в измерителе)";
             var order = SkillOrder = MeterColors.SkillOrder(Session);
+            var bySkill = segment.DamageBySkill();
             var lines = new List<ChartLine> { new(TotalKey, "Всего", MeterColors.Text, segment.DamageOverTime(BucketSec)) };
-            foreach (var row in segment.DamageBySkill().Take(MaxSkillLines))
+            foreach (var row in bySkill.Take(MaxSkillLines))
                 lines.Add(new ChartLine(row.Key, row.Label, Lighter(MeterColors.Skill(row.Key, order)), segment.DamageOverTime(BucketSec, row.Key)));
             Lines = lines;
             DpsBars = segment.DpsBySkill();
             TypeBars = segment.DamageByType();
-            var names = segment.DamageBySkill().ToDictionary(r => r.Key, r => r.Label);
-            DefenceBars = segment.MitigationBySkill()
+            var names = bySkill.ToDictionary(r => r.Key, r => r.Label);
+            DefenceBars = segment.DefenceBySkill()
                 .Select(kv => new DefenceBar(kv.Key, names.GetValueOrDefault(kv.Key, kv.Key), MeterColors.Skill(kv.Key, order), kv.Value))
-                .OrderByDescending(b => b.Part.BeforeDefense).ToList();
+                .OrderByDescending(b => b.Split.BeforeDefense).ToList();
         }
         _canvas.Relayout();
     }
@@ -150,7 +150,10 @@ public partial class ChartsWindow : SessionPanel
     public static Color Lighter(Color c) => c.Lerp(Colors.White, 0.25f);
 }
 
-/// <summary>The four charts of <see cref="ChartsWindow"/>, stacked, drawn on <see cref="Control._Draw"/>.</summary>
+/// <summary>
+/// The four charts of <see cref="ChartsWindow"/>, stacked. <see cref="Relayout"/> (on refresh and resize) turns the data into
+/// rectangles, polylines and strings; <see cref="_Draw"/> only paints them.
+/// </summary>
 public partial class ChartsCanvas : Control
 {
     public const float SectionGap = 14;
@@ -159,13 +162,27 @@ public partial class ChartsCanvas : Control
     public const float AxisWidth = 86;
     public const float BarHeight = 22;
     public const float DefenceRowHeight = 68;
+    public const float LegendRow = 22;
 
     private static readonly Color Axis = new(0.45f, 0.42f, 0.38f);
     private static readonly Color Grid = new(0.22f, 0.21f, 0.2f);
     private static readonly Color Caption = new(0.93f, 0.85f, 0.7f);
     private static readonly Color Muted = new(0.7f, 0.67f, 0.62f);
 
+    private static readonly (string Label, Color Color)[] DefenceLegend =
+    [
+        ("дошло", MeterColors.Final), ("броня", MeterColors.Armor), ("сопротивления", MeterColors.Resist), ("множитель", MeterColors.Taken),
+        ("обнулено", MeterColors.Nullified), ("+ уязвимость", MeterColors.Vulnerability), ("+ пробивание", MeterColors.Penetration),
+    ];
+
     private readonly ChartsWindow _owner;
+
+    // The laid-out picture.
+    private readonly List<(Rect2 Rect, Color Color, bool Filled)> _rects = new();
+    private readonly List<(Vector2 At, string Text, Color Color, HorizontalAlignment Align, float Width)> _texts = new();
+    private readonly List<(Vector2[] Points, Color Color, float Width)> _polylines = new();
+    private readonly List<(Vector2 From, Vector2 To, Color Color)> _segments = new();
+    private readonly List<(Vector2 At, Color Color)> _dots = new();
 
     public ChartsCanvas(ChartsWindow owner)
     {
@@ -174,55 +191,44 @@ public partial class ChartsCanvas : Control
         Resized += Relayout;
     }
 
-    /// <summary>Recomputes the height the charts need and redraws.</summary>
-    public void Relayout()
-    {
-        CustomMinimumSize = new Vector2(0, TotalHeight());
-        QueueRedraw();
-    }
-
     private (Font Font, int Size) Font() => (GetThemeDefaultFont(), GetThemeDefaultFontSize());
 
-    private float LegendHeight(IEnumerable<string> labels)
+    /// <summary>Lays the charts out for the current data and width, sets the height they need and redraws.</summary>
+    public void Relayout()
     {
-        var (font, size) = Font();
-        float x = 0, rows = 1;
-        foreach (var label in labels)
+        _rects.Clear();
+        _texts.Clear();
+        _polylines.Clear();
+        _segments.Clear();
+        _dots.Clear();
+        var height = 0f;
+        if (_owner.Segment != null && Size.X > 1)
         {
-            var w = 18 + font.GetStringSize(label, HorizontalAlignment.Left, -1, size).X + 14;
-            if (x > 0 && x + w > Size.X) { rows++; x = 0; }
-            x += w;
+            var y = LayLines(0) + SectionGap;
+            y = LayBars(y, "DPS по скиллам (урон за сегмент / длительность)", _owner.DpsBars, r => MeterColors.Skill(r.Key, _owner.SkillOrder), false) + SectionGap;
+            y = LayBars(y, "Урон по типам (доля от урона сегмента)", _owner.TypeBars, r => MeterColors.Type(r.Key), true) + SectionGap;
+            height = LayDefence(y) + SectionGap;
         }
-        return rows * 22;
-    }
-
-    private static readonly string[] DefenceLegend = ["дошло", "броня", "сопротивления", "множитель", "обнулено", "+ уязвимость", "+ пробивание"];
-
-    private float TotalHeight()
-    {
-        if (_owner.Segment == null) return 0;
-        return TitleHeight + LineChartHeight + 26 + LegendHeight(_owner.Lines.Select(l => l.Label)) + SectionGap
-               + TitleHeight + _owner.DpsBars.Count * BarHeight + SectionGap
-               + TitleHeight + _owner.TypeBars.Count * BarHeight + SectionGap
-               + TitleHeight + LegendHeight(DefenceLegend) + _owner.DefenceBars.Count * DefenceRowHeight + SectionGap;
+        if (!Mathf.IsEqualApprox(CustomMinimumSize.Y, height)) CustomMinimumSize = new Vector2(0, height);
+        QueueRedraw();
     }
 
     public override void _Draw()
     {
-        if (_owner.Segment == null) return;
-        var y = 0f;
-        y = DrawLines(y) + SectionGap;
-        y = DrawBars(y, "DPS по скиллам (урон за сегмент / длительность)", _owner.DpsBars, r => MeterColors.Skill(r.Key, _owner.SkillOrder), false) + SectionGap;
-        y = DrawBars(y, "Урон по типам (доля от урона сегмента)", _owner.TypeBars, r => MeterColors.Type(r.Key), true) + SectionGap;
-        DrawDefence(y);
+        var (font, size) = Font();
+        foreach (var (rect, color, filled) in _rects) DrawRect(rect, color, filled, filled ? -1 : 1);
+        foreach (var (from, to, color) in _segments) DrawLine(from, to, color, 1);
+        foreach (var (points, color, width) in _polylines) DrawPolyline(points, color, width, true);
+        foreach (var (at, color) in _dots) DrawCircle(at, 3, color);
+        foreach (var (at, text, color, align, width) in _texts)
+        {
+            DrawString(font, at + new Vector2(1, 1), text, align, width, size, MeterColors.TextShadow);
+            DrawString(font, at, text, align, width, size, color);
+        }
     }
 
-    private void Text(string text, Vector2 at, Color color, HorizontalAlignment align = HorizontalAlignment.Left, float width = -1)
-    {
-        var (font, size) = Font();
-        DrawString(font, at + new Vector2(1, 1), text, align, width, size, MeterColors.TextShadow);
-        DrawString(font, at, text, align, width, size, color);
-    }
+    private void Text(string text, Vector2 at, Color color, HorizontalAlignment align = HorizontalAlignment.Left, float width = -1) =>
+        _texts.Add((at, text, color, align, width));
 
     private float Baseline(float top, float height)
     {
@@ -230,38 +236,40 @@ public partial class ChartsCanvas : Control
         return top + (height + font.GetAscent(size) - font.GetDescent(size)) / 2;
     }
 
-    private float DrawLines(float y)
+    private float LayLines(float y)
     {
         Text("Урон по времени (за каждую секунду сегмента)", new Vector2(0, Baseline(y, TitleHeight)), Caption);
         y += TitleHeight;
         var lines = _owner.Lines;
         var plot = new Rect2(AxisWidth, y + 6, Mathf.Max(10, Size.X - AxisWidth - 10), LineChartHeight - 12);
-        var max = lines.SelectMany(l => l.Points).Select(p => p.Damage).DefaultIfEmpty(0).Max();
+        var max = 0.0;
+        foreach (var line in lines)
+            foreach (var p in line.Points)
+                if (p.Damage > max) max = p.Damage;
         if (max <= 0) max = 1;
         var count = lines.Count > 0 ? lines[0].Points.Count : 0;
-        // Grid: 0, half, max.
         for (var k = 0; k <= 2; k++)
         {
             var gy = plot.End.Y - plot.Size.Y * k / 2f;
-            DrawLine(new Vector2(plot.Position.X, gy), new Vector2(plot.End.X, gy), k == 0 ? Axis : Grid, 1);
+            _segments.Add((new Vector2(plot.Position.X, gy), new Vector2(plot.End.X, gy), k == 0 ? Axis : Grid));
             Text(RuNumber.Short(max * k / 2), new Vector2(0, gy + 6), Muted, HorizontalAlignment.Right, AxisWidth - 6);
         }
-        DrawLine(plot.Position, new Vector2(plot.Position.X, plot.End.Y), Axis, 1);
+        _segments.Add((plot.Position, new Vector2(plot.Position.X, plot.End.Y), Axis));
         float X(int i) => count <= 1 ? plot.Position.X + plot.Size.X / 2 : plot.Position.X + plot.Size.X * i / (count - 1);
         float Y(double v) => plot.End.Y - (float)(v / max) * plot.Size.Y;
-        // The total last so it stays on top.
-        foreach (var line in lines.Skip(1).Append(lines.FirstOrDefault()).OfType<ChartLine>())
+        // Skill lines first, the total last so it stays on top.
+        for (var n = 1; n <= lines.Count; n++)
         {
-            var width = line.Key == ChartsWindow.TotalKey ? 2.5f : 1.6f;
+            var line = lines[n % lines.Count];
             if (line.Points.Count == 1)
             {
-                DrawCircle(new Vector2(X(0), Y(line.Points[0].Damage)), 3, line.Color);
+                _dots.Add((new Vector2(X(0), Y(line.Points[0].Damage)), line.Color));
                 continue;
             }
-            var pts = line.Points.Select((p, i) => new Vector2(X(i), Y(p.Damage))).ToArray();
-            DrawPolyline(pts, line.Color, width, true);
+            var points = new Vector2[line.Points.Count];
+            for (var i = 0; i < points.Length; i++) points[i] = new Vector2(X(i), Y(line.Points[i].Damage));
+            _polylines.Add((points, line.Color, line.Key == ChartsWindow.TotalKey ? 2.5f : 1.6f));
         }
-        // Time axis: 0 с, the middle, the end.
         var axisY = plot.End.Y + 20;
         if (count > 0)
         {
@@ -271,84 +279,88 @@ public partial class ChartsCanvas : Control
             Text($"{RuNumber.Format(span, "0.#")} с", new Vector2(plot.Position.X, axisY), Muted, HorizontalAlignment.Right, plot.Size.X);
         }
         y += LineChartHeight + 26;
-        return DrawLegend(y, lines.Select(l => (l.Label, l.Color)));
+        var legend = new List<(string, Color)>(lines.Count);
+        foreach (var line in lines) legend.Add((line.Label, line.Color));
+        return LayLegend(y, legend);
     }
 
-    private float DrawLegend(float y, IEnumerable<(string Label, Color Color)> items)
+    private float LayLegend(float y, IReadOnlyList<(string Label, Color Color)> items)
     {
         var (font, size) = Font();
         float x = 0;
         foreach (var (label, color) in items)
         {
             var w = 18 + font.GetStringSize(label, HorizontalAlignment.Left, -1, size).X + 14;
-            if (x > 0 && x + w > Size.X) { y += 22; x = 0; }
-            DrawRect(new Rect2(x, y + 6, 12, 12), color);
-            Text(label, new Vector2(x + 18, Baseline(y, 22)), Muted);
+            if (x > 0 && x + w > Size.X) { y += LegendRow; x = 0; }
+            _rects.Add((new Rect2(x, y + 6, 12, 12), color, true));
+            Text(label, new Vector2(x + 18, Baseline(y, LegendRow)), Muted);
             x += w;
         }
-        return y + 22;
+        return y + LegendRow;
     }
 
-    private float DrawBars(float y, string title, IReadOnlyList<MeterRow> rows, Func<MeterRow, Color> color, bool share)
+    private float LayBars(float y, string title, IReadOnlyList<MeterRow> rows, Func<MeterRow, Color> color, bool share)
     {
         Text(title, new Vector2(0, Baseline(y, TitleHeight)), Caption);
         y += TitleHeight;
-        var max = rows.Select(r => r.Value).DefaultIfEmpty(0).Max();
+        var max = 0.0;
+        foreach (var row in rows) if (row.Value > max) max = row.Value;
         foreach (var row in rows)
         {
-            DrawRect(new Rect2(0, y + 1, Size.X, BarHeight - 2), MeterColors.Track);
-            if (max > 0) DrawRect(new Rect2(0, y + 1, (float)(row.Value / max) * Size.X, BarHeight - 2), color(row));
+            _rects.Add((new Rect2(0, y + 1, Size.X, BarHeight - 2), MeterColors.Track, true));
+            if (max > 0) _rects.Add((new Rect2(0, y + 1, (float)(row.Value / max) * Size.X, BarHeight - 2), color(row), true));
             var baseline = Baseline(y, BarHeight);
             Text(row.Label, new Vector2(6, baseline), MeterColors.Text);
-            var value = RuNumber.Short(row.Value) + (share ? " · " + RuNumber.Format(row.Share * 100, "0.#") + "%" : "");
-            Text(value, new Vector2(6, baseline), MeterColors.Text, HorizontalAlignment.Right, Size.X - 12);
+            Text(RuNumber.Short(row.Value) + (share ? " · " + RuNumber.Format(row.Share * 100, "0.#") + "%" : ""),
+                new Vector2(6, baseline), MeterColors.Text, HorizontalAlignment.Right, Size.X - 12);
             y += BarHeight;
         }
         return y;
     }
 
-    private void DrawDefence(float y)
+    private float LayDefence(float y)
     {
         Text("Потеря на защите по скиллам", new Vector2(0, Baseline(y, TitleHeight)), Caption);
         y += TitleHeight;
-        y = DrawLegend(y, DefenceLegend.Zip(new[]
-        {
-            MeterColors.Final, MeterColors.Armor, MeterColors.Resist, MeterColors.Taken, MeterColors.Nullified, MeterColors.Vulnerability, MeterColors.Penetration,
-        }, (l, c) => (l, c)));
+        y = LayLegend(y, DefenceLegend);
         var bars = _owner.DefenceBars;
-        var max = bars.Select(b => Math.Max(b.Losses, b.Part.BeforeDefense)).DefaultIfEmpty(0).Max();
+        var max = 0.0;
+        foreach (var bar in bars) max = Math.Max(max, Math.Max(bar.Stack, bar.Split.BeforeDefense));
         foreach (var bar in bars)
         {
-            var p = bar.Part;
+            var p = bar.Split;
             Text(bar.Label, new Vector2(0, Baseline(y, 20)), MeterColors.Text);
-            var bonus = bar.Vulnerability + bar.Penetration;
+            var bonus = p.TakenBonus + p.ResistBonus;
             Text($"до защиты {RuNumber.Short(p.BeforeDefense)} · дошло {RuNumber.Short(p.Final)}" + (bonus > 0 ? $" · прибавки +{RuNumber.Short(bonus)}" : ""),
                 new Vector2(0, Baseline(y + 20, 20)), Muted);
             var top = y + 42;
-            DrawRect(new Rect2(0, top, Size.X, 14), MeterColors.Track);
-            var x = 0f;
+            _rects.Add((new Rect2(0, top, Size.X, 14), MeterColors.Track, true));
             if (max > 0)
+            {
+                var x = 0f;
                 foreach (var (value, color) in new[]
                          {
-                             (p.Final, MeterColors.Final), (p.ByArmor, MeterColors.Armor), (Math.Max(0, p.ByResist), MeterColors.Resist),
-                             (Math.Max(0, p.ByTakenMultiplier), MeterColors.Taken), (p.Nullified, MeterColors.Nullified),
+                             (p.Final, MeterColors.Final), (p.Armor, MeterColors.Armor), (p.ResistLoss, MeterColors.Resist),
+                             (p.TakenLoss, MeterColors.Taken), (p.Nullified, MeterColors.Nullified),
                          })
                 {
                     var w = (float)(value / max) * Size.X;
                     if (w <= 0) continue;
-                    DrawRect(new Rect2(x, top, w, 14), color);
+                    _rects.Add((new Rect2(x, top, w, 14), color, true));
                     x += w;
                 }
-            // Bonuses: a strip under the stack, as long as the damage they added.
-            var bx = 0f;
-            foreach (var (value, color) in new[] { (bar.Vulnerability, MeterColors.Vulnerability), (bar.Penetration, MeterColors.Penetration) })
-            {
-                if (value <= 0 || max <= 0) continue;
-                var w = (float)(value / max) * Size.X;
-                DrawRect(new Rect2(bx, top + 16, Mathf.Max(2, w), 5), color);
-                bx += w;
+                // Bonuses: a strip under the stack, as long as the damage they added.
+                var bx = 0f;
+                foreach (var (value, color) in new[] { (p.TakenBonus, MeterColors.Vulnerability), (p.ResistBonus, MeterColors.Penetration) })
+                {
+                    if (value <= 0) continue;
+                    var w = (float)(value / max) * Size.X;
+                    _rects.Add((new Rect2(bx, top + 16, Mathf.Max(2, w), 5), color, true));
+                    bx += w;
+                }
             }
             y += DefenceRowHeight;
         }
+        return y;
     }
 }
