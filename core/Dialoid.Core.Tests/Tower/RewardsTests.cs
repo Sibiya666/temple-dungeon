@@ -168,16 +168,18 @@ public class RewardsTests
     }
 
     [Fact]
-    public void Rank1_drop_is_scaled_by_rank1_multiplier_only()
+    public void Rank1_multiplier_scales_only_levelled_currency_on_rank_1()
     {
         Assert.True(D.Rules.Rank1DropMultiplier > 1);
+        Assert.Contains(D.Currencies, c => c.DropsFromRank == 1 && !c.HasLevel);
         foreach (int? place in new int?[] { 0, 4, null })
         {
             foreach (var (id, value) in Rewards.ExpectedCurrencyDrop(D, 1, place))
             {
                 var c = D.Currency(id);
                 double mult = place is int i ? D.Rules.HeightMultipliers[i] : c.SummitMultiplier;
-                Assert.Equal(c.DropBase * mult * D.Rules.Rank1DropMultiplier, value, 12);
+                double bonus = c.HasLevel ? D.Rules.Rank1DropMultiplier : 1; // levelless currency works on any rank: no bonus
+                Assert.Equal(c.DropBase * mult * bonus, value, 12);
             }
             foreach (var (id, value) in Rewards.ExpectedCurrencyDrop(D, 2, place))
             {

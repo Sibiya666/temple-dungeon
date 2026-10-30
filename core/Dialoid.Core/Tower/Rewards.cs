@@ -105,7 +105,7 @@ public static class Rewards
 
     /// <summary>
     /// Expected drop per currency in data file order; currencies not yet dropping at this rank are absent. Mods do not matter.
-    /// On rank 1 everything is scaled by <see cref="TowerRules.Rank1DropMultiplier"/>.
+    /// On rank 1 levelled currencies are scaled by <see cref="TowerRules.Rank1DropMultiplier"/>; levelless ones are not.
     /// </summary>
     public static IReadOnlyDictionary<string, double> ExpectedCurrencyDrop(TowerData d, int rank, int? floorIndex)
     {
@@ -116,7 +116,7 @@ public static class Rewards
         {
             if (c.DropsFromRank > rank) continue;
             double mult = floorIndex.HasValue ? height : c.SummitMultiplier;
-            map.Add(c.Id, c.DropBase * Math.Pow(c.DropGrowth, rank - 1) * mult * rankBonus);
+            map.Add(c.Id, c.DropBase * Math.Pow(c.DropGrowth, rank - 1) * mult * (c.HasLevel ? rankBonus : 1));
         }
         return map;
     }

@@ -31,8 +31,9 @@ public sealed record CurrencyDef(string Id, string Name, CurrencyOp Op, ModKind?
 public sealed record RankDef(int Rank, int LevelMin, int LevelMax, int ZoneLevel, IReadOnlySet<ModKind> ModKinds, int MaxTier);
 
 /// <summary>
-/// Tower-wide numbers from data/tower/rules.json. <see cref="Rank1DropMultiplier"/> (≥ 1) scales every currency drop on rank 1 only
-/// (spec 8.3: rank 1 is generous; its level-1 currency cannot be exchanged up, so the bonus does not leak to rank 2).
+/// Tower-wide numbers from data/tower/rules.json. <see cref="Rank1DropMultiplier"/> (≥ 1) scales drops of levelled currencies on rank 1 only
+/// (spec 8.3: rank 1 is generous; its level-1 currency cannot be exchanged up, so the bonus does not leak to rank 2; levelless currencies
+/// work on any rank, so they get no bonus).
 /// </summary>
 public sealed record TowerRules(int Floors, int FloorSlots, int TowerSlots, IReadOnlyList<double> HeightMultipliers, double SummitBonus,
     double DiminishingC, double DiversityBonusPerType, int DiversityBonusTypesCap, double ShuffleBonus, double NoDeathBonus, double QualityCap,

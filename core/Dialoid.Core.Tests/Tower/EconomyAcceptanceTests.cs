@@ -190,9 +190,6 @@ public class EconomyAcceptanceTests
         // quality differs, so the mods are really in effect
         Assert.True(Rewards.FloorQuality(D, crafted.Spec, 0, true, false).Total > Rewards.FloorQuality(D, bare.Spec, 0, true, false).Total);
 
-        foreach (var place in Enumerable.Range(0, D.Rules.Floors).Select(i => (int?)i).Append(null))
-            Assert.Equal(Rewards.ExpectedCurrencyDrop(D, ModRank, place), Rewards.ExpectedCurrencyDrop(D, ModRank, place));
-
         foreach (int seed in new[] { 1, 2, 3, 42 })
             Assert.Equal(RunCurrency(bare, seed), RunCurrency(crafted, seed));
     }
