@@ -58,6 +58,7 @@ public static class ButtonPrompts
     public const string InfoMeta = "pad_info";
     public const string EditMeta = "pad_edit";
     public const string KeyboardFocusMeta = "pad_kb_focus";
+    public const string AcceptMeta = "pad_accept";
 
     private static readonly ConditionalWeakTable<Control, Dictionary<PadCommand, (string Label, Action Run)>> Actions = new();
 
@@ -111,6 +112,17 @@ public static class ButtonPrompts
 
     public static IEnumerable<(PadCommand Command, string Label)> ActionsOf(Control? control) =>
         control != null && Actions.TryGetValue(control, out var map) ? map.Select(kv => (kv.Key, kv.Value.Label)) : [];
+
+    /// <summary>
+    /// A seed field on the gamepad ([Владельцу] <see cref="GamepadLayout.SeedFromGamepad"/>): ←/→ ±1 (the window host steps every
+    /// number field), X a random seed (Y stays the window's: «Сбросить» in the meter). Typing a long seed waits for an on-screen keyboard.
+    /// </summary>
+    public static void SeedPad(SpinBox seed)
+    {
+        if (!GamepadLayout.SeedFromGamepad) return;
+        var edit = seed.GetLineEdit();
+        SetAction(edit, PadCommand.Alt, "Случайный сид", () => seed.Value = Random.Shared.Next((int)Math.Max(1, seed.MinValue), (int)seed.MaxValue + 1));
+    }
 
     /// <summary>Marks a control out of the gamepad's focus chain.</summary>
     public static T Skip<T>(T control) where T : Control
@@ -206,7 +218,7 @@ public static class ButtonPrompts
         string.Join("   ", prompts.Where(p => p.Label.Length > 0).Select(p => p.Button + " " + p.Label));
 
     /// <summary>What A does on a control (the first prompt of the bar).</summary>
-    public static string AcceptLabel(Control? focus) => focus switch
+    public static string AcceptLabel(Control? focus) => focus != null && focus.HasMeta(AcceptMeta) ? focus.GetMeta(AcceptMeta).AsString() : focus switch
     {
         null => "",
         NumberLabel => "Разбор",

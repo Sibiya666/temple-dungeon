@@ -84,6 +84,9 @@ public sealed partial class SelfTest
         UseSelfTestWindowConfig();
         await NextFrame();
         var steps = Steps();
+        // A developer's shortcut: DIALOID_SELFTEST_FILTER=gamepad runs only the steps whose names start with it (never set by the checks).
+        if (System.Environment.GetEnvironmentVariable("DIALOID_SELFTEST_FILTER") is { Length: > 0 } filter)
+            steps = steps.Where(s => s.Name.StartsWith(filter, StringComparison.Ordinal) || s.Name == "panels").ToList();
         int failed = 0;
         foreach (var step in steps)
         {
@@ -157,6 +160,7 @@ public sealed partial class SelfTest
         {
             steps.AddRange(WindowSteps());
             steps.AddRange(MeterSteps());
+            steps.AddRange(GamepadSteps());
             steps.Add(new("windows.restore", CombatRestore));
         }
         if (_screenshotDir != null)
@@ -1055,6 +1059,7 @@ public sealed partial class SelfTest
         await CombatScreenshots();
         await WindowScreenshots();
         await MeterScreenshots();
+        await GamepadScreenshots();
         _main.CloseAllWindows();
     }
 

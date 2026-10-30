@@ -19,7 +19,7 @@ namespace Dialoid.Game.Ui;
 /// the skill's DPS and damage in the segment and what the dummy's defence took. Redrawn at most every <see cref="RefreshSec"/>
 /// while open; built once, updated in place (no control is freed).</para>
 /// </summary>
-public partial class MeterWindow : SessionPanel
+public partial class MeterWindow : SessionPanel, IPadPanel
 {
     /// <summary>The meter refreshes four times a second (plan 4 task 11).</summary>
     public const double RefreshSec = 0.25;
@@ -188,18 +188,52 @@ public partial class MeterWindow : SessionPanel
         _floating.SetPressedNoSignal(on);
     }
 
-    /// <summary>«Сбросить»: asks first.</summary>
+    /// <summary>«Сбросить»: asks first; on the gamepad the focus waits on «Отмена» (A there resets nothing).</summary>
     public void RequestReset()
     {
         _confirm.Visible = true;
         _reset.Disabled = true;
+        if (Dialoid.Game.Input.InputDevice.Gamepad && _no.IsVisibleInTree()) _no.GrabFocus();
     }
 
     public void CancelReset()
     {
+        var focusInside = _confirm.Visible && (_no.HasFocus() || _yes.HasFocus());
         _confirm.Visible = false;
         _reset.Disabled = false;
+        if (focusInside) _reset.GrabFocus();
     }
+
+    /// <summary>The «Отмена» and «Да, сбросить» buttons of the confirmation.</summary>
+    public Button CancelButton => _no;
+    public Button ConfirmButton => _yes;
+    public Button ResetButton => _reset;
+
+    private Button _no = null!;
+    private Button _yes = null!;
+
+    // ---------- gamepad ----------
+
+    public bool PadButton(PadCommand command, Control? focus)
+    {
+        if (command != PadCommand.Extra || _confirm.Visible) return false;
+        RequestReset();
+        return true;
+    }
+
+    public bool PadBack()
+    {
+        if (!_confirm.Visible) return false;
+        CancelReset();
+        return true;
+    }
+
+    public IEnumerable<(string Button, string Label)> PadPrompts(Control? focus)
+    {
+        if (!_confirm.Visible) yield return ("[Y]", "Сбросить");
+    }
+
+    public void PadClosed() { }
 
     /// <summary>The answer «да»: the room closes the current segment and forgets every segment (the log stays).</summary>
     public void ConfirmReset()
@@ -362,7 +396,7 @@ public partial class MeterWindow : SessionPanel
         _segments.ItemSelected += i => SelectSegment(i >= 0 && i < _segmentChoices.Count ? (i == 0 ? null : _segmentChoices[(int)i]) : null);
         top.AddChild(_segments);
 
-        var modeRow = new HBoxContainer { Name = "ModeRow" };
+        var modeRow = new HFlowContainer { Name = "ModeRow" };
         AddChild(modeRow);
         _modes = new OptionButton { Name = "Modes", FocusMode = FocusModeEnum.None };
         foreach (var mode in ModeOrder) _modes.AddItem(CombatLogText.MeterModeName(mode));
@@ -370,9 +404,10 @@ public partial class MeterWindow : SessionPanel
         _modes.ItemSelected += i => SetMode(ModeOrder[(int)i]);
         modeRow.AddChild(_modes);
         _change = new Label { Name = "Change", HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Stop };
+        ButtonPrompts.Info(_change);
         modeRow.AddChild(_change);
 
-        _total = new Label { Name = "Total", ClipText = true, MouseFilter = MouseFilterEnum.Stop };
+        _total = ButtonPrompts.Info(new Label { Name = "Total", ClipText = true, MouseFilter = MouseFilterEnum.Stop });
         _total.AddThemeColorOverride("font_color", new Color(0.93f, 0.85f, 0.7f));
         AddChild(_total);
 
@@ -391,7 +426,7 @@ public partial class MeterWindow : SessionPanel
         barsBox.AddChild(_hint);
 
         AddChild(new HSeparator());
-        var sim = new HBoxContainer { Name = "Sim" };
+        var sim = new HFlowContainer { Name = "Sim" };
         AddChild(sim);
         sim.AddChild(new Label { Text = "Случайность:", VerticalAlignment = VerticalAlignment.Center });
         _simMode = new OptionButton { Name = "SimMode", FocusMode = FocusModeEnum.None, TooltipText = "Бросок: настоящие криты и шансы недугов по сиду. Среднее: ожидаемые значения." };
@@ -402,8 +437,9 @@ public partial class MeterWindow : SessionPanel
         _seed = new SpinBox { Name = "Seed", MinValue = 1, MaxValue = 999_999, Step = 1, Rounded = true, Value = 1, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(90, 0), TooltipText = "Сид бросков; смена перезапускает бой" };
         _seed.ValueChanged += v => { if ((int)v != _room.Seed) SetSimMode(_room.Mode, (int)v); };
         sim.AddChild(_seed);
+        ButtonPrompts.SeedPad(_seed);
 
-        var actions = new HBoxContainer { Name = "Actions" };
+        var actions = new HFlowContainer { Name = "Actions" };
         AddChild(actions);
         _reset = new Button { Name = "Reset", Text = "Сбросить", FocusMode = FocusModeEnum.None, TooltipText = "Закрыть текущий сегмент и удалить все сохраненные (спросит подтверждение)" };
         _reset.Pressed += RequestReset;
@@ -422,7 +458,7 @@ public partial class MeterWindow : SessionPanel
         _confirm.AddChild(question);
         var answers = new HBoxContainer();
         _confirm.AddChild(answers);
-        var yes = new Button { Name = "Yes", Text = "Да, сбросить", FocusMode = FocusModeEnum.None };
+        var yes = _yes = new Button { Name = "Yes", Text = "Да, сбросить", FocusMode = FocusModeEnum.None };
         // The destructive answer in a muted danger frame; «Отмена» keeps the plain face.
         foreach (var (state, bg, edge) in new[]
                  {
@@ -438,7 +474,7 @@ public partial class MeterWindow : SessionPanel
         }
         yes.Pressed += ConfirmReset;
         answers.AddChild(yes);
-        var no = new Button { Name = "No", Text = "Отмена", FocusMode = FocusModeEnum.None };
+        var no = _no = new Button { Name = "No", Text = "Отмена", FocusMode = FocusModeEnum.None };
         no.Pressed += CancelReset;
         answers.AddChild(no);
     }
@@ -450,7 +486,7 @@ public partial class MeterWindow : SessionPanel
 /// Bonus rows (<see cref="MeterRow.IsBonus"/>) get the bonus colour. A click on a row raises <see cref="RowClicked"/> when
 /// <see cref="Clickable"/>.
 /// </summary>
-public partial class MeterBars : Control
+public partial class MeterBars : Control, IPadControl
 {
     public const float RowHeight = 26;
     public const float TextInset = 6;
@@ -558,7 +594,8 @@ public partial class MeterBars : Control
             DrawRect(track, MeterColors.Track);
             var fill = FillWidth(i);
             if (fill > 0) DrawRect(new Rect2(0, y + 1, fill, RowHeight - 2), _fills[i]);
-            if (i == _hover && Clickable) DrawRect(track, MeterColors.HoverEdge, false, 1);
+            if (i == _hover && HasFocus()) DrawRect(track.Grow(-1), WindowHost.FocusFrame, false, 2);
+            else if (i == _hover && Clickable) DrawRect(track, MeterColors.HoverEdge, false, 1);
             DrawText(font, new Vector2(LabelX(i), y + textY), _rows[i].Label, HorizontalAlignment.Left, -1, size, _texts[i]);
             DrawText(font, new Vector2(TextInset, y + textY), _values[i], HorizontalAlignment.Right, Size.X - 2 * TextInset, size, _texts[i]);
         }
@@ -594,7 +631,66 @@ public partial class MeterBars : Control
 
     public override void _Notification(int what)
     {
-        if (what == NotificationMouseExit && _hover >= 0)
+        if (what == NotificationMouseExit && _hover >= 0 && !Dialoid.Game.Input.InputDevice.Gamepad)
+        {
+            _hover = -1;
+            QueueRedraw();
+        }
+        else if (what == NotificationFocusEnter)
+        {
+            if (_hover < 0 || _hover >= _rows.Count) _hover = _rows.Count > 0 ? 0 : -1;
+            QueueRedraw();
+        }
+        else if (what == NotificationFocusExit) QueueRedraw();
+    }
+
+    // ---------- gamepad: the bars are in the focus chain, ↑/↓ pick a row, A opens its breakdown ----------
+
+    /// <summary>The row the gamepad (or the mouse) points at, or -1.</summary>
+    public int FocusedRow => _hover;
+
+    /// <summary>The focused row's rectangle on screen (the tooltip and checks).</summary>
+    public Rect2 RowRect(int index) => new(GlobalPosition + new Vector2(0, index * RowHeight), new Vector2(Size.X, RowHeight));
+
+    public bool PadInput(PadCommand command)
+    {
+        if (_rows.Count == 0) return command == PadCommand.Accept;
+        if (_hover < 0 || _hover >= _rows.Count) _hover = 0;
+        switch (command)
+        {
+            case PadCommand.Up when _hover > 0:
+            case PadCommand.Down when _hover < _rows.Count - 1:
+                _hover += command == PadCommand.Down ? 1 : -1;
+                QueueRedraw();
+                // Keep the row in view inside the window's scroll.
+                if (GetParent()?.GetParent() is ScrollContainer s2)
+                {
+                    var top = _hover * RowHeight;
+                    if (top < s2.ScrollVertical) s2.ScrollVertical = (int)top;
+                    else if (top + RowHeight > s2.ScrollVertical + s2.Size.Y) s2.ScrollVertical = (int)(top + RowHeight - s2.Size.Y);
+                }
+                return true;
+            case PadCommand.Accept:
+                if (Clickable) RowClicked?.Invoke(_hover);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public bool PadStick(Vector2 value, double delta) => false;
+
+    public string PadTooltip() => _hover >= 0 && _hover < _rows.Count ? _GetTooltip(new Vector2(4, _hover * RowHeight + RowHeight / 2)) : TooltipText;
+
+    public IEnumerable<(string Button, string Label)> PadPrompts()
+    {
+        yield return ("[↑/↓]", "Полоса");
+        if (Clickable && _rows.Count > 0) yield return ("[A]", "Разбор");
+    }
+
+    public void PadModeChanged(bool gamepad)
+    {
+        if (!gamepad && _hover >= 0)
         {
             _hover = -1;
             QueueRedraw();

@@ -48,6 +48,7 @@ public partial class WindowHost
     private bool _ltDown, _rtDown;
     private Vector2 _rightStick;
     private SpinBox? _editing;
+    private bool _acceptPassed;
     private double _editValue, _editRevert;
     private PanelContainer _tipPanel = null!;
     private Label _tipLabel = null!;
@@ -102,6 +103,13 @@ public partial class WindowHost
 
     private void OnNodeAdded(Node node)
     {
+        // A popup menu that has the window focus gets the gamepad events itself (the viewport forwards them before _Input) and does
+        // not walk its items with them: its window_input hands them to PopupPad.
+        if (node is PopupMenu popup && !popup.HasMeta("pad_hooked"))
+        {
+            popup.SetMeta("pad_hooked", true);
+            popup.WindowInput += e => OnPopupInput(popup, e);
+        }
         if (!InputDevice.Gamepad || node is not Control c) return;
         if (IsAncestorOf(c) || Bar?.IsAncestorOf(c) == true) ButtonPrompts.ApplyFocusModes(c, true);
     }
@@ -303,6 +311,8 @@ public partial class WindowHost
     public bool HandlePad(InputEvent e)
     {
         var commands = Track(e);
+        // An open list or menu (a popup window) takes the gamepad: ↑/↓ walk its items, A picks, B closes it.
+        if (FocusedWindow != null && OpenPopupMenu() is { } popup) return PopupPad(popup, e, commands);
         if (FocusedWindow == null) return HandlePadCombat(e);
         if (FocusRoot is not { } root || !root.IsVisibleInTree())
         {
@@ -310,6 +320,8 @@ public partial class WindowHost
             return HandlePadCombat(e);
         }
         if (e is InputEventJoypadButton { Pressed: true } button) return HandleWindowButton(button);
+        // A released: the GUI presses its button on the release (BaseButton), so A passes both ways when the press passed.
+        if (e is InputEventJoypadButton { Pressed: false } up && up.IsAction("ui_accept")) return !_acceptPassed;
         foreach (var c in commands) Command(c);
         return true;
     }
@@ -350,6 +362,73 @@ public partial class WindowHost
         return commands;
     }
 
+    /// <summary>The open popup menu (an OptionButton list, the attribute menu, the log's kinds), or null.</summary>
+    public PopupMenu? OpenPopupMenu() => GetViewport().GetEmbeddedSubwindows().OfType<PopupMenu>().LastOrDefault(w => w.Visible);
+
+    /// <summary>
+    /// The gamepad in an open popup menu: ↑/↓ (D-pad or stick) move its focused item past separators and disabled items, A picks
+    /// the item exactly as a click does (id_pressed, index_pressed: an OptionButton selects it), B closes the menu with no change.
+    /// </summary>
+    private void OnPopupInput(PopupMenu popup, InputEvent e)
+    {
+        if (e is not (InputEventJoypadButton or InputEventJoypadMotion)) return;
+        InputDevice.Instance?.Observe(e);
+        if (!popup.Visible) return;
+        PopupPad(popup, e, Track(e));
+    }
+
+    private bool PopupPad(PopupMenu popup, InputEvent e, List<PadCommand> commands)
+    {
+        // The release of the A that opened the list belongs to its button.
+        if (e is InputEventJoypadButton { Pressed: false } up && up.IsAction("ui_accept") && _acceptPassed)
+        {
+            _acceptPassed = false;
+            return false;
+        }
+        if (e is InputEventJoypadButton { Pressed: true } b)
+        {
+            if (b.IsActionPressed("ui_up")) commands.Add(PadCommand.Up);
+            else if (b.IsActionPressed("ui_down")) commands.Add(PadCommand.Down);
+            else if (b.IsActionPressed("ui_accept")) commands.Add(PadCommand.Accept);
+            else if (b.IsActionPressed("ui_cancel"))
+            {
+                popup.Hide();
+                return true;
+            }
+        }
+        _held = null;
+        foreach (var c in commands)
+        {
+            var count = popup.ItemCount;
+            if (count == 0) break;
+            var at = popup.GetFocusedItem();
+            switch (c)
+            {
+                case PadCommand.Up or PadCommand.Down:
+                {
+                    var step = c == PadCommand.Down ? 1 : -1;
+                    var next = at < 0 ? (step > 0 ? -1 : 0) : at;
+                    for (int i = 0; i < count; i++)
+                    {
+                        next = (next + step + count) % count;
+                        if (!popup.IsItemSeparator(next) && !popup.IsItemDisabled(next)) break;
+                    }
+                    popup.SetFocusedItem(next);
+                    break;
+                }
+                case PadCommand.Accept when at >= 0 && at < count && !popup.IsItemDisabled(at) && !popup.IsItemSeparator(at):
+                {
+                    var checkable = popup.IsItemCheckable(at) || popup.IsItemRadioCheckable(at);
+                    popup.EmitSignal(PopupMenu.SignalName.IdPressed, popup.GetItemId(at));
+                    popup.EmitSignal(PopupMenu.SignalName.IndexPressed, at);
+                    if (checkable ? popup.HideOnCheckableItemSelection : popup.HideOnItemSelection) popup.Hide();
+                    break;
+                }
+            }
+        }
+        return true;
+    }
+
     private static PadCommand? DirectionOf(InputEvent e) =>
         e.IsAction("ui_up") ? PadCommand.Up : e.IsAction("ui_down") ? PadCommand.Down
         : e.IsAction("ui_left") ? PadCommand.Left : e.IsAction("ui_right") ? PadCommand.Right : null;
@@ -383,7 +462,12 @@ public partial class WindowHost
             Command(DirectionOf(b)!.Value);
             return true;
         }
-        if (b.IsActionPressed("ui_accept")) return Accept();
+        if (b.IsActionPressed("ui_accept"))
+        {
+            var taken = Accept();
+            _acceptPassed = !taken;
+            return taken;
+        }
         if (b.IsActionPressed("ui_cancel")) Back();
         else if (b.IsActionPressed(InputActions.PadAlt)) Command(PadCommand.Alt);
         else if (b.IsActionPressed(InputActions.PadExtra)) Command(PadCommand.Extra);
@@ -693,7 +777,7 @@ public partial class WindowHost
         else list.Add(("[A]", ButtonPrompts.AcceptLabel(focus)));
         list.AddRange(ButtonPrompts.ActionsOf(focus).Select(a => (ButtonPrompts.Glyph(a.Command), a.Label)));
         if (Panel is { } panel) list.AddRange(panel.PadPrompts(focus));
-        list.Add(("[B]", "Закрыть"));
+        if (!list.Any(p => p.Item1 == "[B]")) list.Add(("[B]", "Закрыть"));
         list.Add(("[LB/RB]", "Окна"));
         list.Add(("[View]", "К бою"));
         return list;

@@ -114,6 +114,7 @@ public partial class SimulationPanel : SessionPanel
 
         Seed = new SpinBox { MinValue = 0, MaxValue = 1_000_000, Step = 1, Value = 1, TooltipText = "Сид случайных бросков (режим «бросок»)" };
         Row(grid, "Сид", Seed);
+        ButtonPrompts.SeedPad(Seed);
 
         DummyAttacks = new CheckBox { Text = "манекен бьет персонажа" };
         Row(grid, "Защита", DummyAttacks);

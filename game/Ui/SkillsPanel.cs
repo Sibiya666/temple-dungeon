@@ -219,6 +219,7 @@ public partial class SkillsPanel : SessionPanel
                 TooltipText = $"Уровень скилла, кап {cap}",
             };
             spin.ValueChanged += v => SelectLevel(slot, (int)v);
+            ButtonPrompts.EditMode(spin); // in a row with buttons: ←/→ would never leave it sideways
             row.AddChild(new Label { Text = "уровень" });
             row.AddChild(spin);
             var tree = new Button { Text = slot == _treeSlot ? "▶ Дерево" : "Дерево", ToggleMode = false };
@@ -280,8 +281,10 @@ public partial class SkillsPanel : SessionPanel
             int slotIndex = _treeSlot;
             var plus = new Button { Text = "+", TooltipText = tooltip };
             plus.Pressed += () => AddPoint(slotIndex, id);
+            ButtonPrompts.SetAction(plus, PadCommand.Alt, "Снять очко", () => RemovePoint(slotIndex, id));
+            plus.SetMeta(ButtonPrompts.AcceptMeta, "Добавить очко");
             row.AddChild(plus);
-            var minus = new Button { Text = "−", TooltipText = tooltip };
+            var minus = ButtonPrompts.Skip(new Button { Text = "−", TooltipText = tooltip }); // the gamepad removes with X on «+»
             minus.Pressed += () => RemovePoint(slotIndex, id);
             row.AddChild(minus);
             Content.AddChild(row);

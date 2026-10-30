@@ -13,7 +13,7 @@ namespace Dialoid.Game.Ui;
 /// as wide as the longest skill name of the data (at least «Возвращающийся топор»), so a name is never cut. The tree takes no
 /// keyboard focus: hotkeys and skill keys keep working over it. The texts are the sandbox's (no rules here).
 /// </summary>
-public partial class CombatLogWindow : SessionPanel
+public partial class CombatLogWindow : SessionPanel, IPadPanel
 {
     /// <summary>Most often the rows are synced (seconds).</summary>
     public const double RefreshSec = 0.25;
@@ -222,7 +222,7 @@ public partial class CombatLogWindow : SessionPanel
     private void Build()
     {
         AddThemeConstantOverride("separation", 4);
-        var filters = new HBoxContainer { Name = "Filters" };
+        var filters = new HFlowContainer { Name = "Filters" }; // wraps in a narrow log (1366: the log stops left of the combat screen)
         AddChild(filters);
 
         _kindsMenu = new MenuButton { Name = "Kinds", Text = "Виды событий ▾", Flat = false, FocusMode = FocusModeEnum.None, TooltipText = "Какие строки показывать. Тики недугов скрыты по умолчанию: их много." };
@@ -265,6 +265,7 @@ public partial class CombatLogWindow : SessionPanel
         _tree.SetColumnTitle(WhatColumn, "Что произошло");
         foreach (var c in new[] { TimeColumn, WhoColumn, WhatColumn }) _tree.SetColumnTitleAlignment(c, HorizontalAlignment.Left);
         _tree.CreateItem();
+        ButtonPrompts.Skip(_tree); // rows are read, not pressed: the right stick scrolls them, Y jumps to the newest
         AddChild(_tree);
         _scroll = _tree.GetChildren(true).OfType<VScrollBar>().FirstOrDefault();
         if (_scroll != null) _scroll.ValueChanged += _ => OnScrolled();
@@ -412,7 +413,7 @@ public partial class CombatLogWindow : SessionPanel
         var (time, who, what) = Columns(e);
         item.SetText(TimeColumn, time);
         item.SetText(WhoColumn, who);
-        item.SetText(WhatColumn, Wrap(what)); // a long hit wraps instead of losing its number
+        item.SetText(WhatColumn, Wrap(ShortTypes(what))); // a long hit wraps instead of losing its number; the full line is the tooltip
         // The kind colours only what happened; the name keeps its skill's colour from the meter and the charts.
         item.SetCustomColor(TimeColumn, SystemColor);
         item.SetCustomColor(WhoColumn, e.SkillId is { } skill ? NameColor(skill) : TextColor);
@@ -420,6 +421,47 @@ public partial class CombatLogWindow : SessionPanel
         for (var c = TimeColumn; c <= WhatColumn; c++) item.SetTooltipText(c, e.Text);
         _shown.Add(e);
     }
+
+    /// <summary>Short type names for a hit of several types (UI review of task 11: on «Рой» a three-type hit took three lines).</summary>
+    // The full words are the sandbox's instrumental type names (Texts.DamageTypeInstrumental, internal there).
+    private static readonly IReadOnlyList<(string Full, string Short)> TypeShort =
+    [
+        (" физическим", " физ."),
+        (" огнем", " огн."),
+        (" холодом", " хол."),
+        (" молнией", " молн."),
+        (" ядом", " яд."),
+    ];
+
+    /// <summary>
+    /// «42 физическим + 275 молнией + 1 121 огнем» → «42 физ. + 275 молн. + 1 121 огн.»: a hit of several types keeps every number
+    /// on one or two lines; one type keeps its full word. The row's tooltip has the sandbox's full line.
+    /// </summary>
+    public static string ShortTypes(string what)
+    {
+        if (!what.Contains(" + ", StringComparison.Ordinal)) return what;
+        foreach (var (full, abbr) in TypeShort) what = what.Replace(full, abbr, StringComparison.Ordinal);
+        return what;
+    }
+
+    // ---------- gamepad ----------
+
+    public bool PadButton(PadCommand command, Control? focus)
+    {
+        if (command != PadCommand.Extra) return false;
+        SetFollow(true); // Y: to the newest line, autoscroll on
+        return true;
+    }
+
+    public bool PadBack() => false;
+
+    public IEnumerable<(string Button, string Label)> PadPrompts(Control? focus)
+    {
+        yield return ("[RS]", "Прокрутка");
+        yield return ("[Y]", "К последней строке");
+    }
+
+    public void PadClosed() { }
 
     /// <summary>A skill's name colour: its meter colour, lightened for text on the dark window.</summary>
     public Color NameColor(string skillId) => MeterColors.Skill(skillId, _skillOrder).Lerp(Colors.White, 0.45f);

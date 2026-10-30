@@ -71,6 +71,7 @@ public partial class PassivePanel : SessionPanel
         View.CustomMinimumSize = new Vector2(0, 300);
         View.NodeClicked += id => NodeClicked(id);
         View.NodeRightClicked += (id, at) => NodeRightClicked(id, at);
+        View.AltLabel = id => id != null && session.Data.Passives.Nodes.TryGetValue(id, out var n) && n.Kind == PassiveKind.Attribute ? "Атрибут" : null;
         View.HoveredChanged += _ => UpdateHover();
         AddChild(View);
 
@@ -106,6 +107,9 @@ public partial class PassivePanel : SessionPanel
         }
         var screen = (Vector2I)(View.GetScreenTransform() * local);
         AttributeMenu.Popup(new Rect2I(screen, Vector2I.Zero));
+        // The gamepad lands on the current choice (A confirms, B cancels).
+        var at = current is { } chosen ? AttributeOrder.ToList().IndexOf(chosen) : 0;
+        AttributeMenu.SetFocusedItem(Math.Max(0, at));
         return true;
     }
 

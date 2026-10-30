@@ -28,8 +28,8 @@ public static class GamepadLayout
     /// <summary>The slot buttons 1–5 (slot 5 is the right trigger).</summary>
     public static readonly IReadOnlyList<string> SlotGlyphs = ["X", "A", "B", "Y", "RT"];
 
-    /// <summary>[Владельцу] What the seed field takes from the gamepad: ←/→ ±1, X random, Y back to 1 (manual entry waits for an on-screen keyboard).</summary>
-    public const bool SeedFromGamepad = true;
+    /// <summary>[Владельцу] What the seed field takes from the gamepad: ←/→ ±1 and X random (manual entry waits for an on-screen keyboard).</summary>
+    public static readonly bool SeedFromGamepad = true;
 
     /// <summary>The D-pad button of a window, or null.</summary>
     public static JoyButton? DpadOf(string windowId)
