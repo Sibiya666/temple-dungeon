@@ -41,7 +41,7 @@ internal sealed class ModTierJson
 internal sealed class FloorModJson
 {
     private static readonly HashSet<string> Allowed = StrictJson.Fields("id", "name", "kind", "floor_types", "variant", "group",
-        "directions", "style_tags", "hard_counter", "affects_summit", "tiers");
+        "directions", "style_tags", "hard_counter", "tiers");
 
     public static void CheckFields(JsonElement el, string file, string? id, List<DataError> errors)
     {
@@ -59,7 +59,6 @@ internal sealed class FloorModJson
     public List<string>? StyleTags { get; set; }
     /// <summary>null = no hard counter.</summary>
     public HardCounter? HardCounter { get; set; }
-    public bool AffectsSummit { get; set; }
     public List<ModTierJson>? Tiers { get; set; }
 }
 

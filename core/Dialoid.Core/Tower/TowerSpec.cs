@@ -11,8 +11,10 @@ public sealed record ModInstance(string ModId, int Tier, double Value);
 public sealed record FloorSpec(string? TypeId, string? Variant, string? BiomeId, IReadOnlyList<ModInstance> Mods);
 
 /// <summary>
-/// Portable tower preset: pure data, no character level and no shuffle bonus. <see cref="UberBossId"/> is a free string
-/// (there is no boss pool in the data yet). Floors are indexed from 0.
+/// Snapshot of a tower: pure data, no character level and no shuffle bonus. Floors are indexed from 0. <see cref="UberBossId"/> is a
+/// free string (there is no boss pool in the data yet). As a shared preset it is a composition: <see cref="TowerAssembly.FromComposition"/>
+/// takes types, variants, biomes and the uber boss and drops the rolled mods, which the player buys again with currency.
+/// A recipe of currencies to re-apply is a future type, not this one.
 /// </summary>
 public sealed record TowerSpec(int Rank, IReadOnlyList<FloorSpec> Floors, IReadOnlyList<ModInstance> TowerMods, string? UberBossId);
 

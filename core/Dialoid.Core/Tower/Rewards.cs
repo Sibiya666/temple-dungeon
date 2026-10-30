@@ -3,14 +3,15 @@ using Dialoid.Core.Simulation;
 
 namespace Dialoid.Core.Tower;
 
+/// <summary>Currency dropped by a floor or the summit: <see cref="Level"/> = the rank for levelled currency, 0 otherwise.</summary>
+public sealed record CurrencyDrop(string CurrencyId, int Level, int Count);
+
 /// <summary>Multipliers of the reward quality of one floor or of the summit; <see cref="Total"/> = their product, capped by QualityCap.</summary>
 public sealed record QualityBreakdown(double Height, double FloorMods, double TowerMods, double Diversity, double Shuffle, double NoDeath, double Total);
 
 /// <summary>Reward quality and currency drops (spec 10). Pure functions; floor indices are 0-based, null floor index = summit.</summary>
 public static class Rewards
 {
-    private const string SummitArena = "bosses";
-
     /// <summary>1 + c·x / (c + x): increasing and concave, 1 at x = 0.</summary>
     public static double Diminish(TowerRules r, double x) => 1 + r.DiminishingC * x / (r.DiminishingC + x);
 
@@ -27,12 +28,6 @@ public static class Rewards
 
     private static double Sum(TowerData d, IEnumerable<ModInstance> mods) => mods.Sum(m => ModQuality(d, m));
 
-    private static bool ArenaCompatible(TowerData d, ModInstance m)
-    {
-        var types = d.Mod(m.ModId).FloorTypes;
-        return types.Count == 0 || types.Contains(SummitArena, StringComparer.Ordinal);
-    }
-
     private static QualityBreakdown Make(TowerRules r, double height, double floorMods, double towerMods, double diversity, bool noDeaths, bool shuffleBonus)
     {
         double shuffle = shuffleBonus ? 1 + r.ShuffleBonus : 1;
@@ -47,11 +42,16 @@ public static class Rewards
         return types <= 1 ? 1 : 1 + r.DiversityBonusPerType * Math.Min(r.DiversityBonusTypesCap, types - 1);
     }
 
+    /// <summary>
+    /// Quality of floor <paramref name="floorIndex"/>: its own mods, plus the tower mods that fit its type (FloorTypes empty or containing it).
+    /// A tower mod that does not act on a floor type gives that floor nothing. An empty slot (no type) gets no tower mods.
+    /// </summary>
     private static QualityBreakdown FloorCore(TowerData d, TowerSpec t, int floorIndex, bool noDeaths, bool shuffleBonus, double addFloor, double addTower)
     {
         var r = d.Rules;
         double floorSum = Sum(d, t.Floors[floorIndex].Mods) + addFloor;
-        double towerSum = Sum(d, t.TowerMods) + addTower;
+        var type = t.Floors[floorIndex].TypeId;
+        double towerSum = Sum(d, t.TowerMods.Where(m => type != null && d.Mod(m.ModId).FitsType(type))) + addTower;
         return Make(r, r.HeightMultipliers[floorIndex], Diminish(r, floorSum), Diminish(r, towerSum), Diversity(r, t), noDeaths, shuffleBonus);
     }
 
@@ -61,7 +61,7 @@ public static class Rewards
     private static QualityBreakdown SummitCore(TowerData d, TowerSpec t, bool noDeaths, bool shuffleBonus, double addTower)
     {
         var r = d.Rules;
-        double towerSum = Sum(d, t.TowerMods.Where(m => ArenaCompatible(d, m))) + addTower;
+        double towerSum = Sum(d, t.TowerMods.Where(m => d.Mod(m.ModId).ActsOnSummit)) + addTower;
         return Make(r, r.SummitBonus, 1, Diminish(r, towerSum), Diversity(r, t), noDeaths, shuffleBonus);
     }
 
@@ -122,15 +122,15 @@ public static class Rewards
     }
 
     /// <summary>Integer part of the expectation plus one more with the probability of the fractional part. Zero counts are omitted.</summary>
-    public static IReadOnlyList<(string CurrencyId, int Level, int Count)> RollCurrencyDrop(TowerData d, int rank, int? floorIndex, IRandomSource rng)
+    public static IReadOnlyList<CurrencyDrop> RollCurrencyDrop(TowerData d, int rank, int? floorIndex, IRandomSource rng)
     {
-        var result = new List<(string, int, int)>();
+        var result = new List<CurrencyDrop>();
         foreach (var (id, expected) in ExpectedCurrencyDrop(d, rank, floorIndex))
         {
             double whole = Math.Floor(expected);
             int count = (int)whole;
             if (rng.Chance($"tower.drop.{id}", expected - whole)) count++;
-            if (count > 0) result.Add((id, d.Currency(id).HasLevel ? rank : 0, count));
+            if (count > 0) result.Add(new CurrencyDrop(id, d.Currency(id).HasLevel ? rank : 0, count));
         }
         return result;
     }

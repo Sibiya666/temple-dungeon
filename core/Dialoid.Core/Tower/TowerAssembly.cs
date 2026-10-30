@@ -36,8 +36,11 @@ public sealed class TowerAssembly
         _slots = Enumerable.Range(0, data.Rules.Floors).Select(_ => new Slot()).ToArray();
     }
 
-    /// <summary>Rebuilds an assembly from a preset ("repeat the last tower"); variants of the spec seed the slot memory.</summary>
-    public static TowerAssembly FromSpec(TowerData d, TowerSpec spec, IRandomSource rng)
+    /// <summary>
+    /// Rebuilds an assembly from a full spec, rolled mods included. Internal on purpose: a free copy of rolled mods would let a player
+    /// skip spending currency. For tests and for restoring the engine's own state. Variants of the spec seed the slot memory.
+    /// </summary>
+    internal static TowerAssembly FromSpec(TowerData d, TowerSpec spec, IRandomSource rng)
     {
         if (spec.Floors.Count != d.Rules.Floors)
             throw new ArgumentException($"В описании башни должно быть {d.Rules.Floors} этажей, а не {spec.Floors.Count}", nameof(spec));
@@ -56,6 +59,17 @@ public sealed class TowerAssembly
         a._uberBossId = spec.UberBossId;
         return a;
     }
+
+    /// <summary>
+    /// "Repeat the last tower": copies the composition of a spec (rank, floor types, variants, biomes, uber boss) and drops every mod,
+    /// floor and tower alike; the player re-applies currency. Variants seed the slot memory. The shuffle bonus is not carried over.
+    /// </summary>
+    public static TowerAssembly FromComposition(TowerData d, TowerSpec spec, IRandomSource rng) =>
+        FromSpec(d, spec with
+        {
+            Floors = spec.Floors.Select(f => f with { Mods = Array.Empty<ModInstance>() }).ToArray(),
+            TowerMods = Array.Empty<ModInstance>(),
+        }, rng);
 
     internal IRandomSource Rng { get; }
     internal int Rank { get; }
@@ -129,8 +143,8 @@ public sealed class TowerAssembly
         string? previous = null;
         foreach (var s in _slots)
         {
-            var type = types[TowerRandom.Pick(Rng, types.Count)];
-            while (types.Count > 1 && type.Id == previous) type = types[TowerRandom.Pick(Rng, types.Count)];
+            var choices = types.Count > 1 ? types.Where(t => t.Id != previous).ToList() : types;
+            var type = choices[TowerRandom.Pick(Rng, choices.Count)];
             s.TypeId = previous = type.Id;
             s.VariantMemory.Clear();
             s.Variant = type.Variants.Count == 0 ? null : s.VariantMemory[type.Id] = RollVariant(type);
@@ -170,7 +184,7 @@ public sealed class TowerAssembly
 
     private string RollVariant(FloorTypeDef type) => type.Variants[TowerRandom.Pick(Rng, type.Variants.Count)];
 
-    private string RollBiome() => _data.Biomes[TowerRandom.Pick(Rng, _data.Biomes.Count)];
+    private string RollBiome() => _data.Biomes[TowerRandom.Pick(Rng, _data.Biomes.Count)].Id;
 
     private void CheckSlot(int slot)
     {

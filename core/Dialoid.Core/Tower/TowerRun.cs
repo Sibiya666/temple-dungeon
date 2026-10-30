@@ -5,7 +5,7 @@ namespace Dialoid.Core.Tower;
 public enum RunStage { Floor, Summit, Won, Exited }
 
 /// <summary>Reward of a cleared floor (<see cref="FloorIndex"/> from 0) or of the summit (null).</summary>
-public sealed record FloorReward(int? FloorIndex, QualityBreakdown Quality, IReadOnlyList<(string CurrencyId, int Level, int Count)> Currency);
+public sealed record FloorReward(int? FloorIndex, QualityBreakdown Quality, IReadOnlyList<CurrencyDrop> Currency);
 
 /// <summary>What leaving the run loses: floors not yet cleared (indices from 0) and the summit.</summary>
 public sealed record ExitLoss(bool LostSummit, IReadOnlyList<int> LostFloors);
@@ -55,7 +55,10 @@ public sealed class TowerRun
         _floorDeaths = new int[data.Rules.Floors];
     }
 
+    /// <summary>Floor being played, 0–4 (0..Floors − 1). On the summit and after it stays on the last floor.</summary>
     public int CurrentFloor { get; private set; }
+    /// <summary>The tower as it was at entry (for the in-run list of active mods); never changes during the run.</summary>
+    public TowerSpec Spec => _spec;
     public RunStage Stage { get; private set; } = RunStage.Floor;
     public int ZoneLevel { get; }
     public IReadOnlyList<FloorReward> Rewards => _rewards;
@@ -67,6 +70,12 @@ public sealed class TowerRun
         return _floorDeaths[i];
     }
 
+    /// <summary>
+    /// Entry check, the last filter for hand-built and imported towers. Order: <see cref="TowerRefusal.RankLocked"/>,
+    /// <see cref="TowerRefusal.EmptySlot"/>, <see cref="TowerRefusal.InvalidMods"/> (slot overflow, unknown id, mod of the wrong kind or
+    /// not fitting the floor type and variant, tier that does not exist, value outside the tier, duplicate id or group on one target),
+    /// <see cref="TowerRefusal.ModAboveRank"/> (kind or tier the rank does not allow), <see cref="TowerRefusal.NoUberBoss"/>.
+    /// </summary>
     public static TowerRefusal TryEnter(TowerData d, TowerAssembly assembly, TowerProgress progress, int characterLevel, IRandomSource rng, out TowerRun? run)
     {
         run = null;
@@ -74,15 +83,12 @@ public sealed class TowerRun
         if (spec.Rank > progress.HighestUnlocked) return TowerRefusal.RankLocked;
         if (spec.Floors.Any(f => f.TypeId == null)) return TowerRefusal.EmptySlot;
 
-        var towerIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var f in spec.Floors)
-        {
-            var floorIds = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var m in f.Mods)
-                if (!ModAllowed(d, spec.Rank, m) || !floorIds.Add(m.ModId)) return TowerRefusal.ModAboveRank;
-        }
-        foreach (var m in spec.TowerMods)
-            if (!ModAllowed(d, spec.Rank, m) || !towerIds.Add(m.ModId)) return TowerRefusal.ModAboveRank;
+            if (!d.TryGetFloorType(f.TypeId!, out var type) || !FloorModsValid(d, type, f)) return TowerRefusal.InvalidMods;
+        if (!ModsValid(d, spec.TowerMods, d.Rules.TowerSlots, def => def.Kind == ModKind.Tower)) return TowerRefusal.InvalidMods;
+
+        if (spec.Floors.SelectMany(f => f.Mods).Concat(spec.TowerMods).Any(m => !RankRules.CanApply(d.Rules, spec.Rank, d.Mod(m.ModId).Kind, m.Tier)))
+            return TowerRefusal.ModAboveRank;
 
         if (spec.UberBossId == null) return TowerRefusal.NoUberBoss;
 
@@ -91,16 +97,32 @@ public sealed class TowerRun
         return TowerRefusal.None;
     }
 
-    private static bool ModAllowed(TowerData d, int rank, ModInstance m)
+    /// <summary>Floor mods: not tower mods, fit the floor's type and, for a type mod, its variant.</summary>
+    private static bool FloorModsValid(TowerData d, FloorTypeDef type, FloorSpec f) =>
+        ModsValid(d, f.Mods, d.Rules.FloorSlots,
+            def => def.Kind != ModKind.Tower && def.FitsType(type.Id) && (def.Variant == null || def.Variant == f.Variant));
+
+    /// <summary>
+    /// Rank-independent validity of one target's mods: no more than <paramref name="slots"/>, known ids, each fits the target,
+    /// a tier that exists and a value inside it, no id twice, no group twice.
+    /// </summary>
+    private static bool ModsValid(TowerData d, IReadOnlyList<ModInstance> mods, int slots, Func<FloorModDef, bool> fits)
     {
-        if (!d.TryGetMod(m.ModId, out var def)) return false;
-        var tier = def.Tiers.FirstOrDefault(t => t.Tier == m.Tier);
-        if (tier == null) return false;
-        if (m.Value < tier.Min || m.Value > tier.Max) return false;
-        if (m.Tier > RankRules.Def(d.Rules, rank).MaxTier) return false;
-        return RankRules.CanApply(d.Rules, rank, def.Kind, m.Tier);
+        if (mods.Count > slots) return false;
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        var groups = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var m in mods)
+        {
+            if (!d.TryGetMod(m.ModId, out var def) || !fits(def)) return false;
+            var tier = def.Tiers.FirstOrDefault(t => t.Tier == m.Tier);
+            if (tier == null || !(m.Value >= tier.Min && m.Value <= tier.Max)) return false;
+            if (!ids.Add(def.Id)) return false;
+            if (def.Group != null && !groups.Add(def.Group)) return false;
+        }
+        return true;
     }
 
+    /// <summary>Clears the current floor. After the last floor <see cref="CurrentFloor"/> stays on it and the stage becomes the summit.</summary>
     public FloorReward WinFloor(Wallet wallet)
     {
         Require(RunStage.Floor);
@@ -108,7 +130,8 @@ public sealed class TowerRun
         var quality = Tower.Rewards.FloorQuality(_data, _spec, k, _floorDeaths[k] == 0, _shuffleBonus);
         var currency = Tower.Rewards.RollCurrencyDrop(_data, _spec.Rank, k, _rng);
         var reward = Grant(wallet, new FloorReward(k, quality, currency));
-        if (++CurrentFloor >= _data.Rules.Floors) Stage = RunStage.Summit;
+        if (k + 1 >= _data.Rules.Floors) Stage = RunStage.Summit;
+        else CurrentFloor = k + 1;
         return reward;
     }
 

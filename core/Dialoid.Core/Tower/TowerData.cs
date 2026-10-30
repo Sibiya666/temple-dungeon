@@ -18,10 +18,21 @@ public sealed record ModTier(int Tier, double Min, double Max, double Quality);
 /// <summary>
 /// Floor or tower mod. Empty <see cref="FloorTypes"/> = compatible with every type. A FloorType mod has exactly one type
 /// (and a <see cref="Variant"/> for trial). <see cref="Group"/> = incompatibility group, <see cref="Directions"/> = axes for biased imbues.
-/// A tower mod is compatible with the summit arena when FloorTypes is empty or contains "bosses".
+/// A tower mod acts on the summit (and counts for its reward) iff FloorTypes is empty or contains "bosses"; the loader
+/// requires every such mod to be in group "gate", so at most one acts on the summit (spec 5.2).
 /// </summary>
 public sealed record FloorModDef(string Id, string Name, ModKind Kind, IReadOnlyList<string> FloorTypes, string? Variant, string? Group,
-    IReadOnlyList<string> Directions, IReadOnlyList<string> StyleTags, HardCounter HardCounter, bool AffectsSummit, IReadOnlyList<ModTier> Tiers);
+    IReadOnlyList<string> Directions, IReadOnlyList<string> StyleTags, HardCounter HardCounter, IReadOnlyList<ModTier> Tiers)
+{
+    /// <summary>FloorTypes is empty or contains <paramref name="typeId"/> (variants are not checked here).</summary>
+    public bool FitsType(string typeId) => FloorTypes.Count == 0 || FloorTypes.Contains(typeId, StringComparer.Ordinal);
+
+    /// <summary>The one rule for "acts on the summit": a tower mod that fits the summit arena (<see cref="TowerDataLoader.BossesType"/>).</summary>
+    public bool ActsOnSummit => Kind == ModKind.Tower && FitsType(TowerDataLoader.BossesType);
+}
+
+/// <summary>Biome: decoration only, does not change numbers.</summary>
+public sealed record BiomeDef(string Id, string Name);
 
 /// <summary>Modification currency. <see cref="ModKind"/> only for AddMod/AddModBiased; bias fields only for AddModBiased.</summary>
 public sealed record CurrencyDef(string Id, string Name, CurrencyOp Op, ModKind? ModKind, bool HasLevel, int DropsFromRank, double DropBase,
@@ -47,7 +58,7 @@ public sealed class TowerData
     private readonly Dictionary<string, FloorModDef> _mods;
     private readonly Dictionary<string, CurrencyDef> _currencies;
 
-    internal TowerData(TowerRules rules, IReadOnlyList<FloorTypeDef> floorTypes, IReadOnlyList<string> biomes,
+    internal TowerData(TowerRules rules, IReadOnlyList<FloorTypeDef> floorTypes, IReadOnlyList<BiomeDef> biomes,
         IReadOnlyList<FloorModDef> mods, IReadOnlyList<CurrencyDef> currencies)
     {
         Rules = rules;
@@ -62,7 +73,7 @@ public sealed class TowerData
 
     public TowerRules Rules { get; }
     public IReadOnlyList<FloorTypeDef> FloorTypes { get; }
-    public IReadOnlyList<string> Biomes { get; }
+    public IReadOnlyList<BiomeDef> Biomes { get; }
     public IReadOnlyList<FloorModDef> Mods { get; }
     public IReadOnlyList<CurrencyDef> Currencies { get; }
 
@@ -73,5 +84,5 @@ public sealed class TowerData
     public bool TryGetFloorType(string id, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out FloorTypeDef? def) => _types.TryGetValue(id, out def);
     public bool TryGetMod(string id, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out FloorModDef? def) => _mods.TryGetValue(id, out def);
     public bool TryGetCurrency(string id, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out CurrencyDef? def) => _currencies.TryGetValue(id, out def);
-    public bool HasBiome(string id) => Biomes.Contains(id, StringComparer.Ordinal);
+    public bool HasBiome(string id) => Biomes.Any(b => string.Equals(b.Id, id, StringComparison.Ordinal));
 }

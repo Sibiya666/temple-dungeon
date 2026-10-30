@@ -11,7 +11,7 @@ public class TowerRunTests
     private static IRandomSource Rng(int seed = 1) => RandomSources.Create(SimMode.Roll, seed);
 
     private static FloorSpec Floor(string type = "clear", params ModInstance[] mods) =>
-        new(type, null, D.Biomes[0], mods);
+        new(type, null, D.Biomes[0].Id, mods);
 
     private static ModInstance Max(string id, int tier = 1) => new(id, tier, D.Mod(id).Tiers.First(t => t.Tier == tier).Max);
 
@@ -54,7 +54,7 @@ public class TowerRunTests
         // floor_type mod is not allowed on rank 1
         var ft = KindMod(ModKind.FloorType);
         var def = D.Mod(ft);
-        var ftFloors = new[] { new FloorSpec(def.FloorTypes[0], null, D.Biomes[0], new[] { Max(ft) }), Floor(), Floor(), Floor(), Floor() };
+        var ftFloors = new[] { new FloorSpec(def.FloorTypes[0], null, D.Biomes[0].Id, new[] { Max(ft) }), Floor(), Floor(), Floor(), Floor() };
         Assert.Equal(TowerRefusal.ModAboveRank, TowerRun.TryEnter(D, Asm(Spec(1, ftFloors)), new TowerProgress(), 10, Rng(), out run));
         Assert.Null(run);
 
@@ -79,7 +79,7 @@ public class TowerRunTests
     }
 
     [Fact]
-    public void Enter_refuses_value_out_of_range_and_duplicate_mods()
+    public void Enter_refuses_value_out_of_range_and_duplicate_mods_as_invalid()
     {
         var gen = D.Mods.Where(m => m.Kind == ModKind.General && m.FloorTypes.Count == 0).Take(2).ToList();
         string a = gen[0].Id, b = gen[1].Id;
@@ -90,18 +90,131 @@ public class TowerRunTests
             Spec(5, new[] { Floor("clear", mods), Floor(), Floor(), Floor(), Floor() });
 
         Assert.Equal(TowerRefusal.None, Try(WithFloor0(new ModInstance(a, 1, tier.Min))));
-        Assert.Equal(TowerRefusal.ModAboveRank, Try(WithFloor0(new ModInstance(a, 1, tier.Max + 1))));
-        Assert.Equal(TowerRefusal.ModAboveRank, Try(WithFloor0(new ModInstance(a, 1, tier.Min - 1))));
+        Assert.Equal(TowerRefusal.InvalidMods, Try(WithFloor0(new ModInstance(a, 1, tier.Max + 1))));
+        Assert.Equal(TowerRefusal.InvalidMods, Try(WithFloor0(new ModInstance(a, 1, tier.Min - 1))));
+        Assert.Equal(TowerRefusal.InvalidMods, Try(WithFloor0(new ModInstance(a, 1, double.NaN))));
+        Assert.Equal(TowerRefusal.InvalidMods, Try(WithFloor0(new ModInstance(a, 6, tier.Min))));
+        Assert.Equal(TowerRefusal.InvalidMods, Try(WithFloor0(new ModInstance("nope", 1, 0))));
 
         Assert.Equal(TowerRefusal.None, Try(WithFloor0(Max(a), Max(b))));
-        Assert.Equal(TowerRefusal.ModAboveRank, Try(WithFloor0(Max(a), Max(a))));
+        Assert.Equal(TowerRefusal.InvalidMods, Try(WithFloor0(Max(a), Max(a))));
 
         // the same mod on two different floors is fine
         Assert.Equal(TowerRefusal.None, Try(Spec(5, new[] { Floor("clear", Max(a)), Floor("clear", Max(a)), Floor(), Floor(), Floor() })));
 
         var tm = D.Mods.Where(m => m.Kind == ModKind.Tower).Take(2).ToList();
         Assert.Equal(TowerRefusal.None, Try(Spec(5, null, "boss", Max(tm[0].Id), Max(tm[1].Id))));
-        Assert.Equal(TowerRefusal.ModAboveRank, Try(Spec(5, null, "boss", Max(tm[0].Id), Max(tm[0].Id))));
+        Assert.Equal(TowerRefusal.InvalidMods, Try(Spec(5, null, "boss", Max(tm[0].Id), Max(tm[0].Id))));
+    }
+
+    private static TowerSpec WithFloor0(int rank, FloorSpec floor0, params ModInstance[] towerMods) =>
+        Spec(rank, new[] { floor0, Floor(), Floor(), Floor(), Floor() }, "boss", towerMods);
+
+    private static TowerRefusal TryAt5(TowerSpec s, TowerData? data = null) =>
+        TowerRun.TryEnter(data ?? D, TowerAssembly.FromSpec(data ?? D, s, Rng()), Unlocked(5), 60, Rng(), out _);
+
+    [Fact]
+    public void Enter_refuses_group_conflict_on_floor_and_tower()
+    {
+        Assert.Equal("density", D.Mod("more_packs").Group);
+        Assert.Equal("density", D.Mod("dense_packs").Group);
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, Floor("clear", Max("more_packs"), Max("dense_packs")))));
+        // the same group on two different floors is fine
+        Assert.Equal(TowerRefusal.None, TryAt5(Spec(5, new[] { Floor("clear", Max("more_packs")), Floor("clear", Max("dense_packs")), Floor(), Floor(), Floor() })));
+
+        // real data has no two tower mods of one group: give tower_elite_aura the group of tower_more_packs
+        var mods = D.Mods.Select(m => m.Id == "tower_elite_aura" ? m with { Group = "density" } : m).ToList();
+        var data = new TowerData(D.Rules, D.FloorTypes, D.Biomes, mods, D.Currencies);
+        Assert.Equal(TowerRefusal.None, TryAt5(Spec(5, null, "boss", Max("tower_more_packs")), data));
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(Spec(5, null, "boss", Max("tower_more_packs"), Max("tower_elite_aura")), data));
+        // a tower mod and a floor mod of one group do not conflict: they sit on different targets
+        Assert.Equal(TowerRefusal.None, TryAt5(WithFloor0(5, Floor("clear", Max("more_packs")), Max("tower_more_packs"))));
+    }
+
+    [Fact]
+    public void Enter_refuses_more_mods_than_slots()
+    {
+        string[] general = { "monster_life", "monster_damage", "rare_leaders", "elite_explode", "reward_quantity", "no_life_regen" };
+        Assert.Equal(D.Rules.FloorSlots + 1, general.Length);
+        Assert.Equal(TowerRefusal.None, TryAt5(WithFloor0(5, Floor("clear", general.Take(D.Rules.FloorSlots).Select(id => Max(id)).ToArray()))));
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, Floor("clear", general.Select(id => Max(id)).ToArray()))));
+
+        var tower = D.Mods.Where(m => m.Kind == ModKind.Tower).Select(m => Max(m.Id)).ToArray();
+        Assert.Equal(D.Rules.TowerSlots + 1, tower.Length);
+        Assert.Equal(TowerRefusal.None, TryAt5(Spec(5, null, "boss", tower.Take(D.Rules.TowerSlots).ToArray())));
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(Spec(5, null, "boss", tower)));
+    }
+
+    [Fact]
+    public void Enter_refuses_mods_that_do_not_fit_floor_or_target()
+    {
+        // type mod of another floor type
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, Floor("clear", Max("extra_wave")))));
+        Assert.Equal(TowerRefusal.None, TryAt5(WithFloor0(5, Floor("waves", Max("extra_wave")))));
+        // general mod limited to some types
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, Floor("bosses", Max("more_packs")))));
+        // trial mod of another variant
+        var hold = Max("hold_decay");
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, new FloorSpec("trial", "escort", D.Biomes[0].Id, new[] { hold }))));
+        Assert.Equal(TowerRefusal.None, TryAt5(WithFloor0(5, new FloorSpec("trial", "hold", D.Biomes[0].Id, new[] { hold }))));
+        // kind mismatch: a tower mod on a floor, a floor mod on the tower
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, Floor("clear", Max("tower_reward")))));
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(Spec(5, null, "boss", Max("monster_life"))));
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(Spec(5, null, "boss", Max("extra_wave"))));
+    }
+
+    [Fact]
+    public void Enter_check_order_is_rank_empty_invalid_above_rank_uber()
+    {
+        var empty = new FloorSpec(null, null, null, Array.Empty<ModInstance>());
+        var gen = KindMod(ModKind.General);
+        var tier2 = new ModInstance(gen, 2, D.Mod(gen).Tiers[1].Max);
+        TowerRefusal Try1(TowerSpec s) => TowerRun.TryEnter(D, Asm(s), new TowerProgress(), 10, Rng(), out _);
+
+        // invalid (duplicate) mods above the rank on rank 1: InvalidMods wins over ModAboveRank
+        var dupHigh = Spec(1, new[] { Floor("clear", tier2, tier2), Floor(), Floor(), Floor(), Floor() }, null);
+        Assert.Equal(TowerRefusal.InvalidMods, Try1(dupHigh));
+        // empty slot wins over invalid mods
+        Assert.Equal(TowerRefusal.EmptySlot, Try1(dupHigh with { Floors = dupHigh.Floors.Take(4).Append(empty).ToList() }));
+        // above rank wins over no uber boss
+        Assert.Equal(TowerRefusal.ModAboveRank, Try1(Spec(1, new[] { Floor("clear", tier2), Floor(), Floor(), Floor(), Floor() }, null)));
+        // tower mod on rank 1 is a rank reason, not an invalid tower
+        Assert.Equal(TowerRefusal.ModAboveRank, Try1(Spec(1, null, "boss", Max("tower_reward"))));
+    }
+
+    [Fact]
+    public void Current_floor_stays_on_last_floor_at_summit()
+    {
+        var run = Enter(Spec(5));
+        var wallet = new Wallet(D);
+        for (int i = 0; i < 4; i++) run.WinFloor(wallet);
+        Assert.Equal(4, run.CurrentFloor);
+        Assert.Equal(RunStage.Floor, run.Stage);
+        run.WinFloor(wallet);
+        Assert.Equal(RunStage.Summit, run.Stage);
+        Assert.Equal(4, run.CurrentFloor);
+        run.Die();
+        Assert.Equal(4, run.CurrentFloor);
+        Assert.Equal(0, run.Deaths(4));
+        run.WinSummit(wallet, new TowerProgress());
+        Assert.Equal(4, run.CurrentFloor);
+    }
+
+    [Fact]
+    public void Run_exposes_entry_spec()
+    {
+        var spec = WithFloor0(5, Floor("clear", Max("monster_life")), Max("tower_reward"));
+        var a = Asm(spec);
+        Assert.Equal(TowerRefusal.None, TowerRun.TryEnter(D, a, Unlocked(5), 60, Rng(), out var run));
+        var atEntry = run!.Spec;
+        Assert.Equal(TowerCodec.ToJson(a.Spec), TowerCodec.ToJson(atEntry));
+
+        a.SetFloorType(0, "waves");
+        a.SetUberBoss("other");
+        Assert.Same(atEntry, run.Spec);
+        Assert.Equal("clear", run.Spec.Floors[0].TypeId);
+        Assert.Equal("boss", run.Spec.UberBossId);
+        Assert.Equal(new[] { "tower_reward" }, run.Spec.TowerMods.Select(m => m.ModId));
     }
 
     [Fact]

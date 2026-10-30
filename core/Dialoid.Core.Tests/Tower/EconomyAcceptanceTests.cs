@@ -168,7 +168,7 @@ public class EconomyAcceptanceTests
         return p;
     }
 
-    private static List<(string, int, int)> RunCurrency(TowerAssembly a, int seed)
+    private static List<CurrencyDrop> RunCurrency(TowerAssembly a, int seed)
     {
         var progress = Unlocked(ModRank);
         Assert.Equal(TowerRefusal.None, TowerRun.TryEnter(D, a, progress, 60, Rng(seed), out var run));

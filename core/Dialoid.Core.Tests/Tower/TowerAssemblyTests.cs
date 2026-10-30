@@ -45,6 +45,65 @@ public class TowerAssemblyTests
         }
     }
 
+    /// <summary>Always the lowest value: the old "re-pick until different" loop would never end under it.</summary>
+    private sealed class AlwaysLow : IRandomSource
+    {
+        public double InRange(double min, double max) => min;
+        public bool Chance(string channel, double probability) => false;
+        public bool? CritOrExpected(string channel, double chance) => false;
+    }
+
+    [Fact]
+    public void Shuffle_picks_once_from_types_other_than_previous()
+    {
+        var a = new TowerAssembly(D, 1, new AlwaysLow());
+        Assert.Equal(TowerRefusal.None, a.Shuffle(new Wallet(D)));
+        var types = a.Spec.Floors.Select(f => f.TypeId).ToList();
+        string first = D.FloorTypes[0].Id, second = D.FloorTypes[1].Id;
+        Assert.Equal(new[] { first, second, first, second, first }, types);
+    }
+
+    [Fact]
+    public void From_composition_keeps_layout_and_drops_mods()
+    {
+        var floors = new[]
+        {
+            new FloorSpec("trial", "hold", "swamp", new[] { new ModInstance("hold_decay", 1, 10), new ModInstance("monster_life", 1, 20) }),
+            new FloorSpec("clear", null, "crypt", new[] { new ModInstance("monster_life", 1, 20) }),
+            new FloorSpec("waves", null, "swamp", new[] { new ModInstance("extra_wave", 1, 1) }),
+            new FloorSpec("bosses", null, "crypt", Array.Empty<ModInstance>()),
+            new FloorSpec("timed_run", null, "crypt", Array.Empty<ModInstance>()),
+        };
+        var spec = new TowerSpec(5, floors, new[] { new ModInstance("tower_gate_life", 1, 10) }, "baal");
+        var a = TowerAssembly.FromComposition(D, spec, Rng(3));
+        var got = a.Spec;
+
+        Assert.Equal(5, got.Rank);
+        Assert.Equal("baal", got.UberBossId);
+        Assert.Equal(floors.Select(f => f.TypeId), got.Floors.Select(f => f.TypeId));
+        Assert.Equal(floors.Select(f => f.Variant), got.Floors.Select(f => f.Variant));
+        Assert.Equal(floors.Select(f => f.BiomeId), got.Floors.Select(f => f.BiomeId));
+        Assert.All(got.Floors, f => Assert.Empty(f.Mods));
+        Assert.Empty(got.TowerMods);
+        Assert.False(a.ShuffleBonusActive);
+
+        // the variant seeds the slot memory, as with a full spec
+        a.SetFloorType(0, "clear");
+        a.SetFloorType(0, "trial");
+        Assert.Equal("hold", a.Spec.Floors[0].Variant);
+
+        Assert.Throws<ArgumentException>(() => TowerAssembly.FromComposition(D, spec with { Floors = floors.Take(4).ToArray() }, Rng(3)));
+    }
+
+    [Fact]
+    public void From_spec_is_not_public()
+    {
+        var m = typeof(TowerAssembly).GetMethod(nameof(TowerAssembly.FromSpec),
+            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)!;
+        Assert.False(m.IsPublic);
+        Assert.True(typeof(TowerAssembly).GetMethod(nameof(TowerAssembly.FromComposition))!.IsPublic);
+    }
+
     [Fact]
     public void First_shuffle_is_free_then_costs_grow()
     {

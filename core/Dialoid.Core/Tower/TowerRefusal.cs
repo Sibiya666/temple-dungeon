@@ -4,7 +4,7 @@ namespace Dialoid.Core.Tower;
 public enum TowerRefusal
 {
     None, UnknownCurrency, CurrencyLocked, WrongTarget, KindNotAllowed, SlotOutOfRange, UnknownType, EmptySlot, SlotFull, NoMods,
-    PoolEmpty, NotATrial, NothingToUpgrade, ModNotFound, NotEnoughCurrency, RankLocked, ModAboveRank, NoUberBoss,
+    PoolEmpty, NotATrial, NothingToUpgrade, ModNotFound, NotEnoughCurrency, RankLocked, InvalidMods, ModAboveRank, NoUberBoss,
 }
 
 /// <summary>Player-facing texts of the tower module.</summary>
@@ -28,6 +28,7 @@ public static class TowerTexts
         TowerRefusal.ModNotFound => "У цели нет такого свойства",
         TowerRefusal.NotEnoughCurrency => "Не хватает валюты",
         TowerRefusal.RankLocked => "Этот ранг еще закрыт",
+        TowerRefusal.InvalidMods => "Свойства башни противоречат друг другу или не подходят этажам",
         TowerRefusal.ModAboveRank => "В башне есть свойство, недоступное на этом ранге",
         TowerRefusal.NoUberBoss => "Не выбран убер-босс вершины",
         _ => throw new ArgumentOutOfRangeException(nameof(r), r, "Неизвестная причина отказа"),

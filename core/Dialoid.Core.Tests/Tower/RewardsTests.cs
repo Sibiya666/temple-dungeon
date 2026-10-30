@@ -11,7 +11,7 @@ public class RewardsTests
     private static FloorSpec Empty() => new(null, null, null, Array.Empty<ModInstance>());
 
     private static FloorSpec Floor(string type, string? variant = null, params ModInstance[] mods) =>
-        new(type, variant, D.Biomes[0], mods);
+        new(type, variant, D.Biomes[0].Id, mods);
 
     private static TowerSpec Tower(IEnumerable<FloorSpec> floors, params ModInstance[] towerMods)
     {
@@ -93,6 +93,32 @@ public class RewardsTests
         Assert.Equal(none.TowerMods, withBad.TowerMods);
         Assert.True(withGood.TowerMods > none.TowerMods);
         Assert.True(Rewards.FloorQuality(D, Tower(new[] { Floor("clear") }, Max(incompatible.Id)), 0, false, false).TowerMods > 1.0);
+    }
+
+    [Fact]
+    public void Tower_mods_raise_quality_only_on_compatible_floors()
+    {
+        var notBosses = D.Mods.First(m => m.Kind == ModKind.Tower && m.FloorTypes.Count > 0 && !m.FloorTypes.Contains("bosses"));
+        var everywhere = D.Mods.First(m => m.Kind == ModKind.Tower && m.FloorTypes.Count == 0);
+        var floors = new[] { Floor("bosses"), Floor("clear") };
+        var bare = Tower(floors);
+        var withNotBosses = Tower(floors, Max(notBosses.Id));
+        var withEverywhere = Tower(floors, Max(everywhere.Id));
+
+        Assert.Equal(1.0, Rewards.FloorQuality(D, withNotBosses, 0, false, false).TowerMods);
+        Assert.Equal(Rewards.FloorQuality(D, bare, 0, false, false), Rewards.FloorQuality(D, withNotBosses, 0, false, false));
+        Assert.True(Rewards.FloorQuality(D, withNotBosses, 1, false, false).TowerMods > 1.0);
+        Assert.True(Rewards.FloorQuality(D, withEverywhere, 0, false, false).TowerMods > 1.0);
+        Assert.True(Rewards.FloorQuality(D, withEverywhere, 1, false, false).TowerMods > 1.0);
+    }
+
+    [Fact]
+    public void Summit_rule_is_acts_on_summit()
+    {
+        foreach (var m in D.Mods)
+            Assert.Equal(m.Kind == ModKind.Tower && (m.FloorTypes.Count == 0 || m.FloorTypes.Contains("bosses")), m.ActsOnSummit);
+        Assert.Contains(D.Mods, m => m.ActsOnSummit);
+        Assert.All(D.Mods.Where(m => m.ActsOnSummit), m => Assert.Equal(TowerDataLoader.SummitGroup, m.Group));
     }
 
     [Fact]

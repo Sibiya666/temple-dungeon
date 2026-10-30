@@ -14,6 +14,8 @@ public static class TowerDataLoader
     public const int LastLevellingRank = 5;
     /// <summary>Floor type whose arena hosts the summit (tower-mod compatibility with the uber boss).</summary>
     public const string BossesType = "bosses";
+    /// <summary>Group every summit-acting tower mod must be in (spec 5.2: at most one such mod acts on the summit).</summary>
+    public const string SummitGroup = "gate";
 
     private static readonly CurrencyOp[] LevellessOps = { CurrencyOp.Clear, CurrencyOp.RemoveOne, CurrencyOp.RerollOne, CurrencyOp.RerollVariant, CurrencyOp.Shuffle };
 
@@ -132,14 +134,14 @@ public static class TowerDataLoader
         return result;
     }
 
-    private static List<string> LoadBiomes(string dir, List<DataError> errors)
+    private static List<BiomeDef> LoadBiomes(string dir, List<DataError> errors)
     {
         const string F = "biomes.json";
-        var result = new List<string>();
+        var result = new List<BiomeDef>();
         foreach (var (id, b) in DataLoader.ReadCatalog<BiomeJson>(dir, F, x => x.Id, errors, BiomeJson.CheckFields))
         {
             if (string.IsNullOrWhiteSpace(b.Name)) errors.Add(new DataError(F, id, "Не задано «name»"));
-            else result.Add(id);
+            else result.Add(new BiomeDef(id, b.Name!));
         }
         return result;
     }
@@ -175,9 +177,8 @@ public static class TowerDataLoader
 
             var hard = m.HardCounter ?? HardCounter.None;
             if (kind == ModKind.Tower && hard != HardCounter.None) Err("Мод башни не может быть жестким контром: он ломал бы все этажи и вершину");
-            if (m.AffectsSummit && kind != ModKind.Tower) Err("«affects_summit» бывает только у мода башни");
-            if (m.AffectsSummit && floorTypes.Count > 0 && !floorTypes.Contains(BossesType))
-                Err($"Мод с «affects_summit» должен подходить арене вершины: «floor_types» пуст или содержит «{BossesType}»");
+            if (kind == ModKind.Tower && (floorTypes.Count == 0 || floorTypes.Contains(BossesType)) && m.Group != SummitGroup)
+                Err($"Мод башни, который действует на вершину («floor_types» пуст или содержит «{BossesType}»), должен быть в группе «{SummitGroup}»: на вершине действует не больше одного такого мода");
             if (m.Group is { } g && string.IsNullOrWhiteSpace(g)) Err("Пустая «group»: уберите поле или задайте имя группы");
             if ((m.Directions ?? new()).Any(string.IsNullOrWhiteSpace)) Err("Пустое направление в «directions»");
             if ((m.StyleTags ?? new()).Any(string.IsNullOrWhiteSpace)) Err("Пустая метка в «style_tags»");
@@ -185,7 +186,7 @@ public static class TowerDataLoader
             var tiers = LoadTiers(m.Tiers, Err);
             if (errors.Count > before) continue;
             result.Add(new FloorModDef(id, m.Name!, kind, floorTypes, m.Variant, m.Group, m.Directions ?? new(), m.StyleTags ?? new(),
-                hard, m.AffectsSummit, tiers));
+                hard, tiers));
         }
         return result;
     }

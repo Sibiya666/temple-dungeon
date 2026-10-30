@@ -1,107 +1,107 @@
 [
   {
     "id": "monster_life", "name": "Монстры: +{v}% здоровья", "kind": "general", "floor_types": [], "variant": null, "group": null,
-    "directions": [], "style_tags": ["dot"], "hard_counter": null, "affects_summit": false,
+    "directions": [], "style_tags": ["dot"], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 15, "max": 25, "quality": 0.04 }, { "tier": 2, "min": 30, "max": 40, "quality": 0.07 }, { "tier": 3, "min": 45, "max": 55, "quality": 0.10 }, { "tier": 4, "min": 60, "max": 70, "quality": 0.13 }, { "tier": 5, "min": 75, "max": 85, "quality": 0.16 }]
   },
   {
     "id": "monster_damage", "name": "Монстры: +{v}% урона", "kind": "general", "floor_types": [], "variant": null, "group": null,
-    "directions": [], "style_tags": ["melee"], "hard_counter": null, "affects_summit": false,
+    "directions": [], "style_tags": ["melee"], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 15, "max": 25, "quality": 0.04 }, { "tier": 2, "min": 30, "max": 40, "quality": 0.07 }, { "tier": 3, "min": 45, "max": 55, "quality": 0.10 }, { "tier": 4, "min": 60, "max": 70, "quality": 0.13 }, { "tier": 5, "min": 75, "max": 85, "quality": 0.16 }]
   },
   {
     "id": "more_packs", "name": "Больше стай: +{v}%", "kind": "general", "floor_types": ["timed_run", "trial", "clear", "waves"], "variant": null, "group": "density",
-    "directions": ["density"], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": ["density"], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "rare_leaders", "name": "Стаи с редким лидером: +{v}% шанса", "kind": "general", "floor_types": ["timed_run", "trial", "clear", "waves"], "variant": null, "group": null,
-    "directions": ["elite"], "style_tags": ["summon"], "hard_counter": null, "affects_summit": false,
+    "directions": ["elite"], "style_tags": ["summon"], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "reward_quantity", "name": "Награда этажа лучше: +{v}% качества", "kind": "general", "floor_types": [], "variant": null, "group": null,
-    "directions": ["reward"], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": ["reward"], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 5, "max": 8, "quality": 0.04 }, { "tier": 2, "min": 9, "max": 12, "quality": 0.06 }, { "tier": 3, "min": 13, "max": 16, "quality": 0.08 }, { "tier": 4, "min": 17, "max": 20, "quality": 0.10 }, { "tier": 5, "min": 21, "max": 24, "quality": 0.12 }]
   },
   {
     "id": "no_life_regen", "name": "Нет регенерации здоровья", "kind": "general", "floor_types": [], "variant": null, "group": null,
-    "directions": [], "style_tags": [], "hard_counter": "no_life_regen", "affects_summit": false,
+    "directions": [], "style_tags": [], "hard_counter": "no_life_regen",
     "tiers": [{ "tier": 1, "min": 0, "max": 0, "quality": 0.12 }, { "tier": 2, "min": 0, "max": 0, "quality": 0.15 }, { "tier": 3, "min": 0, "max": 0, "quality": 0.18 }, { "tier": 4, "min": 0, "max": 0, "quality": 0.21 }, { "tier": 5, "min": 0, "max": 0, "quality": 0.24 }]
   },
   {
     "id": "no_healing", "name": "Нет лечения и вампиризма", "kind": "general", "floor_types": [], "variant": null, "group": null,
-    "directions": [], "style_tags": [], "hard_counter": "no_healing", "affects_summit": false,
+    "directions": [], "style_tags": [], "hard_counter": "no_healing",
     "tiers": [{ "tier": 1, "min": 0, "max": 0, "quality": 0.12 }, { "tier": 2, "min": 0, "max": 0, "quality": 0.15 }, { "tier": 3, "min": 0, "max": 0, "quality": 0.18 }, { "tier": 4, "min": 0, "max": 0, "quality": 0.21 }, { "tier": 5, "min": 0, "max": 0, "quality": 0.24 }]
   },
   {
     "id": "less_time_per_kill", "name": "Особые монстры дают на {v}% меньше времени", "kind": "floor_type", "floor_types": ["timed_run"], "variant": null, "group": "timer",
-    "directions": [], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": [], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "faster_timer_in_combat", "name": "Таймер идет на {v}% быстрее во время боя", "kind": "floor_type", "floor_types": ["timed_run"], "variant": null, "group": "timer",
-    "directions": [], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": [], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "more_kill_threshold", "name": "Порог зачистки выше на {v}%", "kind": "floor_type", "floor_types": ["clear"], "variant": null, "group": null,
-    "directions": ["density"], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": ["density"], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "extra_wave", "name": "Еще волн: +{v}", "kind": "floor_type", "floor_types": ["waves"], "variant": null, "group": "waves",
-    "directions": ["waves"], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": ["waves"], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 1, "max": 1, "quality": 0.05 }, { "tier": 2, "min": 1, "max": 1, "quality": 0.07 }, { "tier": 3, "min": 2, "max": 2, "quality": 0.10 }, { "tier": 4, "min": 2, "max": 2, "quality": 0.12 }, { "tier": 5, "min": 3, "max": 3, "quality": 0.15 }]
   },
   {
     "id": "no_pause", "name": "Пауза между волнами короче на {v}%", "kind": "floor_type", "floor_types": ["waves"], "variant": null, "group": "waves",
-    "directions": ["waves"], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": ["waves"], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 15, "max": 25, "quality": 0.04 }, { "tier": 2, "min": 30, "max": 40, "quality": 0.07 }, { "tier": 3, "min": 45, "max": 55, "quality": 0.10 }, { "tier": 4, "min": 60, "max": 70, "quality": 0.13 }, { "tier": 5, "min": 75, "max": 85, "quality": 0.16 }]
   },
   {
     "id": "boss_extra_life", "name": "Боссы: +{v}% здоровья", "kind": "floor_type", "floor_types": ["bosses"], "variant": null, "group": null,
-    "directions": [], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": [], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 15, "max": 25, "quality": 0.04 }, { "tier": 2, "min": 30, "max": 40, "quality": 0.07 }, { "tier": 3, "min": 45, "max": 55, "quality": 0.10 }, { "tier": 4, "min": 60, "max": 70, "quality": 0.13 }, { "tier": 5, "min": 75, "max": 85, "quality": 0.16 }]
   },
   {
     "id": "escort_hunters", "name": "Больше охотников за союзником: +{v}%", "kind": "floor_type", "floor_types": ["trial"], "variant": "escort", "group": null,
-    "directions": ["elite"], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": ["elite"], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "hold_decay", "name": "Шкала вне точки падает на {v}% быстрее", "kind": "floor_type", "floor_types": ["trial"], "variant": "hold", "group": null,
-    "directions": [], "style_tags": ["ranged"], "hard_counter": null, "affects_summit": false,
+    "directions": [], "style_tags": ["ranged"], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "ritual_extra_point", "name": "Еще точек ритуала: +{v}", "kind": "floor_type", "floor_types": ["trial"], "variant": "ritual", "group": null,
-    "directions": ["waves"], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": ["waves"], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 1, "max": 1, "quality": 0.05 }, { "tier": 2, "min": 1, "max": 1, "quality": 0.07 }, { "tier": 3, "min": 2, "max": 2, "quality": 0.10 }, { "tier": 4, "min": 2, "max": 2, "quality": 0.12 }, { "tier": 5, "min": 3, "max": 3, "quality": 0.15 }]
   },
   {
     "id": "levers_more_needed", "name": "Нужно больше рычагов: +{v}", "kind": "floor_type", "floor_types": ["trial"], "variant": "levers", "group": null,
-    "directions": [], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": [], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 1, "max": 1, "quality": 0.05 }, { "tier": 2, "min": 1, "max": 1, "quality": 0.07 }, { "tier": 3, "min": 2, "max": 2, "quality": 0.10 }, { "tier": 4, "min": 2, "max": 2, "quality": 0.12 }, { "tier": 5, "min": 3, "max": 3, "quality": 0.15 }]
   },
   {
     "id": "tower_gate_life", "name": "Вся башня и убер-босс: монстры +{v}% здоровья", "kind": "tower", "floor_types": [], "variant": null, "group": "gate",
-    "directions": [], "style_tags": ["dot"], "hard_counter": null, "affects_summit": true,
+    "directions": [], "style_tags": ["dot"], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "tower_elite_aura", "name": "На всех этажах элиты с аурой скорости: +{v}%", "kind": "tower", "floor_types": ["timed_run", "trial", "clear", "waves"], "variant": null, "group": null,
-    "directions": ["elite"], "style_tags": ["melee"], "hard_counter": null, "affects_summit": false,
+    "directions": ["elite"], "style_tags": ["melee"], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "tower_more_packs", "name": "На всех этажах больше стай: +{v}%", "kind": "tower", "floor_types": ["timed_run", "trial", "clear", "waves"], "variant": null, "group": "density",
-    "directions": ["density"], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": ["density"], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 10, "max": 15, "quality": 0.03 }, { "tier": 2, "min": 16, "max": 22, "quality": 0.05 }, { "tier": 3, "min": 23, "max": 30, "quality": 0.07 }, { "tier": 4, "min": 31, "max": 38, "quality": 0.09 }, { "tier": 5, "min": 39, "max": 46, "quality": 0.11 }]
   },
   {
     "id": "tower_reward", "name": "Награда всех этажей лучше: +{v}% качества", "kind": "tower", "floor_types": ["timed_run", "trial", "clear", "waves"], "variant": null, "group": null,
-    "directions": ["reward"], "style_tags": [], "hard_counter": null, "affects_summit": false,
+    "directions": ["reward"], "style_tags": [], "hard_counter": null,
     "tiers": [{ "tier": 1, "min": 5, "max": 8, "quality": 0.04 }, { "tier": 2, "min": 9, "max": 12, "quality": 0.06 }, { "tier": 3, "min": 13, "max": 16, "quality": 0.08 }, { "tier": 4, "min": 17, "max": 20, "quality": 0.10 }, { "tier": 5, "min": 21, "max": 24, "quality": 0.12 }]
   }
 ]

@@ -121,6 +121,49 @@ public class TowerDataLoaderTests
     }
 
     [Fact]
+    public void Summit_tower_mod_must_be_in_gate_group()
+    {
+        // floor_types empty → acts on the summit → must be in group "gate"
+        var e = Broken("floor_mods.json", mods => First(mods, "id", "tower_gate_life")["group"] = null);
+        Assert.Contains(e, x => x.Id == "tower_gate_life" && x.Message.Contains("«gate»"));
+
+        // floor_types containing "bosses" also acts on the summit
+        e = Broken("floor_mods.json", mods => First(mods, "id", "tower_reward")["floor_types"] = new JsonArray("clear", "bosses"));
+        Assert.Contains(e, x => x.Id == "tower_reward" && x.Message.Contains("«gate»"));
+
+        // the same mod in group "gate" loads
+        var dir = FixturePaths.CopyTowerFixture();
+        Edit(dir, "floor_mods.json", n =>
+        {
+            var m = First(n.AsArray(), "id", "tower_reward");
+            m["floor_types"] = new JsonArray("clear", "bosses");
+            m["group"] = "gate";
+        });
+        var d = LoadOk(dir);
+        Assert.True(d.Mod("tower_reward").ActsOnSummit);
+
+        // a general mod with empty floor_types is not a summit mod and needs no group
+        Assert.False(d.Mod("monster_life").ActsOnSummit);
+        Assert.Null(d.Mod("monster_life").Group);
+    }
+
+    [Fact]
+    public void Affects_summit_field_is_gone()
+    {
+        var e = Broken("floor_mods.json", mods => First(mods, "id", "tower_gate_life")["affects_summit"] = true);
+        Assert.Contains(e, x => x.File == "floor_mods.json" && x.Message.Contains("affects_summit"));
+    }
+
+    [Fact]
+    public void Biomes_keep_names_and_file_order()
+    {
+        var d = LoadOk(FixturePaths.TowerFixture);
+        Assert.Equal(new[] { new BiomeDef("crypt", "Склеп"), new BiomeDef("swamp", "Болото") }, d.Biomes);
+        Assert.True(d.HasBiome("swamp"));
+        Assert.False(d.HasBiome("Болото"));
+    }
+
+    [Fact]
     public void Floor_type_mod_needs_exactly_one_type()
     {
         string? id = null;
