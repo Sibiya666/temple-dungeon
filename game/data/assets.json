@@ -1,0 +1,47 @@
+{
+  "comment": "Room assets: id -> file under the assets folder (DIALOID_ASSETS, else assets/ in the repo root). tools/sync_assets.ps1 copies only these files to game/vendor/ with normalized names. Heights in metres (spec §4).",
+  "characters": {
+    "hero": { "file": "mixamo/characters/Paladin WProp J Nordstrom.fbx", "height": 1.85 },
+    "zombie": { "file": "mixamo/characters/Skeletonzombie T Avelange.fbx", "height": 1.8 },
+    "orc": { "file": "mixamo/characters/Warrok W Kurniawan.fbx", "height": 2.25 },
+    "boss": { "file": "mixamo/characters/Warrok W Kurniawan.fbx", "height": 3.15 }
+  },
+  "clips": {
+    "hero_idle": { "file": "mixamo/anims/sword/sword and shield idle.fbx", "loop": true },
+    "hero_walk": { "file": "mixamo/anims/sword/sword and shield walk.fbx", "loop": true },
+    "hero_run": { "file": "mixamo/anims/sword/sword and shield run.fbx", "loop": true },
+    "hero_slash": { "file": "mixamo/anims/sword/sword and shield slash.fbx", "loop": false },
+    "hero_attack": { "file": "mixamo/anims/sword/sword and shield attack.fbx", "loop": false },
+    "hero_cast": { "file": "mixamo/anims/sword/sword and shield casting.fbx", "loop": false },
+    "hit_react": { "file": "mixamo/anims/sword/sword and shield impact.fbx", "loop": false },
+    "zombie_idle": { "file": "mixamo/anims/zombie/zombie idle.fbx", "loop": true },
+    "zombie_walk": { "file": "mixamo/anims/zombie/zombie walk.fbx", "loop": true },
+    "zombie_attack": { "file": "mixamo/anims/zombie/zombie attack.fbx", "loop": false }
+  },
+  "surfaces": {
+    "floor": {
+      "albedo": "polyhaven/monastery_stone_floor/diff.jpg",
+      "normal": "polyhaven/monastery_stone_floor/nor_gl.jpg",
+      "roughness": "polyhaven/monastery_stone_floor/rough.jpg",
+      "tint": [0.6, 0.6, 0.62], "uv": 1.7, "normalScale": 0.5, "flat": [0.30, 0.29, 0.28]
+    },
+    "wall": {
+      "albedo": "polyhaven/castle_wall_slates/diff.jpg",
+      "normal": "polyhaven/castle_wall_slates/nor_gl.jpg",
+      "roughness": "polyhaven/castle_wall_slates/rough.jpg",
+      "tint": [0.8, 0.78, 0.74], "uv": 0.4, "flat": [0.26, 0.25, 0.24]
+    },
+    "stone": {
+      "albedo": "polyhaven/medieval_blocks_02/diff.jpg",
+      "normal": "polyhaven/medieval_blocks_02/nor_gl.jpg",
+      "roughness": "polyhaven/medieval_blocks_02/rough.jpg",
+      "tint": [0.62, 0.6, 0.58], "uv": 0.6, "flat": [0.33, 0.31, 0.29]
+    },
+    "wood": {
+      "albedo": "polyhaven/medieval_wood/diff.jpg",
+      "normal": "polyhaven/medieval_wood/nor_gl.jpg",
+      "roughness": "polyhaven/medieval_wood/rough.jpg",
+      "tint": [0.75, 0.6, 0.48], "uv": 1.2, "flat": [0.32, 0.22, 0.14]
+    }
+  }
+}

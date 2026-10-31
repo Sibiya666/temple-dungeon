@@ -54,6 +54,14 @@ public sealed record LiveState(double Time, double Resource, double ResourceMax,
     /// contributions to its damage-taken multiplier (debuffs without a timer), in ordinal id order.</summary>
     public IReadOnlyList<IReadOnlyList<TimedEffect>> TargetEffects { get; init; } = Array.Empty<IReadOnlyList<TimedEffect>>();
 
+    /// <summary>Slot (1-based) → what one use costs now (a channel: the next tick), under the live conditions and buffs: the
+    /// figure the press check compares with the resource. Every filled slot.</summary>
+    public IReadOnlyDictionary<int, double> CostBySlot { get; init; } = new Dictionary<int, double>();
+
+    /// <summary>Slots (1-based, ascending) a press would refuse for the resource now (<see cref="PressRefusal.NotEnoughResource"/>
+    /// by the same check), whatever their cooldown.</summary>
+    public IReadOnlyList<int> ResourceShortSlots { get; init; } = Array.Empty<int>();
+
     /// <summary>Per target: current life, for the bar over the dummy (+∞ for an immortal target).</summary>
     public IReadOnlyList<double> TargetLife { get; init; } = Array.Empty<double>();
 

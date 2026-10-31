@@ -206,6 +206,24 @@ public class LiveFightTests
     }
 
     [Fact]
+    public void Cost_by_slot_follows_buffs_and_matches_the_press_check()
+    {
+        var fight = Start("warrior_berserker_whirlwind"); // Fury starts empty; Battle Cry's «Воодушевление» lowers costs by 20 %
+        var before = fight.State.CostBySlot[Crush];
+        Assert.True(before > 0);
+        Assert.Contains(Crush, fight.State.ResourceShortSlots);
+        Assert.Equal(PressRefusal.NotEnoughResource, fight.Press(Crush).Refusal);
+        Assert.DoesNotContain(BattleCry, fight.State.ResourceShortSlots);
+
+        Assert.True(fight.Press(BattleCry).Accepted);
+        for (var i = 0; i < 200 && !fight.State.Buffs.ContainsKey("inspiration"); i++) fight.Step();
+        Assert.True(fight.State.Buffs.ContainsKey("inspiration"));
+        Assert.True(fight.State.CostBySlot[Crush] < before, $"{fight.State.CostBySlot[Crush]} vs {before}");
+        foreach (var (slot, cost) in fight.State.CostBySlot)
+            Assert.Equal(cost > fight.State.Resource + 1e-9, fight.State.ResourceShortSlots.Contains(slot));
+    }
+
+    [Fact]
     public void Channel_runs_while_held_and_stops_on_release()
     {
         var fight = Start("warrior_berserker_whirlwind");

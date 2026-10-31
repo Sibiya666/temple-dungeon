@@ -36,6 +36,13 @@ public class BreakdownTextTests
     }
 
     [Fact]
+    public void Integral_total_is_whole_like_the_shown_number()
+    {
+        var r = new StatResult("life", 0, 912, 912, new[] { new BreakdownLine(Src("Уровень"), ModKind.Flat, 912) }, null);
+        Assert.Equal("Итог: 912", BreakdownText.Lines(r)[^1]); // the same text as «Здоровье: 912»
+    }
+
+    [Fact]
     public void Value_is_whole_when_integral()
     {
         Assert.Equal("912", BreakdownText.Value(912));

@@ -189,6 +189,14 @@ public sealed class LiveFight
         for (var slot = 1; slot <= Setup.Skills.Count; slot++)
             if (s.CooldownReadyAt.TryGetValue(Setup.Skills[slot - 1].Id, out var ready) && ready > now + Eps)
                 cooldowns[slot] = ready - now;
+        var costs = new SortedDictionary<int, double>();
+        var shortSlots = new List<int>();
+        for (var slot = 1; slot <= Setup.Skills.Count; slot++)
+        {
+            var skill = Setup.Skills[slot - 1];
+            costs[slot] = Rotation.EffectiveCost(skill, s, _engine.Conditions);
+            if (Rotation.ResourceShort(skill, s, _engine.Conditions)) shortSlots.Add(slot);
+        }
         var buffs = new SortedDictionary<string, double>(s.Buffs, StringComparer.Ordinal);
         var ailments = new SortedSet<string>(StringComparer.Ordinal);
         if (s.Primary is { } primary)
@@ -213,6 +221,8 @@ public sealed class LiveFight
             BusyLeft = Math.Max(0, s.BusyUntil - now),
             QueuedSlot = SlotOf(_commands.Pressed),
             HeldSlot = SlotOf(_commands.Held),
+            CostBySlot = costs,
+            ResourceShortSlots = shortSlots,
             HeroEffects = hero,
             TargetEffects = targets,
             TargetLife = s.Targets.Select(t => t.Life).ToList(),

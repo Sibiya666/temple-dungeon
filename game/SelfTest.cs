@@ -1,4 +1,4 @@
-using Dialoid.Core.Builds;
+﻿using Dialoid.Core.Builds;
 using Dialoid.Core.Effects;
 using Dialoid.Core.Passives;
 using Dialoid.Core.Simulation;
@@ -17,7 +17,7 @@ namespace Dialoid.Game;
 /// The acceptance steps (spec §15.4) print the table «билд → DPS до/после, узел» after the results.
 /// With <c>-- --selftest --screenshots DIR</c> in a real window (not headless) it also saves one PNG per tab into DIR.
 /// </summary>
-public sealed class SelfTest
+public sealed partial class SelfTest
 {
     /// <summary>A failed check; its message is printed after the step name.</summary>
     public sealed class Failure(string message) : Exception(message);
@@ -30,6 +30,9 @@ public sealed class SelfTest
 
     /// <summary>Window size of the screenshot run.</summary>
     public static readonly Vector2I ScreenshotWindow = new(1600, 1000);
+
+    /// <summary>Root size of a headless run (the project's window size).</summary>
+    public static readonly Vector2I HeadlessWindow = new(1600, 900);
 
     private const string TrainingDummy = "training";
     private const int AcceptanceSeed = 1;
@@ -44,6 +47,7 @@ public sealed class SelfTest
         var args = OS.GetCmdlineUserArgs();
         var at = Array.IndexOf(args, ScreenshotsArg);
         if (at >= 0) _screenshotDir = at + 1 < args.Length ? Path.GetFullPath(args[at + 1]) : "";
+        _perf = args.Contains(PerfArg);
     }
 
     /// <summary>Runs every step after the first frame, prints the results and quits the scene.</summary>
@@ -71,13 +75,22 @@ public sealed class SelfTest
             return 1;
         }
 
+        // The headless window is 64×64: the windows, the combat screen and the camera need the size of a real one.
+        if (DisplayServer.GetName() == "headless") _main.GetTree().Root.Size = HeadlessWindow;
         if (_screenshotDir != null && DisplayServer.GetName() != "headless")
         {
             DisplayServer.WindowSetSize(ScreenshotWindow);
             await Settle();
         }
+        UseSelfTestWindowConfig();
         await NextFrame();
         var steps = Steps();
+        // A developer's shortcut: DIALOID_SELFTEST_FILTER=gamepad runs only the steps whose names start with it (never set by the checks).
+        if (System.Environment.GetEnvironmentVariable("DIALOID_SELFTEST_FILTER") is { Length: > 0 } filter)
+        {
+            steps = steps.Where(s => s.Name.StartsWith(filter, StringComparison.Ordinal) || s.Name == "panels").ToList();
+            GD.Print($"SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER={filter}: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ ({steps.Count}) — это не приемка !!!");
+        }
         int failed = 0;
         foreach (var step in steps)
         {
@@ -113,6 +126,14 @@ public sealed class SelfTest
                 return Task.CompletedTask;
             }),
         };
+        // The load run (spec §10.8): only the measurement, in a real window.
+        if (_perf)
+        {
+            steps.Add(new("perf", Perf));
+            return steps;
+        }
+
+        steps.AddRange(RoomSteps());
 
         var mains = _main.Builds?.References.Where(r => r.Group == ReferenceBuilds.MainGroup).ToList() ?? new();
         steps.Add(new("builds.main-listed", () =>
@@ -144,6 +165,16 @@ public sealed class SelfTest
         foreach (var info in mains) steps.Add(new($"acceptance {info.Title}", () => Acceptance(info)));
         if (mains.Count > 0) steps.Add(new("class-change-resets", () => ClassChangeResets(mains[^1])));
         if (mains.Count > 0) steps.Add(new("passives.captions-no-overlap", () => PassiveCaptions(mains[0])));
+        if (mains.Count > 0) steps.AddRange(CombatSteps());
+        if (mains.Count > 0)
+        {
+            steps.AddRange(WindowSteps());
+            steps.AddRange(MeterSteps());
+            steps.AddRange(GamepadSteps());
+            steps.AddRange(HudSteps());
+            steps.AddRange(AcceptanceSteps());
+            steps.Add(new("windows.restore", CombatRestore));
+        }
         if (_screenshotDir != null)
         {
             var pyro = mains.FirstOrDefault(m => m.Path.EndsWith("sorcerer_pyromancer_fireball.json", StringComparison.Ordinal));
@@ -153,7 +184,7 @@ public sealed class SelfTest
             steps.Add(new("restore-reference", async () =>
             {
                 Check(_main.Builds!.Load(mains[0]).Ok, "эталон не загрузился");
-                _main.SelectTab(Main.TabTitles[0]);
+                _main.CloseAllWindows();
                 await Settle();
             }));
         return steps;
@@ -260,11 +291,11 @@ public sealed class SelfTest
         Check(life.Line.Value > 0, $"здоровье {life.Line.Value}");
 
         life.Open();
-        Check(_main.CurrentTab == Main.BreakdownTab, $"открыта вкладка «{_main.CurrentTab}», а не «{Main.BreakdownTab}»");
+        Check(_main.IsOpen(WindowIds.Breakdown), $"окно «Разбор» не открылось (верхнее: {_main.Windows.TopWindow ?? "нет"})");
         var shown = _main.Breakdown!;
         Check(shown.Current?.Line.Key == "life", "в «Разборе» не здоровье");
         Check(shown.ShownLines.Count > 0, "в «Разборе» нет строк");
-        _main.SelectTab(Main.TabTitles[0]);
+        _main.CloseAllWindows();
     }
 
     /// <summary>A fresh build of the start class at <paramref name="level"/>, with <paramref name="tab"/> shown.</summary>
@@ -273,7 +304,7 @@ public sealed class SelfTest
         var character = _main.Character!;
         Check(character.SelectClass(Main.StartClassId).Ok, "сброс класса отклонен");
         Check(character.SelectLevel(level).Ok, $"уровень {level} отклонен");
-        _main.SelectTab(tab);
+        _main.OpenWindow(tab);
         await Settle();
     }
 
@@ -291,7 +322,7 @@ public sealed class SelfTest
     {
         var panel = _main.Passives!;
         var session = _main.Session!;
-        await FreshBuild(10, "Пассивки");
+        await FreshBuild(10, WindowIds.Passives);
         Check(panel.View.Size.X > 0 && panel.View.Size.Y > 0, $"размер TreeView {panel.View.Size}");
         Check(panel.PointsText == $"Очки: 0/{session.PassivePointsTotal}", $"счетчик «{panel.PointsText}»");
 
@@ -316,7 +347,7 @@ public sealed class SelfTest
     {
         var panel = _main.Passives!;
         var session = _main.Session!;
-        await FreshBuild(10, "Пассивки");
+        await FreshBuild(10, WindowIds.Passives);
         var allocatable = session.AllocatablePassives;
         var node = session.Data.Passives.Nodes.Values
             .Where(n => n.Kind != Dialoid.Core.Passives.PassiveKind.Start && !allocatable.Contains(n.Id))
@@ -341,7 +372,7 @@ public sealed class SelfTest
     {
         var panel = _main.Passives!;
         var session = _main.Session!;
-        await FreshBuild(10, "Пассивки");
+        await FreshBuild(10, WindowIds.Passives);
         var id = session.AllocatablePassives.OrderBy(x => x, StringComparer.Ordinal)
             .FirstOrDefault(x => session.Data.Passives.Nodes[x].Kind == Dialoid.Core.Passives.PassiveKind.Attribute);
         Check(id != null, "рядом со стартом нет узла атрибута");
@@ -369,7 +400,7 @@ public sealed class SelfTest
         var panel = _main.Passives!;
         var session = _main.Session!;
         var view = panel.View;
-        await FreshBuild(10, "Пассивки");
+        await FreshBuild(10, WindowIds.Passives);
         view.FitToView();
         var id = session.AllocatablePassives.OrderBy(x => x, StringComparer.Ordinal).First();
         var node = session.Data.Passives.Nodes[id];
@@ -399,7 +430,7 @@ public sealed class SelfTest
     {
         var panel = _main.AscendancyView!;
         var session = _main.Session!;
-        await FreshBuild(19, "Асцендант");
+        await FreshBuild(19, WindowIds.Ascendancy);
         Check(panel.HoverText.Contains("открывается с 20"), $"нет подсказки о 20 уровне: «{panel.HoverText}»");
         Check(panel.View.Nodes.Count == 0, "без асценданта нарисованы узлы");
 
@@ -440,7 +471,7 @@ public sealed class SelfTest
         var panel = _main.Passives!;
         var session = _main.Session!;
         var view = panel.View;
-        await FreshBuild(10, "Пассивки");
+        await FreshBuild(10, WindowIds.Passives);
         view.FitToView();
         var id = session.AllocatablePassives.OrderBy(x => x, StringComparer.Ordinal).First();
         var pos = NodePoint(view, id);
@@ -478,7 +509,7 @@ public sealed class SelfTest
     {
         var panel = _main.Passives!;
         var session = _main.Session!;
-        await FreshBuild(10, "Пассивки");
+        await FreshBuild(10, WindowIds.Passives);
         var id = session.AllocatablePassives.OrderBy(x => x, StringComparer.Ordinal)
             .FirstOrDefault(x => session.Data.Passives.Nodes[x].Kind == Dialoid.Core.Passives.PassiveKind.Attribute);
         Check(id != null, "рядом со стартом нет узла атрибута");
@@ -501,7 +532,7 @@ public sealed class SelfTest
     {
         var panel = _main.Skills!;
         var session = _main.Session!;
-        await FreshBuild(1, "Скиллы");
+        await FreshBuild(1, WindowIds.Skills);
         Check(panel.SlotOptions.Count == SandboxSession.SlotCount, $"слотов нарисовано {panel.SlotOptions.Count}");
         Check(panel.SlotOptions[0] != null && panel.SlotOptions[1] == null, "закрытый слот нарисован открытым");
         Check(panel.UndoButtons.Count == 1 && panel.UndoButtons[0].Disabled, "«Вернуть» включена без истории слота");
@@ -560,7 +591,7 @@ public sealed class SelfTest
         var panel = _main.Skills!;
         var session = _main.Session!;
         Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
-        _main.SelectTab("Скиллы");
+        _main.OpenWindow(WindowIds.Skills);
         await Settle();
         static string Snapshot(IEnumerable<NumberLabel> labels) => string.Join("|", labels.Select(l => l.Line.Key + "=" + l.Line.Value));
 
@@ -602,7 +633,7 @@ public sealed class SelfTest
     {
         var panel = _main.Simulation!;
         Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
-        _main.SelectTab("Симуляция");
+        _main.OpenWindow(WindowIds.Simulation);
         await Settle();
         var training = panel.DummyIds.ToList().IndexOf("training");
         Check(training >= 0, "нет манекена training");
@@ -638,8 +669,8 @@ public sealed class SelfTest
               && !panel.Log.GetParsedText().Contains("] use:", StringComparison.Ordinal), "виды событий в логе не по-русски");
 
         dps.Open();
-        Check(_main.CurrentTab == Main.BreakdownTab && _main.Breakdown!.Current?.Line.Key == "sim_dps_single", "DPS не открылся в «Разборе»");
-        _main.SelectTab("Симуляция");
+        Check(_main.IsOpen(WindowIds.Breakdown) && _main.Breakdown!.Current?.Line.Key == "sim_dps_single", "DPS не открылся в «Разборе»");
+        _main.OpenWindow(WindowIds.Simulation);
 
         // «Манекен бьет» on a dummy without an attack: no defense run, the panel says the dummy does not attack.
         Check(_main.Session!.Data.Dummies["training"].Attack == null, "у манекена training появилась атака");
@@ -675,7 +706,7 @@ public sealed class SelfTest
         var panel = _main.Simulation!;
         var session = _main.Session!;
         Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
-        _main.SelectTab("Симуляция");
+        _main.OpenWindow(WindowIds.Simulation);
         await Settle();
 
         var run = panel.Simulate();
@@ -696,7 +727,7 @@ public sealed class SelfTest
         var panel = _main.Simulation!;
         Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
         Check(_main.Character!.SelectLevel(1).Ok, "уровень 1 отклонен");
-        _main.SelectTab("Симуляция");
+        _main.OpenWindow(WindowIds.Simulation);
         await WithTimeout(panel.Simulate(), 60000, "симуляция");
         await Settle();
         Check(panel.ShownViolations.Count > 0 && panel.Numbers.Count == 0, $"нарушения не показаны; статус «{panel.StatusText}»");
@@ -712,7 +743,7 @@ public sealed class SelfTest
     private async Task<SimOutcome> SimulateTraining()
     {
         var panel = _main.Simulation!;
-        _main.SelectTab("Симуляция");
+        _main.OpenWindow(WindowIds.Simulation);
         var training = panel.DummyIds.ToList().IndexOf(TrainingDummy);
         Check(training >= 0, "нет манекена training");
         panel.DummyOptions.Selected = training;
@@ -744,7 +775,7 @@ public sealed class SelfTest
     private async Task<IReadOnlyList<NumberLabel>> ShowSkill(int slot)
     {
         var panel = _main.Skills!;
-        _main.SelectTab("Скиллы");
+        _main.OpenWindow(WindowIds.Skills);
         panel.ShowTree(slot);
         await Settle();
         Check(panel.TreeSlot == slot, "дерево главного скилла не открылось");
@@ -755,7 +786,7 @@ public sealed class SelfTest
     private List<string> OpenBreakdown(NumberLabel label)
     {
         label.Open();
-        Check(_main.CurrentTab == Main.BreakdownTab && _main.Breakdown!.Current?.Line.Key == label.Line.Key, $"«{label.Line.Key}» не открылся в «Разборе»");
+        Check(_main.IsOpen(WindowIds.Breakdown) && _main.Breakdown!.Current?.Line.Key == label.Line.Key, $"«{label.Line.Key}» не открылся в «Разборе»");
         return _main.Breakdown!.ShownLines.ToList();
     }
 
@@ -766,7 +797,7 @@ public sealed class SelfTest
     {
         var panel = _main.Passives!;
         var session = _main.Session!;
-        _main.SelectTab("Пассивки");
+        _main.OpenWindow(WindowIds.Passives);
         await Settle();
         panel.View.FitToView();
         var revision = session.Revision;
@@ -805,7 +836,7 @@ public sealed class SelfTest
         var skillColumn = await SkillNodeChange(slot, skillName, dpsBefore);
         var notableColumn = await NotableChange(slot, skillName, dpsBefore, fileBuild!);
         _table.Add($"{info.Title} | «{skillName}» | {BreakdownText.Whole(dpsBefore)} | {skillColumn} | {notableColumn}");
-        _main.SelectTab(Main.TabTitles[0]);
+        _main.CloseAllWindows();
     }
 
     /// <summary>
@@ -939,7 +970,7 @@ public sealed class SelfTest
     {
         var view = _main.Passives!.View;
         Check(_main.Builds!.Load(info).Ok, "эталон не загрузился");
-        _main.SelectTab("Пассивки");
+        _main.OpenWindow(WindowIds.Passives);
         await Settle();
         view.FitToView();
         // The headless window is small: zoom in (around the centre) until a notable is drawn 11 px wide, as in a 1600×1000 window.
@@ -978,11 +1009,12 @@ public sealed class SelfTest
         Check(build.PassiveNodes.Count == 0 && build.AttributeChoices.Count == 0, "пассивки не сброшены");
         Check(build.AscendancyId == null && build.AscendancyNodes.Count == 0, "асцендант не сброшен");
         Check(build.Slots.Count == 0 && build.Rotation.Count == 0, "скиллы или ротация не сброшены");
-        foreach (var tab in Main.TabTitles)
+        foreach (var id in _main.Windows.Windows.Keys.ToList())
         {
-            _main.SelectTab(tab);
+            _main.OpenWindow(id);
             await Settle();
         }
+        _main.CloseAllWindows();
         Check(_main.Passives!.PointsText == $"Очки: 0/{session.PassivePointsTotal}", $"счетчик «{_main.Passives.PointsText}»");
         Check(_main.Skills!.TreeSlot == -1, "после сброса показано дерево скилла");
         Check(_main.Simulation!.StatusText == SimulationPanel.StaleText, $"статус симуляции «{_main.Simulation.StatusText}»");
@@ -999,6 +1031,10 @@ public sealed class SelfTest
         Check(!string.IsNullOrEmpty(_screenshotDir), $"после {ScreenshotsArg} нет каталога");
         Check(pyro != null, "нет эталона sorcerer_pyromancer_fireball");
         Directory.CreateDirectory(_screenshotDir!);
+        // The committed set (the plan-3 windows and the §10.7 acceptance shots) at 2560×1440; then the task review shots in the
+        // run's own window, into review/.
+        await UseFrame(FinalFrame);
+        UseSelfTestWindowConfig();
         Check(_main.Builds!.Load(pyro!).Ok, "эталон не загрузился");
         await Settle();
         var outcome = await SimulateTraining();
@@ -1006,33 +1042,69 @@ public sealed class SelfTest
 
         _main.Passives!.View.FitToView();
         _main.Character!.NumberFor("life")!.Open(); // the plain «Разбор» shot shows the life breakdown
-        var names = new[] { "01-character", "02-passives", "03-ascendancy", "04-skills", "05-simulation", "06-breakdown", "07-builds" };
-        for (int i = 0; i < Main.TabTitles.Count; i++)
+        var shots = new (string Name, string? Window)[]
         {
-            if (Main.TabTitles[i] == "Скиллы") await ShowSkill(slot);
-            _main.SelectTab(Main.TabTitles[i]);
-            await Shot(names[i]);
+            ("00-room", null), ("01-character", WindowIds.Character), ("02-passives", WindowIds.Passives), ("03-ascendancy", WindowIds.Ascendancy),
+            ("04-skills", WindowIds.Skills), ("05-simulation", WindowIds.Simulation), ("06-breakdown", WindowIds.Breakdown), ("07-builds", WindowIds.Builds),
+        };
+        foreach (var (name, window) in shots)
+        {
+            _main.CloseAllWindows();
+            if (window == WindowIds.Skills) await ShowSkill(slot);
+            if (window != null) _main.OpenWindow(window);
+            if (window == WindowIds.Passives)
+            {
+                await Settle();
+                _main.Passives.View.FitToView();
+            }
+            await Shot(name, full: true);
         }
+
+        // The room with the hero next to the dummy (the combat spot), then back at the spawn.
+        var room = Room;
+        _main.CloseAllWindows();
+        room.PlaceHero(room.DummySpot + TowardsCamera * 2.2f + new Vector3(0.6f, 0, -0.6f));
+        await Shot("00-room-dummy", full: true);
+        room.PlaceHero(room.HeroSpawn);
 
         var labels = await ShowSkill(slot);
         var mult = labels.FirstOrDefault(l => l.Line.Key.StartsWith("hit_mult_", StringComparison.Ordinal));
         Check(mult != null, "у главного скилла нет множителя урона попадания");
         OpenBreakdown(mult!);
-        await Shot("08-breakdown-hit-multiplier");
-        _main.SelectTab(Main.TabTitles[0]);
+        await Shot("08-breakdown-hit-multiplier", full: true);
+        await AcceptanceScreenshots();
+
+        await RestoreFrame();
+        await CombatScreenshots();
+        await WindowScreenshots();
+        await MeterScreenshots();
+        await GamepadScreenshots();
+        await HudScreenshots();
+        _main.CloseAllWindows();
     }
 
-    /// <summary>Waits until the current tab is drawn and saves the viewport as DIR/name.png (downscaled to the window width).</summary>
-    private async Task Shot(string name)
+    /// <summary>
+    /// Waits until the current tab is drawn and saves the viewport into DIR. The task review shots («task-…», «00-…») go to
+    /// DIR/review/ (PNG, not committed) downscaled to the window width; the acceptance set (<paramref name="full"/>, JPEG) stays in DIR at the
+    /// frame's full size (2560×1440, spec §10.7).
+    /// </summary>
+    private async Task Shot(string name, int cropHeight = 0, bool full = false)
     {
         await Settle();
         await _main.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         var image = _main.GetViewport().GetTexture().GetImage();
         Check(image != null && image.GetWidth() > 0, "пустой кадр");
-        if (image!.GetWidth() > ScreenshotWindow.X)
+        if (cropHeight > 0) image = image!.GetRegion(new Rect2I(0, 0, image.GetWidth(), Math.Min(cropHeight * image.GetWidth() / ScreenshotWindow.X, image.GetHeight())));
+        if (!full && image!.GetWidth() > ScreenshotWindow.X)
             image.Resize(ScreenshotWindow.X, image.GetHeight() * ScreenshotWindow.X / image.GetWidth(), Image.Interpolation.Lanczos);
-        var path = Path.Combine(_screenshotDir!, name + ".png");
-        Check(image.SavePng(path) == Error.Ok, $"не сохранен {path}");
+        var review = name.StartsWith("task-", StringComparison.Ordinal) || name.StartsWith("00-", StringComparison.Ordinal);
+        var dir = review ? Path.Combine(_screenshotDir!, ReviewSubdir) : _screenshotDir!;
+        Directory.CreateDirectory(dir);
+        // The committed set is JPEG (quality 92): a 2560×1440 PNG of the room is ~3.5 MB, the whole set ~90 MB per regeneration.
+        var committed = !review && full;
+        var path = Path.Combine(dir, name + (committed ? ".jpg" : ".png"));
+        var saved = committed ? image!.SaveJpg(path, 0.92f) : image!.SavePng(path);
+        Check(saved == Error.Ok, $"не сохранен {path}");
         GD.Print($"SELFTEST SCREENSHOT {path} {image.GetWidth()}x{image.GetHeight()}");
     }
 

@@ -5,8 +5,9 @@ namespace Dialoid.Sandbox;
 /// <summary>
 /// Russian breakdown of one stat evaluation, in the formula order (base + Σflat) × (1 + Σincreased/100) × Π(1 + more/100).
 /// Numbers use the Russian decimal comma and the Unicode minus: contributions (base, flat, increased) up to two decimals and
-/// More/Less factors up to three, trailing zeros trimmed (<see cref="Part"/>, <see cref="Factor"/>); totals one decimal
-/// (<see cref="Number"/>), shown only with the cap when the cap changed the value; damage and DPS whole (<see cref="Whole"/>);
+/// More/Less factors up to three, trailing zeros trimmed (<see cref="Part"/>, <see cref="Factor"/>); totals like a shown value
+/// (<see cref="Value"/>: whole when integral, so «Итог: 912» matches «Здоровье: 912»); a capped total shows both with one
+/// decimal (<see cref="Number"/>), only when the cap changed the value; damage and DPS whole (<see cref="Whole"/>);
 /// shown values whole when integral, else one decimal (<see cref="Value"/>).
 /// </summary>
 public static class BreakdownText
@@ -35,6 +36,12 @@ public static class BreakdownText
         !dummyAttacksRequested ? Texts.TimeToDeathNotAttacking
         : result.Defense == null ? Texts.TimeToDeathDummyHasNoAttack
         : Texts.TimeToDeathSurvived;
+
+    /// <summary>Russian ailment name (the combat screen's icons); an unknown id gives the generic «недуг».</summary>
+    public static string AilmentName(string id) => Texts.AilmentName(id);
+
+    /// <summary>Russian name of a shown mechanic stack or target debuff (the combat screen's icons); null for an unknown one.</summary>
+    public static string? MechanicStackName(string id) => Texts.MechanicStackName(id);
 
     /// <summary>The dummy's name from the data; unknown ids are returned as is.</summary>
     public static string DummyName(Dialoid.Core.Data.GameData data, string id) => Texts.DummyName(data, id);
@@ -89,7 +96,7 @@ public static class BreakdownText
         if (r.AppliedOverride is { } o) lines.Add(Texts.OverrideLine(Part(o.Value), o.Source.Name));
 
         // The cap part only when the cap (or a clamp) actually changed the value.
-        lines.Add(r.Uncapped == r.Value ? Texts.Total(Number(r.Value)) : Texts.TotalCapped(Number(r.Uncapped), Number(r.Value)));
+        lines.Add(r.Uncapped == r.Value ? Texts.Total(Value(r.Value)) : Texts.TotalCapped(Number(r.Uncapped), Number(r.Value)));
         return lines;
     }
 

@@ -43,7 +43,7 @@ public partial class BuildsPanel : SessionPanel
         InitSession(session, withContent: false);
         References = dataDirectory == null ? Array.Empty<ReferenceBuildInfo>() : ReferenceBuilds.List(dataDirectory);
 
-        AddChild(new Label { Text = "Эталонные билды (data/builds). Двойной щелчок или «Загрузить»:" });
+        AddChild(new Label { Text = "Эталонные билды (data/builds). Двойной щелчок или «Загрузить»:", AutowrapMode = TextServer.AutowrapMode.WordSmart });
         _tree = new Tree
         {
             HideRoot = true,
@@ -94,6 +94,16 @@ public partial class BuildsPanel : SessionPanel
         buttons.AddChild(export);
         buttons.AddChild(import);
         AddChild(buttons);
+        // Without a keyboard (the gamepad, spec §4): the code goes through the clipboard; the field itself is for typing.
+        ButtonPrompts.Skip(_code);
+        var clipboard = new HFlowContainer();
+        var copy = new Button { Name = "CopyCode", Text = "Копировать код", TooltipText = "Код текущего билда — в буфер обмена (и в поле выше)" };
+        copy.Pressed += () => CopyCode();
+        var paste = new Button { Name = "PasteCode", Text = "Вставить из буфера", TooltipText = "Импортировать билд из кода в буфере обмена" };
+        paste.Pressed += () => PasteCode();
+        clipboard.AddChild(copy);
+        clipboard.AddChild(paste);
+        AddChild(clipboard);
         _importStatus = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_importStatus);
     }
@@ -117,6 +127,24 @@ public partial class BuildsPanel : SessionPanel
     {
         _code.Text = Session.ExportCode();
         SetStatus(_importStatus, "Код билда в поле выше.", true);
+    }
+
+    /// <summary>«Копировать код»: the build's code into the clipboard and the field.</summary>
+    public string CopyCode()
+    {
+        var code = Session.ExportCode();
+        _code.Text = code;
+        DisplayServer.ClipboardSet(code);
+        SetStatus(_importStatus, "Код билда скопирован в буфер обмена.", true);
+        return code;
+    }
+
+    /// <summary>«Вставить из буфера»: imports the clipboard's code (the field shows it).</summary>
+    public CommandResult PasteCode()
+    {
+        var text = DisplayServer.ClipboardGet();
+        _code.Text = text;
+        return ImportText(text);
     }
 
     /// <summary>Replaces the build with a code or JSON; a refusal shows its reason.</summary>

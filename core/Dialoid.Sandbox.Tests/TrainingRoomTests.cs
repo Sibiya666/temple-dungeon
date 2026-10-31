@@ -443,6 +443,8 @@ public class TrainingRoomTests
         Assert.Equal("fireball", room.Slots[3]!.SkillId);
         Assert.Equal(5, room.Slots[4]!.Slot);
         Assert.Equal("Мана", room.ResourceName);
+        Assert.Equal(new[] { 1, 2, 4, 5 }, room.State!.CostBySlot.Keys); // costs by player slot, the gap skipped
+        Assert.All(room.State.ResourceShortSlots, slot => Assert.True(room.State.CostBySlot[slot] > room.State.Resource));
 
         Assert.True(room.StartChannel(Rooms.SparkSlot, 1, true).Accepted);
         Assert.Equal(5, room.State!.HeldSlot);

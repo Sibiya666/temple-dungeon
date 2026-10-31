@@ -8,7 +8,7 @@ namespace Dialoid.Game.Ui;
 /// <summary>
 /// The «Симуляция» tab (spec §13.5): dummy, pack size (default from the dummy), mode, seed, «манекен бьет персонажа» and
 /// «Симулировать». The run goes through <see cref="SimulationRunner"/> (build snapshot taken on the main thread, simulation on
-/// the thread pool); the outcome is applied on the main thread only (the await resumes on Godot's synchronization context). While running the button is off and «считаю...» shows.
+/// the thread pool); the outcome is applied on the main thread only (the await resumes on Godot's synchronization context). While running the button is off and «считаю…» shows.
 /// Results (spec §11.3) come straight from <see cref="SimResult"/> through <see cref="NumberLabel"/>: DPS single/pack, DPS and damage by
 /// skill and by type, hits vs damage over time, time to kill, time to death, the defensive totals, the resource series drawn
 /// on a <see cref="SeriesGraph"/> and the event log on a button. A result whose revision is no longer current is not shown
@@ -21,7 +21,7 @@ public partial class SimulationPanel : SessionPanel
     public const string StaleText = "билд изменился — пересчитайте";
 
     /// <summary>Shown (and on the button) while a run is in progress.</summary>
-    public const string RunningText = "считаю...";
+    public const string RunningText = "считаю…";
 
     private const string RunCaption = "Симулировать";
 
@@ -114,6 +114,7 @@ public partial class SimulationPanel : SessionPanel
 
         Seed = new SpinBox { MinValue = 0, MaxValue = 1_000_000, Step = 1, Value = 1, TooltipText = "Сид случайных бросков (режим «бросок»)" };
         Row(grid, "Сид", Seed);
+        ButtonPrompts.SeedPad(Seed);
 
         DummyAttacks = new CheckBox { Text = "манекен бьет персонажа" };
         Row(grid, "Защита", DummyAttacks);

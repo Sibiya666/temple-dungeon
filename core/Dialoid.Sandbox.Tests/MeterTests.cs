@@ -135,6 +135,23 @@ public class MeterTests
     }
 
     [Fact]
+    public void Defence_split_per_skill_keeps_losses_and_bonuses_apart()
+    {
+        // One skill: a shocked hit (+250) and a chilled one (−100). Netted per skill it would read −150 loss; split it is both.
+        var seg = Segment(
+            new DamagePart(DamageType.Lightning, 1000, 0, 0, -250, 0, 1250),
+            new DamagePart(DamageType.Lightning, 1000, 0, -50, 100, 0, 950));
+        var split = seg.DefenceBySkill()["spark"];
+        Assert.Equal(new DefenceSplit(2000, 0, 0, 50, 100, 250, 0, 2200), split);
+        Assert.Equal(split, seg.DefenceTotal);
+        Near(split.Final, split.BeforeDefense - split.Armor - split.ResistLoss + split.ResistBonus - split.TakenLoss + split.TakenBonus - split.Nullified);
+        var rows = seg.Mitigation();
+        Assert.Equal(split.TakenLoss, rows.Single(r => r.Key == "taken_multiplier").Value, 9);
+        Assert.Equal(split.TakenBonus, rows.Single(r => r.Key == "vulnerability").Value, 9);
+        Assert.Equal(split.ResistBonus, rows.Single(r => r.Key == "penetration").Value, 9);
+    }
+
+    [Fact]
     public void Negative_resist_loss_is_a_penetration_bonus_row()
     {
         // Penetration pushes the resistance below zero: −1500 "lost" is 1500 more damage, shown in the meter's short form.

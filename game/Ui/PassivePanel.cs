@@ -48,7 +48,7 @@ public partial class PassivePanel : SessionPanel
     {
         InitSession(session, withContent: false);
 
-        var top = new HBoxContainer();
+        var top = new HFlowContainer(); // wraps in a window a third of the screen wide (plan 4 task 10)
         _points = new Label { CustomMinimumSize = new Vector2(220, 0) };
         top.AddChild(_points);
         var fit = new Button { Text = "Вписать дерево" };
@@ -57,20 +57,21 @@ public partial class PassivePanel : SessionPanel
         top.AddChild(Legend());
         AddChild(top);
 
-        AddChild(new Label
+        AddChild(ButtonPrompts.Help(new Label
         {
             Text = "ЛКМ — взять/снять узел, ПКМ по узлу атрибута — выбрать атрибут, колесо — масштаб, перетаскивание — сдвиг.",
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
-        });
+        }, "A — взять или снять узел, X — атрибут, LT/RT — масштаб, правый стик — сдвиг, R3 — вписать дерево."));
         _status = WrappedLabel(Red);
         AddChild(_status);
         _hover = WrappedLabel(null);
         AddChild(_hover);
 
-        View = new TreeView { SizeFlagsVertical = SizeFlags.ExpandFill, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        View = new TreeView { SizeFlagsVertical = SizeFlags.ExpandFill, SizeFlagsHorizontal = SizeFlags.ExpandFill, DescriptionInPanel = true };
         View.CustomMinimumSize = new Vector2(0, 300);
         View.NodeClicked += id => NodeClicked(id);
         View.NodeRightClicked += (id, at) => NodeRightClicked(id, at);
+        View.AltLabel = id => id != null && session.Data.Passives.Nodes.TryGetValue(id, out var n) && n.Kind == PassiveKind.Attribute ? "Атрибут" : null;
         View.HoveredChanged += _ => UpdateHover();
         AddChild(View);
 
@@ -106,6 +107,9 @@ public partial class PassivePanel : SessionPanel
         }
         var screen = (Vector2I)(View.GetScreenTransform() * local);
         AttributeMenu.Popup(new Rect2I(screen, Vector2I.Zero));
+        // The gamepad lands on the current choice (A confirms, B cancels).
+        var at = current is { } chosen ? AttributeOrder.ToList().IndexOf(chosen) : 0;
+        AttributeMenu.SetFocusedItem(Math.Max(0, at));
         return true;
     }
 

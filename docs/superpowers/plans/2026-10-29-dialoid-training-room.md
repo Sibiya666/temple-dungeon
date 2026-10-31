@@ -341,7 +341,7 @@ game/Main.cs, game/SelfTest.cs                  переделка корня; �
 
 **Files:**
 - Create: `tools/sync_assets.ps1`, `game/Room/AssetLibrary.cs`, `RoomView.cs`, `CameraRig.cs`
-- Modify: `tools/godot_check.ps1` (вызывает `sync_assets.ps1` перед импортом), `game/project.godot` (рендерер Forward+, `rendering/textures/vram_compression`, размер `positional_shadow_atlas` под 8 теневых источников), `game/Main.cs`, `game/SelfTest.cs`, `README.md` («Ассеты комнаты»: какие файлы скачать с Mixamo и с какими настройками — FBX Binary, T-pose, With Skin для персонажей, Without Skin для клипов, 30 fps; какие текстуры Poly Haven, 2K; куда положить)
+- Modify: `tools/godot_check.ps1` (вызывает `sync_assets.ps1` перед импортом), `game/project.godot` (рендерер Forward+, `rendering/textures/vram_compression`, размер `positional_shadow_atlas` под 8 теневых источников, `[physics] 3d/physics_engine="Jolt Physics"` — решение владельца 2026-10-30; Effekseer в этот план не входит: эффекты комнаты — на частицах Godot, Effekseer понадобится для сложных заклинаний позже), `game/Main.cs`, `game/SelfTest.cs`, `README.md` («Ассеты комнаты»: какие файлы скачать с Mixamo и с какими настройками — FBX Binary, T-pose, With Skin для персонажей, Without Skin для клипов, 30 fps; какие текстуры Poly Haven, 2K; куда положить)
 
 **Interfaces:**
 - Produces:
@@ -437,6 +437,45 @@ game/Main.cs, game/SelfTest.cs                  переделка корня; �
   - Снять узел пассивок в окне P, ударить снова: новый сегмент с подписью «после правки билда», его DPS отличается от прошлого.
 - [ ] **Step 3:** `tools/godot_check.ps1 -SelfTest` — 0. **Step 4: Commit** `feat(game): combat log, damage meter and charts`.
 
+### Task 13: Геймпад (выполняется после задачи 11 и до задачи 12)
+
+Решение владельца 2026-10-30: геймпад нужен везде, включая комнату. Требования, раскладка и шаги самопроверки — в приложении `docs/superpowers/plans/2026-10-30-dialoid-training-room-gamepad.md` (предложение `dialoid-ui-curator`); пункты **[Владельцу]** до ответа владельца исполняются как предложено.
+
+**Files:**
+- Create: `game/Input/InputDevice.cs` (автозагрузка: активное устройство, сигнал смены, подключение/отключение), `game/Input/InputActions.cs` (действия InputMap с двумя привязками), `game/Ui/ButtonPrompts.cs` (подписи и строка подсказок по устройству), `game/SelfTest.Gamepad.cs`
+- Modify: `game/project.godot` (действия и автозагрузка), `game/Room/CombatDriver.cs`, `HeroView.cs`, `CameraRig.cs` (ввод через действия, стик, LB/RB, зум стиком), `game/Ui/WindowHost.cs`, `TopBar.cs`, `CombatHud.cs` (фокус окон, D-pad, Start/View/LB/RB, значки), `game/Ui/TreeView.cs` (выбор узла направлением, A/X, LT/RT, слежение), панели окон (`FocusMode`, рамка фокуса, подсказка по фокусу, `follow_focus`), `MeterWindow.cs`, `CombatLogWindow.cs`, `ChartsWindow.cs`, README (управление с геймпада)
+
+**Interfaces:**
+- Consumes: `TrainingRoom` (как в задачах 9–11), `WindowHost`, `CombatDriver`, `TreeView`.
+- Produces: `InputDevice.Active` (`KeyboardMouse`/`Gamepad`), `InputDevice.Changed`, `InputDevice.OnJoyConnectionChanged(int device, bool connected)` (публичный, для теста); все игровые и оконные действия — имена InputMap; клавиатурное поведение задач 8–11 не меняется (старые шаги самопроверки зеленые).
+
+- [ ] **Step 1:** реализовать по приложению, разделы 0–3, минимум приемки из раздела 4.
+- [ ] **Step 2: Самопроверка** — все пункты раздела 5 приложения (синтетические события геймпада), плюс все старые шаги зеленые с полными ассетами, без ассетов и с `--quality low`.
+- [ ] **Step 3:** снимки в режиме геймпада (рамка фокуса, значки, строка подсказок; окна пассивок, измерителя, журнала) — `dialoid-ui-curator`.
+- [ ] **Step 4:** `tools/godot_check.ps1 -SelfTest` — 0. **Step 5: Commit** `feat(game): gamepad in the training room`.
+
+### Task 14: Экран боя из переиспользуемых компонентов (после задачи 13, до задачи 12)
+
+Спека HUD боя утверждена владельцем: `docs/superpowers/specs/2026-10-30-dialoid-combat-hud-design.md` (main, fb087d0). Для плана 4 — только §7 «Сейчас» и §9 «Цвета»; виды А и Б, автопереключение и приемка §8 — с «Миром башни», не здесь. Управление комнаты (LB/RB/крестовина/F) не меняется.
+
+**Files:**
+- Create: `game/Ui/Hud/SkillSlotView.cs`, `ResourceBarView.cs`, `EffectRowView.cs`, `TargetPlateView.cs` (+ записи данных в `game/Ui/Hud/HudData.cs`)
+- Modify: `game/Ui/CombatHud.cs` (собирается из компонентов), `game/Room/HeroView.cs` (цвет контура), `game/SelfTest*.cs`
+
+**Interfaces:**
+- Каждый элемент — компонент с отдельными данными (запись) и видом; данные строятся из `TrainingRoom.State/Slots/Feed`, вид их только рисует. Компонент не знает про комнату и раскладку — `CombatHud` расставляет.
+  - `SkillSlotView` — слот (§4 п.3 спеки HUD): значок/имя, значок кнопки активного устройства, перезарядка, нехватка ресурса из ядра, очередь, канал, мигание отказа (поведение задач 10 и 13 сохраняется).
+  - `ResourceBarView` — полоса ресурса «Ярость 45 / 100» с цветом по ресурсу (§9: здоровье темно-красное, мана синяя, Ярость янтарно-охристая, Скверна фиолетовая с темным ядром), число с темной обводкой; шар — позже.
+  - `EffectRowView` в двух режимах: баффы героя (бронзовая рамка) и недуги/дебаффы (рваная темно-красная рамка — отличие формой, не только цветом); при переполнении сворачивается в «+N», полный список — по наведению и фокусу (общий компонент подсказки задачи 13).
+  - `TargetPlateView` — плашка цели (§4 п.8): чья — с мышью враг под курсором, иначе последний, по кому попал скилл; с геймпадом — текущая цель (RB); имя, полоса здоровья (полоса бессмертного манекена из задачи 6), недуги и печати со стаками и таймером; цвет имени всегда со значком. Нет цели — плашки нет.
+- Контур героя — теплый белый или бледно-кремовый вместо золотого (§9; оттенок — `dialoid-art-curator`).
+- В комнате у героя дебаффов нет (манекен не бьет): ряд дебаффов существует и проверяется самопроверкой на подставных данных.
+
+- [ ] **Step 1:** вынести компоненты, собрать `CombatHud` из них; поведение и все шаги самопроверки задач 10, 11 и 13 зеленые.
+- [ ] **Step 2: Самопроверка:** каждый компонент строится из записи данных без комнаты (подставные данные), и данные компонента равны `TrainingRoom.State` в бою; свертка «+N» при 15+ эффектах и полный список по фокусу; плашка цели выбирается по правилу для мыши и для геймпада; цвет Ярости янтарно-охристый.
+- [ ] **Step 3:** снимки экрана боя (баффы, свертка «+N», плашка с недугами, контур героя) — `dialoid-ui-curator` и `dialoid-art-curator`.
+- [ ] **Step 4:** `tools/godot_check.ps1 -SelfTest` — 0. **Step 5: Commit** `refactor(game): combat hud from reusable components`.
+
 ### Task 12: Приемка, скриншоты, нагрузка, README
 
 **Files:**
@@ -478,3 +517,4 @@ game/Main.cs, game/SelfTest.cs                  переделка корня; �
 | §9 ассеты вне git, заглушки, лицензии | 8, 12 |
 | §10 приемка | 1–4, 7 (тесты), 5, 12 |
 | Windows как основная платформа | 5 |
+| Геймпад везде (решение владельца 2026-10-30) | 13, 12 (приемка) |

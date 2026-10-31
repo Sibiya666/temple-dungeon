@@ -1,14 +1,17 @@
 ﻿# Build and headless check of the Godot debug scene (spec §3.2), Windows PowerShell 5.1 version
 # of tools/godot_check.sh (same steps, limits and exit codes):
-#   dotnet build -> godot --headless --import -> godot --headless --quit (or -- --selftest),
+#   dotnet build -> tools/sync_assets.ps1 (room assets into game/vendor/) -> godot --headless --import
+#   -> godot --headless --quit (or -- --selftest),
 # then the log is checked. Every step runs under a time limit.
 #
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1
-#          [-SelfTest] [-ExpectLoadFailure] [-Screenshots <dir>] [-ImportTimeoutSec <n>]
+#          [-SelfTest] [-ExpectLoadFailure] [-Screenshots <dir>] [-Perf] [-Quality low|high] [-ImportTimeoutSec <n>]
 #   -SelfTest             run the scene's self-test instead of a plain start
 #   -ExpectLoadFailure    the scene must report a data load failure (marker DIALOID_LOAD_FAILED:)
 #                         and the log must still have no ERROR lines; used for the missing-data check
 #   -Screenshots <dir>    run the self-test in a real window (not headless) and save screenshots to <dir>
+#   -Perf                 the load run (spec §10.8): in a real window, only the measurement; prints «SELFTEST PERF …»
+#   -Quality low|high     graphics quality of the self-test, screenshot or load run (passed as «-- --quality …»)
 #   -ImportTimeoutSec <n> time limit of the import step, seconds (default 600: the first import
 #                         of dozens of FBX files is long)
 #
@@ -25,6 +28,9 @@
 
 $ErrorActionPreference = 'Stop'
 
+# The self-test's developer filter (DIALOID_SELFTEST_FILTER) never applies to a check: every step runs.
+Remove-Item Env:DIALOID_SELFTEST_FILTER -ErrorAction SilentlyContinue
+
 $Root = Split-Path -Parent $PSScriptRoot
 $Game = Join-Path $Root 'game'
 $Marker = 'DIALOID_LOAD_FAILED:'
@@ -35,13 +41,15 @@ function Write-Err([string]$Message) {
 }
 
 function Fail-Args([string]$Message) {
-    Write-Err "$Message (допустимы -SelfTest, -ExpectLoadFailure, -Screenshots <папка>, -ImportTimeoutSec <секунды>)"
+    Write-Err "$Message (допустимы -SelfTest, -ExpectLoadFailure, -Screenshots <папка>, -Perf, -Quality low|high, -ImportTimeoutSec <секунды>)"
     exit 2
 }
 
 $SelfTest = $false
 $ExpectLoadFailure = $false
 $Screenshots = $null
+$Perf = $false
+$Quality = $null
 $ImportTimeoutSec = 600
 
 $i = 0
@@ -50,6 +58,12 @@ while ($i -lt $args.Count) {
     switch ($arg) {
         '-SelfTest' { $SelfTest = $true }
         '-ExpectLoadFailure' { $ExpectLoadFailure = $true }
+        '-Perf' { $Perf = $true }
+        '-Quality' {
+            $i++
+            if ($i -ge $args.Count -or @('low', 'high') -notcontains ([string]$args[$i])) { Fail-Args '-Quality требует low или high' }
+            $Quality = [string]$args[$i]
+        }
         '-Screenshots' {
             $i++
             if ($i -ge $args.Count -or ([string]$args[$i]).StartsWith('-')) { Fail-Args 'Не указана папка для -Screenshots' }
@@ -157,6 +171,11 @@ if ($r.Code -ne 0) { Fail-Step $r.Code 'Сборка не прошла' }
 
 $Log = ''
 
+# Room assets (not in git) are copied into game/vendor/ before the import; without them the room draws stubs.
+Step 'sync assets'
+& (Join-Path $PSScriptRoot 'sync_assets.ps1')
+if ($LASTEXITCODE -ne 0) { Fail-Step $LASTEXITCODE 'Синхронизация ассетов не прошла' }
+
 Step 'godot --import'
 $r = Run-Limited $ImportTimeoutSec $Godot @('--headless', '--path', $Game, '--import')
 $Log += $r.Output
@@ -165,12 +184,17 @@ if ($r.Code -ne 0) {
     Fail-Step $r.Code 'godot --import завершился с ошибкой'
 }
 
+$QualityArgs = @()
+if ($Quality) { $QualityArgs = @('--quality', $Quality) }
 if ($Screenshots) {
     Step 'godot -- --selftest --screenshots (в окне)'
-    $r = Run-Limited 300 $Godot @('--path', $Game, '--', '--selftest', '--screenshots', $Screenshots)
+    $r = Run-Limited 600 $Godot (@('--path', $Game, '--', '--selftest', '--screenshots', $Screenshots) + $QualityArgs)
+} elseif ($Perf) {
+    Step 'godot -- --selftest --perf (в окне)'
+    $r = Run-Limited 300 $Godot (@('--path', $Game, '--', '--selftest', '--perf') + $QualityArgs)
 } elseif ($SelfTest) {
     Step 'godot -- --selftest'
-    $r = Run-Limited 300 $Godot @('--headless', '--path', $Game, '--', '--selftest')
+    $r = Run-Limited 300 $Godot (@('--headless', '--path', $Game, '--', '--selftest') + $QualityArgs)
 } else {
     Step 'godot --quit'
     $r = Run-Limited 60 $Godot @('--headless', '--path', $Game, '--quit')

@@ -10,7 +10,7 @@ namespace Dialoid.Game.Ui;
 /// numbers. The shown line is a snapshot taken when the number was pressed; after a build change the panel says so.
 /// Loading, importing or a class change replaces the build: <see cref="ClearHistory"/> then drops the old build's numbers.
 /// </summary>
-public partial class BreakdownPanel : SessionPanel
+public partial class BreakdownPanel : SessionPanel, IPadPanel
 {
     public const int HistorySize = 10;
 
@@ -40,14 +40,54 @@ public partial class BreakdownPanel : SessionPanel
         _history.RemoveAll(e => e.Line.Key == entry.Line.Key && e.Context == entry.Context);
         _history.Insert(0, entry);
         if (_history.Count > HistorySize) _history.RemoveRange(HistorySize, _history.Count - HistorySize);
+        Show(entry);
+    }
+
+    /// <summary>Shows an entry and remembers it for B (the gamepad's step back).</summary>
+    private void Show(Entry entry)
+    {
+        if (Current != null && Current != entry) _trail.Add(Current);
+        if (_trail.Count > HistorySize) _trail.RemoveAt(0);
         Current = entry;
         RequestRedraw();
     }
+
+    private readonly List<Entry> _trail = new();
+
+    /// <summary>The numbers B steps back through, oldest first.</summary>
+    public IReadOnlyList<Entry> Trail => _trail;
+
+    /// <summary>B: the number shown before this one (the nested number's parent); false when there is none (the window closes).</summary>
+    public bool Back()
+    {
+        while (_trail.Count > 0)
+        {
+            var previous = _trail[^1];
+            _trail.RemoveAt(_trail.Count - 1);
+            if (!_history.Contains(previous)) continue; // dropped from the history meanwhile
+            Current = previous;
+            RequestRedraw();
+            return true;
+        }
+        return false;
+    }
+
+    public bool PadButton(PadCommand command, Control? focus) => false;
+
+    public bool PadBack() => Back();
+
+    public IEnumerable<(string Button, string Label)> PadPrompts(Control? focus)
+    {
+        if (_trail.Count > 0) yield return ("[B]", "Назад по истории");
+    }
+
+    public void PadClosed() => _trail.Clear();
 
     /// <summary>Forgets the shown number and the history (the build was replaced).</summary>
     public void ClearHistory()
     {
         _history.Clear();
+        _trail.Clear();
         Current = null;
         RequestRedraw();
     }
@@ -92,7 +132,7 @@ public partial class BreakdownPanel : SessionPanel
         foreach (var entry in _history)
         {
             var e = entry;
-            Content.AddChild(NumberLabel.For(e.Line, (_, _) => { Current = e; RequestRedraw(); }, e.Context));
+            Content.AddChild(NumberLabel.For(e.Line, (_, _) => Show(e), e.Context));
         }
     }
 }

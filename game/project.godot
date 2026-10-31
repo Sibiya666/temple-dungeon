@@ -6,7 +6,11 @@ config_version=5
 
 config/name="Dialoid"
 run/main_scene="res://Main.tscn"
-config/features=PackedStringArray("4.7", "C#")
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+
+[autoload]
+
+InputDevice="*res://Input/InputDevice.cs"
 
 [display]
 
@@ -16,3 +20,23 @@ window/size/viewport_height=900
 [dotnet]
 
 project/assembly_name="Dialoid.Game"
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+textures/vram_compression/import_s3tc_bptc=true
+textures/vram_compression/import_etc2_astc=false
+anti_aliasing/quality/screen_space_aa=1
+lights_and_shadows/positional_shadow/atlas_size=4096
+lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv=1
+lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv=2
+lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv=2
+lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv=3
+
+[gui]
+
+timers/tooltip_delay_sec=100000.0

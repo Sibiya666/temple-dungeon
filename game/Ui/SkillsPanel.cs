@@ -165,7 +165,7 @@ public partial class SkillsPanel : SessionPanel
     {
         var data = Session.Data;
         var current = Session.GetSlot(slot);
-        var row = new HBoxContainer();
+        var row = new HFlowContainer(); // wraps in a window a third of the screen wide (plan 4 task 10)
         row.AddChild(new Label { Text = $"Слот {slot + 1}:", CustomMinimumSize = new Vector2(80, 0) });
         Content!.AddChild(row);
 
@@ -192,7 +192,7 @@ public partial class SkillsPanel : SessionPanel
         if (current != null && !choices.Contains(current.SkillId)) choices.Add(current.SkillId);
         var native = cls?.SkillIds.ToHashSet() ?? new HashSet<string>();
 
-        var box = new OptionButton { CustomMinimumSize = new Vector2(260, 0) };
+        var box = new OptionButton { CustomMinimumSize = new Vector2(220, 0) };
         foreach (var id in choices)
         {
             if (id == null) { box.AddItem("(пусто)"); continue; }
@@ -219,6 +219,7 @@ public partial class SkillsPanel : SessionPanel
                 TooltipText = $"Уровень скилла, кап {cap}",
             };
             spin.ValueChanged += v => SelectLevel(slot, (int)v);
+            ButtonPrompts.EditMode(spin); // in a row with buttons: ←/→ would never leave it sideways
             row.AddChild(new Label { Text = "уровень" });
             row.AddChild(spin);
             var tree = new Button { Text = slot == _treeSlot ? "▶ Дерево" : "Дерево", ToggleMode = false };
@@ -280,8 +281,10 @@ public partial class SkillsPanel : SessionPanel
             int slotIndex = _treeSlot;
             var plus = new Button { Text = "+", TooltipText = tooltip };
             plus.Pressed += () => AddPoint(slotIndex, id);
+            ButtonPrompts.SetAction(plus, PadCommand.Alt, "Снять очко", () => RemovePoint(slotIndex, id));
+            plus.SetMeta(ButtonPrompts.AcceptMeta, "Добавить очко");
             row.AddChild(plus);
-            var minus = new Button { Text = "−", TooltipText = tooltip };
+            var minus = ButtonPrompts.Skip(new Button { Text = "−", TooltipText = tooltip }); // the gamepad removes with X on «+»
             minus.Pressed += () => RemovePoint(slotIndex, id);
             row.AddChild(minus);
             Content.AddChild(row);

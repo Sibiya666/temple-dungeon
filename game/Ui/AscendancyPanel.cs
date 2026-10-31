@@ -46,7 +46,7 @@ public partial class AscendancyPanel : SessionPanel
     {
         InitSession(session, withContent: false);
 
-        var top = new HBoxContainer();
+        var top = new HFlowContainer(); // wraps in a narrow window (plan 4 task 10)
         top.AddChild(new Label { Text = "Асцендант:" });
         _selector = new OptionButton();
         _selector.ItemSelected += i => SelectAscendancy(AscendancyChoices[(int)i]);
@@ -61,17 +61,17 @@ public partial class AscendancyPanel : SessionPanel
         top.AddChild(PassivePanel.Legend());
         AddChild(top);
 
-        AddChild(new Label
+        AddChild(ButtonPrompts.Help(new Label
         {
             Text = "Стартовый узел дается вместе с асцендантом. ЛКМ по notable — взять/снять, колесо — масштаб, перетаскивание — сдвиг.",
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
-        });
+        }, "Стартовый узел дается вместе с асцендантом. A по notable — взять или снять, LT/RT — масштаб, правый стик — сдвиг, R3 — вписать дерево."));
         _status = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_status);
         _hover = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_hover);
 
-        View = new TreeView { SizeFlagsVertical = SizeFlags.ExpandFill, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        View = new TreeView { SizeFlagsVertical = SizeFlags.ExpandFill, SizeFlagsHorizontal = SizeFlags.ExpandFill, DescriptionInPanel = true };
         View.CustomMinimumSize = new Vector2(0, 300);
         View.NodeClicked += id => NodeClicked(id);
         View.HoveredChanged += _ => UpdateHover();

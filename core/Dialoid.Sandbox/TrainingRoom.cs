@@ -87,7 +87,7 @@ public sealed class TrainingRoom
     /// <summary>The class resource's Russian name for the bar («Мана», «Ярость»); empty without a fight.</summary>
     public string ResourceName { get; private set; } = "";
 
-    /// <summary>What the HUD shows (cooldowns, queued and held keys by player slot, resource, buffs); null without a fight. The same
+    /// <summary>What the HUD shows (cooldowns, queued and held keys by player slot, costs and resource-short slots by player slot, resource, buffs); null without a fight. The same
     /// object until the next step or command, like <see cref="LiveFight.State"/>.</summary>
     public LiveState? State
     {
@@ -98,8 +98,16 @@ public sealed class TrainingRoom
             var cooldowns = new SortedDictionary<int, double>();
             foreach (var (fightSlot, left) in s.CooldownLeftBySlot)
                 if (PlayerSlot(fightSlot) is { } slot) cooldowns[slot] = left;
+            var costs = new SortedDictionary<int, double>();
+            foreach (var (fightSlot, cost) in s.CostBySlot)
+                if (PlayerSlot(fightSlot) is { } slot) costs[slot] = cost;
+            var shortSlots = s.ResourceShortSlots.Select(f => PlayerSlot(f)).OfType<int>().Order().ToList();
             _stateSource = s;
-            return _state = s with { CooldownLeftBySlot = cooldowns, QueuedSlot = PlayerSlot(s.QueuedSlot), HeldSlot = PlayerSlot(s.HeldSlot) };
+            return _state = s with
+            {
+                CooldownLeftBySlot = cooldowns, QueuedSlot = PlayerSlot(s.QueuedSlot), HeldSlot = PlayerSlot(s.HeldSlot),
+                CostBySlot = costs, ResourceShortSlots = shortSlots,
+            };
         }
     }
 
