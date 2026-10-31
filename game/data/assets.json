@@ -1,7 +1,7 @@
 {
   "comment": "Room assets: id -> file under the assets folder (DIALOID_ASSETS, else assets/ in the repo root). tools/sync_assets.ps1 copies only these files to game/vendor/ with normalized names. Heights in metres (spec §4).",
   "characters": {
-    "hero": { "file": "mixamo/characters/Paladin WProp J Nordstrom.fbx", "height": 1.85 },
+    "hero": { "file": "apostate/ronin/ronin-room.glb", "height": 1.85 },
     "zombie": { "file": "mixamo/characters/Skeletonzombie T Avelange.fbx", "height": 1.8 },
     "orc": { "file": "mixamo/characters/Warrok W Kurniawan.fbx", "height": 2.25 },
     "boss": { "file": "mixamo/characters/Warrok W Kurniawan.fbx", "height": 3.15 }

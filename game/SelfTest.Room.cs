@@ -1,4 +1,4 @@
-﻿using Dialoid.Game.Room;
+using Dialoid.Game.Room;
 using Godot;
 
 namespace Dialoid.Game;
@@ -42,6 +42,8 @@ public sealed partial class SelfTest
         yield return new("room.partial-assets", RoomPartialAssets);
         yield return new("room.scale", RoomScale);
         yield return new("room.clips-find-bones", RoomClips);
+        yield return new("room.embedded-clips", RoomEmbeddedClips);
+        yield return new("room.animated-grounding", RoomAnimatedGrounding);
         yield return new("room.camera-on-screen", RoomCameraOnScreen);
         yield return new("room.camera-zoom-limits", RoomZoomLimits);
         yield return new("room.shadow-budget", RoomShadowBudget);
@@ -232,7 +234,7 @@ public sealed partial class SelfTest
 
     /// <summary>
     /// Every clip of the table fitted to each of the three models: no track with an unknown node or bone, the core humanoid
-    /// bones animated, hips pinned (X = Z = 0), loop per the table, and the cached clip never processed twice.
+    /// bones animated, embedded hips preserved (legacy X = Z = 0), loop per the table, and cache never processed twice.
     /// </summary>
     private Task RoomClips()
     {
@@ -271,10 +273,19 @@ public sealed partial class SelfTest
                     Check(lost.Count == 0, $"{id} → {model.Id}: не анимированы {string.Join(", ", lost)}");
                     var hips = HipsTrack(fitted);
                     Check(hips >= 0, $"{id} → {model.Id}: нет трека позиции бедер");
+                    var embedded = model.Player!.HasAnimation(id) ? model.Player.GetAnimation(id) : null;
+                    var embeddedHips = embedded == null ? -1 : HipsTrack(embedded);
+                    if (embedded != null)
+                        Check(embeddedHips >= 0 && embedded.TrackGetKeyCount(embeddedHips) == fitted.TrackGetKeyCount(hips), $"{id} → {model.Id}: embedded hips keys lost");
                     for (int k = 0; k < fitted.TrackGetKeyCount(hips); k++)
                     {
                         var v = fitted.TrackGetKeyValue(hips, k).AsVector3();
-                        Check(v.X == 0 && v.Z == 0, $"{id} → {model.Id}: корень не прибит (ключ {k}: {v})");
+                        if (embedded != null)
+                            Check(v == embedded.TrackGetKeyValue(embeddedHips, k).AsVector3()
+                                  && fitted.TrackGetKeyTime(hips, k) == embedded.TrackGetKeyTime(embeddedHips, k),
+                                $"{id} → {model.Id}: embedded hips changed (key {k}: {v})");
+                        else
+                            Check(v.X == 0 && v.Z == 0, $"{id} → {model.Id}: корень не прибит (ключ {k}: {v})");
                     }
                     // A second fit gives the same keys: the cached clip was not modified by the first one.
                     var again = assets.ClipFor(id, model)!;
@@ -289,6 +300,120 @@ public sealed partial class SelfTest
         GD.Print($"SELFTEST NOTE клипы: {assets.Table.Clips.Count} × {ClipModels.Length} моделей, выброшены треки костей, которых нет у модели: " +
                  (droppedNotes.Count == 0 ? "нет" : string.Join(", ", droppedNotes)));
         return Task.CompletedTask;
+    }
+
+    private Task RoomEmbeddedClips()
+    {
+        var assets = Assets;
+        var id = assets.Table.Clips.Keys.FirstOrDefault(key => assets.Clip(key) != null);
+        var modelId = assets.Table.Characters.FirstOrDefault(pair => ResourceLoader.Exists(AssetLibrary.VendorPath(pair.Value.File))).Key;
+        if (id == null || modelId == null)
+        {
+            GD.Print("SELFTEST NOTE embedded clips: imported source/model unavailable, skipped");
+            return Task.CompletedTask;
+        }
+        var model = assets.Character(modelId);
+        try
+        {
+            var player = model.Player!;
+            // A private library avoids changing imported resources shared with the real hero.
+            var library = player.HasAnimationLibrary("")
+                ? (AnimationLibrary)player.GetAnimationLibrary("").Duplicate(true) : new AnimationLibrary();
+            if (player.HasAnimationLibrary("")) player.RemoveAnimationLibrary("");
+            player.AddAnimationLibrary("", library);
+            if (library.HasAnimation(id)) library.RemoveAnimation(id);
+            var embedded = new Animation { Length = 1, LoopMode = Animation.LoopModeEnum.Pingpong };
+            var track = embedded.AddTrack(Animation.TrackType.Position3D);
+            embedded.TrackSetPath(track, new NodePath("OldSkeleton:mixamorig:Hips"));
+            var marker = new Vector3(3, 123.456f, 4);
+            embedded.TrackInsertKey(track, 0, marker);
+            library.AddAnimation(id, embedded);
+            var source = assets.Clip(id)!;
+            var fitted = assets.ClipFor(id, model)!;
+            Check(fitted != embedded && fitted.GetTrackCount() == 1, "embedded clip not duplicated/preferred");
+            Check(fitted.TrackGetKeyValue(0, 0).AsVector3() == marker, "embedded hips changed in model-local coordinates");
+            Check(AssetLibrary.UnresolvedTracks(fitted, model).Count == 0, "embedded bone path unresolved");
+            Check(fitted.LoopMode == (assets.Table.Clips[id].Loop ? Animation.LoopModeEnum.Linear : Animation.LoopModeEnum.None), "embedded loop ignores table");
+            Check(embedded.TrackGetKeyValue(0, 0).AsVector3() == marker && embedded.LoopMode == Animation.LoopModeEnum.Pingpong, "embedded source modified");
+            player.GetAnimationLibrary(CharacterModel.Library).AddAnimation(id, fitted);
+            library.RemoveAnimation(id);
+            var fallback = assets.ClipFor(id, model)!;
+            var hips = HipsTrack(fallback);
+            Check(hips >= 0 && fallback.TrackGetKeyValue(hips, 0).AsVector3().Y != marker.Y, "room/id incorrectly used as embedded fallback");
+            var again = assets.ClipFor(id, model)!;
+            Check(again.TrackGetKeyValue(HipsTrack(again), 0).AsVector3() == fallback.TrackGetKeyValue(hips, 0).AsVector3(), "legacy cache processed twice");
+            Check(assets.Clip(id)!.TrackGetKeyValue(HipsTrack(source), 0).AsVector3() == source.TrackGetKeyValue(HipsTrack(source), 0).AsVector3(), "shared source cache modified");
+            library.AddAnimation(id, embedded);
+            var missing = new AssetLibrary(assets.Table with
+            {
+                Clips = new Dictionary<string, ClipEntry> { [id] = new("__selftest_missing_embedded__.fbx", true) },
+            });
+            Check(missing.ClipFor(id, model) == null, "embedded bypassed missing source refusal");
+        }
+        finally { model.Free(); }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Measure actual skinned vertices after playback; local skeleton axes need not be world Y-up.</summary>
+    private async Task RoomAnimatedGrounding()
+    {
+        var hero = Assets.Character(AssetLibrary.HeroId);
+        try
+        {
+            if (hero.IsStub)
+            {
+                GD.Print("SELFTEST NOTE animated grounding: hero asset unavailable, skipped");
+                return;
+            }
+            string[] clips = ["hero_idle", "hero_walk", "hero_run", "hero_slash", "hero_attack", "hero_cast", "hit_react"];
+            var player = hero.Player!;
+            if (!clips.Any(id => player.HasAnimation(id)))
+            {
+                GD.Print("SELFTEST NOTE animated grounding: hero has no embedded clips, skipped");
+                return;
+            }
+            Room.AddChild(hero);
+            hero.Position = Room.HeroSpawn;
+            await NextFrame();
+            var floorY = hero.GlobalPosition.Y;
+            var failures = new List<string>();
+            foreach (var id in clips)
+            {
+                Check(player.HasAnimation(id), $"animated grounding: missing embedded {id}");
+                Check(hero.Play(id, blend: 0, restart: true), $"animated grounding: cannot play {id}");
+                player.Pause();
+                var length = hero.ClipLength(id)!.Value;
+                foreach (var fraction in new[] { 0.0, 0.25, 0.5, 0.75, 1.0 })
+                {
+                    player.Seek(length * fraction, true);
+                    await NextFrame();
+                    // Reading global poses resolves dirty bone transforms after the animation frame.
+                    for (int b = 0; b < hero.Skeleton!.GetBoneCount(); b++) hero.Skeleton.GetBoneGlobalPose(b);
+                    hero.Skeleton.ForceUpdateTransform();
+                    hero.ForceUpdateTransform();
+                    foreach (var mesh in hero.Meshes) mesh.ForceUpdateTransform();
+                    var (lo, hi) = PosedWorldSpanY(hero);
+                    lo -= floorY;
+                    hi -= floorY;
+                    var head = HeadTopY(hero) - floorY;
+                    GD.Print($"SELFTEST NOTE animated grounding {id} t={fraction:0.##}: mesh min={lo:0.000000} max={hi:0.000000} head={head:0.000000} m");
+                    if (!float.IsFinite(lo) || !float.IsFinite(hi) || lo < -0.05f
+                        || hi < hero.TargetHeight * 0.5f || hi - lo < hero.TargetHeight * 0.5f
+                        || head == null || head < hero.TargetHeight * 0.5f)
+                        failures.Add($"{id}@{fraction:0.##}: mesh [{lo:0.000}, {hi:0.000}], head {head:0.000} m");
+                }
+            }
+            Check(failures.Count == 0, "animated mesh below floor/hidden: " + string.Join("; ", failures));
+            if (_screenshotDir != null && DisplayServer.GetName() != "headless")
+            {
+                hero.Hide();
+                _main.CloseAllWindows();
+                Room.PlaceHero(Room.DummySpot + TowardsCamera * 2f);
+                Room.CameraRig.ResetZoom();
+                await Shot("task-ronin-grounding", full: true);
+            }
+        }
+        finally { hero.Free(); }
     }
 
     private static int HipsTrack(Animation a)

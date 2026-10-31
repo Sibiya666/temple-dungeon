@@ -1,4 +1,4 @@
-﻿using Dialoid.Sandbox;
+using Dialoid.Sandbox;
 using Godot;
 
 namespace Dialoid.Game.Room;
@@ -696,12 +696,12 @@ public partial class RoomView : Node3D
         };
         Hero.AddChild(HeroLight);
         HeroLight.Position = new Vector3(0, 3f, 0);
-        // Fill light at chest height on the camera side, no shadows (spec §4: shield and face lit).
+        // Owner: keep the contour, disable the separate white fill on the hero.
         FillLight = new OmniLight3D
         {
             Name = "FillLight",
             LightColor = new Color(0.82f, 0.88f, 0.87f),
-            LightEnergy = 3.2f,
+            LightEnergy = 0f,
             OmniRange = 2.8f,
             LightCullMask = 4,
             ShadowEnabled = false,

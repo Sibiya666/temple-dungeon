@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Godot;
 
@@ -319,20 +319,28 @@ public sealed class AssetLibrary
 
     /// <summary>
     /// The clip fitted to <paramref name="character"/>: bone tracks rewritten to the model's skeleton (any mixamorig prefix),
-    /// tracks of bones the model lacks dropped and named in <paramref name="dropped"/>, hips height scaled to the model's hips.
+    /// tracks of bones the model lacks dropped and named in <paramref name="dropped"/>. Embedded clips are already fitted;
+    /// legacy source clips have their hips height scaled to the model's hips.
     /// Null for a stub or a missing clip.
     /// </summary>
     public Animation? ClipFor(string id, CharacterModel character, List<string>? dropped = null)
     {
         var source = SourceClip(id);
         if (source == null || character.Skeleton == null || character.Player == null) return null;
-        var anim = (Animation)source.Value.Anim.Duplicate(true);
+        // Exact unqualified id only: room/id contains our processed cache, not imported motion.
+        var embedded = character.Player.HasAnimation(id) ? character.Player.GetAnimation(id) : null;
+        var anim = (Animation)(embedded ?? source.Value.Anim).Duplicate(true);
+        if (embedded != null)
+        {
+            anim.LoopMode = Table.Clips[id].Loop ? Animation.LoopModeEnum.Linear : Animation.LoopModeEnum.None;
+            // Baked model-local hips may be Z-up. Legacy PinHips would erase their height.
+        }
         var skeleton = character.Skeleton;
         var root = character.Player.GetNode(character.Player.RootNode);
         var skeletonPath = root.GetPathTo(skeleton).ToString();
         var bones = new Dictionary<string, string>(StringComparer.Ordinal);
         for (int b = 0; b < skeleton.GetBoneCount(); b++) bones.TryAdd(CanonicalBone(skeleton.GetBoneName(b)), skeleton.GetBoneName(b));
-        var ratio = source.Value.HipsRestY > 0.001f && character.RestHipsY > 0.001f ? character.RestHipsY / source.Value.HipsRestY : 1f;
+        var ratio = embedded == null && source.Value.HipsRestY > 0.001f && character.RestHipsY > 0.001f ? character.RestHipsY / source.Value.HipsRestY : 1f;
 
         for (int i = anim.GetTrackCount() - 1; i >= 0; i--)
         {
