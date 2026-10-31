@@ -12,6 +12,36 @@ public class LiveStateTests
 {
     private const double Eps = 1e-9;
 
+    [Fact]
+    public void Hero_life_max_exports_current_sim_value_and_survives_slot_remapping()
+    {
+        var fight = Start("sorcerer_pyromancer_fireball");
+        var sim = fight.Sim;
+        Assert.True(sim.LifeMax > 0);
+        var initial = fight.State;
+        Assert.Equal(sim.LifeMax, initial.LifeMax);
+
+        // Distinct from both current life and the initial maximum: export, not a fallback.
+        fight.Sim.LifeMax = initial.LifeMax + 137;
+        sim.Life = initial.LifeMax / 2;
+        var changed = fight.State;
+        Assert.Equal(sim.LifeMax, changed.LifeMax);
+        Assert.NotEqual(changed.Life, changed.LifeMax);
+        Assert.Equal(initial.LifeMax + 137, changed.LifeMax);
+
+        // TrainingRoom.State uses this record-copy path to remap player slots.
+        var remapped = changed with
+        {
+            CooldownLeftBySlot = new Dictionary<int, double>(), QueuedSlot = null, HeldSlot = null,
+            CostBySlot = new Dictionary<int, double>(), ResourceShortSlots = Array.Empty<int>(),
+        };
+        Assert.Equal(changed.LifeMax, remapped.LifeMax);
+
+        fight.Step();
+        Assert.Equal(sim.LifeMax, fight.State.LifeMax);
+        Assert.Equal(initial.LifeMax, fight.State.LifeMax);
+    }
+
     private const int BattleCry = 1, Charge = 2, Whirlwind = 4;                // warrior_berserker_whirlwind
     private const int Meteor = 2, Fireball = 4, Spark = 5;           // sorcerer_pyromancer_fireball
 

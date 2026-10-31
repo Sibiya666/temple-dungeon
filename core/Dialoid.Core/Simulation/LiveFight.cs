@@ -217,6 +217,7 @@ public sealed class LiveFight
 
         return new LiveState(now, s.Resource, s.ResourceMax, s.Life, cooldowns, buffs, IsBusy, s.ChannelSkillId, ailments.ToList())
         {
+            LifeMax = s.LifeMax,
             ResourceId = Setup.Character.Class.Resource.Id,
             BusyLeft = Math.Max(0, s.BusyUntil - now),
             QueuedSlot = SlotOf(_commands.Pressed),

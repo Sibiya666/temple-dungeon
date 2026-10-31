@@ -33,6 +33,9 @@ public sealed record PressResult(bool Accepted, bool Queued, PressRefusal Refusa
 public sealed record LiveState(double Time, double Resource, double ResourceMax, double Life, IReadOnlyDictionary<int, double> CooldownLeftBySlot,
     IReadOnlyDictionary<string, double> Buffs, bool Busy, string? ChannelSkillId, IReadOnlyList<string> TargetAilments)
 {
+    /// <summary>The hero's current maximum life from the simulation, including live conditions and buffs.</summary>
+    public double LifeMax { get; init; }
+
     /// <summary>The class resource id (fury, mana), for its name and color.</summary>
     public string ResourceId { get; init; } = "";
 
