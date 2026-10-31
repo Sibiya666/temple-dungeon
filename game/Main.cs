@@ -80,6 +80,18 @@ public partial class Main : Control
 
     private Label _errorLabel = null!;
 
+    public override void _Notification(int what)
+    {
+        if (what == NotificationApplicationFocusOut) ClearHeldInput();
+    }
+
+    private void ClearHeldInput()
+    {
+        Combat?.ReleaseAll();
+        Windows?.ClearPadState();
+        Room?.CameraRig.ClearStick();
+    }
+
     public override void _Ready()
     {
         BuildRoom();
@@ -134,9 +146,7 @@ public partial class Main : Control
         Windows.HudTargets = () => Hud?.PadTargets() ?? (IReadOnlyList<Control>)Array.Empty<Control>();
         if (Dialoid.Game.Input.InputDevice.Instance is { } device)
         {
-            device.GamepadLost += Combat.ReleaseAll;
-            device.GamepadLost += Windows.ClearPadState;
-            device.GamepadLost += Room.CameraRig.ClearStick;
+            device.GamepadLost += ClearHeldInput;
             device.Changed += Combat.OnDeviceChanged;
         }
     }

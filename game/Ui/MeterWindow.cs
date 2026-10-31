@@ -334,8 +334,9 @@ public partial class MeterWindow : SessionPanel, IPadPanel
             _empty.Visible = false;
             _bars.SetRows(RowsOf(segment, Mode), Mode, skillMode, MeterColors.SkillOrder(Session));
             var seconds = (int)Math.Floor(segment.Duration);
-            _total.Text = $"Урон {RuNumber.Short(segment.TotalDamage)} · DPS {RuNumber.Short(segment.Dps)} · длительность {seconds / 60}:{seconds % 60:00}";
-            _total.TooltipText = $"Урон сегмента {RuNumber.Grouped(segment.TotalDamage)}, DPS {RuNumber.Grouped(segment.Dps)} (урон / длительность сегмента)";
+            var duration = segment.Duration < 10 ? RuNumber.Format(segment.Duration, "0.###") + " с" : $"{seconds / 60}:{seconds % 60:00}";
+            _total.Text = $"Урон {RuNumber.Short(segment.TotalDamage)} · DPS {RuNumber.Short(segment.Dps)} · длительность {duration}";
+            _total.TooltipText = $"Урон сегмента {RuNumber.Grouped(segment.TotalDamage)}, DPS {RuNumber.Grouped(segment.Dps)} (урон / длительность сегмента); длительность {RuNumber.Format(segment.Duration, "0.######")} с";
             _change.Text = ChangeLabel(segment);
             // «DPS 0%» is neither better nor worse: neutral grey (curator, task 13 round 1).
             var color = segment.IsOpen || segment.DpsChangeVsPrevious is not { } change || Math.Abs(change) < 0.005 ? Grey

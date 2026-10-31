@@ -119,13 +119,13 @@ public partial class DummyView : Node3D
         {
             Name = "DummyFill",
             LightColor = new Color(0.8f, 0.82f, 0.9f),
-            LightEnergy = 0.8f, // task 12 shots: 0.55 left the elemental zombie dark under the lightning ribbon
-            OmniRange = 3.6f,
-            OmniAttenuation = 1.5f,
+            LightEnergy = 0.95f, // broad low-contrast fill: outer swarm figures stay readable; hero keeps the key light
+            OmniRange = 5.2f,
+            OmniAttenuation = 0.9f,
             ShadowEnabled = false,
         };
         AddChild(Fill);
-        Fill.Position = new Vector3(0.9f, 2.4f, 0.9f);
+        Fill.Position = new Vector3(0, 2.4f, 0.4f);
         // The ring is drawn after every other transparent thing (high render priority: hit glows and blood never cover it) but
         // keeps the depth test, so a figure or the hero standing in it still hides its back part; pale red with a thin dark rim.
         _ringMaterial = new StandardMaterial3D

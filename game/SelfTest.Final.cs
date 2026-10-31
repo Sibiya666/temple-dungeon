@@ -232,6 +232,9 @@ public sealed partial class SelfTest
             _main.OpenWindow(WindowIds.Charts);
             await Settle();
             await Shot("40-charts", full: true);
+            Charts.ScrollToEnd();
+            await Settle();
+            await Shot("42-charts-defence", full: true);
 
             await CombatShotSetup(WarriorMelee);
             room.PlaceHero(room.Dummy.TargetPosition(0) + right * 1.25f + TowardsCamera * 0.35f);
@@ -245,9 +248,14 @@ public sealed partial class SelfTest
             // The gamepad mode: glyphs on the slots, the focus frame in the passive tree, the top bar after Start.
             await CombatShotSetup(WarriorMelee);
             await PadMode();
+            _main.OpenWindow(WindowIds.Log);
+            _main.OpenWindow(WindowIds.Meter);
+            Host.FocusCombat();
             room.PlaceHero(room.Dummy.TargetPosition(0) + right * 1.3f + TowardsCamera * 0.4f);
             await Fight(2.0, close: false);
+            Check(Host.IsOpen(WindowIds.Log) && Host.IsOpen(WindowIds.Meter), "gamepad combat: журнал/измеритель закрыт");
             await Shot("50-gamepad-combat", full: true);
+            await Shot("53-gamepad-combat-log-meter", full: true);
             PadTap(JoyButton.DpadLeft);
             await Settle();
             var view = _main.Passives!.View;
@@ -255,7 +263,15 @@ public sealed partial class SelfTest
             view.GrabFocus();
             if (view.Nodes.FirstOrDefault(x => x.Caption != null && view.StateOf(x.Id) == TreeNodeState.Available) is { } node) view.PadSelect(node.Id);
             view.PadFocusZoom();
+            Check(Host.IsOpen(WindowIds.Log) && Host.IsOpen(WindowIds.Meter), "gamepad passives: журнал/измеритель закрыт");
             await Shot("51-gamepad-passives-focus", full: true);
+            // Evidence layout only: keep the free-floating product behavior, but expose the entire log in this shot.
+            var passiveWindow = Host.Window(WindowIds.Passives);
+            var logWindow = Host.Window(WindowIds.Log);
+            passiveWindow.Size = new Vector2(passiveWindow.Size.X, logWindow.Position.Y - passiveWindow.Position.Y - 8);
+            await Settle();
+            view.PadFocusZoom();
+            await Shot("54-gamepad-passives-log-meter", full: true);
             await PadMode();
             PadTap(JoyButton.Start);
             await Shot("52-gamepad-top-bar", full: true);
@@ -399,6 +415,9 @@ public sealed partial class SelfTest
                  $"урон {damage:0} за {fightSec:0.0} с боя, отказы: {(refusals.Count == 0 ? "нет" : string.Join(", ", refusals.Select(kv => $"{kv.Key} ×{kv.Value}")))}{(blocked ? ", КЛАВИШИ БОЯ ЗАБЛОКИРОВАНЫ" : "")}; " +
                  "журнал и измеритель открыты; v-sync выключен");
         Check(avg > 0 && worst1 > 0, "нет кадров");
+        if (room.Quality == GraphicsQuality.High)
+            Check(worst1 >= 60, $"High 1440p: худший 1% {worst1:0.0} fps < 60");
+        else GD.Print("SELFTEST NOTE Low 1080p — только proxy; на минимальном железе не проверено");
         Check(damage > 0 && numbers > 0, $"боя не было: урон {damage}, чисел {numbers} — замер без нагрузки не годится");
         if (Training.CompiledTags(slot.Slot) is { } t && t.Contains("projectile") && !t.Contains("lightning"))
             Check(maxProjectiles > 0, $"«{slot.Name}»: снарядов в кадре не было");

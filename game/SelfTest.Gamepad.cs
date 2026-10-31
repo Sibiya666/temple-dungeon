@@ -19,6 +19,8 @@ public sealed partial class SelfTest
 
     private IEnumerable<Step> GamepadSteps()
     {
+        yield return new("input-safety.window-route", InputSafetyWindowRoute);
+        yield return new("input-safety.focus-loss", InputSafetyFocusLoss);
         yield return new("gamepad.bindings", GamepadBindings);
         yield return new("gamepad.combat-buttons", GamepadCombatButtons);
         yield return new("gamepad.stick-move", GamepadStickMove);
@@ -44,6 +46,95 @@ public sealed partial class SelfTest
         });
     }
 
+    private async Task InputSafetyWindowRoute()
+    {
+        await LoadForCombat(WarriorMelee);
+        await PadMode();
+        Room.PlaceHero(Room.HeroSpawn);
+        PadTap(JoyButton.LeftShoulder);
+        Check(Room.Hero.MoveTarget != null, "LB route was not started");
+        PadTap(JoyButton.DpadLeft);
+        Driver.Tick(0.001);
+        Check(Host.FocusedWindow == WindowIds.Passives, "window did not take focus");
+        Check(Room.Hero.MoveTarget == null, "GUI focus left the pending LB route alive");
+        await PadMode();
+        Room.Hero.MoveTo(Room.HeroSpawn + Vector3.Right * 3, run: false);
+        PadTap(JoyButton.DpadLeft);
+        Driver.Tick(0.001);
+        Check(Room.Hero.MoveTarget == null, "GUI focus left the pending click route alive");
+        await PadMode();
+    }
+
+    private async Task InputSafetyFocusLoss()
+    {
+        await LoadForCombat(WarriorMelee);
+        await PadMode();
+        var root = _main.GetTree().Root;
+        var camera = Room.CameraRig;
+        var zoom = camera.Zoom;
+        var scroll = new ScrollContainer { Size = new Vector2(300, 180) };
+        var content = new VBoxContainer { CustomMinimumSize = new Vector2(250, 2000) };
+        var field = new SpinBox { MinValue = 0, MaxValue = 1000, Value = 100 };
+        content.AddChild(field);
+        scroll.AddChild(content);
+        try
+        {
+            PlaceNearDummy();
+            var slot = SlotOf("whirlwind");
+            var button = InputActions.SlotButton(slot) ?? throw new Failure("channel button missing");
+            Pad(button, true);
+            Driver.HandleInput(new InputEventKey { PhysicalKeycode = Key.D, Pressed = true });
+            Driver.HandleInput(new InputEventJoypadMotion { Axis = JoyAxis.LeftX, AxisValue = 0.8f });
+            Check(Training.State!.HeldSlot == slot && Room.Hero.MoveInput != Vector2.Zero, "held input was not established");
+            Room.Hero.MoveTo(Room.HeroSpawn, run: false);
+            Room.Hero.PlayAttack(HeroView.IdleClip, 1);
+            var clip = Room.Hero.AttackClip;
+            Axis(JoyAxis.RightY, 0.8f);
+            Check(camera.StickValue != 0, "camera stick was not held");
+            root.PropagateNotification((int)Node.NotificationApplicationFocusOut);
+            Check(Room.Hero.MoveInput == Vector2.Zero, "focus loss left WASD/stick movement alive");
+            Check(Room.Hero.MoveTarget == null, "focus loss left the click route alive");
+            Check(Training.State!.HeldSlot == null, "focus loss left the channel held");
+            Check(Room.Hero.AttackClip == clip && clip != null, "focus loss cancelled the current animation");
+            Check(camera.StickValue == 0, "focus loss left camera zoom held");
+            root.PropagateNotification((int)Node.NotificationApplicationFocusIn);
+            Device.Set(InputKind.Gamepad);
+            Driver.HandleInput(new InputEventKey { PhysicalKeycode = Key.D, Pressed = false });
+            Check(Room.Hero.MoveInput == Vector2.Zero, "stale stick returned after focus regain");
+            Pad(button, true);
+            Check(Training.State!.HeldSlot == slot, "stale slot hold prevented a fresh channel press");
+            Pad(button, false);
+
+            Host.OpenWindow(WindowIds.Meter);
+            Host.FocusWindow(WindowIds.Meter);
+            Host.Window(WindowIds.Meter).AddChild(scroll);
+            await Settle();
+            field.GetLineEdit().GrabFocus();
+            Host.HandlePad(new InputEventJoypadButton { ButtonIndex = JoyButton.DpadRight, Pressed = true });
+            Host.HandlePad(new InputEventJoypadMotion { Axis = JoyAxis.RightY, AxisValue = 0.8f });
+            Check(field.Value == 101, "window D-pad hold was not established");
+            Host._Process(0.1);
+            Check(scroll.ScrollVertical > 0, "window scroll stick was not held");
+            root.PropagateNotification((int)Node.NotificationApplicationFocusOut);
+            root.PropagateNotification((int)Node.NotificationApplicationFocusIn);
+            var value = field.Value;
+            var offset = scroll.ScrollVertical;
+            Host._Process(WindowHost.RepeatDelay + 0.1);
+            Check(field.Value == value, "window D-pad repeated after focus loss");
+            Check(scroll.ScrollVertical == offset, "window stick scrolled after focus loss");
+        }
+        finally
+        {
+            root.PropagateNotification((int)Node.NotificationApplicationFocusIn);
+            Driver.ReleaseAll();
+            Host.ClearPadState();
+            camera.ClearStick();
+            camera.Zoom = zoom;
+            scroll.Free();
+            await PadMode();
+            await LoadForCombat(WarriorMelee);
+        }
+    }
     // ---------- helpers ----------
 
     private void Pad(JoyButton button, bool pressed) =>

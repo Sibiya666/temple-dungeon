@@ -310,12 +310,12 @@ public sealed partial class EffectLayer : Node3D
         return p;
     }
 
-    /// <summary>Lightning: a jagged camera-facing ribbon (blue-white halo ~0.14 m, white core ~0.05 m), redrawn 3 times in 0.2 s.</summary>
+    /// <summary>Lightning: a jagged camera-facing ribbon (blue-white halo half-width ~0.09 m, white core ~0.025 m; tapered at the target), redrawn 3 times in 0.2 s.</summary>
     public void Arc(Vector3 from, Vector3 to)
     {
         var mesh = new ImmediateMesh();
-        var halo = Halo(DamageVisuals.Light(EffectKind.Lightning), 0.55f, cullDisabled: true);
-        var core = Glow(DamageVisuals.Core(EffectKind.Lightning), 2.5f, cullDisabled: true);
+        var halo = Halo(DamageVisuals.Light(EffectKind.Lightning), 0.32f, cullDisabled: true);
+        var core = Glow(DamageVisuals.Core(EffectKind.Lightning), 1.6f, cullDisabled: true);
         int drawn = 0;
         TweenEffect? fx = null;
         fx = new TweenEffect(0.22, t =>
@@ -346,13 +346,14 @@ public sealed partial class EffectLayer : Node3D
         }
         for (int pass = 0; pass < 2; pass++)
         {
-            var w = pass == 0 ? 0.14f : 0.05f;
+            var w = pass == 0 ? 0.09f : 0.025f;
             im.SurfaceBegin(Mesh.PrimitiveType.TriangleStrip, pass == 0 ? halo : core);
             for (int i = 0; i < pts.Length; i++)
             {
                 var a = pts[Math.Max(i - 1, 0)];
                 var b = pts[Math.Min(i + 1, pts.Length - 1)];
-                var side = (b - a).Cross(view).Normalized() * w;
+                var taper = i >= steps - 2 ? Mathf.Lerp(1f, 0.45f, (i - (steps - 2)) / 2f) : 1f;
+                var side = (b - a).Cross(view).Normalized() * w * taper;
                 im.SurfaceAddVertex(pts[i] + side);
                 im.SurfaceAddVertex(pts[i] - side);
             }

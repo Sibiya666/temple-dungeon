@@ -25,6 +25,8 @@ public sealed partial class SelfTest
     {
         yield return new("acceptance.room-six-references", AcceptanceRoom);
         yield return new("hud.numbers-clear-of-plate", HudNumbersClearOfPlate);
+        yield return new("hud.numbers-safe-through-rise", HudNumbersSafeThroughRise);
+        yield return new("meter.fractional-duration", MeterFractionalDuration);
         yield return new("hud.marker-hides-with-plate", HudMarkerHidesWithPlate);
         yield return new("acceptance.restore", async () =>
         {
@@ -119,12 +121,15 @@ public sealed partial class SelfTest
             Check(meter.SelectedSegment == before, $"{where}: измеритель показывает не последний сегмент");
             var meterDps = meter.ShownRows.Sum(r => r.Value);
             Check(meterDps > 0, $"{where}: DPS на полосах измерителя {meterDps}");
+            Check(Near(meterDps, before.Dps, 1e-6 * Math.Max(1, before.Dps)), $"{where}: DPS полос {meterDps:R}, сегмента {before.Dps:R}");
             meter.SetMode(MeterMode.DamageBySkill);
             meter.Refresh();
             var meterTotal = meter.ShownRows.Sum(r => r.Value);
             Check(Near(meterTotal, before.TotalDamage, 1e-6 * Math.Max(1, before.TotalDamage)), $"{where}: сумма полос {meterTotal:R}, урон сегмента {before.TotalDamage:R}");
             var logTotal = lines.Sum(e => e.Amount ?? 0);
             Check(Math.Abs(logTotal - before.TotalDamage) < 1, $"{where}: журнал {logTotal:R}, измеритель {before.TotalDamage:R}");
+            Check(before.Duration > 0 && Near(meterDps, logTotal / before.Duration, 1e-6 * Math.Max(1, meterDps)), $"{where}: DPS полос {meterDps:R}, журнал / длительность {logTotal:R} / {before.Duration:R}");
+            GD.Print($"SELFTEST NOTE {where}: DPS полос {meterDps:R} = сегмент {before.Dps:R} = журнал {logTotal:R} / {before.Duration:R} с (относительный допуск 1e-6)");
             meter.SetMode(MeterMode.DpsBySkill);
             _main.CloseAllWindows();
 
@@ -225,6 +230,86 @@ public sealed partial class SelfTest
         Driver.SetDummy(TrainingRoom.DefaultDummyId);
     }
 
+    private async Task HudNumbersSafeThroughRise()
+    {
+        await LoadForCombat(WarriorMelee);
+        var hud = _main.Hud!;
+        Driver.SetDummy("swarm");
+        Room.PlaceHero(Room.Dummy.TargetPosition(0) + TowardsCamera * 3.1f);
+        Room.CameraRig.ResetZoom();
+        Room.CameraRig.Follow();
+        await Settle();
+        hud.Refresh();
+        Check(hud.PlateShown, "нет плашки для проверки препятствия");
+        var camera = Room.CameraRig.Camera;
+        var right = camera.GlobalBasis.X;
+        var up = camera.GlobalBasis.Y;
+        var origin = Room.Dummy.TargetPosition(0);
+        var screen = _main.RoomToScreen(origin)!.Value;
+        var px = (_main.RoomToScreen(origin + right)!.Value - screen).X;
+        var py = (screen - _main.RoomToScreen(origin + up)!.Value).Y;
+        int samples = 0;
+        foreach (var x in new[] { 20f, hud.PlateRect.GetCenter().X, hud.Size.X - 20 })
+        {
+            Room.Numbers.Clear();
+            var spawn = origin + right * ((x - screen.X) / px) + up * ((screen.Y - TopBar.Height - 12) / py);
+            Room.Numbers.Show(spawn, 123456, EffectKind.Lightning, true, false);
+            Room.Numbers.Show(spawn, 4321, EffectKind.Fire, false, true);
+            await NextFrame(); // let Label3D rebuild its renderer geometry
+            for (int frame = 0; frame < 60; frame++)
+            {
+                Room.Numbers.KeepClear();
+                // Independent renderer geometry, not FloatingNumbers' estimated Boxes().
+                foreach (var root in Room.Numbers.GetChildren().OfType<Node3D>().Where(n => !n.IsQueuedForDeletion()))
+                {
+                    var label = root.GetChildren().OfType<Label3D>().Single();
+                    var faces = label.GenerateTriangleMesh().GetFaces();
+                    Check(faces.Length > 0, "нет геометрии текста для проверки");
+                    foreach (var vertex in faces)
+                    {
+                        var q = _main.RoomToScreen(root.Position + right * vertex.X + up * vertex.Y)!.Value;
+                        Check(q.X >= 3.5f && q.X <= hud.Size.X - 3.5f && q.Y >= TopBar.Height + 3.5f && q.Y <= hud.Size.Y - 3.5f,
+                            $"кадр {frame}: вершина текста {q} вне безопасного экрана");
+                    }
+                }
+                foreach (var (c, hr, hu) in Room.Numbers.Boxes())
+                {
+                    var points = new[] { c + hr + hu, c + hr - hu, c - hr + hu, c - hr - hu }.Select(p => _main.RoomToScreen(p)!.Value).ToArray();
+                    var box = new Rect2(points[0], Vector2.Zero);
+                    foreach (var point in points) box = box.Expand(point);
+                    Check(box.Position.X >= 3.5f && box.End.X <= hud.Size.X - 3.5f && box.Position.Y >= TopBar.Height + 3.5f && box.End.Y <= hud.Size.Y - 3.5f,
+                        $"кадр {frame}: число {box} вне безопасного экрана {hud.Size}");
+                    Check(!box.Intersects(hud.PlateRect), $"кадр {frame}: число {box} на плашке {hud.PlateRect}");
+                    samples++;
+                }
+                Room.Numbers.Advance(FloatingNumbers.LifeSec / 60);
+            }
+        }
+        Check(samples >= 350, $"не проверен полный подъем: {samples} положений");
+        GD.Print($"SELFTEST NOTE полный подъем у панели: {samples} положений, крит + тик, слева/над плашкой/справа");
+        Room.Numbers.Clear();
+        Driver.SetDummy(TrainingRoom.DefaultDummyId);
+    }
+
+    private async Task MeterFractionalDuration()
+    {
+        await LoadForCombat(WarriorMelee);
+        PlaceNearDummy();
+        await Run(3, _ => { if (Training.State is { Busy: false }) Driver.PressSlot(SlotOf("cleave")); },
+            until: () => Training.Current is { Dps: > 0, Duration: > 0 and < 1 });
+        Check(Training.Current is { Dps: > 0, Duration: > 0 and < 1 }, "нет короткого ненулевого сегмента");
+        _main.OpenWindow(WindowIds.Meter);
+        Meter.Refresh();
+        Check(!Meter.TotalText.EndsWith("0:00"), $"длительность обрезана: {Meter.TotalText}");
+        var total = Meter.GetNode<Label>("Total");
+        Check(total.TooltipText.Contains(Dialoid.Core.Explain.RuNumber.Format(Training.Current!.Duration, "0.######")), "нет точной длительности в подсказке");
+        Device.Set(Dialoid.Game.Input.InputKind.Gamepad);
+        await NextFrame();
+        total.GrabFocus();
+        Check(total.HasFocus() && total.FocusMode == Control.FocusModeEnum.All, "итог недоступен по фокусу");
+        Device.Set(Dialoid.Game.Input.InputKind.KeyboardMouse);
+        _main.CloseAllWindows();
+    }
     /// <summary>On «Рой» the chevron marks the plate's figure; when the plate goes (its figure behind the camera) the chevron goes too.</summary>
     private async Task HudMarkerHidesWithPlate()
     {

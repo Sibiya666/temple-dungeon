@@ -441,42 +441,46 @@ public partial class CombatHud : Control
         return at + Vector3.Up * ((p.Y - limit) / perMetre);
     }
 
-    /// <summary>
-    /// How far (room space) a floating number must move so its whole box (centre <paramref name="centre"/>, half extents along the
-    /// screen <paramref name="halfRight"/> and <paramref name="halfUp"/>, room space) clears the target plate. A box in the plate's
-    /// columns (grown by 4 px), below the plate included (it would rise into it), rises until it ends <see cref="NumberGap"/> above
-    /// the plate; when that would put it under the top bar (a plate near the top edge) it steps sideways off the plate instead, to the
-    /// nearer side. Zero when it is clear. Called every frame for every number (task 14 review: on «Рой» numbers of the other figures
-    /// slid under a plate that moved or grew).
-    /// </summary>
+    /// <summary>Keep the entire projected number inside the viewport below the toolbar, then clear the target plate.
+    /// Called at spawn, throughout the rise, and after the plate moves. Camera screen axes preserve depth.</summary>
     public Vector3 PlateKeepOut(Vector3 centre, Vector3 halfRight, Vector3 halfUp)
     {
-        if (!TargetPlate.Visible || _project(centre) is not { } c || _project(centre + Vector3.Up) is not { } up) return Vector3.Zero;
-        var perMetre = c.Y - up.Y;
-        if (perMetre < 0.1f) return Vector3.Zero;
+        var right = halfRight.Normalized();
+        var up = halfUp.Normalized();
+        if (_project(centre) is not { } c || _project(centre + right) is not { } r || _project(centre + up) is not { } u) return Vector3.Zero;
+        var px = r.X - c.X;
+        var py = c.Y - u.Y;
+        if (px < 0.1f || py < 0.1f) return Vector3.Zero;
         var min = c;
         var max = c;
         foreach (var corner in new[] { halfRight + halfUp, halfRight - halfUp, -halfRight + halfUp, -halfRight - halfUp })
         {
             if (_project(centre + corner) is not { } q) return Vector3.Zero;
-            min = new Vector2(Mathf.Min(min.X, q.X), Mathf.Min(min.Y, q.Y));
-            max = new Vector2(Mathf.Max(max.X, q.X), Mathf.Max(max.Y, q.Y));
+            min = min.Min(q);
+            max = max.Max(q);
         }
-        var plate = new Rect2(TargetPlate.Position, TargetPlate.Size).Grow(4);
-        var limit = plate.Position.Y - NumberGap;
-        if (max.X < plate.Position.X || min.X > plate.End.X || max.Y <= limit) return Vector3.Zero; // below it too: it would rise into it
-        var rise = max.Y - limit;
-        if (min.Y - rise >= TopBar.Height + 4) return Vector3.Up * (rise / perMetre);
-        // Sideways along the screen's horizontal: pixels per metre of halfRight's direction.
-        var side = halfRight.Normalized();
-        if (_project(centre + side) is not { } s || Mathf.Abs(s.X - c.X) < 0.1f) return Vector3.Up * (rise / perMetre);
-        var perSide = s.X - c.X;
-        var toRight = plate.End.X + NumberGap - min.X;
-        var toLeft = max.X - (plate.Position.X - NumberGap);
-        var dx = toRight <= toLeft && plate.End.X + NumberGap + (max.X - min.X) <= Size.X ? toRight : -toLeft;
-        return side * (dx / perSide);
+        var safe = new Rect2(4, TopBar.Height + 4, Size.X - 8, Size.Y - TopBar.Height - 8);
+        var extent = max - min;
+        var pos = new Vector2(Mathf.Clamp(min.X, safe.Position.X, safe.End.X - extent.X),
+            Mathf.Clamp(min.Y, safe.Position.Y, safe.End.Y - extent.Y));
+        if (TargetPlate.Visible)
+        {
+            var plate = new Rect2(TargetPlate.Position, TargetPlate.Size).Grow(NumberGap);
+            if (new Rect2(pos, extent).Intersects(plate))
+            {
+                // Prefer above; near the toolbar use the nearest side that fits, otherwise below.
+                var above = plate.Position.Y - extent.Y;
+                var left = plate.Position.X - extent.X;
+                var rightEdge = plate.End.X;
+                if (above >= safe.Position.Y) pos.Y = above;
+                else if (left >= safe.Position.X && (rightEdge + extent.X > safe.End.X || pos.X - left <= rightEdge - pos.X)) pos.X = left;
+                else if (rightEdge + extent.X <= safe.End.X) pos.X = rightEdge;
+                else pos.Y = Mathf.Min(plate.End.Y, safe.End.Y - extent.Y);
+            }
+        }
+        var delta = pos - min;
+        return right * (delta.X / px) - up * (delta.Y / py);
     }
-
     /// <summary>Seconds with one decimal under 10, whole above: «2,1», «14».</summary>
     public static string Seconds(double sec) => HudFormat.Seconds(sec);
 }

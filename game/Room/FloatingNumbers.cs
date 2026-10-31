@@ -30,7 +30,7 @@ public sealed partial class FloatingNumbers : Node3D
     // Width covers the icon and the text; the box's centre sits BoxShift left of the root (the icon hangs left of the text).
     private sealed record Shown(Node3D Root, Label3D Label, Sprite3D Icon, Vector3 Start, float Width, float Height, float BaseAlpha, float BoxShift);
 
-    // Lift: how far (room space) the number was moved to clear the target plate; it only adds up over its life (no jumping back).
+    // Accumulated layout correction in room space; viewport bounds can counter the rise near the toolbar.
     private readonly List<(Shown Item, double Age, Vector3 Lift)> _shown = new();
 
     /// <summary>
@@ -116,7 +116,8 @@ public sealed partial class FloatingNumbers : Node3D
         };
         // The icon left of the text, along the camera's horizontal (the camera never rotates, only follows).
         var (right, up) = ScreenAxes();
-        var textWidth = text.Length * size * PixelSize * 0.45f;
+        var font = label.Font ?? ThemeDB.FallbackFont;
+        var textWidth = font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X * PixelSize + 2 * label.OutlineSize * PixelSize;
         var iconSize = size * PixelSize * 0.8f;
         var icon = new Sprite3D
         {
@@ -136,7 +137,7 @@ public sealed partial class FloatingNumbers : Node3D
         AddChild(root);
         _slot = (_slot + 1) % Slots;
         var start = at + right * ((_slot - 1.5f) * 0.75f) + new Vector3(0, (_slot % 2) * 0.35f, 0);
-        var line = size * PixelSize * 1.05f;
+        var line = Mathf.Max(font.GetHeight(size) * PixelSize + 2 * label.OutlineSize * PixelSize, iconSize);
         // The box spans from the icon's left edge (textWidth/2 + 1.2 icon left of the root) to the text's right edge.
         var item = new Shown(root, label, icon, start, textWidth + iconSize * 1.2f, line, baseAlpha, iconSize * 0.6f);
         // Move up a line (at most six) while the new number covers a young one.

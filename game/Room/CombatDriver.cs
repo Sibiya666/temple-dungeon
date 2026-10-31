@@ -165,7 +165,7 @@ public partial class CombatDriver : Node
         if (fightTime < _lastFightTime) ResetVisuals();
         _lastFightTime = fightTime;
         SyncDummy();
-        if ((_moveKeys.Count > 0 || _channelSlot != null || _stick != Vector2.Zero || _slotHeld.Count > 0) && KeysBlocked()) ReleaseAll(); // focus moved to a text field or a window
+        if (KeysBlocked()) ReleaseAll(); // focus moved to a text field or a window
         Training.UpdateReach(HeroDistance(), TargetOnScreen());
         Training.Advance(delta); // the real frame time: hit-stop never slows the fight
         Advanced += delta;
@@ -641,6 +641,7 @@ public partial class CombatDriver : Node
         _stick = Vector2.Zero;
         _leftHeld = false;
         ReleaseHeldKeys();
+        Hero.Stop();
     }
 
     /// <summary>Gamepad mode: the cursor is hidden, the run after the held cursor stops.</summary>
