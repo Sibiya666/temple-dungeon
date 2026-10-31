@@ -1,0 +1,125 @@
+{
+  "provider": "GPT built-in image_gen",
+  "reference": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "icons": [
+    {
+      "id": "heavy_hand",
+      "name": "Тяжёлая рука",
+      "file": "heavy_hand.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-f7a50233-a4f8-47de-b1c9-e9056bf1ff0a.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A massive steel gauntlet gripping a sword hilt, emphasizing weight and grip. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "lacerate",
+      "name": "Рваные раны",
+      "file": "lacerate.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-88a9bf8d-ca44-4d5a-8686-106f9ea54437.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: Three spreading shallow ragged cuts with a tiny dark red accent. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "deep_cut",
+      "name": "Глубокий порез",
+      "file": "deep_cut.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-59b18bc8-a071-4c32-ac6f-bbbf3f6411c6.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: One broad deep incision, a single strong cut silhouette rather than three scratches. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "bloodletting",
+      "name": "Кровопускание",
+      "file": "bloodletting.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-9f588410-c219-47b7-ae2e-075aac38ecb9.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A large dark red drop beside a blade with a short inward stream toward its hilt, resource gained from bleeding, no healing cross. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "thirst",
+      "name": "Жажда",
+      "file": "thirst.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-eca97e0d-b8f7-4605-ae99-76882023d69c.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A clenched gauntleted fist with short streams of force converging into it, no cup and no blood drop. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "frenzy",
+      "name": "Неистовство",
+      "file": "frenzy.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-815f02e6-c067-4768-a3e8-faf9365a803d.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A weapon hand in rapid motion with a few short acceleration trails. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "wide_swing",
+      "name": "Широкий замах",
+      "file": "wide_swing.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-0a970d7e-c31a-4e01-b120-228800644cb0.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: One sword sweeping a broad single fan-shaped arc, clearly wide coverage. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "split",
+      "name": "Раскол",
+      "file": "split.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-2325bd67-4be1-4163-aabd-6a28a13ea905.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: Two successive curved sword slash trails, second shorter and weaker, not projectiles. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "precise_strike",
+      "name": "Точный удар",
+      "file": "precise_strike.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-acc50df2-13dc-4276-b55c-074b5ac7b116.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A single sword precisely aimed into a small target point, narrow focus, no wide arc. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "searing_blade",
+      "name": "Раскалённый клинок",
+      "file": "searing_blade.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-6b977873-3e83-4c2a-ade6-1bff5eb180da.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A steel sword with a locally orange-hot edge, visible unheated metal. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "burning_wounds",
+      "name": "Пылающие раны",
+      "file": "burning_wounds.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-f4e70f11-6ca7-435f-9f92-ef81e2ad285f.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A ragged cut containing a few glowing embers, no sword. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "thunder_strike",
+      "name": "Удар грома",
+      "file": "thunder_strike.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-4a103208-19cd-4200-85d9-cfa8fed56df6.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A steel sword with one restrained angular cold lightning branch running along the blade. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "echo",
+      "name": "Эхо",
+      "file": "echo.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-a1591988-907c-4028-9267-4173ce5fa6d7.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: One main curved sword slash and ONE smaller descending crushing impact beside it. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "rolling_echo",
+      "name": "Раскатистое эхо",
+      "file": "rolling_echo.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-5e768a5f-5870-4074-adbb-932b6a2aa179.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: One main curved sword slash and TWO distinct smaller descending crushing impacts beside it. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "steel_skin",
+      "name": "Стальная кожа",
+      "file": "steel_skin.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-85f402d4-a38e-4781-98e3-9c8ba47736d1.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A forearm whose skin is covered with fitted dull steel plates, no shield. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "crushing_force",
+      "name": "Сокрушительная сила",
+      "file": "crushing_force.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-3dd382f1-8abf-45f9-ac50-4388aa7cb658.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A sword blade breaking one large piece of ice, no stun stars. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    },
+    {
+      "id": "edge",
+      "name": "Кромка",
+      "file": "edge.png",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-c766df32-47fa-47ff-87a2-9669111161b1.png",
+      "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the supplied approved Venice original. Replace only the central sword/slash subject with: A close view of a sharply honed blade edge with a small precise glint. Keep the original background, palette, exposure, contrast, diffuse light, material treatment, soft edges, detail density and centered composition. One large legible subject occupying the central 70%. No text, letters, numbers, borders, UI, ornaments, glow or extra sharpness. Preserve the opaque dark background. This is final icon art, not a concept sheet."
+    }
+  ]
+}

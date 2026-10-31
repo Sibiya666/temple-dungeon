@@ -16,6 +16,12 @@ public static class GameIcons
     };
     private static readonly HashSet<string> Ailments = new(StringComparer.Ordinal)
         { "bleed", "ignite", "poison", "shock", "chill", "freeze" };
+    private static readonly HashSet<string> CleaveNodes = new(StringComparer.Ordinal)
+    {
+        "heavy_hand", "lacerate", "deep_cut", "bloodletting", "thirst", "frenzy", "wide_swing",
+        "split", "precise_strike", "searing_blade", "burning_wounds", "thunder_strike", "echo",
+        "rolling_echo", "steel_skin", "crushing_force", "edge",
+    };
     private static readonly HashSet<string> PaintedBuffs = new(StringComparer.Ordinal)
     {
         "battle_cry", "cleave_frenzy", "inspiration", "steel_skin", "blink_focus", "phase_barrier", "berserk_frenzy", "static_charge",
@@ -36,6 +42,12 @@ public static class GameIcons
     }
 
     public static Texture2D? Ailment(string? id) => id != null && Ailments.Contains(id) ? Load("ailments/" + id + ".png") : null;
+
+    /// <summary>Individual skill-node art; other skills retain their existing effect symbols.</summary>
+    public static Texture2D? SkillNode(string skillId, string nodeId, IReadOnlyList<Effect> effects) =>
+        skillId == "cleave" && CleaveNodes.Contains(nodeId)
+            ? Load("skill_nodes/cleave/" + nodeId + ".png")
+            : Effects(effects);
 
     public static Texture2D? Damage(DamageType type) => Enum.IsDefined(type)
         ? Load("damage/" + type.ToString().ToLowerInvariant() + ".svg") : null;

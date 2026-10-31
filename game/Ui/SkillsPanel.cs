@@ -277,7 +277,7 @@ public partial class SkillsPanel : SessionPanel
             if (reason != null) tooltip += "\nСейчас нельзя: " + reason;
 
             var row = new HBoxContainer { TooltipText = tooltip };
-            if (GameIcons.Effects(node.Effects) is { } nodeIcon) row.AddChild(GameIcons.View(nodeIcon, 18));
+            if (GameIcons.SkillNode(slot.SkillId, node.Id, node.Effects) is { } nodeIcon) row.AddChild(GameIcons.View(nodeIcon, 32));
             var name = new Label
             {
                 Text = $"{node.Name} — {have}/{node.MaxPoints}",
