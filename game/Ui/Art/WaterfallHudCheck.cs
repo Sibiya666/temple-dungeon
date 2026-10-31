@@ -32,6 +32,7 @@ public partial class WaterfallHudCheck : Node
             Check(new WaterfallReading("Мана", 53, 100, Colors.Blue).PercentText == "53%", "Float percentage rounding");
             Check(new WaterfallReading("Мана", 29, 100, Colors.Blue).PercentText == "29%", "Double percentage rounding");
             var main = GD.Load<PackedScene>("res://Main.tscn").Instantiate<Main>();
+            main.SkipHudForGeometryReview = true;
             AddChild(main);
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             var reference = main.Builds!.References.First(r => r.Path.Contains("sorcerer_pyromancer_fireball", StringComparison.Ordinal));

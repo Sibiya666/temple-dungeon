@@ -287,6 +287,9 @@ public sealed partial class SelfTest
     private async Task HudCombatScreen()
     {
         var hud = _main.Hud ?? throw new Failure("нет экрана боя");
+        var waterfalls = hud.GetNodeOrNull<TowerWaterfallHud>("TowerWaterfalls");
+        Check(waterfalls != null && ReferenceEquals(waterfalls, TowerWaterfallHud.Install(_main)),
+            "основной HUD должен включать водопады и тему без флагов, ровно один раз");
         await LoadForCombat(WarriorMelee);
         PlaceNearDummy();
         hud.Refresh();

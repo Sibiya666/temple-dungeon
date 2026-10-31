@@ -4,7 +4,7 @@
 
 RoomHudTheme.Create(source) копирует тему с прежними метриками и фокусом. Panel() и Border() возвращают независимые StyleBoxTexture. RoomHudDecoration следует за контролами, не участвует в layout и игнорирует мышь/фокус. Состояния слотов сохраняют предупреждения и подписи.
 
-RoomHudSkin.Apply(Main) идемпотентен. --hud-art включает слой оформления; --tower-hud добавляет тему и водопады здоровья/ресурса. Подробности: [WATERFALLS.md](WATERFALLS.md).
+RoomHudSkin.Apply(Main) идемпотентен. Основной HUD сразу включает тему и водопады здоровья/ресурса, без флагов. Старые --hud-art и --tower-hud остаются совместимыми, но не обязательными. Подробности: [WATERFALLS.md](WATERFALLS.md).
 
 Сцена res://Ui/Art/HudArtPreview.tscn сравнивает геометрию до/после темы; запускать без --hud-art. Параметры --art-windows и --art-screenshot <absolute.png> открывают окна и сохраняют кадр Godot.
 

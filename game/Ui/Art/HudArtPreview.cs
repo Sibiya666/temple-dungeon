@@ -12,7 +12,8 @@ public partial class HudArtPreview : Node
         {
             if (OS.GetCmdlineUserArgs().Contains(RoomHudSkin.EnableArg))
                 throw new InvalidOperationException("Run the geometry preview without --hud-art; it must measure the unstyled UI first.");
-            var room = GD.Load<PackedScene>("res://Main.tscn").Instantiate<Control>();
+            var room = GD.Load<PackedScene>("res://Main.tscn").Instantiate<Main>();
+            room.SkipHudForGeometryReview = true;
             AddChild(room);
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             // Use an existing reference build, rather than painted-on sample numbers or empty slots.

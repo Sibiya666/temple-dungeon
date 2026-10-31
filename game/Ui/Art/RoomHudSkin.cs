@@ -3,7 +3,7 @@ using Godot;
 
 namespace Dialoid.Game.Ui.Art;
 
-/// <summary>Optional visual skin. Layout, combat state, input and the room's number safe-area stay with their owners.</summary>
+/// <summary>Shared visual skin, installed by the default HUD and geometry previews.</summary>
 public static class RoomHudSkin
 {
     public const string EnableArg = "--hud-art";

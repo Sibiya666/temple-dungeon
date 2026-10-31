@@ -81,6 +81,8 @@ public partial class Main : Control
 
     private Label _errorLabel = null!;
     internal int FocusLossEvents { get; private set; }
+    // Only geometry-review scenes opt out before this node enters the tree.
+    internal bool SkipHudForGeometryReview { get; set; }
 
     public override void _Notification(int what)
     {
@@ -133,10 +135,7 @@ public partial class Main : Control
             BuildError();
         }
 
-        if (LoadError == null && OS.GetCmdlineUserArgs().Contains(RoomHudSkin.EnableArg))
-            RoomHudSkin.Apply(this);
-
-        if (LoadError == null && OS.GetCmdlineUserArgs().Contains(TowerWaterfallHud.EnableArg))
+        if (LoadError == null && !SkipHudForGeometryReview)
             TowerWaterfallHud.Install(this);
 
         if (OS.GetCmdlineUserArgs().Contains(SelfTestArg))
