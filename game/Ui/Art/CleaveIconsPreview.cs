@@ -23,8 +23,7 @@ public partial class CleaveIconsPreview : Node
                 throw new InvalidOperationException("Cleave requires 17 distinct node icons");
             main.CloseAllWindows();
             main.OpenWindow(WindowIds.Skills);
-            var slot = Enumerable.Range(0, 8).First(i => session.GetSlot(i)?.SkillId == "cleave");
-            main.Skills!.ShowTree(slot);
+            main.Skills!.CatalogButtons["cleave"].EmitSignal(Button.SignalName.Pressed);
             for (int i = 0; i < 8; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             GD.Print("CLEAVE_NODE_ICONS_OK: 17 distinct textures; real SkillsPanel opened");
             var args = OS.GetCmdlineUserArgs();

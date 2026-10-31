@@ -120,7 +120,11 @@ public partial class SkillsPanel : IPadPanel
         foreach (var node in skill.Tree)
         {
             _previewNodeIds.Add(node.Id);
-            AddText($"{node.Name} — до {node.MaxPoints} очк.");
+            var row = new HBoxContainer();
+            if (GameIcons.SkillNode(skill.Id, node.Id, node.Effects) is { } nodeIcon)
+                row.AddChild(GameIcons.View(nodeIcon, 32));
+            row.AddChild(new Label { Text = $"{node.Name} — до {node.MaxPoints} очк." });
+            Content.AddChild(row);
             AddText(node.Description, Grey);
             if (node.Requires.Count > 0)
                 AddText("Требует: " + string.Join(", ", node.Requires.Select(r => $"«{NodeName(skill, r.NodeId)}» {r.Points} очк.")), Grey);
