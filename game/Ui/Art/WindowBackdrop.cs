@@ -52,8 +52,10 @@ public partial class WindowBackdrop : Node2D
         DrawTextureRectRegion(_texture, rect, source, new Color(1, 1, 1, _opacity));
 
         var fadeHeight = Mathf.Min(rect.Size.Y, Mathf.Max(120, rect.Size.Y * 0.6f));
-        var top = WindowHost.Background with { A = 0.18f };
-        var body = WindowHost.Background with { A = 0.96f };
+        // Skill nodes sit over the full artwork, including the lower graph area.
+        bool skillTree = _window.Spec.Id == WindowIds.Skills;
+        var top = WindowHost.Background with { A = skillTree ? 0.10f : 0.18f };
+        var body = WindowHost.Background with { A = skillTree ? 0.24f : 0.96f };
         var left = rect.Position;
         var right = left + new Vector2(rect.Size.X, 0);
         DrawPolygon(new[] { left, right, right + new Vector2(0, fadeHeight), left + new Vector2(0, fadeHeight) },

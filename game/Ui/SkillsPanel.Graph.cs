@@ -22,7 +22,8 @@ public partial class SkillsPanel
         if (editableSlot >= Session.SlotsOpen || skill.UnlockLevel > Session.Build.Level) editableSlot = null;
         float? zoom = null;
         Vector2 pan = default;
-        if (_graphSkillId == skill.Id && GodotObject.IsInstanceValid(SkillGraph))
+        if (_graphSkillId == skill.Id && GodotObject.IsInstanceValid(SkillGraph)
+            && SkillGraph!.Size.X >= 200 && SkillGraph.Size.Y >= 200)
         {
             zoom = SkillGraph!.Zoom;
             pan = SkillGraph.Pan;
@@ -142,6 +143,7 @@ public partial class SkillsPanel
                 graph.ZoomAt(Vector2.Zero, z / graph.Zoom);
                 graph.PanBy(pan - graph.Pan);
             }
+            else graph.RequestFit();
         }).CallDeferred();
     }
 
@@ -196,7 +198,7 @@ public partial class SkillTreeGraphView : TreeView, IPadControl
     public override void _Draw()
     {
         var background = new Color("10171b");
-        DrawRect(new Rect2(Vector2.Zero, Size), background);
+        // The window artwork stays visible through the graph; only individual nodes are opaque.
         foreach (var (a, b) in Links)
         {
             if (NodeLocalPosition(a) is not { } from || NodeLocalPosition(b) is not { } to) continue;
