@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <title>Dialoid tower pointer</title>
+  <defs>
+    <linearGradient id="steel" x1="3" y1="3" x2="25" y2="31" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#535e61"/>
+      <stop offset="0.48" stop-color="#252d32"/>
+      <stop offset="1" stop-color="#12181d"/>
+    </linearGradient>
+  </defs>
+  <path d="M3 3L4 30L10.5 24L16 36L21 33.5L15.5 22L29 22Z" fill="url(#steel)" stroke="#080d10" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M3 3L4 30L10.5 24L16 36L21 33.5L15.5 22L29 22Z" fill="none" stroke="#d8d5c6" stroke-width="1.15" stroke-linejoin="round"/>
+  <path d="M3.6 4.2L12 20.5L27 21.4M12 20.5L17.9 33.5" fill="none" stroke="#7c898b" stroke-width="0.8"/>
+  <path d="M7 14L7.3 23L10 20.5" fill="none" stroke="#a6afab" stroke-width="0.8"/>
+  <path d="M12 19L13.5 21L12.2 22.5L10.8 20.6Z" fill="#73352f"/>
+</svg>
