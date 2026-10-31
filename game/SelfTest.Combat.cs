@@ -32,6 +32,7 @@ public sealed partial class SelfTest
         yield return new("combat.target-not-visible", CombatTargetNotVisible);
         yield return new("combat.channel-walk-away", CombatChannelWalkAway);
         yield return new("combat.hit-stop", CombatHitStop);
+        yield return new("combat.fire-particles", CombatFireParticles);
         yield return new("combat.melee-contact", CombatMeleeContact);
         yield return new("combat.projectile-lands-first", CombatProjectileLandsFirst);
         yield return new("combat.ticks-no-reaction", CombatTicks);

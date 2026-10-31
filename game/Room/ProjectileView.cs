@@ -109,6 +109,7 @@ public sealed partial class ProjectileView : VisualEffect
 {
     private Vector3 _from, _to;
     private double _flight;
+    private FireParticles? _fireTail;
 
     public EffectKind Kind { get; private set; }
     public bool Lit { get; private set; }
@@ -146,11 +147,11 @@ public sealed partial class ProjectileView : VisualEffect
                 break;
             default: // fire and anything else: a ball with a yellow centre, fire gets the flame tail
                 // Fire: a yellow-orange centre (not white: a low glow energy) inside the red-orange ball, and a flame tail.
-                p.AddChild(EffectLayer.Sphere(0.1f, layer.Glow(kind == EffectKind.Fire ? new Color(1f, 0.8f, 0.25f) : DamageVisuals.Core(kind), kind == EffectKind.Fire ? 1f : 1.8f)));
+                p.AddChild(EffectLayer.Sphere(0.1f, layer.Glow(kind == EffectKind.Fire ? new Color(1f, 0.8f, 0.25f) : DamageVisuals.Core(kind), kind == EffectKind.Fire ? 0.2f : 1.8f)));
                 p.AddChild(EffectLayer.Sphere(0.24f, layer.Halo(DamageVisuals.Core(kind), 0.45f)));
                 if (kind == EffectKind.Fire)
                 {
-                    p.AddChild(FireTail());
+                    // Trail ownership belongs to EffectLayer, independently of the projectile.
                     p.AddChild(Streak(layer, new Color(1f, 0.4f, 0.08f), 0.35f, 0.16f, 0.55f));
                     p.AddChild(Streak(layer, new Color(1f, 0.75f, 0.25f), 0.4f, 0.08f, 0.25f));
                 }
@@ -174,9 +175,11 @@ public sealed partial class ProjectileView : VisualEffect
         Age += dt;
         var t = (float)Math.Min(1, Age / _flight);
         Position = _from.Lerp(_to, t);
+        if (_fireTail != null && GodotObject.IsInstanceValid(_fireTail)) _fireTail.Position = Position;
         if (Kind == EffectKind.Physical) RotateObjectLocal(Vector3.Up, (float)(dt * Mathf.Tau * 3 / _flight));
         if (t < 1) return true;
         Arrived = true;
+        _fireTail?.Stop();
         Landed?.Invoke();
         return false;
     }
@@ -193,39 +196,8 @@ public sealed partial class ProjectileView : VisualEffect
         Position = new Vector3(0, 0, length / 2),
     };
 
-    /// <summary>The fire tail: soft blobs left behind in world space, red-orange, alpha blended (spec §5: no additive).</summary>
-    private static GpuParticles3D FireTail()
-    {
-        var ramp = new Gradient();
-        ramp.SetColor(0, new Color(1f, 0.7f, 0.25f, 0.8f));
-        ramp.SetColor(1, new Color(0.25f, 0.03f, 0.01f, 0f));
-        ramp.AddPoint(0.3f, new Color(1f, 0.32f, 0.05f, 0.7f));
-        ramp.AddPoint(0.65f, new Color(0.5f, 0.08f, 0.02f, 0.4f));
-        var process = new ParticleProcessMaterial
-        {
-            EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box,
-            EmissionBoxExtents = new Vector3(0.05f, 0.05f, 0.05f),
-            Direction = Vector3.Up,
-            Spread = 12f,
-            InitialVelocityMin = 0.18f,
-            InitialVelocityMax = 0.3f,
-            Gravity = new Vector3(0, 1.2f, 0),
-            ScaleMin = 0.5f,
-            ScaleMax = 1.2f,
-            ColorRamp = new GradientTexture1D { Gradient = ramp },
-        };
-        return new GpuParticles3D
-        {
-            Name = "Tail",
-            Amount = 16,
-            Lifetime = 0.24,
-            LocalCoords = false,
-            ProcessMaterial = process,
-            DrawPass1 = new QuadMesh { Size = new Vector2(0.24f, 0.24f), Material = EffectLayer.BlobMaterial },
-            VisibilityAabb = new Aabb(new Vector3(-20, -2, -20), new Vector3(40, 8, 40)),
-            CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-        };
-    }
+    internal void AttachFireTail(FireParticles tail) => _fireTail = tail;
+
 }
 
 /// <summary>
@@ -276,6 +248,8 @@ public sealed partial class EffectLayer : Node3D
         if (_paused || dt <= 0) return;
         for (int i = 0; i < _active.Count; i++)
         {
+            // An arrival callback can start hit-stop midway through this frame.
+            if (_paused) break;
             var e = _active[i];
             if (e.Step(dt)) continue;
             _active.RemoveAt(i--);
@@ -307,6 +281,13 @@ public sealed partial class EffectLayer : Node3D
         var p = ProjectileView.Create(this, kind, from, to, flightSec, lit);
         Add(p);
         p.Launch();
+        if (kind == EffectKind.Fire && _active.OfType<FireParticles>().Count() < FireParticles.MaxRigs)
+        {
+            var tail = FireParticles.Trail(p, !LightsAllowed());
+            Add(tail);
+            tail.Position = from;
+            p.AttachFireTail(tail);
+        }
         return p;
     }
 
@@ -406,7 +387,7 @@ public sealed partial class EffectLayer : Node3D
         if (_flashLights < MaxFlashLights)
         {
             var light = new OmniLight3D { LightColor = DamageVisuals.Light(kind), OmniRange = 1.2f * (crit ? 1.25f : 1f), ShadowEnabled = false };
-            var energy = (tick ? 0.25f : 0.9f) * big;
+            var energy = (tick ? 0.25f : kind == EffectKind.Fire ? 0.35f : 0.9f) * big;
             light.LightEnergy = energy;
             _flashLights++;
             var released = false;
@@ -423,6 +404,14 @@ public sealed partial class EffectLayer : Node3D
         if (tick) return;
         switch (kind)
         {
+            case EffectKind.Fire:
+                if (_active.OfType<FireParticles>().Count() < FireParticles.MaxRigs)
+                {
+                    var fire = FireParticles.Impact(!LightsAllowed(), big);
+                    Add(fire);
+                    fire.Position = at;
+                }
+                break;
             case EffectKind.Physical:
                 Sparks(at, DamageVisuals.Light(kind), 10, big);
                 break;
