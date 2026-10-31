@@ -13,6 +13,11 @@ public partial class SkillsPanel : IPadPanel
     private string? _returnToSkill;
     private bool _focusDetail;
     private int _catalogScroll;
+    private string? _assignmentSkillId;
+    private int _assignmentSlot = -1;
+    public OptionButton? AssignmentSlotOptions { get; private set; }
+    public Button? AssignSkillButton { get; private set; }
+    public Button? UndoSkillButton { get; private set; }
 
     public IReadOnlyDictionary<string, Button> CatalogButtons => _catalogButtons;
     public IReadOnlyList<string> PreviewNodeIds => _previewNodeIds;
@@ -103,11 +108,60 @@ public partial class SkillsPanel : IPadPanel
             .FirstOrDefault(i => Session.GetSlot(i)?.SkillId == _browsedSkillId, -1);
         if (_commandError != null) AddText("Команда отклонена: " + _commandError, Red);
         var skill = Session.Data.Skills[_browsedSkillId];
+        DrawAssignmentControls();
         if (_treeSlot >= 0 && skill.UnlockLevel <= Session.Build.Level) DrawTree();
         else DrawDefinition(skill);
         return true;
     }
 
+    private void DrawAssignmentControls()
+    {
+        if (_assignmentSkillId != _browsedSkillId)
+        {
+            _assignmentSkillId = _browsedSkillId;
+            _assignmentSlot = _treeSlot >= 0 ? _treeSlot
+                : Enumerable.Range(0, Session.SlotsOpen).FirstOrDefault(i => Session.GetSlot(i) == null, -1);
+            if (_assignmentSlot < 0 && Session.SlotsOpen > 0) _assignmentSlot = 0;
+        }
+        var row = new HFlowContainer();
+        Content!.AddChild(row);
+        var options = new OptionButton();
+        AssignmentSlotOptions = options;
+        for (int i = 0; i < Dialoid.Sandbox.SandboxSession.SlotCount; i++)
+        {
+            bool closed = i >= Session.SlotsOpen;
+            options.AddItem($"Слот {i + 1}" + (closed ? $" (с {OpenLevel(i)} уровня)" : ""));
+            options.SetItemDisabled(i, closed);
+        }
+        options.Select(_assignmentSlot);
+        options.ItemSelected += index => _assignmentSlot = (int)index;
+        row.AddChild(options);
+        var assign = new Button { Text = "Назначить", Disabled = Session.SlotsOpen == 0 };
+        AssignSkillButton = assign;
+        assign.Pressed += () => SelectSkill(options.Selected, _browsedSkillId);
+        row.AddChild(assign);
+        if (_treeSlot < 0) return;
+        int slot = _treeSlot;
+        var current = Session.GetSlot(slot)!;
+        int cap = Session.SkillLevelCap(slot);
+        var level = new SpinBox
+        {
+            MinValue = 1, MaxValue = Math.Max(cap, current.Level), Step = 1,
+            Value = current.Level, TooltipText = $"Уровень скилла, кап {cap}",
+        };
+        level.ValueChanged += value => SelectLevel(slot, (int)value);
+        ButtonPrompts.EditMode(level);
+        row.AddChild(new Label { Text = "уровень" });
+        row.AddChild(level);
+        var undo = new Button
+        {
+            Text = "Вернуть", Disabled = !Session.CanUndoSlot(slot),
+            TooltipText = "Вернуть, что стояло в слоте до последней смены",
+        };
+        UndoSkillButton = undo;
+        undo.Pressed += () => Undo(slot);
+        row.AddChild(undo);
+    }
     private void DrawDefinition(SkillDefinition skill)
     {
         var heading = new HBoxContainer();
@@ -125,6 +179,7 @@ public partial class SkillsPanel : IPadPanel
     public bool PadBack()
     {
         if (_browsedSkillId == null) return false;
+        _assignmentSkillId = null;
         _returnToSkill = _browsedSkillId;
         _browsedSkillId = null;
         RequestRedraw();

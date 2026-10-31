@@ -7,15 +7,7 @@ using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
-/// <summary>
-/// The «Скиллы» tab (spec §13.4): the skill slots (a slot closed by the level says when it opens), each with its skill
-/// choice (the class's skills and the skills of the equipped items), level and «Вернуть»; the tree of the chosen slot's
-/// skill as a node list with «+»/«−»; the free points; the skill's SkillLines through <see cref="NumberLabel"/>; the
-/// rotation editor. Every change is a <see cref="SandboxSession"/> command (a refusal goes to the status line); an empty
-/// node that cannot take a point now is greyed with the session's own refusal text
-/// (<see cref="SandboxSession.WhyCannotAddSkillNodePoint"/>); «Вернуть» is off when <see cref="SandboxSession.CanUndoSlot"/> says no. The panel redraws itself whole
-/// (deferred, see <see cref="SessionPanel"/>).
-/// </summary>
+/// <summary>Skill catalog with explicit detail navigation, assignment and rotation editing.</summary>
 public partial class SkillsPanel : SessionPanel
 {
     /// <summary>Key of the skill level number (an owner-set <see cref="NumberLabel.InputLine"/>).</summary>
@@ -73,7 +65,6 @@ public partial class SkillsPanel : SessionPanel
     public CommandResult SelectSkill(int slot, string? skillId)
     {
         var result = Run(Session.SetSlotSkill(slot, skillId));
-        if (result.Ok && skillId != null) _treeSlot = slot;
         return result;
     }
 
@@ -86,8 +77,7 @@ public partial class SkillsPanel : SessionPanel
     public void ShowTree(int slot)
     {
         _treeSlot = slot;
-        if (_browsedSkillId != null)
-            _browsedSkillId = Session.GetSlot(slot)?.SkillId;
+        _browsedSkillId = Session.GetSlot(slot)?.SkillId;
         RequestRedraw();
     }
 
@@ -140,114 +130,30 @@ public partial class SkillsPanel : SessionPanel
         _catalogButtons.Clear();
         _previewNodeIds.Clear();
         PointsText = "";
+        AssignmentSlotOptions = null;
+        AssignSkillButton = null;
+        UndoSkillButton = null;
+        ShownRotation = ShownOrder();
 
         var build = Session.Build;
         if (DrawBrowsedSkill()) return;
         if (_commandError != null) AddText("Команда отклонена: " + _commandError, Red);
         DrawCatalog();
-        AddText($"Открыто слотов: {Session.SlotsOpen} из {SandboxSession.SlotCount}");
-
-        if (_treeSlot < 0 || Session.GetSlot(_treeSlot) == null)
-            _treeSlot = Enumerable.Range(0, SandboxSession.SlotCount).FirstOrDefault(i => Session.GetSlot(i) != null, -1);
-
-        for (int i = 0; i < SandboxSession.SlotCount; i++) DrawSlot(i, build);
-
-        Content!.AddChild(new HSeparator());
-        DrawTree();
-
-        Content.AddChild(new HSeparator());
+        _treeSlot = -1;
+        SkillGraph = null;
+        SkillGraphEdges = Array.Empty<(string, string)>();
+        SelectedNodeId = null;
+        SelectedNodeLabel = null;
         DrawRotation(build);
 
         var violations = Session.Violations.Where(v => v.Code.Contains("skill", StringComparison.Ordinal)
             || v.Code.Contains("slot", StringComparison.Ordinal) || v.Code.Contains("rotation", StringComparison.Ordinal)).ToList();
         if (violations.Count > 0)
         {
-            Content.AddChild(new HSeparator());
+            Content!.AddChild(new HSeparator());
             AddText("Нарушения:", Red);
             foreach (var v in violations) AddText("• " + v.Message, Red);
         }
-    }
-
-    private void DrawSlot(int slot, Build build)
-    {
-        var data = Session.Data;
-        var current = Session.GetSlot(slot);
-        var row = new HFlowContainer(); // wraps in a window a third of the screen wide (plan 4 task 10)
-        row.AddChild(new Label { Text = $"Слот {slot + 1}:", CustomMinimumSize = new Vector2(80, 0) });
-        Content!.AddChild(row);
-
-        if (slot >= Session.SlotsOpen)
-        {
-            _slotOptions.Add(null);
-            _slotChoices.Add(Array.Empty<string?>());
-            row.AddChild(new Label { Text = $"откроется на {OpenLevel(slot)} уровне", Modulate = Grey });
-            if (current != null)
-            {
-                row.AddChild(new Label { Text = "— " + SkillName(current.SkillId) });
-                var remove = new Button { Text = "Убрать" };
-                remove.Pressed += () => SelectSkill(slot, null);
-                row.AddChild(remove);
-            }
-            return;
-        }
-
-        // Choices: the class's skills, then the skills of the equipped items, then the slotted one if neither lists it.
-        var choices = new List<string?> { null };
-        if (data.Classes.TryGetValue(build.ClassId, out var cls)) choices.AddRange(cls.SkillIds);
-        foreach (var itemId in build.ItemIds)
-            if (data.Items.TryGetValue(itemId, out var item) && !choices.Contains(item.GrantsSkill)) choices.Add(item.GrantsSkill);
-        if (current != null && !choices.Contains(current.SkillId)) choices.Add(current.SkillId);
-        var native = cls?.SkillIds.ToHashSet() ?? new HashSet<string>();
-
-        var box = new OptionButton { CustomMinimumSize = new Vector2(220, 0) };
-        foreach (var id in choices)
-        {
-            if (id == null) { box.AddItem("(пусто)"); continue; }
-            var text = SkillName(id);
-            if (!native.Contains(id)) text += " (предмет)";
-            else if (data.Skills.TryGetValue(id, out var def) && def.UnlockLevel > build.Level) text += $" (с {def.UnlockLevel} ур.)";
-            if (GameIcons.Skill(id) is { } icon)
-            {
-                box.AddIconItem(icon, text);
-                box.GetPopup().SetItemIconMaxWidth(box.ItemCount - 1, 24);
-            }
-            else box.AddItem(text);
-        }
-        box.AddThemeConstantOverride("icon_max_width", 24);
-        box.Selected = choices.IndexOf(current?.SkillId);
-        box.ItemSelected += i => SelectSkill(slot, choices[(int)i]);
-        row.AddChild(box);
-        _slotOptions.Add(box);
-        _slotChoices.Add(choices);
-
-        if (current != null)
-        {
-            int cap = Session.SkillLevelCap(slot);
-            var spin = new SpinBox
-            {
-                MinValue = 1,
-                MaxValue = Math.Max(cap, current.Level),
-                Step = 1,
-                Value = current.Level,
-                TooltipText = $"Уровень скилла, кап {cap}",
-            };
-            spin.ValueChanged += v => SelectLevel(slot, (int)v);
-            ButtonPrompts.EditMode(spin); // in a row with buttons: ←/→ would never leave it sideways
-            row.AddChild(new Label { Text = "уровень" });
-            row.AddChild(spin);
-            var tree = new Button { Text = slot == _treeSlot ? "▶ Дерево" : "Дерево", ToggleMode = false };
-            tree.Pressed += () => ShowTree(slot);
-            row.AddChild(tree);
-        }
-        var undo = new Button
-        {
-            Text = "Вернуть",
-            TooltipText = "Вернуть, что стояло в слоте до последней смены",
-            Disabled = !Session.CanUndoSlot(slot),
-        };
-        undo.Pressed += () => Undo(slot);
-        _undoButtons.Add(undo);
-        row.AddChild(undo);
     }
 
     private void DrawTree()

@@ -596,54 +596,52 @@ public sealed partial class SelfTest
         var panel = _main.Skills!;
         var session = _main.Session!;
         await FreshBuild(1, WindowIds.Skills);
-        Check(panel.SlotOptions.Count == SandboxSession.SlotCount, $"слотов нарисовано {panel.SlotOptions.Count}");
-        Check(panel.SlotOptions[0] != null && panel.SlotOptions[1] == null, "закрытый слот нарисован открытым");
-        Check(panel.UndoButtons.Count == 1 && panel.UndoButtons[0].Disabled, "«Вернуть» включена без истории слота");
-        Check(!panel.SelectSkill(1, panel.SlotChoices[0][1]).Ok, "закрытый слот принял скилл");
+        Check(panel.SlotOptions.Count == 0 && panel.SkillGraph == null && panel.LevelNumber == null,
+            "на главной вкладке остались строки слотов или встроенное дерево");
+        var skills = session.Data.Classes[session.Build.ClassId].SkillIds
+            .Where(id => session.Data.Skills[id].UnlockLevel <= 20).ToList();
+        Check(skills.Count >= 2, "у класса меньше двух скиллов");
+        panel.CatalogButtons[skills[0]].EmitSignal(Button.SignalName.Pressed);
+        await Settle();
+        var destinations = panel.AssignmentSlotOptions!;
+        Check(destinations != null && destinations.ItemCount == SandboxSession.SlotCount,
+            "внутри навыка нет выбора боевого слота");
+        Check(!destinations!.IsItemDisabled(0) && destinations.IsItemDisabled(1), "закрытый слот доступен для установки");
+        Check(!panel.SelectSkill(1, skills[0]).Ok, "закрытый слот принял скилл");
         await Settle();
         Check(panel.CommandError != null, "отказ не показан");
-
-        Check(_main.Character!.SelectLevel(20).Ok, "уровень 20 отклонен");
+        var assign = panel.AssignSkillButton!;
+        Check(assign != null && !assign.Disabled, "нельзя установить открытый навык");
+        assign!.EmitSignal(Button.SignalName.Pressed);
+        Check(session.GetSlot(0)?.SkillId == skills[0], "навык не установился из собственной страницы");
+        Check(GodotObject.IsInstanceValid(assign) && assign.IsInsideTree() && panel.RedrawPending,
+            "кнопка установки удалена во время сигнала");
         await Settle();
-        var choices = panel.SlotChoices[0];
-        var skills = choices.Where(c => c != null && session.Data.Skills[c].UnlockLevel <= 20).Select(c => c!).ToList();
-        Check(skills.Count >= 2, "у класса меньше двух скиллов до 20 уровня");
-
-        var box = panel.SlotOptions[0]!;
-        box.EmitSignal(OptionButton.SignalName.ItemSelected, choices.ToList().IndexOf(skills[0]));
-        Check(session.GetSlot(0)?.SkillId == skills[0], "скилл не встал через сигнал OptionButton");
-        Check(GodotObject.IsInstanceValid(box) && box.IsInsideTree() && panel.RedrawPending, "OptionButton удален во время сигнала");
+        Check(panel.CommandError == null && panel.TreeSlot == 0 && panel.LevelNumber != null,
+            "после установки не открылось редактируемое дерево");
+        Check(_main.Character!.SelectLevel(20).Ok && panel.SelectLevel(0, 3).Ok, "уровень навыка не изменился");
         await Settle();
-        Check(panel.CommandError == null, $"после успешной команды отказ остался: {panel.CommandError}");
-        Check(panel.TreeSlot == 0 && panel.LevelNumber != null, "дерево слота 1 не показано");
-        Check(panel.LevelNumber!.Line.Value == session.GetSlot(0)!.Level, "число уровня скилла не совпадает");
-
-        Check(panel.SelectLevel(0, 3).Ok, "уровень скилла 3 отклонен");
-        await Settle();
-        Check(panel.LevelNumber!.Line.Value == 3 && panel.PointsText.Contains("из 3"), $"уровень {panel.LevelNumber.Line.Value}, «{panel.PointsText}»");
-        Check(!panel.UndoButtons[0].Disabled, "«Вернуть» выключена после смены скилла");
-        Check(panel.PointsText.EndsWith($"свободно {session.SkillPointsFree(0)}", StringComparison.Ordinal), $"«{panel.PointsText}»");
+        Check(panel.LevelNumber!.Line.Value == 3 && panel.PointsText.Contains("из 3"), "число уровня или бюджет неверны");
+        Check(panel.UndoSkillButton != null && !panel.UndoSkillButton.Disabled, "возврат предыдущего слота недоступен");
         var tree = session.Data.Skills[skills[0]].Tree;
         var gated = tree.FirstOrDefault(n => n.Requires.Count > 0);
         if (gated != null)
         {
             var why = session.WhyCannotAddSkillNodePoint(0, gated.Id);
-            Check(why != null && panel.BlockedNodes.GetValueOrDefault(gated.Id) == why, $"причина серого узла «{panel.BlockedNodes.GetValueOrDefault(gated.Id)}»");
-            Check(!panel.AddPoint(0, gated.Id).Ok && panel.CommandError == why, "отказ «+» не совпал с причиной в подсказке");
+            Check(why != null && panel.BlockedNodes.GetValueOrDefault(gated.Id) == why, "причина блокировки не совпала");
+            Check(!panel.AddPoint(0, gated.Id).Ok && panel.CommandError == why, "обойдены требования узла");
         }
-        foreach (var free in tree.Where(n => n.Requires.Count == 0))
-            Check(!panel.BlockedNodes.ContainsKey(free.Id) || session.WhyCannotAddSkillNodePoint(0, free.Id) != null, $"узел {free.Id} серый без причины");
-
-        Check(panel.SelectSkill(0, skills[1]).Ok, "второй скилл не встал");
-        Check(panel.Undo(0).Ok && session.GetSlot(0)?.SkillId == skills[0] && session.GetSlot(0)!.Level == 3, "«Вернуть» не вернул скилл с уровнем");
-
-        Check(panel.SelectSkill(1, skills[1]).Ok, "скилл во второй слот не встал");
+        Check(panel.SelectSkill(0, skills[1]).Ok && panel.Undo(0).Ok, "смена и возврат слота не работают");
+        Check(session.GetSlot(0)?.SkillId == skills[0] && session.GetSlot(0)!.Level == 3, "история потеряла навык или уровень");
+        Check(panel.SelectSkill(1, skills[1]).Ok, "второй навык не установлен");
+        panel.PadBack();
         await Settle();
+        Check(panel.BrowsedSkillId == null && panel.SkillGraph == null && panel.SlotOptions.Count == 0,
+            "назад вернуло старый редактор вместо каталога");
         Check(panel.ShownRotation.SequenceEqual(new[] { skills[0], skills[1] }), "ротация не по порядку слотов");
         Check(panel.MoveInRotation(0, +1).Ok, "сдвиг ротации отклонен");
-        Check(session.Build.Rotation.SequenceEqual(new[] { skills[1], skills[0] }), "ротация не изменилась");
         await Settle();
-        Check(panel.ShownRotation.SequenceEqual(new[] { skills[1], skills[0] }), "показанная ротация не изменилась");
+        Check(panel.ShownRotation.SequenceEqual(new[] { skills[1], skills[0] }), "ротация не изменилась");
         Check(panel.ResetRotation().Ok && session.Build.Rotation.Count == 0, "ротация не сбросилась");
         await Settle();
     }

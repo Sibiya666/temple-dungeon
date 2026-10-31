@@ -33,6 +33,16 @@ public partial class CleaveIconsPreview : Node
                 await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
                 GetViewport().GetTexture().GetImage().SavePng(args[at + 1]);
             }
+            if (args.Contains("--cleave-root"))
+            {
+                main.Skills.PadBack();
+                for (int i = 0; i < 8; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                if (at >= 0 && at + 1 < args.Length)
+                {
+                    await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+                    GetViewport().GetTexture().GetImage().SavePng(Path.ChangeExtension(args[at + 1], ".catalog.png"));
+                }
+            }
         }
         catch (Exception e) { GD.PushError("CLEAVE_NODE_ICONS_FAILED: " + e.Message); GetTree().Quit(1); }
     }
