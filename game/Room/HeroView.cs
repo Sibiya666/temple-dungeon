@@ -6,8 +6,8 @@ namespace Dialoid.Game.Room;
 /// The hero in the room (spec §4 «Наведение», §5): the Mixamo Paladin on a capsule body. It moves by WASD relative to the camera
 /// or towards a floor point (a click walks, a held button runs after the cursor), turns smoothly to its movement or to the dummy
 /// when a skill is used, and plays <c>sword and shield idle/walk/run</c>. <see cref="PlayAttack"/> stretches an attack clip to the
-/// core's use time; a channel replays it on every tick. A refused press shows its short text over the head. The warm-white outline (unshaded
-/// overlay, see <see cref="AssetLibrary"/>), the light circle and the fill light are the room's. Input comes only through the
+/// core's use time; a channel replays it on every tick. A refused press shows its short text over the head.
+/// A thin floor halo marks the collision footprint; the body has no outline. Input comes only through the
 /// methods (<see cref="CombatDriver"/> turns events into calls), never from the global Input.
 /// </summary>
 public partial class HeroView : CharacterBody3D
@@ -36,6 +36,10 @@ public partial class HeroView : CharacterBody3D
     private double _refusalLeft;
 
     public CharacterModel Model { get; private set; } = null!;
+
+    public MeshInstance3D GroundHalo { get; private set; } = null!;
+    public const float GroundHaloWidth = 0.012f;
+    public const float GroundHaloElevation = 0.012f;
 
     /// <summary>The camera WASD is relative to.</summary>
     public CameraRig? Rig { get; set; }
@@ -82,12 +86,17 @@ public partial class HeroView : CharacterBody3D
     public static HeroView Create(AssetLibrary assets)
     {
         var hero = new HeroView { Name = "Hero" };
+        var capsule = new CapsuleShape3D { Radius = Radius, Height = Height };
         hero.AddChild(new CollisionShape3D
         {
-            Shape = new CapsuleShape3D { Radius = Radius, Height = Height },
+            Shape = capsule,
             Position = new Vector3(0, Height / 2, 0),
         });
         hero.Model = assets.Character(AssetLibrary.HeroId);
+        // AssetLibrary installs the legacy outline; leave scene-lit surface materials intact.
+        foreach (var mesh in hero.Model.Meshes) mesh.MaterialOverlay = null;
+        hero.GroundHalo = CreateGroundHalo(capsule.Radius);
+        hero.AddChild(hero.GroundHalo);
         hero.AddChild(hero.Model);
         hero.Model.Play(IdleClip);
         hero._refusal = new Label3D
@@ -108,6 +117,46 @@ public partial class HeroView : CharacterBody3D
         };
         hero.AddChild(hero._refusal);
         return hero;
+    }
+
+    private static MeshInstance3D CreateGroundHalo(float collisionRadius)
+    {
+        // The outer edge matches the collision footprint, not weapon bounds or enemy targeting.
+        var ring = new ImmediateMesh();
+        ring.SurfaceBegin(Mesh.PrimitiveType.Triangles);
+        const int segments = 96;
+        var innerRadius = Mathf.Max(0, collisionRadius - GroundHaloWidth);
+        for (var i = 0; i < segments; i++)
+        {
+            var a = Mathf.Tau * i / segments;
+            var b = Mathf.Tau * (i + 1) / segments;
+            var outerA = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * collisionRadius;
+            var outerB = new Vector3(Mathf.Cos(b), 0, Mathf.Sin(b)) * collisionRadius;
+            var innerA = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * innerRadius;
+            var innerB = new Vector3(Mathf.Cos(b), 0, Mathf.Sin(b)) * innerRadius;
+            ring.SurfaceAddVertex(outerA);
+            ring.SurfaceAddVertex(innerA);
+            ring.SurfaceAddVertex(outerB);
+            ring.SurfaceAddVertex(outerB);
+            ring.SurfaceAddVertex(innerA);
+            ring.SurfaceAddVertex(innerB);
+        }
+        ring.SurfaceEnd();
+        return new MeshInstance3D
+        {
+            Name = "HeroGroundHalo",
+            Mesh = ring,
+            Position = new Vector3(0, GroundHaloElevation, 0),
+            CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+            MaterialOverride = new StandardMaterial3D
+            {
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                CullMode = BaseMaterial3D.CullModeEnum.Disabled,
+                AlbedoColor = new Color(0.55f, 0.58f, 0.55f, 0.65f),
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                EmissionEnabled = false,
+            },
+        };
     }
 
     // ---------- commands ----------

@@ -70,7 +70,7 @@ public sealed partial class SelfTest
             Check(room.HeroModel.IsStub && room.DummyModel.IsStub, "моделей нет, а заглушек нет");
             Check(room.HeroModel.Meshes.Single().Mesh is CapsuleMesh, "заглушка героя не капсула");
         }
-        Check(room.HeroModel.HasOutline, "у героя нет контура");
+        Check(room.HeroModel.Meshes.All(m => m.MaterialOverlay == null) && room.Hero.GroundHalo.Visible, "герой должен иметь только напольный ореол");
         Check(room.DummyModel.Meshes.All(m => m.MaterialOverlay == null), "у манекена контур героя");
 
         var chunks = room.FindChildren("FloorChunk*", nameof(MeshInstance3D), true, false).OfType<MeshInstance3D>().ToList();
@@ -412,7 +412,7 @@ public sealed partial class SelfTest
             Check(!room.Environment.SsaoEnabled && !room.Environment.VolumetricFogEnabled && !room.ProjectileLights, "на низком SSAO, туман или свет снарядов");
             room.VolumetricFog = true;
             Check(!room.Environment.VolumetricFogEnabled, "туман включился на низком");
-            Check(room.HeroModel.HasOutline, "на низком нет контура героя");
+            Check(room.HeroModel.Meshes.All(m => m.MaterialOverlay == null) && room.Hero.GroundHalo.Visible, "на низком герой должен иметь только напольный ореол");
 
             room.Quality = GraphicsQuality.High;
             Check(room.Environment.VolumetricFogEnabled, "флаг тумана не работает на высоком");

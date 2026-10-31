@@ -440,14 +440,18 @@ public sealed partial class SelfTest
             }
             notes.Add($"{id} {dummy.FigureCount}×{dummy.CharacterId}");
         }
-        Check(room.HeroModel.HasOutline, "у героя нет контура");
+        Check(room.HeroModel.Meshes.All(m => m.MaterialOverlay == null), "у героя остался контур тела");
+        var halo = room.Hero.GroundHalo;
+        var capsule = room.Hero.GetChildren().OfType<CollisionShape3D>().Single().Shape as CapsuleShape3D;
+        Check(capsule != null, "коллизия героя не капсула");
+        var vertices = halo.Mesh.SurfaceGetArrays(0)[(int)Mesh.ArrayType.Vertex].AsVector3Array();
+        Check(vertices.Length == 96 * 6 && vertices.All(v => Mathf.IsZeroApprox(v.Y)), "ореол не плоское кольцо");
+        Check(capsule != null && vertices.All(v => v.Length() <= capsule.Radius + 0.00001f)
+            && Mathf.IsEqualApprox(vertices.Max(v => v.Length()), capsule.Radius), "ореол не по реальной коллизии героя");
+        Check(halo.GetParent() == room.Hero && halo.Position == new Vector3(0, HeroView.GroundHaloElevation, 0), "ореол не следует за ногами героя");
+        Check(halo.MaterialOverride is StandardMaterial3D { EmissionEnabled: false, NoDepthTest: false }
+            && halo.CastShadow == GeometryInstance3D.ShadowCastingSetting.Off, "ореол светится или виден сквозь сцену");
         var rune = DummyView.RuneColor;
-        var outline = AssetLibrary.OutlineColor;
-        float Saturation(Color c) => Mathf.Max(c.R, Mathf.Max(c.G, c.B)) - Mathf.Min(c.R, Mathf.Min(c.G, c.B));
-        // The hero's outline is warm white / pale cream (HUD spec §9: gold is the rare leader's mark), the runes a darker pale gold.
-        Check(Saturation(outline) <= 0.2f && outline.V >= 0.95f && outline.R >= outline.G && outline.G >= outline.B && outline.B > 0.7f,
-            $"контур героя не теплый белый: {outline}");
-        Check(outline.V - rune.V >= 0.1f && Saturation(rune) > Saturation(outline), "руны не отличаются от теплого белого контура героя");
         Check(!(rune.B > rune.G && rune.R > rune.G), "руны фиолетовые (цвет тьмы)");
         Driver.SetDummy(TrainingRoom.DefaultDummyId);
         GD.Print("SELFTEST NOTE пресеты: " + string.Join(", ", notes));
