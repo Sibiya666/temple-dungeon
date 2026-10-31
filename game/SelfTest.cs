@@ -156,6 +156,7 @@ public sealed partial class SelfTest
         steps.Add(new("skills.slots", SkillsSlots));
         steps.Add(new("skills.icon-catalog", SkillsIconCatalog));
         steps.Add(new("skills.radial-graph", SkillsRadialGraph));
+        steps.Add(new("skills.all-layouts", AllSkillTreeLayouts));
         if (mains.Count > 0)
         {
             var reference = mains.FirstOrDefault(m => m.Path.EndsWith("warrior_berserker_whirlwind.json", StringComparison.Ordinal)) ?? mains[0];

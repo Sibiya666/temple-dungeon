@@ -94,9 +94,13 @@ public partial class SkillsPanel
         fit.Pressed += graph.FitToView;
         graph.SetGraph(nodes, edges, true);
         graph.Links = edges;
+        graph.Requirements = skill.Tree.SelectMany(n => n.Requires.Select(r => (r.NodeId, n.Id, r.Points))).ToArray();
+        graph.Alternatives = skill.Tree.Where(n => n.ExclusiveGroup != null).GroupBy(n => n.ExclusiveGroup)
+            .SelectMany(group => group.SelectMany((a, i) => group.Skip(i + 1).Select(b => (a.Id, b.Id)))).ToArray();
+        graph.RouteLinks();
         graph.SetStates(states);
         SelectedNodeLabel = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        Content.AddChild(SelectedNodeLabel);
+        Content.AddChild(GameIcons.Description(SelectedNodeLabel, out var selectedIcon));
         var actions = new HBoxContainer();
         var plus = new Button { Name = "SkillNodeAdd", Text = "+ Вложить" };
         var minus = new Button { Name = "SkillNodeRemove", Text = "− Снять" };
@@ -112,6 +116,7 @@ public partial class SkillsPanel
             graph.QueueRedraw();
             _graphSelections[skill.Id] = id;
             var node = skill.Tree.FirstOrDefault(n => n.Id == id);
+            selectedIcon.Texture = node == null ? GameIcons.Skill(skill.Id) : GameIcons.SkillNode(skill.Id, node.Id, node.Effects);
             SelectedNodeLabel.Text = node == null ? skill.Name + "\n" + skill.Description : Detail(node);
             plus.Disabled = node == null || editableSlot == null || Session.WhyCannotAddSkillNodePoint(editableSlot.Value, id) != null;
             minus.Disabled = node == null || editableSlot == null || points.GetValueOrDefault(id) == 0;
@@ -149,6 +154,7 @@ public partial class SkillsPanel
 
     private static Dictionary<string, Vector2> SkillPositions(SkillDefinition skill)
     {
+        if (SkillTreeLayouts.For(skill) is { } authored) return authored;
         // One shared entrance for form and elements; each point is unique and each prerequisite is drawn from data.
         var cleave = new Dictionary<string, Vector2>
         {
@@ -191,7 +197,38 @@ public partial class SkillsPanel
 public partial class SkillTreeGraphView : TreeView, IPadControl
 {
     public IReadOnlyList<(string A, string B)> Links { get; set; } = Array.Empty<(string, string)>();
+    public IReadOnlyList<(string A, string B, int Points)> Requirements { get; set; } = Array.Empty<(string, string, int)>();
+    public IReadOnlyList<(string A, string B)> Alternatives { get; set; } = Array.Empty<(string, string)>();
+    public IReadOnlyDictionary<(string A, string B), IReadOnlyList<Vector2>> Routes { get; private set; }
+        = new Dictionary<(string, string), IReadOnlyList<Vector2>>();
     public string? SelectedId { get; set; }
+
+    public void RouteLinks()
+    {
+        Routes = Links.Concat(Alternatives).Distinct().ToDictionary(edge => edge, edge =>
+        {
+            var from = Nodes.Single(n => n.Id == edge.A).Position;
+            var to = Nodes.Single(n => n.Id == edge.B).Position;
+            var obstacles = Nodes.Where(n => n.Id != edge.A && n.Id != edge.B)
+                .Select(n => new Rect2(n.Position - Vector2.One * (n.Radius + 4), Vector2.One * (n.Radius + 4) * 2)).ToArray();
+            return SkillGraphRouting.Route(from, to, obstacles);
+        });
+    }
+
+    private Vector2 LinkMiddle(string a, string b)
+    {
+        var path = Routes[(a, b)];
+        float length = 0;
+        for (int i = 1; i < path.Count; i++) length += path[i - 1].DistanceTo(path[i]);
+        float remaining = length / 2;
+        for (int i = 1; i < path.Count; i++)
+        {
+            float segment = path[i - 1].DistanceTo(path[i]);
+            if (remaining <= segment) return WorldToLocal(path[i - 1].Lerp(path[i], segment > 0 ? remaining / segment : 0));
+            remaining -= segment;
+        }
+        return WorldToLocal(path[^1]);
+    }
 
     // Skill artwork is square. Draw it edge-to-edge inside a thin, unscaled frame;
     // the shared passive tree's solid circles are intentionally not used here.
@@ -203,9 +240,38 @@ public partial class SkillTreeGraphView : TreeView, IPadControl
         {
             if (NodeLocalPosition(a) is not { } from || NodeLocalPosition(b) is not { } to) continue;
             bool taken = StateOf(a) == TreeNodeState.Taken && StateOf(b) == TreeNodeState.Taken;
-            DrawLine(from, to, new Color(taken ? "789395" : "39474d"), taken ? 1.5f : 1f, true);
+            var route = Routes[(a, b)];
+            for (int i = 1; i < route.Count; i++)
+                DrawLine(WorldToLocal(route[i - 1]), WorldToLocal(route[i]),
+                    new Color(taken ? "789395" : "39474d"), taken ? 1.5f : 1f, true);
         }
         var font = GetThemeDefaultFont();
+        foreach (var (a, b) in Alternatives)
+        {
+            if (NodeLocalPosition(a) is not { } from || NodeLocalPosition(b) is not { } to) continue;
+            var color = new Color(a == SelectedId || b == SelectedId ? "9da9ad" : "56646a");
+            var route = Routes[(a, b)];
+            for (int i = 1; i < route.Count; i++)
+            {
+                var start = WorldToLocal(route[i - 1]);
+                var delta = WorldToLocal(route[i]) - start;
+                float length = delta.Length();
+                if (length < 1) continue;
+                var direction = delta / length;
+                for (float distance = 0; distance < length; distance += 9)
+                    DrawLine(start + direction * distance, start + direction * Mathf.Min(distance + 4, length), color, 1f, true);
+            }
+            var midpoint = LinkMiddle(a, b);
+            DrawRect(new Rect2(midpoint - new Vector2(6, 8), new Vector2(12, 16)), background);
+            DrawString(font, midpoint + new Vector2(-4, 4), "×", HorizontalAlignment.Left, -1, 12, color);
+        }
+        foreach (var (a, b, points) in Requirements.Where(r => r.B == SelectedId))
+        {
+            if (NodeLocalPosition(a) is not { } from || NodeLocalPosition(b) is not { } to) continue;
+            var midpoint = LinkMiddle(a, b);
+            DrawRect(new Rect2(midpoint - new Vector2(7, 8), new Vector2(14, 16)), background);
+            DrawString(font, midpoint + new Vector2(-4, 4), points.ToString(), HorizontalAlignment.Left, -1, 12, new Color("d0dbdc"));
+        }
         foreach (var node in Nodes)
         {
             var center = WorldToLocal(node.Position);
