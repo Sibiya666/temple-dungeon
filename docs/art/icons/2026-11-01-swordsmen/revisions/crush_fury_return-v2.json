@@ -1,0 +1,11 @@
+{
+  "key": "crush/fury_return",
+  "skill_id": "crush",
+  "node_id": "fury_return",
+  "subject": "A returning hammer handle dropping back into an open receiving steel gauntlet, a clear inverted U-shaped pale motion trail behind it. The hammer head is descending, not being raised; one strong receiving-hand silhouette.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-30b401a8-3604-4acb-886a-0233f43796a3.png",
+  "prompt": "Create ONE square Dialoid icon. Use the supplied approved Venice ORIGINAL as exact style reference. Replace only the central subject with: A returning hammer handle dropping back into an open receiving steel gauntlet, a clear inverted U-shaped pale motion trail behind it. The hammer head is descending, not being raised; one strong receiving-hand silhouette. Keep the original background, palette, diffuse lighting, exposure, contrast, materials, soft edges and detail density. Main form occupies central75%, readable at24px. No letters, numbers, UI, borders, decorative ornaments, broad glow or added sharpening.",
+  "revision": 2
+}

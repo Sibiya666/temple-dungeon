@@ -1,0 +1,9 @@
+{
+  "id": "crescent_flurry",
+  "name": "Шквал полумесяцев",
+  "kind": "skill",
+  "provider": "GPT built-in image_gen",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-810c2481-81e1-4eee-9147-66d20cfd94c1.png",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "prompt": "Use case: precise-object-edit. One square Dialoid SKILL ICON. Reference image is the approved original Venice family. Replace ONLY its central sword/slash subject with: Three separate sharp silver-black crescent blades spreading into a clear fan, the central crescent larger, restrained cold shadow trails. Preserve the original background, overall centered composition, diffuse lighting, palette, exposure, contrast, material rendering, edge softness and detail density. Subject fills central 70-80%, clear silhouette readable at 24px. No text, numbers, lettering, frame, border, UI symbols, decorative ornaments, bloom, added sharpness or overall glow. Opaque original dark background."
+}

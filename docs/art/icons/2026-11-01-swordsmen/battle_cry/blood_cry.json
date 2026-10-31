@@ -1,0 +1,13 @@
+{
+  "skill_id": "battle_cry",
+  "node_id": "blood_cry",
+  "name": "Клич крови",
+  "description": "Клич дает +30% к генерации Ярости на 8 с (отдельный бафф, с любым корнем).",
+  "subject": "A shouting mouth framed by a blood-marked leather throat guard, breath drawing a small muted-red wisp outward into a ready clenched hand. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/blood_cry.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-2e7ce8b7-5fe5-4af0-820a-d5de0dc1bd57.png",
+  "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the approved Venice original reference. Replace ONLY the central subject with: A shouting mouth framed by a blood-marked leather throat guard, breath drawing a small muted-red wisp outward into a ready clenched hand. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple. Keep the original backdrop, palette, diffuse lighting, exposure, contrast, material rendering, edge softness and detail density. One large clear subject fills central 75%, legible silhouette at 24px. No text, numbers, letters, borders, frames, UI badges, generic stat signs, added ornaments, broad glow, bloom or sharpening. Preserve opaque original dark background."
+}

@@ -1,0 +1,9 @@
+{
+  "key": "throwing_axe/boomerang",
+  "subject": "A single curved polished bronze boomerang with a leather-wrapped center, two short pale curved return paths around it. An isolated sporting object in still life; no person, target or impact.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-c125378c-b592-45d0-b9f1-aa70a83ef5c5.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon from the supplied approved Venice original. Change only the central subject to: A single curved polished bronze boomerang with a leather-wrapped center, two short pale curved return paths around it. An isolated sporting object in still life; no person, target or impact. Keep the original background, palette, diffuse lighting, exposure, contrast, material rendering, soft edges and detail density. One large silhouette fills central75%, readable24px. No text, numbers, lettering, frames, UI, generic stat symbols, neon, bloom or overall glow.",
+  "revision": 2
+}

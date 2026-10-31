@@ -1,0 +1,13 @@
+{
+  "skill_id": "space_rend",
+  "node_id": "total_devastation",
+  "name": "Полное опустошение",
+  "description": "Devastation exponent becomes 0.8 instead of 0.55; requires at least 60 Corruption, even with debt.",
+  "subject": "A massive spatial cleft consuming the center of one heavy iron block, leaving two thick outer shoulders suspended around the void. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/total_devastation.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-8e96d007-d2bd-4bd7-bb95-d633d7c11fa8.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A massive spatial cleft consuming the center of one heavy iron block, leaving two thick outer shoulders suspended around the void. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

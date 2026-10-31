@@ -1,0 +1,676 @@
+{
+  "role": "independent_art_curator",
+  "scope": "Apostate final three node families only",
+  "status": "APPROVE",
+  "manifest_completed_snapshot": 197,
+  "manifest_missing_count": 0,
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "visual_review_performed": true,
+  "review_limits": "Независимо просмотрены contact/sizes 64/32/24 px и предоставленные Godot runtime-сетки Awakening/Crescent Flurry. Все 54 арт-вердикта APPROVE сохранены. Полный игровой HUD/дерево со всеми состояниями не показан. Технический результат взят из лога parent/controller, проверку этот ревьюер не запускал. Первые три семейства Apostate исключены из области.",
+  "blocking_ids": [],
+  "families": [
+    {
+      "skill_id": "shadow_step",
+      "status": "APPROVE",
+      "expected_count": 16,
+      "manifest_count": 16,
+      "reviewed_ids": [
+        "step_force",
+        "arrival_cut",
+        "path_cut",
+        "through_dark",
+        "step_afterimage",
+        "step_recovery",
+        "step_speed",
+        "step_reach",
+        "step_precision",
+        "step_crit",
+        "step_flow",
+        "step_penetration",
+        "step_armor",
+        "step_dodge",
+        "step_wave_echo",
+        "step_awakening"
+      ],
+      "available_ids": [
+        "step_force",
+        "arrival_cut",
+        "path_cut",
+        "through_dark",
+        "step_afterimage",
+        "step_recovery",
+        "step_speed",
+        "step_reach",
+        "step_precision",
+        "step_crit",
+        "step_flow",
+        "step_penetration",
+        "step_armor",
+        "step_dodge",
+        "step_wave_echo",
+        "step_awakening"
+      ],
+      "missing_ids": [],
+      "blockers": null,
+      "visual_findings": [
+        {
+          "severity": "pass",
+          "ids": [
+            "step_force",
+            "arrival_cut",
+            "path_cut",
+            "through_dark",
+            "step_afterimage",
+            "step_recovery",
+            "step_speed",
+            "step_reach",
+            "step_precision",
+            "step_crit",
+            "step_flow",
+            "step_penetration",
+            "step_armor",
+            "step_dodge",
+            "step_wave_echo",
+            "step_awakening"
+          ],
+          "finding": "На contact и sizes 64/32/24 px различаются выпад рукой, точка прибытия, разрез ткани, переход, послеобраз, круг восстановления, лёгкая стопа с лентами, коридор, точный контакт, повреждённая броня, след ресурса, прорыв завесы, защита, уклонение от стрелы, волновой след и искра под подошвой. Конкретные предметные метафоры соответствуют типам узлов; числа и длительности остаются в tooltip."
+        },
+        {
+          "severity": "pass",
+          "ids": [
+            "step_force",
+            "arrival_cut",
+            "path_cut",
+            "through_dark",
+            "step_afterimage",
+            "step_recovery",
+            "step_speed",
+            "step_reach",
+            "step_precision",
+            "step_crit",
+            "step_flow",
+            "step_penetration",
+            "step_armor",
+            "step_dodge",
+            "step_wave_echo",
+            "step_awakening"
+          ],
+          "finding": "С оригиналом Venice Cleave согласованы спокойные металлические и тканевые поверхности, глубокий холодный фон, локальные серебристо-голубые эффекты и мягкий свет. Нет запечённых текста, рамок и UI. Сходство мотивов сапога не превращает узлы в одинаковый силуэт: ориентация, контакт, ткань и вторичные массы сохраняют различимость при уменьшении."
+        }
+      ],
+      "evidence": [
+        "review/shadow_step-contact.png",
+        "review/shadow_step-sizes.png",
+        "../2026-10-31-venice-tower-icons/cleave.png"
+      ],
+      "approved_ids": [
+        "step_force",
+        "arrival_cut",
+        "path_cut",
+        "through_dark",
+        "step_afterimage",
+        "step_recovery",
+        "step_speed",
+        "step_reach",
+        "step_precision",
+        "step_crit",
+        "step_flow",
+        "step_penetration",
+        "step_armor",
+        "step_dodge",
+        "step_wave_echo",
+        "step_awakening"
+      ],
+      "blocking_ids": [],
+      "node_reviews": [
+        {
+          "node_id": "step_force",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "arrival_cut",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "path_cut",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "through_dark",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_afterimage",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_recovery",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_speed",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_reach",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_precision",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_crit",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_flow",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_penetration",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_armor",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_dodge",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_wave_echo",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "step_awakening",
+          "status": "APPROVE",
+          "blockers": []
+        }
+      ]
+    },
+    {
+      "skill_id": "awakening",
+      "status": "APPROVE",
+      "expected_count": 22,
+      "manifest_count": 22,
+      "reviewed_ids": [
+        "awakening_core",
+        "lingering_awakening",
+        "intense_awakening",
+        "awakening_rage",
+        "demonic_blood",
+        "awakening_recovery",
+        "awakening_cast",
+        "awakening_armor",
+        "awakening_dodge",
+        "awakening_resists",
+        "awakening_precision",
+        "awakening_crit",
+        "awakening_area",
+        "awakening_pierce",
+        "awakening_melee",
+        "awakening_projectile",
+        "awakening_penetration",
+        "awakening_guard",
+        "awakening_regen",
+        "awakening_bleed",
+        "awakening_chill",
+        "awakening_step"
+      ],
+      "approved_ids": [
+        "awakening_core",
+        "lingering_awakening",
+        "intense_awakening",
+        "awakening_rage",
+        "demonic_blood",
+        "awakening_recovery",
+        "awakening_cast",
+        "awakening_armor",
+        "awakening_dodge",
+        "awakening_resists",
+        "awakening_precision",
+        "awakening_crit",
+        "awakening_area",
+        "awakening_pierce",
+        "awakening_melee",
+        "awakening_projectile",
+        "awakening_penetration",
+        "awakening_guard",
+        "awakening_regen",
+        "awakening_bleed",
+        "awakening_chill",
+        "awakening_step"
+      ],
+      "blocking_ids": [],
+      "missing_ids": [],
+      "blockers": [],
+      "node_reviews": [
+        {
+          "node_id": "awakening_core",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "lingering_awakening",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "intense_awakening",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_rage",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "demonic_blood",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_recovery",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_cast",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_armor",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_dodge",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_resists",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_precision",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_crit",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_area",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_pierce",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_melee",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_projectile",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_penetration",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_guard",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_regen",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_bleed",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_chill",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "awakening_step",
+          "status": "APPROVE",
+          "blockers": []
+        }
+      ],
+      "visual_findings": [
+        {
+          "severity": "pass",
+          "ids": [
+            "awakening_core",
+            "lingering_awakening",
+            "intense_awakening",
+            "awakening_rage",
+            "demonic_blood",
+            "awakening_recovery",
+            "awakening_cast",
+            "awakening_armor",
+            "awakening_dodge",
+            "awakening_resists",
+            "awakening_precision",
+            "awakening_crit",
+            "awakening_area",
+            "awakening_pierce",
+            "awakening_melee",
+            "awakening_projectile",
+            "awakening_penetration",
+            "awakening_guard",
+            "awakening_regen",
+            "awakening_chill",
+            "awakening_step"
+          ],
+          "finding": "Различимы раскрытое ядро, высокая и сжатая чаши, кулак с потоком, ладонь, механизм восстановления, быстрый жест, кираса, уклонение, покров, маска, удар кулаком, размах, пробитый валик, клинок, снаряд, прорванная связка, наруч, заживающая рука, морозная оболочка и шаг. На 64/32/24 px предметные массы сохраняются; точные числа не требуются в арте."
+        },
+        {
+          "severity": "pass",
+          "ids": [
+            "awakening_core",
+            "lingering_awakening",
+            "intense_awakening",
+            "awakening_rage",
+            "demonic_blood",
+            "awakening_recovery",
+            "awakening_cast",
+            "awakening_armor",
+            "awakening_dodge",
+            "awakening_resists",
+            "awakening_precision",
+            "awakening_crit",
+            "awakening_area",
+            "awakening_pierce",
+            "awakening_melee",
+            "awakening_projectile",
+            "awakening_penetration",
+            "awakening_guard",
+            "awakening_regen",
+            "awakening_bleed",
+            "awakening_chill",
+            "awakening_step"
+          ],
+          "finding": "Сохранены глубокий холодный фон, спокойные сталь/ткань/кожа, мягкий направленный свет и локальный цвет относительно утверждённого Venice Cleave. Текст, рамки и UI в самих иллюстрациях отсутствуют. Подписи принадлежат review-листам."
+        },
+        {
+          "severity": "pass",
+          "ids": [
+            "awakening_bleed"
+          ],
+          "finding": "Повторное ревью v2: предыдущий блокер wrong_damage_type_read закрыт. На обновлённых contact и sizes 64/32/24 px доминирует крупная серебряная зазубренная кромка с локальной тёмно-красной каплей; оранжевые огонь и оболочка удалены. Силуэт и характер кровотечения читаются при уменьшении, металл и свет согласованы с Venice Cleave."
+        }
+      ],
+      "evidence": [
+        "review/awakening-contact.png",
+        "review/awakening-sizes.png",
+        "../2026-10-31-venice-tower-icons/cleave.png"
+      ]
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "status": "APPROVE",
+      "expected_count": 16,
+      "manifest_count": 16,
+      "reviewed_ids": [
+        "crescent_edge",
+        "wide_fan",
+        "narrowing",
+        "returning_crescent",
+        "cold_crescent",
+        "cutting_wind",
+        "crescent_reach",
+        "crescent_speed",
+        "crescent_precision",
+        "crescent_crit",
+        "crescent_dark",
+        "crescent_chill",
+        "crescent_echo",
+        "crescent_guard",
+        "crescent_awakening",
+        "crescent_dot"
+      ],
+      "approved_ids": [
+        "crescent_edge",
+        "wide_fan",
+        "narrowing",
+        "returning_crescent",
+        "cold_crescent",
+        "cutting_wind",
+        "crescent_reach",
+        "crescent_speed",
+        "crescent_precision",
+        "crescent_crit",
+        "crescent_dark",
+        "crescent_chill",
+        "crescent_echo",
+        "crescent_guard",
+        "crescent_awakening",
+        "crescent_dot"
+      ],
+      "blocking_ids": [],
+      "missing_ids": [],
+      "blockers": [],
+      "node_reviews": [
+        {
+          "node_id": "crescent_edge",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "wide_fan",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "narrowing",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "returning_crescent",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "cold_crescent",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "cutting_wind",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_reach",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_speed",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_precision",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_crit",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_dark",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_chill",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_echo",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_guard",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_awakening",
+          "status": "APPROVE",
+          "blockers": []
+        },
+        {
+          "node_id": "crescent_dot",
+          "status": "APPROVE",
+          "blockers": []
+        }
+      ],
+      "visual_findings": [
+        {
+          "severity": "pass",
+          "ids": [
+            "crescent_edge",
+            "wide_fan",
+            "narrowing",
+            "returning_crescent",
+            "cold_crescent",
+            "cutting_wind",
+            "crescent_reach",
+            "crescent_speed",
+            "crescent_precision",
+            "crescent_crit",
+            "crescent_dark",
+            "crescent_chill",
+            "crescent_echo",
+            "crescent_guard",
+            "crescent_awakening",
+            "crescent_dot"
+          ],
+          "finding": "На 64/32/24 px различимы заточенная кромка, широкий веер, три сведённых лезвия, возвратный завиток, ледяной серп, пробитая ткань, широкий тонкий полумесяц, летящий серп, точный контакт, разбитые кольца, разрез завесы, морозная кисть, волновое эхо, уклонение от стрелы, вихрь с искрой и разрез замороженной защиты. crescent_dot читается как удар по охлаждённой цели, без ложного DoT."
+        },
+        {
+          "severity": "pass",
+          "ids": [
+            "crescent_edge",
+            "wide_fan",
+            "narrowing",
+            "returning_crescent",
+            "cold_crescent",
+            "cutting_wind",
+            "crescent_reach",
+            "crescent_speed",
+            "crescent_precision",
+            "crescent_crit",
+            "crescent_dark",
+            "crescent_chill",
+            "crescent_echo",
+            "crescent_guard",
+            "crescent_awakening",
+            "crescent_dot"
+          ],
+          "finding": "Сохранены глубокий холодный фон, спокойные сталь/ткань/кожа, мягкий направленный свет и локальный цвет относительно утверждённого Venice Cleave. Текст, рамки и UI в самих иллюстрациях отсутствуют. Подписи принадлежат review-листам."
+        }
+      ],
+      "evidence": [
+        "review/crescent_flurry-contact.png",
+        "review/crescent_flurry-sizes.png",
+        "../2026-10-31-venice-tower-icons/cleave.png"
+      ]
+    }
+  ],
+  "final_rereview": {
+    "node_id": "awakening/awakening_bleed",
+    "status": "APPROVE",
+    "previous_blocker": "wrong_damage_type_read",
+    "resolution": "CLOSED",
+    "master": "revisions\\awakening_awakening_bleed-v2.png",
+    "sha256": "8819af6bad4f9c792505bfa440b3d436a19c5ebdd3ad236e3bf6fb9b1044d38d",
+    "runtime_sha256": "58ca122bff7407ae687abea899c5c25e9a191e9d3981f95a0eb11e1132cde17d",
+    "evidence": [
+      "review/awakening-contact.png",
+      "review/awakening-sizes.png"
+    ],
+    "other_53_verdicts": "preserved",
+    "runtime_ui_validation": "Inspected in-game/nodes-awakening.png and in-game/nodes-crescent_flurry.png; read parent/controller runtime-final.log confirming full 214-resource pass. Did not execute Godot checks."
+  },
+  "visual_ui_evidence": {
+    "status": "APPROVE",
+    "inspection": "Independently viewed supplied Godot runtime icon-grid screenshots; did not run Godot or technical checks.",
+    "evidence": [
+      {
+        "file": "in-game/nodes-awakening.png",
+        "nodes": 22,
+        "sizes_px": [
+          64,
+          32,
+          24
+        ],
+        "finding": "Все 22 подписанных ID представлены в трёх размерах без пустых ячеек или видимых fallback. Крупные предметные массы различимы на тёмном фоне; исправленный awakening_bleed отображает серебряные зубцы и локальную красную каплю без огня."
+      },
+      {
+        "file": "in-game/nodes-crescent_flurry.png",
+        "nodes": 16,
+        "sizes_px": [
+          64,
+          32,
+          24
+        ],
+        "finding": "Все 16 подписанных ID представлены в трёх размерах. Различаются веер, три лезвия, возврат, ледяная масса, контактные цели, ткань и вихри; нет видимых обрезаний или подмен. Подписи расположены вне арта."
+      }
+    ],
+    "limits": "Скриншоты показывают runtime-сетку иконок с ID, а не полный игровой HUD/дерево с состояниями выбора, tooltip и окружением. Эта проверка подтверждает видимость в предоставленной сетке.",
+    "technical_check": {
+      "source": "runtime-final.log",
+      "executor": "parent/controller",
+      "independently_executed": false,
+      "log_read": true,
+      "result": "SWORDSMEN_ICONS_OK: mode=full; 208 exact 64x64 node PNGs, 6 AP skill PNGs; unsafe IDs rejected; active Warrior IDs matched; active catalog unchanged",
+      "total_resources": 214,
+      "separate_filtered_test": "skills-final.log reports SELFTEST 6/6 PASSED with an explicit skills-only filter warning; not full acceptance."
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "key": "space_rend",
+  "skill_id": "space_rend",
+  "node_id": null,
+  "subject": "One broad vertical dimensional split separating two displaced silver planes, a deep dark-blue opening between two thick pale cutting edges. The open gap is the main large recognizable shape; a small sword tip at its base is subordinate, no full diagonal sword.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-26e1bfed-2fd0-4c2b-9fe0-2ef77fe2b34c.png",
+  "prompt": "Create ONE square Dialoid icon. Use the supplied approved Venice ORIGINAL as exact style reference. Replace only the central subject with: One broad vertical dimensional split separating two displaced silver planes, a deep dark-blue opening between two thick pale cutting edges. The open gap is the main large recognizable shape; a small sword tip at its base is subordinate, no full diagonal sword. Keep the original background, palette, diffuse lighting, exposure, contrast, materials, soft edges and detail density. Main form occupies central75%, readable at24px. No letters, numbers, UI, borders, decorative ornaments, broad glow or added sharpening.",
+  "revision": 2
+}

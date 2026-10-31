@@ -1,0 +1,13 @@
+{
+  "skill_id": "crush",
+  "node_id": "fury_return",
+  "name": "Возврат ярости",
+  "description": "Часть Ярости возвращается сразу: стоимость еще −4. Не зависит от бонусов к генерации Ярости.",
+  "subject": "A leather wrist loop snapping a recoiling mallet haft back into an open gauntlet after impact; a tiny muted-red accent at the catching palm. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/fury_return.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-4b8dc52d-4bdb-451b-975e-e1c443e25dfe.png",
+  "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the approved Venice original reference. Replace ONLY the central subject with: A leather wrist loop snapping a recoiling mallet haft back into an open gauntlet after impact; a tiny muted-red accent at the catching palm. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple. Keep the original backdrop, palette, diffuse lighting, exposure, contrast, material rendering, edge softness and detail density. One large clear subject fills central 75%, legible silhouette at 24px. No text, numbers, letters, borders, frames, UI badges, generic stat signs, added ornaments, broad glow, bloom or sharpening. Preserve opaque original dark background."
+}

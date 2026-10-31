@@ -1,0 +1,20 @@
+{
+  "generated_expected": 197,
+  "node_icons_new": 191,
+  "skill_icons_new": 6,
+  "existing_cleave_nodes": 17,
+  "runtime_node_icons": 208,
+  "runtime_ap_skill_icons": 6,
+  "source_reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "provider": "GPT built-in image_gen",
+  "active_class_rules_changed": false,
+  "generated_completed": 197,
+  "missing": 0,
+  "runtime_verification": "PASS: 208 exact node PNGs + 6 AP skill PNGs, 64x64; unsafe IDs rejected; active catalog unchanged",
+  "skills_selftest": "6/6 PASS (targeted, not full suite)",
+  "build": "0 warnings, 0 errors",
+  "art_review": "APPROVE all 197",
+  "code_review": "APPROVE",
+  "selected_revisions": 14,
+  "unique_runtime_images": 214
+}

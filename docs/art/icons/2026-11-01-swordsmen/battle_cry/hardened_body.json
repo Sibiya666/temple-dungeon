@@ -1,0 +1,11 @@
+{
+  "skill_id": "battle_cry",
+  "node_id": "hardened_body",
+  "name": "Закаленное тело",
+  "subject": "A thick padded gambeson enclosed by broad leather reinforcement straps and a rounded steel chest plate; protective equipment only, empty and with no person or exposed skin.",
+  "kind": "node",
+  "provider": "GPT built-in image_gen",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-c48f4534-75b7-49dc-a6c3-530d52005fe7.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon using the approved Venice image as the exact style reference. Change only the central subject to: A thick padded gambeson enclosed by broad leather reinforcement straps and a rounded steel chest plate; protective equipment only, empty and with no person or exposed skin. Preserve background, palette, exposure, contrast, diffuse lighting, edge softness and material detail of the original. Large central silhouette, readable at 24px. No text, numbers, frame, UI, generic stat symbols or glow.",
+  "revision_note": "Equipment-only replacement; initial body illustration was rejected and returned no asset."
+}
