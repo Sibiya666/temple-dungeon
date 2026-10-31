@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <title>Dialoid pointing gauntlet</title>
+  <defs><linearGradient id="steel" x1="9" y1="8" x2="27" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#66767b"/><stop offset="0.55" stop-color="#35434b"/><stop offset="1" stop-color="#1b252c"/></linearGradient></defs>
+  <path d="M12 2.5Q15 2.5 15 6L15 15L17 13.5Q20 12.5 21 16L23 15.5Q26 15.5 26.5 19L28 19.5Q30 21 29 25L27 31L25 34H11L8.5 29L4 25Q2.5 22.5 5 21Q7 20 9.5 24L9 6Q9 2.5 12 2.5Z" fill="url(#steel)" stroke="#080d10" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M12 2.5Q15 2.5 15 6L15 15L17 13.5Q20 12.5 21 16L23 15.5Q26 15.5 26.5 19L28 19.5Q30 21 29 25L27 31L25 34H11L8.5 29L4 25Q2.5 22.5 5 21Q7 20 9.5 24L9 6Q9 2.5 12 2.5Z" fill="none" stroke="#d8d5c6" stroke-width="1.05" stroke-linejoin="round"/>
+  <path d="M9.5 9H14.5M9.7 13H14.5M10 17H14.5M15 16L16 22M21 16L22 23M26 20L26 24M10 24L14 28L24 27M15 29L24 28" fill="none" stroke="#9caaa9" stroke-width="0.85" stroke-linecap="round"/>
+  <path d="M10 31L26 30L27 37H10Z" fill="#242e35" stroke="#090e12" stroke-width="2.5"/>
+  <path d="M10 31L26 30L27 37H10Z" fill="none" stroke="#bec4bb" stroke-width="0.9"/>
+  <path d="M17.5 32L20 33.5L18.5 36L16 34Z" fill="#73352f"/>
+</svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <title>Dialoid sword pointer</title>
+  <defs><linearGradient id="metal" x1="12" y1="21" x2="25" y2="29" gradientUnits="userSpaceOnUse"><stop stop-color="#7d898b"/><stop offset="1" stop-color="#273037"/></linearGradient></defs>
+  <g stroke="#080d10" stroke-width="3" stroke-linejoin="round">
+    <path d="M3 3L9 5L25 21L21 25L5 9Z" fill="#899697"/>
+    <path d="M24 23L34 33L31 36L21 26Z" fill="#283238"/>
+    <path d="M17 26L26 17L29 19L19 29Z" fill="url(#metal)"/>
+    <path d="M32 31L37 34L34 38L30 34Z" fill="#556467"/>
+  </g>
+  <path d="M3 3L23 23L21 25L5 9Z" fill="#d8d5c6"/>
+  <path d="M3 3L9 5L25 21L23 23Z" fill="#6e8186"/>
+  <path d="M3 3L9 5L25 21L21 25L5 9Z" fill="none" stroke="#d8d5c6" stroke-width="0.8" stroke-linejoin="round"/>
+  <path d="M17 26L26 17L29 19L19 29Z" fill="none" stroke="#c5c7be" stroke-width="0.9" stroke-linejoin="round"/>
+  <path d="M25 27L29 31M27 25L31 29" stroke="#8c9a99" stroke-width="0.8"/>
+  <path d="M32 31L37 34L34 38L30 34Z" fill="none" stroke="#bac0b8" stroke-width="0.8"/>
+</svg>
