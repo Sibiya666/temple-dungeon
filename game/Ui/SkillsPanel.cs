@@ -86,6 +86,8 @@ public partial class SkillsPanel : SessionPanel
     public void ShowTree(int slot)
     {
         _treeSlot = slot;
+        if (_browsedSkillId != null)
+            _browsedSkillId = Session.GetSlot(slot)?.SkillId;
         RequestRedraw();
     }
 
@@ -268,42 +270,7 @@ public partial class SkillsPanel : SessionPanel
         PointsText = $"Очки дерева: потрачено {spent} из {total}, свободно {Session.SkillPointsFree(_treeSlot)}";
         AddText(PointsText, spent > total ? Red : null);
 
-        var points = slot.NodePoints;
-        foreach (var node in skill.Tree)
-        {
-            int have = points.GetValueOrDefault(node.Id);
-            var reason = have > 0 ? null : Session.WhyCannotAddSkillNodePoint(_treeSlot, node.Id);
-            if (reason != null) _blocked[node.Id] = reason;
-
-            var tooltip = node.Description;
-            if (node.Requires.Count > 0)
-                tooltip += "\nТребует: " + string.Join(", ", node.Requires.Select(r => $"«{NodeName(skill, r.NodeId)}» {r.Points} очк."));
-            if (reason != null) tooltip += "\nСейчас нельзя: " + reason;
-
-            var row = new HBoxContainer { TooltipText = tooltip };
-            if (GameIcons.SkillNode(slot.SkillId, node.Id, node.Effects) is { } nodeIcon) row.AddChild(GameIcons.View(nodeIcon, 32));
-            var name = new Label
-            {
-                Text = $"{node.Name} — {have}/{node.MaxPoints}",
-                CustomMinimumSize = new Vector2(320, 0),
-                MouseFilter = MouseFilterEnum.Stop,
-                TooltipText = tooltip,
-            };
-            if (reason != null) name.AddThemeColorOverride("font_color", Grey);
-            else if (have > 0) name.AddThemeColorOverride("font_color", Green);
-            row.AddChild(name);
-            var id = node.Id;
-            int slotIndex = _treeSlot;
-            var plus = new Button { Text = "+", TooltipText = tooltip };
-            plus.Pressed += () => AddPoint(slotIndex, id);
-            ButtonPrompts.SetAction(plus, PadCommand.Alt, "Снять очко", () => RemovePoint(slotIndex, id));
-            plus.SetMeta(ButtonPrompts.AcceptMeta, "Добавить очко");
-            row.AddChild(plus);
-            var minus = ButtonPrompts.Skip(new Button { Text = "−", TooltipText = tooltip }); // the gamepad removes with X on «+»
-            minus.Pressed += () => RemovePoint(slotIndex, id);
-            row.AddChild(minus);
-            Content.AddChild(row);
-        }
+        DrawSkillGraph(skill, _treeSlot);
 
         Content.AddChild(new HSeparator());
         var lines = Session.SkillLines(_treeSlot);

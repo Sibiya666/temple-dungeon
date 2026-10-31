@@ -117,19 +117,8 @@ public partial class SkillsPanel : IPadPanel
         if (skill.UnlockLevel > Session.Build.Level)
             AddText($"Откроется на {skill.UnlockLevel} уровне. Дерево можно изучить заранее.", Grey);
         AddText("Просмотр дерева. Для вложения очков установите скилл в слот.");
-        foreach (var node in skill.Tree)
-        {
-            _previewNodeIds.Add(node.Id);
-            var row = new HBoxContainer();
-            if (GameIcons.SkillNode(skill.Id, node.Id, node.Effects) is { } nodeIcon)
-                row.AddChild(GameIcons.View(nodeIcon, 32));
-            row.AddChild(new Label { Text = $"{node.Name} — до {node.MaxPoints} очк." });
-            Content.AddChild(row);
-            AddText(node.Description, Grey);
-            if (node.Requires.Count > 0)
-                AddText("Требует: " + string.Join(", ", node.Requires.Select(r => $"«{NodeName(skill, r.NodeId)}» {r.Points} очк.")), Grey);
-            Content.AddChild(new HSeparator());
-        }
+        foreach (var node in skill.Tree) _previewNodeIds.Add(node.Id);
+        DrawSkillGraph(skill, null);
     }
 
     public bool PadButton(PadCommand command, Control? focus) => false;
