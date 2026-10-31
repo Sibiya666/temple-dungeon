@@ -1,6 +1,7 @@
 using Dialoid.Core.Simulation;
 using Dialoid.Core.Explain;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui.Hud;
 
@@ -134,6 +135,7 @@ public partial class EffectRowView : HFlowContainer
 public partial class EffectChip : PanelContainer
 {
     private readonly Label _label;
+    private readonly TextureRect _icon;
     private readonly StyleBoxFlat _style;
     private Color _accent;
 
@@ -179,7 +181,14 @@ public partial class EffectChip : PanelContainer
         _label = new Label { MouseFilter = MouseFilterEnum.Ignore };
         _label.AddThemeFontSizeOverride("font_size", 14);
         _label.AddThemeColorOverride("font_color", new Color(0.94f, 0.91f, 0.85f));
-        AddChild(_label);
+        var row = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        _icon = new TextureRect
+        {
+            Name = "EffectIcon", CustomMinimumSize = new Vector2(20, 20), Visible = false,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        row.AddChild(_icon); row.AddChild(_label); AddChild(row);
         FocusExited += () =>
         {
             if (IsOverflow) FocusMode = FocusModeEnum.None;
@@ -222,6 +231,9 @@ public partial class EffectChip : PanelContainer
     {
         if (!Visible) Visible = true;
         Data = data;
+        _icon.Texture = data.Effect?.Kind == TimedEffectKind.Ailment ? GameIcons.Ailment(data.Id)
+            : data.Effect != null ? GameIcons.Buff(data.Id) : null;
+        _icon.Visible = _icon.Texture != null;
         if (_label.Text != data.Text) _label.Text = data.Text;
         SetAccent(data.Accent);
     }

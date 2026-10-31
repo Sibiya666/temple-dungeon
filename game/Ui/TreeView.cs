@@ -9,7 +9,10 @@ public enum TreeNodeState { Taken, Available, Unavailable }
 /// One node of a <see cref="TreeView"/>: position and radius in world units (data coordinates), a short text drawn next to
 /// it (null: none), a badge drawn inside (e.g. the chosen attribute's letter) and the hover text.
 /// </summary>
-public sealed record TreeViewNode(string Id, Vector2 Position, float Radius, string? Caption, string? Badge, string Tooltip);
+public sealed record TreeViewNode(string Id, Vector2 Position, float Radius, string? Caption, string? Badge, string Tooltip)
+{
+    public Texture2D? Icon { get; init; }
+}
 
 /// <summary>
 /// Generic graph view of the debug scene (spec §13.2–13.3): edges as lines and nodes as circles painted in _Draw on a plain
@@ -469,13 +472,22 @@ public partial class TreeView : Control, IPadControl
                 _ => UnavailableColor,
             };
             DrawCircle(center, r, color);
+            bool hasIcon = n.Icon != null && r >= 10f;
+            if (hasIcon)
+            {
+                DrawCircle(center, r * 0.82f, Background);
+                DrawTextureRect(n.Icon!, new Rect2(center - Vector2.One * r * 0.65f, Vector2.One * r * 1.3f), false,
+                    StateOf(n.Id) == TreeNodeState.Unavailable ? new Color(0.55f, 0.55f, 0.55f) : Colors.White);
+            }
             if (n.Id == HoveredId) DrawArc(center, r + 3f, 0, Mathf.Tau, 32, HoverColor, 2f, true);
 
             if (n.Badge != null && r >= 6f)
             {
-                int badgeSize = Mathf.Clamp((int)(r * 1.3f), 8, fontSize);
+                int badgeSize = Mathf.Clamp((int)(r * (hasIcon ? 0.65f : 1.3f)), 8, fontSize);
                 var size = font.GetStringSize(n.Badge, HorizontalAlignment.Left, -1, badgeSize);
-                DrawString(font, center + new Vector2(-size.X / 2, size.Y / 4), n.Badge, HorizontalAlignment.Left, -1,
+                var badgeCenter = hasIcon ? center + Vector2.One * r * 0.4f : center;
+                if (hasIcon) DrawCircle(badgeCenter, badgeSize * 0.65f, color);
+                DrawString(font, badgeCenter + new Vector2(-size.X / 2, size.Y / 4), n.Badge, HorizontalAlignment.Left, -1,
                     badgeSize, Colors.Black);
             }
         }

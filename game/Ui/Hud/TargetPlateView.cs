@@ -2,9 +2,11 @@ using Godot;
 
 namespace Dialoid.Game.Ui.Hud;
 
+using Dialoid.Game.Ui.Art;
+
 /// <summary>
-/// The target plate (HUD spec §4 item 8): the name (an elite's colour always with its icon: a diamond for a champion, a star for
-/// a rare), the life bar in health's dark red with «1 234 / 5 000» outlined in dark, and the target's ailments and marks with
+/// The target plate (HUD spec §4 item 8): an elite name with a double chevron for a champion or crown for a rare (simple
+/// geometry when art is unavailable), the dark-red life bar with outlined numbers, and target ailments and marks with
 /// stacks and timers (an <see cref="EffectRowView"/> of kind <see cref="EffectRowKind.Target"/>). No target — no plate. Which
 /// target it shows and where the plate stands is the placer's business.
 /// </summary>
@@ -46,7 +48,7 @@ public partial class TargetPlateView : PanelContainer
         var head = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.Center };
         head.AddThemeConstantOverride("separation", 5);
         box.AddChild(head);
-        _icon = new Control { Name = "RankIcon", CustomMinimumSize = new Vector2(12, 12), MouseFilter = MouseFilterEnum.Ignore, Visible = false, SizeFlagsVertical = SizeFlags.ShrinkCenter };
+        _icon = new Control { Name = "RankIcon", CustomMinimumSize = new Vector2(16, 16), MouseFilter = MouseFilterEnum.Ignore, Visible = false, SizeFlagsVertical = SizeFlags.ShrinkCenter };
         _icon.Draw += DrawIcon;
         head.AddChild(_icon);
         _name = new Label { HorizontalAlignment = HorizontalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
@@ -123,6 +125,11 @@ public partial class TargetPlateView : PanelContainer
     private void DrawIcon()
     {
         if (Data is not { Rank: not TargetRank.Normal } data) return;
+        if (GameIcons.Elite(data.Rank == TargetRank.Champion ? "champion" : "rare") is { } texture)
+        {
+            _icon.DrawTextureRect(texture, new Rect2(Vector2.Zero, _icon.Size), false, ColorOf(data.Rank));
+            return;
+        }
         var c = _icon.Size / 2;
         var r = Mathf.Min(c.X, c.Y);
         var color = ColorOf(data.Rank);

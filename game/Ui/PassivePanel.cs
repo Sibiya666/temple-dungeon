@@ -2,6 +2,7 @@ using Dialoid.Core.Character;
 using Dialoid.Core.Passives;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 using Attribute = Dialoid.Core.Character.Attribute;
 
 namespace Dialoid.Game.Ui;
@@ -22,6 +23,7 @@ public partial class PassivePanel : SessionPanel
     private Label _points = null!;
     private Label _status = null!;
     private Label _hover = null!;
+    private TextureRect _hoverIcon = null!;
     private Label _violations = null!;
     private string? _commandError;
     private string? _menuNodeId;
@@ -52,6 +54,7 @@ public partial class PassivePanel : SessionPanel
         _points = new Label { CustomMinimumSize = new Vector2(220, 0) };
         top.AddChild(_points);
         var fit = new Button { Text = "Вписать дерево" };
+        GameIcons.Decorate(fit, "expand");
         fit.Pressed += () => View.FitToView();
         top.AddChild(fit);
         top.AddChild(Legend());
@@ -65,7 +68,7 @@ public partial class PassivePanel : SessionPanel
         _status = WrappedLabel(Red);
         AddChild(_status);
         _hover = WrappedLabel(null);
-        AddChild(_hover);
+        AddChild(GameIcons.Description(_hover, out _hoverIcon));
 
         View = new TreeView { SizeFlagsVertical = SizeFlags.ExpandFill, SizeFlagsHorizontal = SizeFlags.ExpandFill, DescriptionInPanel = true };
         View.CustomMinimumSize = new Vector2(0, 300);
@@ -79,7 +82,7 @@ public partial class PassivePanel : SessionPanel
         AddChild(_violations);
 
         AttributeMenu = new PopupMenu();
-        foreach (var a in AttributeOrder) AttributeMenu.AddItem(a.RussianName());
+        foreach (var a in AttributeOrder) AttributeMenu.AddIconItem(GameIcons.Symbol(a.StatId())!, a.RussianName());
         AttributeMenu.IndexPressed += i => ChooseFromMenu((int)i);
         AddChild(AttributeMenu);
 
@@ -182,7 +185,11 @@ public partial class PassivePanel : SessionPanel
             return new TreeViewNode(n.Id, new Vector2((float)n.X, (float)n.Y), RadiusOf(n.Kind),
                 n.Kind is PassiveKind.Notable or PassiveKind.Keystone or PassiveKind.Start ? n.Name : null,
                 choice is { } c ? c.RussianName()[..1] : null,
-                TooltipOf(n, choice));
+                TooltipOf(n, choice))
+            {
+                Icon = n.Kind == PassiveKind.Attribute ? GameIcons.Symbol(choice?.StatId() ?? "attribute")
+                    : n.Kind == PassiveKind.Start ? GameIcons.Symbol("tree") : GameIcons.Perk(n.Id, n.Effects),
+            };
         }).ToList();
     }
 
@@ -217,6 +224,7 @@ public partial class PassivePanel : SessionPanel
     private void UpdateHover()
     {
         var id = View.HoveredId;
+        _hoverIcon.Texture = View.Nodes.FirstOrDefault(n => n.Id == id)?.Icon ?? GameIcons.Symbol("tree");
         _hover.Text = id != null && Session.Data.Passives.Nodes.TryGetValue(id, out var n)
             ? TooltipOf(n, Session.Build.AttributeChoices.TryGetValue(id, out var a) ? a : null).ReplaceLineEndings(" — ")
             : "Наведите на узел, чтобы увидеть описание.";

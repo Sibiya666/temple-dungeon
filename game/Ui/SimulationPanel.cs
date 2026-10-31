@@ -2,6 +2,7 @@ using Dialoid.Core.Explain;
 using Dialoid.Core.Simulation;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -264,20 +265,20 @@ public partial class SimulationPanel : SessionPanel
         Header("DPS по скиллам (по всем целям)");
         if (result.DpsBySkill.Count == 0) AddText("нет урона");
         foreach (var (id, dps) in result.DpsBySkill.OrderByDescending(kv => kv.Value))
-            Number("sim_dps_skill_" + id, SkillTitle(id), dps, BreakdownText.Whole, dpsNote);
+            Number("sim_dps_skill_" + id, SkillTitle(id), dps, BreakdownText.Whole, dpsNote, GameIcons.Skill(id));
 
         Header("DPS по типам урона (по всем целям)");
         if (result.DpsByType.Count == 0) AddText("нет урона");
         foreach (var (type, dps) in result.DpsByType.OrderByDescending(kv => kv.Value))
-            Number("sim_dps_type_" + type.ToString().ToLowerInvariant(), BreakdownText.DamageTypeName(type), dps, BreakdownText.Whole, dpsNote);
+            Number("sim_dps_type_" + type.ToString().ToLowerInvariant(), BreakdownText.DamageTypeName(type), dps, BreakdownText.Whole, dpsNote, GameIcons.Damage(type));
 
         Header("Урон за бой по скиллам");
         foreach (var (id, dmg) in result.DamageBySkill.OrderByDescending(kv => kv.Value))
-            Number("sim_skill_" + id, SkillTitle(id), dmg, BreakdownText.Whole, note);
+            Number("sim_skill_" + id, SkillTitle(id), dmg, BreakdownText.Whole, note, GameIcons.Skill(id));
 
         Header("Урон за бой по типам");
         foreach (var (type, dmg) in result.DamageByType.OrderByDescending(kv => kv.Value))
-            Number("sim_type_" + type.ToString().ToLowerInvariant(), BreakdownText.DamageTypeName(type), dmg, BreakdownText.Whole, note);
+            Number("sim_type_" + type.ToString().ToLowerInvariant(), BreakdownText.DamageTypeName(type), dmg, BreakdownText.Whole, note, GameIcons.Damage(type));
 
         Header("Попадания и урон по времени");
         Number("sim_hit_damage", "Урон попаданиями", result.HitDamage, BreakdownText.Whole, note);
@@ -300,13 +301,13 @@ public partial class SimulationPanel : SessionPanel
             Number("sim_def_dodged", "Атак уклонено", d.AttacksDodged, BreakdownText.Whole, note);
             foreach (var (type, dmg) in d.IncomingBeforeMitigation)
                 Number("sim_def_incoming_" + type.ToString().ToLowerInvariant(),
-                    $"Входящий урон до защиты ({BreakdownText.DamageTypeName(type)})", dmg, BreakdownText.Whole, note);
+                    $"Входящий урон до защиты ({BreakdownText.DamageTypeName(type)})", dmg, BreakdownText.Whole, note, GameIcons.Damage(type));
             Number("sim_def_armor", "Снято броней", d.MitigatedByArmor, BreakdownText.Whole, note);
             Number("sim_def_resist", "Снято сопротивлениями", d.MitigatedByResist, BreakdownText.Whole, note);
             if (result.DamageTaken != null)
                 foreach (var (type, dmg) in result.DamageTaken)
                     Number("sim_def_taken_" + type.ToString().ToLowerInvariant(),
-                        $"Получено урона ({BreakdownText.DamageTypeName(type)})", dmg, BreakdownText.Whole, note);
+                        $"Получено урона ({BreakdownText.DamageTypeName(type)})", dmg, BreakdownText.Whole, note, GameIcons.Damage(type));
             Number("sim_def_regen", "Восстановлено здоровья", d.LifeRegenerated, BreakdownText.Whole, note);
         }
 
@@ -343,7 +344,12 @@ public partial class SimulationPanel : SessionPanel
                 CustomMinimumSize = new Vector2(0, 320),
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
             };
-            Log.AddText(string.Join("\n", result.Log.Select(e => $"[{BreakdownText.Seconds(e.Time)} с] {BreakdownText.EventKindName(e.Kind)}: {e.Text}")));
+            foreach (var e in result.Log)
+            {
+                var icon = GameIcons.Ailment(e.AilmentId) ?? GameIcons.Skill(e.SkillId);
+                if (icon != null) Log.AddImage(icon, 20, 20);
+                Log.AddText($" [{BreakdownText.Seconds(e.Time)} с] {BreakdownText.EventKindName(e.Kind)}: {e.Text}\n");
+            }
             Content.AddChild(Log);
         }
     }
@@ -357,9 +363,11 @@ public partial class SimulationPanel : SessionPanel
     private void Header(string text) => AddText(text + ":", Amber);
 
     /// <summary>A result number: the formatted value is put into the label, so NumberLabel prints it as is.</summary>
-    private void Number(string key, string caption, double value, Func<double, string> format, string note)
+    private void Number(string key, string caption, double value, Func<double, string> format, string note, Texture2D? icon = null)
     {
         var label = NumberLabel.For(new NumberLine(key, $"{caption}: {format(value)}", value, null, note), _open);
+        label.Icon = icon;
+        label.AddThemeConstantOverride("icon_max_width", 20);
         _numbers.Add(label);
         Content!.AddChild(label);
     }

@@ -1,0 +1,4 @@
+# Temporary engine output and local recovery archives; source art, guides and final previews stay versioned.
+*.log
+*.zip
+godot-user/

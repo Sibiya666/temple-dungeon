@@ -1,0 +1,7 @@
+Ailment ID coverage: 6/6 exact match to data/ailments.json.
+DamageType enum names: 6/6 checked against core enum.
+PNG exports: 66/66 square dimensions match filename; 30 micro-symbol exports have transparent corners.
+SVGs: 9/9 XML-parsed, no external href/script/foreignObject.
+Manifest PNG and frame paths: all exist.
+Asset manifest: 83 files with SHA-256 and dimensions.
+Contact sheet: visually inspected at native sizes; no in-game integration tested.

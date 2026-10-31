@@ -3,6 +3,7 @@ using Dialoid.Core.Explain;
 using Dialoid.Core.Skills;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -199,8 +200,14 @@ public partial class SkillsPanel : SessionPanel
             var text = SkillName(id);
             if (!native.Contains(id)) text += " (предмет)";
             else if (data.Skills.TryGetValue(id, out var def) && def.UnlockLevel > build.Level) text += $" (с {def.UnlockLevel} ур.)";
-            box.AddItem(text);
+            if (GameIcons.Skill(id) is { } icon)
+            {
+                box.AddIconItem(icon, text);
+                box.GetPopup().SetItemIconMaxWidth(box.ItemCount - 1, 24);
+            }
+            else box.AddItem(text);
         }
+        box.AddThemeConstantOverride("icon_max_width", 24);
         box.Selected = choices.IndexOf(current?.SkillId);
         box.ItemSelected += i => SelectSkill(slot, choices[(int)i]);
         row.AddChild(box);
@@ -245,7 +252,10 @@ public partial class SkillsPanel : SessionPanel
             return;
         }
 
-        AddText($"Дерево скилла «{skill.Name}» (слот {_treeSlot + 1})");
+        var heading = new HBoxContainer();
+        if (GameIcons.Skill(slot.SkillId) is { } picture) heading.AddChild(GameIcons.View(picture, 32));
+        heading.AddChild(new Label { Text = $"Дерево скилла «{skill.Name}» (слот {_treeSlot + 1})" });
+        Content!.AddChild(heading);
         var levelNumber = NumberLabel.For(LevelLine(slot.Level, _treeSlot), _open, skill.Name);
         _skillNumbers.Add(levelNumber);
         Content!.AddChild(levelNumber);
@@ -267,6 +277,7 @@ public partial class SkillsPanel : SessionPanel
             if (reason != null) tooltip += "\nСейчас нельзя: " + reason;
 
             var row = new HBoxContainer { TooltipText = tooltip };
+            if (GameIcons.Effects(node.Effects) is { } nodeIcon) row.AddChild(GameIcons.View(nodeIcon, 18));
             var name = new Label
             {
                 Text = $"{node.Name} — {have}/{node.MaxPoints}",
@@ -326,6 +337,7 @@ public partial class SkillsPanel : SessionPanel
             int index = i;
             var row = new HBoxContainer();
             var mark = Session.IsGeneratorSkill(order[i]) ? GeneratorMark : "";
+            if (GameIcons.Skill(order[i]) is { } rotationIcon) row.AddChild(GameIcons.View(rotationIcon, 20));
             row.AddChild(new Label { Text = $"{i + 1}. {SkillName(order[i])}{mark}", CustomMinimumSize = new Vector2(320, 0) });
             var up = new Button { Text = "вверх", Disabled = i == 0 };
             up.Pressed += () => MoveInRotation(index, -1);

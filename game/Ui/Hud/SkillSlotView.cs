@@ -2,6 +2,7 @@ using Dialoid.Core.Simulation;
 using Dialoid.Core.Explain;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui.Hud;
 
@@ -28,6 +29,7 @@ public partial class SkillSlotView : Control
     public const float ShakePixels = 3;
 
     private readonly Control _inner;
+    private readonly TextureRect _icon;
     private readonly Label _name;
     private readonly Label _key;
     private readonly Label _cooldown;
@@ -72,6 +74,13 @@ public partial class SkillSlotView : Control
         _inner.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _inner.Draw += () => _inner.DrawRect(new Rect2(Vector2.Zero, _inner.Size), Background);
         AddChild(_inner);
+        _icon = new TextureRect
+        {
+            Name = "SkillIcon", Position = new Vector2((Width - 32) / 2, 0), Size = new Vector2(32, 32),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        _inner.AddChild(_icon);
 
         _frame = new Control { MouseFilter = MouseFilterEnum.Ignore };
         _frame.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
@@ -126,6 +135,7 @@ public partial class SkillSlotView : Control
     {
         Data = data;
         var info = data.Info;
+        _icon.Texture = GameIcons.Skill(info?.SkillId);
         BlinkLeft = Math.Max(0, BlinkLeft - delta);
         var fade = (float)(BlinkLeft / BlinkSec);
         _inner.Position = new Vector2(BlinkLeft > 0 ? ShakePixels * fade * Mathf.Sin((float)(BlinkLeft * 70)) : 0, 0);

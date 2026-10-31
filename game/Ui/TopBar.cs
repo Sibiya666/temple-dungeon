@@ -1,5 +1,6 @@
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -60,6 +61,7 @@ public partial class TopBar : PanelContainer
                 TooltipText = $"Открыть или закрыть окно «{spec.Title}» — клавиша {GameWindow.KeyName(spec.Key)}",
             };
             var id = spec.Id;
+            GameIcons.Decorate(button, id, 14);
             button.Pressed += () => host.ToggleWindow(id);
             AddKey(button, GameWindow.KeyName(spec.Key));
             _buttons[id] = button;

@@ -2,6 +2,8 @@
 
 namespace Dialoid.Game.Ui;
 
+using Dialoid.Game.Ui.Art;
+
 /// <summary>Ids of the windows over the room (spec §4 «Окна поверх игры»).</summary>
 public static class WindowIds
 {
@@ -494,6 +496,7 @@ public partial class GameWindow : PanelContainer
         box.AddChild(title);
         var row = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         title.AddChild(row);
+        if (GameIcons.Interface(spec.Id) is { } icon) row.AddChild(GameIcons.View(icon, 18));
         TitleLabel = new Label
         {
             Text = $"{spec.Title} ({KeyName(spec.Key)})",
@@ -505,6 +508,8 @@ public partial class GameWindow : PanelContainer
         row.AddChild(TitleLabel);
         CloseButton = new Button { Text = "×", Flat = true, FocusMode = FocusModeEnum.None, TooltipText = "Закрыть (Esc закрывает верхнее окно)", CustomMinimumSize = new Vector2(28, 0) };
         CloseButton.Pressed += () => CloseRequested?.Invoke();
+        GameIcons.Decorate(CloseButton, "close", 14);
+        CloseButton.Text = "";
         ButtonPrompts.Skip(CloseButton); // the gamepad closes with B
         row.AddChild(CloseButton);
 

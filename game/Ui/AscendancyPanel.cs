@@ -2,6 +2,7 @@ using Dialoid.Core.Character;
 using Dialoid.Core.Passives;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -23,6 +24,7 @@ public partial class AscendancyPanel : SessionPanel
     private Label _points = null!;
     private Label _status = null!;
     private Label _hover = null!;
+    private TextureRect _hoverIcon = null!;
     private Label _violations = null!;
     private string? _commandError;
     private string? _info;
@@ -56,6 +58,7 @@ public partial class AscendancyPanel : SessionPanel
         _points = new Label { CustomMinimumSize = new Vector2(260, 0) };
         top.AddChild(_points);
         var fit = new Button { Text = "Вписать" };
+        GameIcons.Decorate(fit, "expand");
         fit.Pressed += () => View.FitToView();
         top.AddChild(fit);
         top.AddChild(PassivePanel.Legend());
@@ -69,7 +72,7 @@ public partial class AscendancyPanel : SessionPanel
         _status = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_status);
         _hover = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        AddChild(_hover);
+        AddChild(GameIcons.Description(_hover, out _hoverIcon));
 
         View = new TreeView { SizeFlagsVertical = SizeFlags.ExpandFill, SizeFlagsHorizontal = SizeFlags.ExpandFill, DescriptionInPanel = true };
         View.CustomMinimumSize = new Vector2(0, 300);
@@ -131,6 +134,13 @@ public partial class AscendancyPanel : SessionPanel
         AscendancyChoices = choices;
         _selector.Clear();
         foreach (var id in choices) _selector.AddItem(id == null ? "(нет)" : data.Ascendancies[id].Name);
+        _selector.AddThemeConstantOverride("icon_max_width", 24);
+        for (int i = 1; i < choices.Count; i++)
+        {
+            var start = data.Ascendancies[choices[i]!].Start;
+            _selector.SetItemIcon(i, GameIcons.Perk(start.Id, start.Effects));
+            _selector.GetPopup().SetItemIconMaxWidth(i, 24);
+        }
         _selector.Selected = Math.Max(0, choices.IndexOf(build.AscendancyId));
         bool locked = build.Level < BuildRules.AscendancyUnlockLevel;
         _selector.Disabled = locked && build.AscendancyId == null;
@@ -171,14 +181,15 @@ public partial class AscendancyPanel : SessionPanel
     /// <summary>Start in the centre, notables on a circle in data order starting at the top.</summary>
     public static List<TreeViewNode> Layout(Ascendancy asc)
     {
-        var nodes = new List<TreeViewNode> { new(asc.Start.Id, Vector2.Zero, 30f, asc.Start.Name, null, TooltipOf(asc.Start, true)) };
+        var nodes = new List<TreeViewNode> { new(asc.Start.Id, Vector2.Zero, 30f, asc.Start.Name, null, TooltipOf(asc.Start, true))
+            { Icon = GameIcons.Perk(asc.Start.Id, asc.Start.Effects) } };
         int count = asc.Notables.Count;
         for (int i = 0; i < count; i++)
         {
             var n = asc.Notables[i];
             float angle = -Mathf.Pi / 2 + Mathf.Tau * i / count;
             nodes.Add(new TreeViewNode(n.Id, new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * LayoutRadius, 22f, n.Name,
-                n.Cost.ToString(), TooltipOf(n, false)));
+                n.Cost.ToString(), TooltipOf(n, false)) { Icon = GameIcons.Perk(n.Id, n.Effects) });
         }
         return nodes;
     }
@@ -201,6 +212,7 @@ public partial class AscendancyPanel : SessionPanel
 
     private void UpdateHover()
     {
+        _hoverIcon.Texture = View.Nodes.FirstOrDefault(n => n.Id == View.HoveredId)?.Icon ?? GameIcons.Interface("ascendancy");
         var asc = Current();
         if (asc == null)
         {

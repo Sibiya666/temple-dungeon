@@ -2,6 +2,7 @@ using Dialoid.Core.Character;
 using Dialoid.Core.Explain;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -100,6 +101,13 @@ public partial class CharacterPanel : SessionPanel
         // Class.
         var classIds = data.Classes.Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
         var classBox = Options(classIds.Select(id => data.Classes[id].Name), classIds.IndexOf(build.ClassId));
+        classBox.Name = "ClassChoice";
+        classBox.AddThemeConstantOverride("icon_max_width", 24);
+        for (int i = 0; i < classIds.Count; i++)
+        {
+            classBox.SetItemIcon(i, GameIcons.Class(classIds[i]));
+            classBox.GetPopup().SetItemIconMaxWidth(i, 24);
+        }
         classBox.ItemSelected += i => SelectClass(classIds[(int)i]);
         Row("Класс (смена сбрасывает билд)", classBox);
 
@@ -137,6 +145,13 @@ public partial class CharacterPanel : SessionPanel
         ascIds.AddRange(data.Ascendancies.Values.Where(a => a.ClassId == build.ClassId)
             .OrderBy(a => a.Id, StringComparer.Ordinal).Select(a => (string?)a.Id));
         var ascBox = Options(ascIds.Select(id => id == null ? "(нет)" : data.Ascendancies[id].Name), ascIds.IndexOf(build.AscendancyId));
+        ascBox.AddThemeConstantOverride("icon_max_width", 24);
+        for (int i = 1; i < ascIds.Count; i++)
+        {
+            var start = data.Ascendancies[ascIds[i]!].Start;
+            ascBox.SetItemIcon(i, GameIcons.Perk(start.Id, start.Effects));
+            ascBox.GetPopup().SetItemIconMaxWidth(i, 24);
+        }
         ascBox.Disabled = build.Level < BuildRules.AscendancyUnlockLevel && build.AscendancyId == null;
         ascBox.ItemSelected += i => SelectAscendancy(ascIds[(int)i]);
         Row("Асцендант", ascBox,
@@ -147,6 +162,12 @@ public partial class CharacterPanel : SessionPanel
         weaponIds.AddRange(data.Weapons.Keys.OrderBy(k => k, StringComparer.Ordinal).Select(k => (string?)k));
         var weaponBox = Options(weaponIds.Select(id => id == null ? "(нет)" : data.Weapons[id].Name),
             weaponIds.IndexOf(build.WeaponId));
+        weaponBox.AddThemeConstantOverride("icon_max_width", 24);
+        for (int i = 1; i < weaponIds.Count; i++)
+        {
+            weaponBox.SetItemIcon(i, GameIcons.Weapon(weaponIds[i]));
+            weaponBox.GetPopup().SetItemIconMaxWidth(i, 24);
+        }
         weaponBox.ItemSelected += i => SelectWeapon(weaponIds[(int)i]);
         WeaponOptions = weaponBox;
         WeaponChoices = weaponIds;
@@ -158,6 +179,8 @@ public partial class CharacterPanel : SessionPanel
         {
             var id = item.Id;
             var box = new CheckBox { Text = item.Name, ButtonPressed = build.ItemIds.Contains(id) };
+            box.Icon = id == "ring_of_mist" ? GameIcons.Symbol("ring") : GameIcons.Skill(item.GrantsSkill);
+            box.AddThemeConstantOverride("icon_max_width", 24);
             box.Toggled += _ => ToggleItem(id);
             _itemBoxes.Add(box);
             Content!.AddChild(box);
