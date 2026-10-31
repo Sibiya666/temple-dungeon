@@ -1,0 +1,402 @@
+[
+  {
+    "group": "skills",
+    "id": "cleave",
+    "subject": "",
+    "ref": "cleave",
+    "source": "venice",
+    "prompt": null,
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/cleave.png",
+    "generatedSource": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-10-31-venice-tower-icons/cleave.png"
+  },
+  {
+    "group": "skills",
+    "id": "crush",
+    "subject": "a heavy square-headed war hammer striking one thin impact wedge",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a heavy square-headed war hammer striking one thin impact wedge. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/crush.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-e771c4fb-f11e-47cb-b7d2-1b4ef8c23979.png"
+  },
+  {
+    "group": "skills",
+    "id": "battle_cry",
+    "subject": "a curved war horn with two restrained sound arcs",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a curved war horn with two restrained sound arcs. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/battle_cry.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-892525d6-ef02-4660-a97e-d0321af04169.png"
+  },
+  {
+    "group": "skills",
+    "id": "whirlwind",
+    "subject": "a steel blade inside one circular sweeping cut",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a steel blade inside one circular sweeping cut. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/whirlwind.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-ae108b06-2155-4bd9-9e25-df9863067f4e.png"
+  },
+  {
+    "group": "skills",
+    "id": "charge",
+    "subject": "a forward-leaning shield with two short motion strokes",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a forward-leaning shield with two short motion strokes. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/charge.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-be82e3c8-891b-4a8f-b91d-94727d8f01be.png"
+  },
+  {
+    "group": "skills",
+    "id": "throwing_axe",
+    "subject": "a single-bladed throwing axe with one curved flight trail",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a single-bladed throwing axe with one curved flight trail. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/throwing_axe.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-6187be38-f196-4a11-9191-cfb42fbed4dc.png"
+  },
+  {
+    "group": "skills",
+    "id": "spark",
+    "subject": "one short branching lightning bolt, pale ivory with a tiny cold-blue accent",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one short branching lightning bolt, pale ivory with a tiny cold-blue accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/spark.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-e4d04373-3032-45fa-80c6-1915a3ba3fc5.png"
+  },
+  {
+    "group": "skills",
+    "id": "fireball",
+    "subject": "",
+    "ref": "cleave",
+    "source": "venice",
+    "prompt": null,
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/fireball.png",
+    "generatedSource": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-10-31-venice-tower-icons/fireball.png"
+  },
+  {
+    "group": "skills",
+    "id": "ice_lance",
+    "subject": "a single slender ice spear, pale cold-blue edge",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a single slender ice spear, pale cold-blue edge. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/ice_lance.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-d6402bb9-80cf-44a5-b329-6c760eaf4e94.png"
+  },
+  {
+    "group": "skills",
+    "id": "ball_lightning",
+    "subject": "a small circular coil of lightning around a dark center, pale blue restrained arcs",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small circular coil of lightning around a dark center, pale blue restrained arcs. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/ball_lightning.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-0d193946-ea2f-450d-878e-c9b9c6a719bb.png"
+  },
+  {
+    "group": "skills",
+    "id": "meteor",
+    "subject": "one small descending ember with a long diagonal trail, muted red and ivory",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one small descending ember with a long diagonal trail, muted red and ivory. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/meteor.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-5f6d0277-57ab-4e1f-92e1-84c074f36c72.png"
+  },
+  {
+    "group": "skills",
+    "id": "blink",
+    "subject": "a narrow portal with a small offset shadow silhouette, faint violet accent",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a narrow portal with a small offset shadow silhouette, faint violet accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/blink.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-9f7d8786-1656-4f64-b9db-465c7ebe1869.png"
+  },
+  {
+    "group": "skills",
+    "id": "poison_cloud",
+    "subject": "a low contained cloud with three rising curls, muted dull green edge",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a low contained cloud with three rising curls, muted dull green edge. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/skills/poison_cloud.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-d64d981b-79ba-4dc3-98f9-25c8ac939e32.png"
+  },
+  {
+    "group": "ailments",
+    "id": "bleed",
+    "subject": "a single blood drop crossed by a thin cut, dark crimson accent",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a single blood drop crossed by a thin cut, dark crimson accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/ailments/bleed.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-b4cd033c-fe10-4db0-acfc-e66fb11bab53.png"
+  },
+  {
+    "group": "ailments",
+    "id": "ignite",
+    "subject": "a small upright flame above one coal, muted ember red",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small upright flame above one coal, muted ember red. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/ailments/ignite.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-e521a36d-4374-403a-adca-a22e1e24bb1f.png"
+  },
+  {
+    "group": "ailments",
+    "id": "poison",
+    "subject": "a small poison drop with two restrained vapor curls, muted dull green",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small poison drop with two restrained vapor curls, muted dull green. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/ailments/poison.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-01130be8-fc4f-4bb7-a987-c30a8f6104c8.png"
+  },
+  {
+    "group": "ailments",
+    "id": "shock",
+    "subject": "one jagged bolt inside a broken ring, faint cold-blue accent",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one jagged bolt inside a broken ring, faint cold-blue accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/ailments/shock.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-d1287381-812f-4280-b140-d77ff5d6b29f.png"
+  },
+  {
+    "group": "ailments",
+    "id": "chill",
+    "subject": "a simple three-branch frost crystal, muted pale blue",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a simple three-branch frost crystal, muted pale blue. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/ailments/chill.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-cf27f6cb-5382-4a08-9238-568d6ae2a01f.png"
+  },
+  {
+    "group": "ailments",
+    "id": "freeze",
+    "subject": "one solid faceted ice crystal with a small trapped dark center, pale cold blue",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one solid faceted ice crystal with a small trapped dark center, pale cold blue. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/ailments/freeze.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-f3d48de5-7c4c-4693-87bf-bbccd905d6a2.png"
+  },
+  {
+    "group": "perks",
+    "id": "keystone_avatar_of_fire",
+    "subject": "a small human upper-body silhouette merging into one flame, muted red accent",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small human upper-body silhouette merging into one flame, muted red accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/perks/keystone_avatar_of_fire.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-58e5a577-9243-4764-b8ac-22181d051288.png"
+  },
+  {
+    "group": "perks",
+    "id": "keystone_blade_dance",
+    "subject": "two crossed slender steel blades inside one circular sweeping line",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with two crossed slender steel blades inside one circular sweeping line. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/perks/keystone_blade_dance.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-e2b2a210-7419-458a-bf92-6131a0fe8c4a.png"
+  },
+  {
+    "group": "perks",
+    "id": "keystone_inevitability",
+    "subject": "a heavy downward arrow passing through a thin broken shield ring",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a heavy downward arrow passing through a thin broken shield ring. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/perks/keystone_inevitability.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-cec8db10-5eee-43b8-8936-99c4bce62418.png"
+  },
+  {
+    "group": "perks",
+    "id": "keystone_stone_skin",
+    "subject": "a protective breastplate formed of three broad smooth slabs, no stone texture",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a protective breastplate formed of three broad smooth slabs, no stone texture. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/perks/keystone_stone_skin.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-5c9a13ca-5103-44bc-b7f4-f48192829ad0.png"
+  },
+  {
+    "group": "perks",
+    "id": "keystone_blood_pact",
+    "subject": "two joined hands surrounding a single dark crimson blood drop",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with two joined hands surrounding a single dark crimson blood drop. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/perks/keystone_blood_pact.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-53958191-7571-4af3-adfa-ce16c0de8235.png"
+  },
+  {
+    "group": "perks",
+    "id": "keystone_titan_will",
+    "subject": "an upright iron crown above a plain tall pillar, calm monumental silhouette",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with an upright iron crown above a plain tall pillar, calm monumental silhouette. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/perks/keystone_titan_will.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-b14dc266-4985-41a8-8cb9-e29865b2355b.png"
+  },
+  {
+    "group": "equipment",
+    "id": "sword",
+    "subject": "one plain upright longsword, steel blade and simple crossguard",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one plain upright longsword, steel blade and simple crossguard. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/equipment/sword.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-6e692eca-0dbb-48e6-9551-6bf6ad1ac956.png"
+  },
+  {
+    "group": "equipment",
+    "id": "greataxe",
+    "subject": "one heavy two-handed single-bladed axe, long dark haft and pale steel blade",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one heavy two-handed single-bladed axe, long dark haft and pale steel blade. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/equipment/greataxe.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-b5c83c01-59f4-4e62-bc5e-e3c466c887e0.png"
+  },
+  {
+    "group": "equipment",
+    "id": "staff",
+    "subject": "one long plain wooden staff with a modest metal fork and small dim blue stone",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one long plain wooden staff with a modest metal fork and small dim blue stone. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/equipment/staff.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-d3b6cddc-84a7-45e3-84f8-0ecf66e27d85.png"
+  },
+  {
+    "group": "equipment",
+    "id": "wand",
+    "subject": "one short slender wand with a tiny pale tip, clearly shorter than a staff",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one short slender wand with a tiny pale tip, clearly shorter than a staff. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/equipment/wand.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-cc05782b-b3bd-4969-bab4-37a2d9818134.png"
+  },
+  {
+    "group": "classes",
+    "id": "warrior",
+    "subject": "a frontal closed warrior helmet with broad shoulder silhouette, no face",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a frontal closed warrior helmet with broad shoulder silhouette, no face. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/classes/warrior.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-68e31177-9064-4fa1-b372-7c604d609e95.png"
+  },
+  {
+    "group": "classes",
+    "id": "sorcerer",
+    "subject": "a hooded mage silhouette with a small pale arcane star at the chest, no face",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a hooded mage silhouette with a small pale arcane star at the chest, no face. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/classes/sorcerer.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-35f897fa-d46d-4315-a32d-d58fd8ba0625.png"
+  },
+  {
+    "group": "items",
+    "id": "potion_health",
+    "subject": "one simple glass potion bottle, narrow neck and cork, small dark crimson liquid fill",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one simple glass potion bottle, narrow neck and cork, small dark crimson liquid fill. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/items/potion_health.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-45ae9e7e-83b1-4b91-90cb-6117d7b7a877.png"
+  },
+  {
+    "group": "buffs",
+    "id": "battle_cry",
+    "subject": "a curved war horn enclosed by one protective thin wave",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a curved war horn enclosed by one protective thin wave. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/buffs/battle_cry.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-337b0527-5a23-40cb-8727-d0c31c73c596.png"
+  },
+  {
+    "group": "buffs",
+    "id": "cleave_frenzy",
+    "subject": "one steel gauntlet with two short motion cuts",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one steel gauntlet with two short motion cuts. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/buffs/cleave_frenzy.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-7fd58d9e-91bd-465f-a0cd-d501d5d25103.png"
+  },
+  {
+    "group": "buffs",
+    "id": "inspiration",
+    "subject": "a small pale arcane drop held between two open brackets, faint amber accent",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small pale arcane drop held between two open brackets, faint amber accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/buffs/inspiration.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-c43d1447-5332-4518-82ff-71464c619f4a.png"
+  },
+  {
+    "group": "buffs",
+    "id": "steel_skin",
+    "subject": "",
+    "ref": "steel_skin",
+    "source": "venice",
+    "prompt": null,
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/buffs/steel_skin.png",
+    "generatedSource": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-10-31-venice-tower-icons/steel_skin.png"
+  },
+  {
+    "group": "buffs",
+    "id": "blink_focus",
+    "subject": "one four-point star framed by a narrow broken portal, tiny muted violet accent",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one four-point star framed by a narrow broken portal, tiny muted violet accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/buffs/blink_focus.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-d2a9e7f7-33aa-4b62-98ad-50a510a372df.png"
+  },
+  {
+    "group": "buffs",
+    "id": "phase_barrier",
+    "subject": "a faceted protective ward with three clean overlapping planes",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a faceted protective ward with three clean overlapping planes. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/buffs/phase_barrier.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-0e3cb0b9-4ebe-4e4c-9fd1-f0ebda7fb66f.png"
+  },
+  {
+    "group": "buffs",
+    "id": "berserk_frenzy",
+    "subject": "a clenched gauntlet breaking one short chain link, tiny crimson accent",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a clenched gauntlet breaking one short chain link, tiny crimson accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/buffs/berserk_frenzy.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-1eb2d9dc-7877-42d6-a6d6-112111befe0b.png"
+  },
+  {
+    "group": "buffs",
+    "id": "static_charge",
+    "subject": "one coiled lightning filament with three distinct short arc segments, muted blue",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one coiled lightning filament with three distinct short arc segments, muted blue. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon.",
+    "master": "assets/icons/2026-10-31-tower-rollout/masters/buffs/static_charge.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-bf2d638c-171a-49e8-806a-4e0e16d86e49.png"
+  }
+]

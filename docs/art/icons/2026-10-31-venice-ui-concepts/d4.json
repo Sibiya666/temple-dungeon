@@ -1,0 +1,12 @@
+{
+  "service": "Venice API",
+  "mode": "generate",
+  "model": "seedream-v5-pro",
+  "seed": 731102,
+  "input_image": "",
+  "prompt": "Original dark fantasy ARPG interface concept inspired by Diablo IV, not copied assets. Square full-screen SKILLS menu, severe gothic horror, sober realistic painterly materials, subdued charcoal iron, faded ivory typography, oxblood accents. UNIQUE DESIGN: nearly borderless black fullscreen overlay over an out-of-focus ruined chapel. A tall narrow list of six skill categories sits at far left with small monochrome etched glyphs; center is a sparse vertical skill tree with crisp angular diamond nodes and thin red connections, selected node has a tiny pale glow; right is a clean restrained description pane with small square slash icon, short English title CLEAVE, two concise stat lines and a minimal red confirm button. Bottom narrow hotkey strip. No decorative item still life, no gold, no wood, no parchment book, no saturated jewel sockets, no big icon gallery. Deep negative space, haunting atmospheric depth, smooth smoky gradients, elegant fine iron edges and typography. Actual legible interface concept, not a moodboard, no pervasive stone noise, no logo.",
+  "negative_prompt": "watermark, logo, illegible dense text, uniform stone texture, gritty noise overlay, identical panel layout, photographic monitor, device mockup",
+  "blurred": "false",
+  "date": "2026-10-31T12:33:15",
+  "license_note": "Venice: personal non-commercial (research stage, owner decision 2026-10-30)"
+}

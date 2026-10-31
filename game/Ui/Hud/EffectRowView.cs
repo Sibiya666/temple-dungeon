@@ -231,8 +231,7 @@ public partial class EffectChip : PanelContainer
     {
         if (!Visible) Visible = true;
         Data = data;
-        _icon.Texture = data.Effect?.Kind == TimedEffectKind.Ailment ? GameIcons.Ailment(data.Id)
-            : data.Effect != null ? GameIcons.Buff(data.Id) : null;
+        _icon.Texture = data.Effect != null ? GameIcons.Timed(data.Effect) : null;
         _icon.Visible = _icon.Texture != null;
         if (_label.Text != data.Text) _label.Text = data.Text;
         SetAccent(data.Accent);

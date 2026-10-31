@@ -1,0 +1,14 @@
+[
+  {
+    "id": "whirlwind",
+    "group": "skills",
+    "prompt": "Edit this icon. Remove the entire sword AND its crescent trail. In their place draw two short steel blades at opposite points of ONE complete circular sweep, clearly a rotating ring viewed frontally, not a diagonal slash. Central symbol occupies 70% of canvas, no clipping. Preserve the reference background, palette, exposure, soft light and restrained material rendering. No style enhancement, new glow, expressive strokes, texture, particles, text or frame.",
+    "hint": "Generated images are saved to C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc as C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-8b9e3596-2a21-4917-974a-beaaa2d38297.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+  },
+  {
+    "id": "wand",
+    "group": "equipment",
+    "prompt": "Edit this icon. Remove the entire sword, crossguard AND crescent trail. Replace with ONE SHORT plain wooden magic wand, a straight dark rod with a small ivory metal cap at its tip. No blade, no crossguard, no staff head. Diagonal orientation, central symbol occupies 65% of canvas. Preserve background, palette, exposure, contrast, soft light and restrained material rendering. No glow, style enhancement, expressive strokes, texture, particles, text or frame.",
+    "hint": "Generated images are saved to C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc as C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-0df3c171-8250-406c-974d-08e1fbbf8c17.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+  }
+]

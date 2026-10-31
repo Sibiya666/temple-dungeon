@@ -1,0 +1,10 @@
+{
+  "icon": {
+    "ref": "2026-10-31-venice-tower-icons/cleave.png",
+    "prompt": "Edit the supplied image. Change ONLY the sword into a single-bladed battle axe, in the same diagonal orientation and occupying the same bounding box. Keep the existing crescent slash trail. Preserve the original background, lighting, palette, exposure, contrast, edge softness, material rendering and level of detail. Match the reference's thin pale metal shapes. Do not reinterpret or enhance the art style. Do not add glow, rim light, brush strokes, bevels, particles, texture, ornament, text or a frame. Everything outside the weapon stays unchanged."
+  },
+  "background": {
+    "ref": "2026-10-31-venice-tower-backgrounds/skills.png",
+    "prompt": "Edit the supplied image. Change ONLY the small sword standing beside the lectern into a slender plain staff of the same height. Keep the lectern and all architecture exactly as they are. Preserve the original framing, background, lighting, palette, exposure, contrast, edge softness, haze and level of detail. Preserve the dark lower area exactly. Do not reinterpret, sharpen, relight or enhance the art style. Do not add glow, brush strokes, texture, ornament or objects. Everything outside the small sword stays unchanged."
+  }
+}

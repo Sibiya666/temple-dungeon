@@ -1,0 +1,322 @@
+[
+  {
+    "group": "skills",
+    "id": "cleave",
+    "subject": "",
+    "ref": "cleave",
+    "source": "venice",
+    "prompt": null
+  },
+  {
+    "group": "skills",
+    "id": "crush",
+    "subject": "a heavy square-headed war hammer striking one thin impact wedge",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a heavy square-headed war hammer striking one thin impact wedge. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "battle_cry",
+    "subject": "a curved war horn with two restrained sound arcs",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a curved war horn with two restrained sound arcs. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "whirlwind",
+    "subject": "a steel blade inside one circular sweeping cut",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a steel blade inside one circular sweeping cut. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "charge",
+    "subject": "a forward-leaning shield with two short motion strokes",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a forward-leaning shield with two short motion strokes. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "throwing_axe",
+    "subject": "a single-bladed throwing axe with one curved flight trail",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a single-bladed throwing axe with one curved flight trail. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "spark",
+    "subject": "one short branching lightning bolt, pale ivory with a tiny cold-blue accent",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one short branching lightning bolt, pale ivory with a tiny cold-blue accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "fireball",
+    "subject": "",
+    "ref": "cleave",
+    "source": "venice",
+    "prompt": null
+  },
+  {
+    "group": "skills",
+    "id": "ice_lance",
+    "subject": "a single slender ice spear, pale cold-blue edge",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a single slender ice spear, pale cold-blue edge. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "ball_lightning",
+    "subject": "a small circular coil of lightning around a dark center, pale blue restrained arcs",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small circular coil of lightning around a dark center, pale blue restrained arcs. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "meteor",
+    "subject": "one small descending ember with a long diagonal trail, muted red and ivory",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one small descending ember with a long diagonal trail, muted red and ivory. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "blink",
+    "subject": "a narrow portal with a small offset shadow silhouette, faint violet accent",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a narrow portal with a small offset shadow silhouette, faint violet accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "skills",
+    "id": "poison_cloud",
+    "subject": "a low contained cloud with three rising curls, muted dull green edge",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a low contained cloud with three rising curls, muted dull green edge. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "ailments",
+    "id": "bleed",
+    "subject": "a single blood drop crossed by a thin cut, dark crimson accent",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a single blood drop crossed by a thin cut, dark crimson accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "ailments",
+    "id": "ignite",
+    "subject": "a small upright flame above one coal, muted ember red",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small upright flame above one coal, muted ember red. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "ailments",
+    "id": "poison",
+    "subject": "a small poison drop with two restrained vapor curls, muted dull green",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small poison drop with two restrained vapor curls, muted dull green. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "ailments",
+    "id": "shock",
+    "subject": "one jagged bolt inside a broken ring, faint cold-blue accent",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one jagged bolt inside a broken ring, faint cold-blue accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "ailments",
+    "id": "chill",
+    "subject": "a simple three-branch frost crystal, muted pale blue",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a simple three-branch frost crystal, muted pale blue. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "ailments",
+    "id": "freeze",
+    "subject": "one solid faceted ice crystal with a small trapped dark center, pale cold blue",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one solid faceted ice crystal with a small trapped dark center, pale cold blue. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "perks",
+    "id": "keystone_avatar_of_fire",
+    "subject": "a small human upper-body silhouette merging into one flame, muted red accent",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small human upper-body silhouette merging into one flame, muted red accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "perks",
+    "id": "keystone_blade_dance",
+    "subject": "two crossed slender steel blades inside one circular sweeping line",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with two crossed slender steel blades inside one circular sweeping line. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "perks",
+    "id": "keystone_inevitability",
+    "subject": "a heavy downward arrow passing through a thin broken shield ring",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a heavy downward arrow passing through a thin broken shield ring. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "perks",
+    "id": "keystone_stone_skin",
+    "subject": "a protective breastplate formed of three broad smooth slabs, no stone texture",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a protective breastplate formed of three broad smooth slabs, no stone texture. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "perks",
+    "id": "keystone_blood_pact",
+    "subject": "two joined hands surrounding a single dark crimson blood drop",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with two joined hands surrounding a single dark crimson blood drop. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "perks",
+    "id": "keystone_titan_will",
+    "subject": "an upright iron crown above a plain tall pillar, calm monumental silhouette",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with an upright iron crown above a plain tall pillar, calm monumental silhouette. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "equipment",
+    "id": "sword",
+    "subject": "one plain upright longsword, steel blade and simple crossguard",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one plain upright longsword, steel blade and simple crossguard. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "equipment",
+    "id": "greataxe",
+    "subject": "one heavy two-handed single-bladed axe, long dark haft and pale steel blade",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one heavy two-handed single-bladed axe, long dark haft and pale steel blade. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "equipment",
+    "id": "staff",
+    "subject": "one long plain wooden staff with a modest metal fork and small dim blue stone",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one long plain wooden staff with a modest metal fork and small dim blue stone. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "equipment",
+    "id": "wand",
+    "subject": "one short slender wand with a tiny pale tip, clearly shorter than a staff",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one short slender wand with a tiny pale tip, clearly shorter than a staff. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "classes",
+    "id": "warrior",
+    "subject": "a frontal closed warrior helmet with broad shoulder silhouette, no face",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a frontal closed warrior helmet with broad shoulder silhouette, no face. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "classes",
+    "id": "sorcerer",
+    "subject": "a hooded mage silhouette with a small pale arcane star at the chest, no face",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a hooded mage silhouette with a small pale arcane star at the chest, no face. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "items",
+    "id": "potion_health",
+    "subject": "one simple glass potion bottle, narrow neck and cork, small dark crimson liquid fill",
+    "ref": "cleave",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one simple glass potion bottle, narrow neck and cork, small dark crimson liquid fill. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "buffs",
+    "id": "battle_cry",
+    "subject": "a curved war horn enclosed by one protective thin wave",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a curved war horn enclosed by one protective thin wave. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "buffs",
+    "id": "cleave_frenzy",
+    "subject": "one steel gauntlet with two short motion cuts",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one steel gauntlet with two short motion cuts. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "buffs",
+    "id": "inspiration",
+    "subject": "a small pale arcane drop held between two open brackets, faint amber accent",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a small pale arcane drop held between two open brackets, faint amber accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "buffs",
+    "id": "steel_skin",
+    "subject": "",
+    "ref": "steel_skin",
+    "source": "venice",
+    "prompt": null
+  },
+  {
+    "group": "buffs",
+    "id": "blink_focus",
+    "subject": "one four-point star framed by a narrow broken portal, tiny muted violet accent",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one four-point star framed by a narrow broken portal, tiny muted violet accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "buffs",
+    "id": "phase_barrier",
+    "subject": "a faceted protective ward with three clean overlapping planes",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a faceted protective ward with three clean overlapping planes. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "buffs",
+    "id": "berserk_frenzy",
+    "subject": "a clenched gauntlet breaking one short chain link, tiny crimson accent",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with a clenched gauntlet breaking one short chain link, tiny crimson accent. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  },
+  {
+    "group": "buffs",
+    "id": "static_charge",
+    "subject": "one coiled lightning filament with three distinct short arc segments, muted blue",
+    "ref": "steel_skin",
+    "source": "gpt",
+    "prompt": "Edit the supplied icon. Replace ONLY its central object with one coiled lightning filament with three distinct short arc segments, muted blue. Keep the replacement in the same central footprint, fully visible with generous dark margin. Preserve the reference background, palette, exposure, contrast, light direction, edge softness, restrained surface rendering and level of detail. Match the thin pale ivory/silver silhouette and deep dark masses. Do not reinterpret or enhance the art style. Do not add glow, rim lighting, expressive brush strokes, shiny bevels, particles, texture overlay, gold ornament, text or frame. Everything outside the central object stays unchanged. Square single icon."
+  }
+]

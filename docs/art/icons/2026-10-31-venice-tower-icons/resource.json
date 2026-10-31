@@ -1,0 +1,12 @@
+{
+  "service": "Venice API",
+  "mode": "edit",
+  "model": "seedream-v5-pro-edit",
+  "seed": 0,
+  "input_image": "./docs/art/icons/2026-10-31-venice-ui-concepts/d4.png",
+  "prompt": "Use the reference ONLY as art-direction reference, not as a layout to reproduce. Produce ONE square original ARPG ability icon, no interface screen, no text, no outer frame. Match its restrained gothic tower-world aesthetic: fine pale ivory and cold silver etched silhouette, subtle realistic painted depth, charcoal almost-black smooth background, deep soft shadows, selective dim edge illumination like cold window light inside an ancient tower. Minimal elegant symbolic composition, large strong readable silhouette at 32px. NO stone grain, cracks, chipped rock, gritty noise, bright gold, cartoon, neon, rainbow or excessive glow. Keep the symbol within central 80%, dark breathing room. Subject: a slender suspended drop of pale blue arcane liquid beneath a tall narrow gothic arch, a subtle descending thread of light linking them, symbolic tower-waterfall resource. Very sparse cool accent, no landscape or UI meter.",
+  "negative_prompt": "",
+  "blurred": "false",
+  "date": "2026-10-31T12:38:29",
+  "license_note": "Venice: personal non-commercial (research stage, owner decision 2026-10-30)"
+}

@@ -1,5 +1,6 @@
 using Dialoid.Core.Combat;
 using Dialoid.Core.Effects;
+using Dialoid.Core.Simulation;
 using Godot;
 
 namespace Dialoid.Game.Ui.Art;
@@ -15,6 +16,10 @@ public static class GameIcons
     };
     private static readonly HashSet<string> Ailments = new(StringComparer.Ordinal)
         { "bleed", "ignite", "poison", "shock", "chill", "freeze" };
+    private static readonly HashSet<string> PaintedBuffs = new(StringComparer.Ordinal)
+    {
+        "battle_cry", "cleave_frenzy", "inspiration", "steel_skin", "blink_focus", "phase_barrier", "berserk_frenzy", "static_charge",
+    };
     private static readonly Dictionary<string, Texture2D> Cache = new(StringComparer.Ordinal);
     private static readonly HashSet<string> Symbols = new(StringComparer.Ordinal)
     {
@@ -33,7 +38,7 @@ public static class GameIcons
     public static Texture2D? Ailment(string? id) => id != null && Ailments.Contains(id) ? Load("ailments/" + id + ".png") : null;
 
     public static Texture2D? Damage(DamageType type) => Enum.IsDefined(type)
-        ? Load("damage/" + type.ToString().ToLowerInvariant() + ".png") : null;
+        ? Load("damage/" + type.ToString().ToLowerInvariant() + ".svg") : null;
 
     public static Texture2D? HealthPotion() => Load("items/potion_health.png");
 
@@ -97,20 +102,29 @@ public static class GameIcons
         };
     }
 
-    public static Texture2D? Buff(string id) => Symbol(id switch
+    public static Texture2D? Buff(string id) => PaintedBuffs.Contains(id) ? Load("buffs/" + id + ".png") : Symbol(id switch
     {
-        "steel_skin" or "steel_cocoon" or "armored_charge" or "hardened_body" or "ice_carapace" or
-        "ion_shield" or "phase_barrier" or "steel_will" or "spark_ward" or "ash_veil" => "armor",
-        "battle_cry" or "intimidation" or "ancestral_fury" or "blood_cry" => "str",
-        "battle_rhythm" or "cleave_frenzy" or "endless_rage" or "spark_rush" or "blink_impulse" => "speed",
-        "ether_mend" => "health",
-        "inspiration" => "resource",
-        "blink_focus" => "crit",
-        "elusive" or "afterimage" or "mist_cloak" or "frost_wake" => "dex",
-        "binding_lance" or "shoulder_bash" => "mechanic",
-        "unstoppable" or "unyielding" => "will",
+        "steel_cocoon" or "armored_charge" or "ice_carapace" or "steel_will" or "spark_ward" or
+        "ash_veil" or "afterimage" or "mist_cloak" or "frost_wake" or "binding_lance" => "armor",
+        "intimidation" => "offense",
+        "ancestral_fury" => "crit",
+        "battle_rhythm" or "spark_rush" or "blink_impulse" or "shoulder_bash" or "unstoppable" => "speed",
+        "ether_mend" or "hardened_body" or "unyielding" => "health",
+        "blood_cry" or "endless_rage" => "resource",
+        "elusive" or "ion_shield" => "dex",
         _ => "modifier",
     });
+
+    /// <summary>Use the core kind and ID; mechanic buff prefixes and counter keys are not asset filenames.</summary>
+    public static Texture2D? Timed(TimedEffect effect) => effect.Kind switch
+    {
+        TimedEffectKind.Ailment => Ailment(effect.Id),
+        TimedEffectKind.MechanicStack => effect.Id == "static_charge:charges" ? Buff("static_charge") : Symbol("mechanic"),
+        TimedEffectKind.Buff => Buff(effect.Id.StartsWith("mechanic:", StringComparison.Ordinal)
+            ? effect.Id["mechanic:".Length..] : effect.Id),
+        TimedEffectKind.Debuff => Perk(effect.Id, Array.Empty<Effect>()),
+        _ => null,
+    };
 
     public static Texture2D? Symbol(string id) => Symbols.Contains(id) ? Load("symbols/" + id + ".svg") : null;
 

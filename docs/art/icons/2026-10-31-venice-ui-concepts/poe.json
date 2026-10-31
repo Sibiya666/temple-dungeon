@@ -1,0 +1,12 @@
+{
+  "service": "Venice API",
+  "mode": "generate",
+  "model": "seedream-v5-pro",
+  "seed": 731103,
+  "input_image": "",
+  "prompt": "Original dark fantasy ARPG interface concept inspired by Path of Exile, not copied assets. Square full-screen PASSIVES AND GEMS interface, esoteric intricate antique craftsmanship, black leather, aged bronze, muted verdigris, luminous emerald sapphire and ruby. UNIQUE DESIGN: immense circular astrolabe-like passive constellation occupies left two thirds, many tiny circular nodes connected in branching radial paths, several medium engraved notable medallions and one selected large keystone, distinct clusters with ample dark breathing space. Right third is a narrow ornate socketed skill-gem equipment panel: three jewel skill stones linked by delicate gold chains, below a detailed selected skill tooltip with small painted icon and short English lines, bottom an embossed bronze allocation button. Dark teal atmospheric background, filigree only at structural corners, visual depth through gem glints and hairline paths, sober realistic painterly execution. No open book layout, no central vertical diamond tree, no wood, no cartoon chunky frames, no stone grain overlay, no header item still life, no logo. Polished actual game interface concept.",
+  "negative_prompt": "watermark, logo, illegible dense text, uniform stone texture, gritty noise overlay, identical panel layout, photographic monitor, device mockup",
+  "blurred": "false",
+  "date": "2026-10-31T12:33:13",
+  "license_note": "Venice: personal non-commercial (research stage, owner decision 2026-10-30)"
+}

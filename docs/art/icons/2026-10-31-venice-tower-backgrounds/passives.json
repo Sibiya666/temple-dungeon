@@ -1,0 +1,12 @@
+{
+  "service": "Venice API",
+  "mode": "edit",
+  "model": "seedream-v5-pro-edit",
+  "seed": 0,
+  "input_image": "./docs/art/icons/2026-10-31-venice-ui-concepts/d4.png",
+  "prompt": "Use the reference image ONLY for art direction: the approved dark gothic tower-world mood, cold diffuse window light, deep soft shadows, elegant quiet forms. Generate ONE original portrait-oriented-looking fantasy RPG WINDOW BACKGROUND within a square image. This is background art ONLY: no interface, no icons, no text, no nodes, no meters, no border. Architectural depth of an immense ancient tower, tall narrow gothic arches fading into darkness. Refined smooth painterly surfaces, no pervasive stone grain, cracks, rubble, gritty noise or scratched texture. Light reveals form, not surface noise. Restrained charcoal, cool grey-blue, tiny warm accents. Composition essential: thematic atmospheric scene in UPPER 40% and along extreme edges; LOWER 60% dissolves seamlessly into a smooth nearly black gradient with minimal contrast to support live UI text. No central bright spots in lower area. PASSIVES window: a cavernous vaulted tower library seen through receding tall arches, a faint branching pattern of delicate light high on the far wall suggesting accumulated knowledge, not a literal talent tree or UI diagram. A few dark bookcase silhouettes at edges. Serene mysterious depth, lower area completely quiet.",
+  "negative_prompt": "",
+  "blurred": "false",
+  "date": "2026-10-31T12:40:36",
+  "license_note": "Venice: personal non-commercial (research stage, owner decision 2026-10-30)"
+}

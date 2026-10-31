@@ -1,6 +1,8 @@
 using Godot;
 using Dialoid.Game.Ui;
 using Dialoid.Core.Combat;
+using Dialoid.Core.Simulation;
+using Dialoid.Game.Ui.Hud;
 
 namespace Dialoid.Game.Ui.Art;
 
@@ -17,6 +19,22 @@ public partial class IconIntegrationCheck : Node
             AddChild(main);
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             var session = main.Session ?? throw new InvalidOperationException(main.LoadError);
+            foreach (var id in new[] { "battle_cry", "cleave_frenzy", "inspiration", "steel_skin", "blink_focus", "phase_barrier", "berserk_frenzy", "static_charge" })
+                if (GameIcons.Buff(id)?.ResourcePath.EndsWith("/buffs/" + id + ".png", StringComparison.Ordinal) != true)
+                    throw new InvalidOperationException("Buff still uses shared symbol: " + id);
+            var charge = new TimedEffect("static_charge:charges", null, 7) { Kind = TimedEffectKind.MechanicStack };
+            var frenzy = new TimedEffect("mechanic:berserk_frenzy", null, 1) { Kind = TimedEffectKind.Buff };
+            if (GameIcons.Timed(charge) != GameIcons.Buff("static_charge") || GameIcons.Timed(frenzy) != GameIcons.Buff("berserk_frenzy"))
+                throw new InvalidOperationException("Mechanic state ID was treated as an asset filename");
+            if (GameIcons.Timed(new TimedEffect("shock", 2, 1) { Kind = TimedEffectKind.Ailment }) != GameIcons.Ailment("shock"))
+                throw new InvalidOperationException("Ailment art was replaced by buff art");
+            var chip = new EffectChip(ChipFrame.Bronze);
+            AddChild(chip);
+            chip.Show(EffectChipData.From(charge, "Статический заряд"));
+            if (chip.FindChild("EffectIcon", true, false) is not TextureRect painted || painted.Texture != GameIcons.Buff("static_charge")
+                || chip.Text != "Статический заряд: 7") throw new InvalidOperationException("State chip lost actual counter or its art");
+            chip.QueueFree();
+            GD.Print("BUFF_ICONS_OK: 8 distinct paintings, mechanic prefix, actual charge counter, ailment separation");
             foreach (var family in new[] { ("Weapon", session.Data.Weapons.Keys.AsEnumerable()), ("Class", session.Data.Classes.Keys.AsEnumerable()) })
             {
                 var method = typeof(GameIcons).GetMethod(family.Item1) ?? throw new InvalidOperationException("No icon catalog for " + family.Item1);
@@ -102,6 +120,15 @@ public partial class IconIntegrationCheck : Node
                 await Capture("equipment-classes.png");
                 main.CloseAllWindows(); main.OpenWindow(WindowIds.Simulation);
                 await Capture("simulation-icons.png");
+                main.CloseAllWindows();
+                var warrior = main.Builds.References.First(r => r.Path.Contains("warrior_fire_cleave_crit", StringComparison.Ordinal));
+                if (!main.Builds.Load(warrior).Ok) throw new InvalidOperationException("Buff preview build failed");
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                var shout = main.Training!.Slots.FirstOrDefault(s => s?.SkillId == "battle_cry");
+                if (shout == null || !main.Training.Press(shout.Slot, 0, true).Accepted)
+                    throw new InvalidOperationException("Cannot show an actual battle-cry buff");
+                main.Training.Advance(0.3);
+                await Capture("live-buffs.png");
             }
             GetTree().Quit(0);
         }
