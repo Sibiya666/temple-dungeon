@@ -70,6 +70,9 @@ public static class HudFormat
 public sealed record SkillSlotData(int Number, SlotInfo? Info, string KeyText, string ResourceName, double? CooldownLeft, double? CostNow,
     bool ResourceShort, bool Queued, bool Held)
 {
+    public string? AssignedSkillId { get; init; }
+    public string? AssignedName { get; init; }
+    public string? UnavailableReason { get; init; }
     public static SkillSlotData From(int number, SlotInfo? info, LiveState? state, string resourceName, string keyText) => new(
         number, info, keyText, resourceName,
         info != null && state != null && state.CooldownLeftBySlot.TryGetValue(number, out var left) && left > 0 ? left : null,

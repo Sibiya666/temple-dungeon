@@ -3,6 +3,7 @@ using Dialoid.Core.Stats;
 using Dialoid.Game.Input;
 using Dialoid.Game.Ui;
 using Dialoid.Game.Ui.Hud;
+using Dialoid.Game.Ui.Art;
 using Dialoid.Sandbox;
 using Godot;
 
@@ -19,6 +20,7 @@ public sealed partial class SelfTest
     private IEnumerable<Step> HudSteps()
     {
         yield return new("hud.components-standalone", HudComponentsStandalone);
+        yield return new("hud.assigned-slots-without-fight", HudAssignedSlotsWithoutFight);
         yield return new("hud.components-match-state", HudComponentsMatchState);
         yield return new("hud.resource-colours", HudResourceColours);
         yield return new("hud.rows-fold-and-list", HudRowsFold);
@@ -71,6 +73,56 @@ public sealed partial class SelfTest
     }
 
     // ---------- steps ----------
+
+    private async Task HudAssignedSlotsWithoutFight()
+    {
+        var session = SandboxSession.Create(_main.Session!.Data, "warrior");
+        var training = new TrainingRoom(session);
+        training.Attach();
+        var view = new SkillSlotView(1);
+        _main.AddChild(view);
+        try
+        {
+            Check(session.Build.WeaponId == null, "новый воитель уже вооружён");
+            view.Show(CombatHud.DescribeSlot(session, training, 1, "1"), 0);
+            Check(view.NameText == "пусто" && view.IconTexture == null && view.TooltipText.StartsWith("Слот 1 пуст", StringComparison.Ordinal), "новый слот не пуст");
+            Check(session.SetSlotSkill(0, "cleave").Ok, "не назначен cleave без оружия");
+            CheckAssigned("cleave");
+
+            Check(session.SetLevel(60).Ok && session.SetSlotSkill(0, "crush").Ok, "не заменён скилл");
+            CheckAssigned("crush");
+            Check(!view.TooltipText.Contains(session.Data.Skills["cleave"].Name, StringComparison.Ordinal), "подсказка сохранила cleave");
+
+            Check(session.SetSlotSkill(0, null).Ok, "не очищен слот");
+            view.Show(CombatHud.DescribeSlot(session, training, 1, "1"), 0);
+            Check(view.Data!.AssignedSkillId == null && view.Info == null && view.NameText == "пусто" && view.IconTexture == null,
+                "после очистки остались назначение, имя или иконка");
+            Check(view.TooltipText.StartsWith("Слот 1 пуст", StringComparison.Ordinal) && !view.TooltipText.Contains("Недоступен:", StringComparison.Ordinal), "после очистки осталась причина");
+            Check(session.SetSlotSkill(0, "cleave").Ok, "не возвращён cleave");
+            CheckAssigned("cleave");
+            Check(view.CustomMinimumSize == new Vector2(72, 64), "размер слота не 72×64");
+            await NextFrame();
+        }
+        finally
+        {
+            training.Detach();
+            view.QueueFree();
+            await NextFrame();
+        }
+
+        void CheckAssigned(string id)
+        {
+            var data = CombatHud.DescribeSlot(session, training, 1, "1");
+            view.Show(data, 0);
+            Check(!training.Running && training.State == null && training.Slots.All(s => s == null), "без оружия появился бой");
+            Check(data.Info == null && data.AssignedSkillId == id && view.NameText == session.Data.Skills[id].Name, "назначенный скилл скрыт без боя");
+            Check(view.IconTexture != null && view.IconTexture == GameIcons.Skill(id), "иконка не соответствует назначению");
+            Check(training.Violations.Count > 0 && !string.IsNullOrWhiteSpace(data.UnavailableReason)
+                && training.Violations.All(v => view.TooltipText.Contains(v.Message, StringComparison.Ordinal)), "нет причины отсутствия боя");
+            Check(data.CostNow == null && data.CooldownLeft == null && !data.ResourceShort && !data.Queued && !data.Held
+                && !view.TooltipText.Contains("Стоимость:", StringComparison.Ordinal), "без боя показаны выдуманные боевые значения");
+        }
+    }
 
     /// <summary>Each component draws a stand-in record with no room behind it.</summary>
     private async Task HudComponentsStandalone()

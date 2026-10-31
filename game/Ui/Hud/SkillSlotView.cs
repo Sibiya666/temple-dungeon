@@ -16,8 +16,8 @@ namespace Dialoid.Game.Ui.Hud;
 /// </summary>
 public partial class SkillSlotView : Control
 {
-    public const float Width = 112;
-    public const float Height = 72;
+    public const float Width = 72;
+    public const float Height = 64;
     public const double BlinkSec = 0.28;
 
     public static readonly Color Background = new(0.047f, 0.067f, 0.078f, 0.96f);
@@ -34,7 +34,7 @@ public partial class SkillSlotView : Control
     private readonly Label _key;
     private readonly Label _cooldown;
     private readonly Control _frame;
-    private string _tooltipFor = "";
+    private string? _tooltipFor;
     private bool? _empty;
 
     public int Number { get; }
@@ -57,6 +57,7 @@ public partial class SkillSlotView : Control
     public bool Held => Data?.Held ?? false;
     public double BlinkLeft { get; private set; }
     public string NameText => _name.Text;
+    public Texture2D? IconTexture => _icon.Texture;
 
     /// <summary>The colour of the frame drawn now (red only for a short resource).</summary>
     public Color FrameColor { get; private set; }
@@ -95,7 +96,7 @@ public partial class SkillSlotView : Control
             ClipText = true,
             MouseFilter = MouseFilterEnum.Ignore,
         };
-        _name.AddThemeFontSizeOverride("font_size", 14);
+        _name.AddThemeFontSizeOverride("font_size", 12);
         _name.AddThemeConstantOverride("line_spacing", -2);
         _name.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         (_name.OffsetLeft, _name.OffsetRight, _name.OffsetTop, _name.OffsetBottom) = (5, -5, 30, -3);
@@ -113,7 +114,7 @@ public partial class SkillSlotView : Control
         _cooldown.AddThemeColorOverride("font_outline_color", Colors.Black);
         _cooldown.AddThemeConstantOverride("outline_size", 6);
         _cooldown.SetAnchorsAndOffsetsPreset(LayoutPreset.TopWide);
-        (_cooldown.OffsetLeft, _cooldown.OffsetRight, _cooldown.OffsetTop, _cooldown.OffsetBottom) = (18, -18, 0, 32);
+        (_cooldown.OffsetLeft, _cooldown.OffsetRight, _cooldown.OffsetTop, _cooldown.OffsetBottom) = (4, -4, 0, 32);
         _inner.AddChild(_cooldown);
     }
 
@@ -135,16 +136,17 @@ public partial class SkillSlotView : Control
     {
         Data = data;
         var info = data.Info;
-        _icon.Texture = GameIcons.Skill(info?.SkillId);
+        _icon.Texture = GameIcons.Skill(info?.SkillId ?? data.AssignedSkillId);
         BlinkLeft = Math.Max(0, BlinkLeft - delta);
         var fade = (float)(BlinkLeft / BlinkSec);
         _inner.Position = new Vector2(BlinkLeft > 0 ? ShakePixels * fade * Mathf.Sin((float)(BlinkLeft * 70)) : 0, 0);
         if (_key.Text != data.KeyText) _key.Text = data.KeyText;
-        _name.Text = info?.Name ?? "пусто";
-        if (_empty != (info == null)) // a theme override relayouts: only when it changes
+        var empty = info == null && data.AssignedSkillId == null;
+        _name.Text = info?.Name ?? data.AssignedName ?? "пусто";
+        if (_empty != empty) // a theme override relayouts: only when it changes
         {
-            _empty = info == null;
-            _name.AddThemeColorOverride("font_color", info == null ? new Color(0.5f, 0.47f, 0.42f) : new Color(0.93f, 0.9f, 0.84f));
+            _empty = empty;
+            _name.AddThemeColorOverride("font_color", empty ? new Color(0.5f, 0.47f, 0.42f) : new Color(0.93f, 0.9f, 0.84f));
         }
         _cooldown.Visible = data.CooldownLeft != null;
         if (data.CooldownLeft is { } cd) _cooldown.Text = HudFormat.Seconds(cd);
@@ -152,11 +154,13 @@ public partial class SkillSlotView : Control
         FrameColor = data.ResourceShort ? ShortColor : data.Held ? HeldColor : data.Queued ? QueuedColor : EdgeColor;
 
         var costKey = data.CostNow is { } c ? RuNumber.Format(c, "0.#") : "";
-        var tipKey = info == null ? "" : $"{info.SkillId}|{info.Cost}|{info.CostPerSec}|{info.CooldownSec}|{info.UseTimeSec}|{data.ResourceName}|{costKey}";
+        var tipKey = info == null ? $"{data.AssignedSkillId}|{data.AssignedName}|{data.UnavailableReason}" : $"{info.SkillId}|{info.Name}|{info.Cost}|{info.CostPerSec}|{info.CooldownSec}|{info.UseTimeSec}|{data.ResourceName}|{costKey}";
         if (tipKey != _tooltipFor)
         {
             _tooltipFor = tipKey;
-            TooltipText = Tooltip(Number, info, data.ResourceName, data.CostNow);
+            TooltipText = info == null && data.AssignedSkillId != null
+                ? $"{data.AssignedName} — клавиша {Number}\nНедоступен: {data.UnavailableReason}"
+                : Tooltip(Number, info, data.ResourceName, data.CostNow);
         }
         _frame.QueueRedraw();
     }

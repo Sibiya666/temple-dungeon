@@ -12,6 +12,10 @@ public static class RoomHudSkin
     /// <summary>Installs once after Main has built its UI. Returns false when already installed.</summary>
     public static bool Apply(Control root)
     {
+        // Backdrops have their own guard: also repair windows on an already skinned root.
+        foreach (var window in Descendants(root).OfType<GameWindow>().ToArray())
+            WindowBackdrop.Install(window);
+        if (root is GameWindow rootWindow) WindowBackdrop.Install(rootWindow);
         if (root.HasMeta(Installed)) return false;
         var controls = Descendants(root).OfType<Control>().ToArray();
         root.Theme = RoomHudTheme.Create(root.Theme);

@@ -266,9 +266,19 @@ public partial class CombatHud : Control
     }
 
     /// <summary>The records of the components from the fight's state now (the self-test compares them with the state).</summary>
-    public SkillSlotData SlotData(int number) =>
-        SkillSlotData.From(number, number - 1 < _driver.Training.Slots.Count ? _driver.Training.Slots[number - 1] : null, _driver.Training.State,
-            _driver.Training.ResourceName, KeyOf(number, _gamepad));
+    public SkillSlotData SlotData(int number) => DescribeSlot(_session, _driver.Training, number, KeyOf(number, _gamepad));
+
+    // Assignment belongs to the build even when an invalid build prevents a live fight.
+    public static SkillSlotData DescribeSlot(SandboxSession session, TrainingRoom training, int number, string key)
+    {
+        var info = number > 0 && number <= training.Slots.Count ? training.Slots[number - 1] : null;
+        var data = SkillSlotData.From(number, info, training.State, training.ResourceName, key);
+        if (info == null && session.GetSlot(number - 1) is { } assigned
+            && session.Data.Skills.TryGetValue(assigned.SkillId, out var definition))
+            return data with { AssignedSkillId = definition.Id, AssignedName = definition.Name,
+                UnavailableReason = string.Join("; ", training.Violations.Select(v => v.Message)) };
+        return data;
+    }
 
     public ResourceBarData? ResourceData() => ResourceBarData.From(_driver.Training.State, _driver.Training.ResourceName);
 
