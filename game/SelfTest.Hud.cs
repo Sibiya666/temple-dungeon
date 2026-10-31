@@ -100,7 +100,7 @@ public sealed partial class SelfTest
             Check(view.TooltipText.StartsWith("Слот 1 пуст", StringComparison.Ordinal) && !view.TooltipText.Contains("Недоступен:", StringComparison.Ordinal), "после очистки осталась причина");
             Check(session.SetSlotSkill(0, "cleave").Ok, "не возвращён cleave");
             CheckAssigned("cleave");
-            Check(view.CustomMinimumSize == new Vector2(72, 64), "размер слота не 72×64");
+            Check(view.CustomMinimumSize == new Vector2(56, 52), "размер слота не 56×52");
             await NextFrame();
         }
         finally

@@ -16,8 +16,8 @@ namespace Dialoid.Game.Ui.Hud;
 /// </summary>
 public partial class SkillSlotView : Control
 {
-    public const float Width = 72;
-    public const float Height = 64;
+    public const float Width = 56;
+    public const float Height = 52;
     public const double BlinkSec = 0.28;
 
     public static readonly Color Background = new(0.047f, 0.067f, 0.078f, 0.96f);
@@ -94,7 +94,7 @@ public partial class SkillSlotView : Control
         _name.AddThemeFontSizeOverride("font_size", 12);
         _name.AddThemeConstantOverride("line_spacing", -2);
         _name.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        (_name.OffsetLeft, _name.OffsetRight, _name.OffsetTop, _name.OffsetBottom) = (5, -5, 30, -3);
+        (_name.OffsetLeft, _name.OffsetRight, _name.OffsetTop, _name.OffsetBottom) = (5, -5, 34, -2);
         _inner.AddChild(_name);
 
         _key = new Label { Text = number.ToString(), MouseFilter = MouseFilterEnum.Ignore, Position = new Vector2(6, 1) };
