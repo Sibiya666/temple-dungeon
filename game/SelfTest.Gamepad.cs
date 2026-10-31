@@ -478,7 +478,8 @@ public sealed partial class SelfTest
         _main.GetViewport().PushInput(new InputEventMouseMotion { Position = centre, GlobalPosition = centre });
         var waitFrom = Time.GetTicksMsec();
         while (Host.HoverTipControl != row && Time.GetTicksMsec() - waitFrom < 3000) await NextFrame();
-        Check(Host.HoverTipControl == row && Host.FocusTooltip == row.TooltipText, $"по наведению показано «{Host.FocusTooltip}» над {Host.HoverTipControl?.Name}");
+        Check(Host.HoverTipControl == row && Host.FocusTooltip == row.TooltipText,
+            $"по наведению показано «{Host.FocusTooltip}» над {Host.HoverTipControl?.Name}; mouse {_main.GetViewport().GetMousePosition()}, expected {centre}, row {row.GetGlobalRect()}, hovered {_main.GetViewport().GuiGetHoveredControl()?.GetPath()}, device {Device.Active}, focus losses {_main.FocusLossEvents}");
         _main.GetViewport().PushInput(new InputEventMouseMotion { Position = new Vector2(2, _main.Size.Y - 2), GlobalPosition = new Vector2(2, _main.Size.Y - 2) });
         await PadMode();
     }

@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 
 namespace Dialoid.Game.Ui;
 
@@ -65,9 +65,9 @@ public partial class WindowHost : Control
     public static readonly Vector2 MinSize = new(260, 160);
 
     /// <summary>Background of every window: opaque, warm dark (text over the dark scene stays readable).</summary>
-    public static readonly Color Background = new(0.105f, 0.1f, 0.095f, 1f);
-    public static readonly Color TitleBackground = new(0.17f, 0.145f, 0.115f, 1f);
-    public static readonly Color Border = new(0.47f, 0.37f, 0.24f, 1f);
+    public static readonly Color Background = new("0c1114");
+    public static readonly Color TitleBackground = new("162126");
+    public static readonly Color Border = new("334147");
 
     /// <summary>Where window positions and sizes are kept between runs.</summary>
     public string ConfigPath { get; set; } = "user://windows.cfg";
@@ -127,11 +127,11 @@ public partial class WindowHost : Control
             box.SetCornerRadiusAll(3);
             return box;
         }
-        theme.SetStylebox("normal", "Button", Face(new Color(0.24f, 0.2f, 0.16f), Border));
-        theme.SetStylebox("hover", "Button", Face(new Color(0.31f, 0.26f, 0.2f), new Color(0.7f, 0.56f, 0.36f)));
-        theme.SetStylebox("pressed", "Button", Face(new Color(0.17f, 0.14f, 0.11f), new Color(0.7f, 0.56f, 0.36f)));
-        theme.SetStylebox("hover_pressed", "Button", Face(new Color(0.2f, 0.17f, 0.13f), new Color(0.7f, 0.56f, 0.36f)));
-        theme.SetStylebox("disabled", "Button", Face(new Color(0.15f, 0.14f, 0.13f), new Color(0.3f, 0.27f, 0.24f)));
+        theme.SetStylebox("normal", "Button", Face(new Color("172126"), Border));
+        theme.SetStylebox("hover", "Button", Face(new Color("233239"), new Color("71858c")));
+        theme.SetStylebox("pressed", "Button", Face(new Color("0b1115"), new Color("71858c")));
+        theme.SetStylebox("hover_pressed", "Button", Face(new Color("142229"), new Color("71858c")));
+        theme.SetStylebox("disabled", "Button", Face(new Color("11171b"), new Color("303a3e")));
         // Check boxes would inherit the face from Button: they keep their plain look.
         foreach (var type in new[] { "CheckBox", "CheckButton" })
             foreach (var state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled" })
@@ -141,7 +141,7 @@ public partial class WindowHost : Control
     }
 
     /// <summary>The gold focus frame of the theme's <c>focus</c> style (gamepad, spec §4): buttons, lists, fields, sliders, trees.</summary>
-    public static readonly Color FocusFrame = new(1f, 0.8f, 0.38f, 1f);
+    public static readonly Color FocusFrame = new("b7cbd0");
 
     public static void AddFocusStyles(Theme theme)
     {
@@ -504,7 +504,7 @@ public partial class GameWindow : PanelContainer
             VerticalAlignment = VerticalAlignment.Center,
             MouseFilter = MouseFilterEnum.Ignore,
         };
-        TitleLabel.AddThemeColorOverride("font_color", new Color(0.93f, 0.85f, 0.7f));
+        TitleLabel.AddThemeColorOverride("font_color", new Color("d8d5c6"));
         row.AddChild(TitleLabel);
         CloseButton = new Button { Text = "×", Flat = true, FocusMode = FocusModeEnum.None, TooltipText = "Закрыть (Esc закрывает верхнее окно)", CustomMinimumSize = new Vector2(28, 0) };
         CloseButton.Pressed += () => CloseRequested?.Invoke();
@@ -532,7 +532,7 @@ public partial class GameWindow : PanelContainer
             MouseFilter = MouseFilterEnum.Ignore,
         };
         PromptBar.AddThemeFontSizeOverride("font_size", 14);
-        PromptBar.AddThemeColorOverride("font_color", new Color(0.93f, 0.85f, 0.7f));
+        PromptBar.AddThemeColorOverride("font_color", new Color("d8d5c6"));
         var prompts = new PanelContainer { Name = "PromptPanel", Visible = false, MouseFilter = MouseFilterEnum.Ignore };
         var promptStyle = new StyleBoxFlat { BgColor = WindowHost.TitleBackground, ContentMarginLeft = 10, ContentMarginRight = 22, ContentMarginTop = 3, ContentMarginBottom = 4 };
         promptStyle.CornerRadiusBottomLeft = promptStyle.CornerRadiusBottomRight = 3;

@@ -35,7 +35,7 @@ public partial class WindowHost
     /// <summary>Pixels per second the right stick scrolls at full tilt.</summary>
     public const float ScrollSpeed = 900f;
 
-    public static readonly Color FocusedBorder = new(0.86f, 0.66f, 0.36f, 1f);
+    public static readonly Color FocusedBorder = new("b7cbd0");
 
     private readonly Dictionary<string, (int[] Chain, Vector2 Center)> _remembered = new();
     private readonly Dictionary<PadCommand, bool> _stick = new();

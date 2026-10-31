@@ -20,8 +20,8 @@ public partial class SkillSlotView : Control
     public const float Height = 72;
     public const double BlinkSec = 0.28;
 
-    public static readonly Color Background = new(0.1f, 0.095f, 0.09f, 0.94f);
-    public static readonly Color EdgeColor = new(0.42f, 0.35f, 0.25f);
+    public static readonly Color Background = new(0.047f, 0.067f, 0.078f, 0.96f);
+    public static readonly Color EdgeColor = new("334147");
     public static readonly Color ShortColor = new(0.9f, 0.15f, 0.12f);
     public static readonly Color QueuedColor = new(0.98f, 0.82f, 0.3f);
     public static readonly Color HeldColor = new(0.45f, 0.85f, 1f);
@@ -103,7 +103,7 @@ public partial class SkillSlotView : Control
 
         _key = new Label { Text = number.ToString(), MouseFilter = MouseFilterEnum.Ignore, Position = new Vector2(6, 1) };
         _key.AddThemeFontSizeOverride("font_size", 14);
-        _key.AddThemeColorOverride("font_color", new Color(0.95f, 0.8f, 0.45f));
+        _key.AddThemeColorOverride("font_color", new Color("d8d5c6"));
         _inner.AddChild(_key);
 
         // The seconds are centred in the upper part, the name sits below them: they never cover each other.

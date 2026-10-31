@@ -372,7 +372,10 @@ public sealed partial class SelfTest
         Driver.SetProcess(false);
         Driver.ResetVisuals();
         PlaceNearDummy();
+        var focusLosses = _main.FocusLossEvents;
         await Fight(3, close: true);
+        var segment = Training.Segments[^1];
+        GD.Print($"SELFTEST NOTE fresh segment: damage {segment.TotalDamage:R}, dps {segment.Dps:R}, focus losses {_main.FocusLossEvents - focusLosses}");
         return Training.Segments[^1];
     }
 

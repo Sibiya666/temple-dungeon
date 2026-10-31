@@ -1,10 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
- <defs><linearGradient id="rim" x2=".2" y2="1"><stop stop-color="#c5ac79"/><stop offset=".35" stop-color="#66513a"/><stop offset=".7" stop-color="#3f3428"/><stop offset="1" stop-color="#a78a5a"/></linearGradient></defs>
- <path d="M8 1H120L127 8V120L120 127H8L1 120V8Z" fill="none" stroke="#080807" stroke-width="2"/>
- <path d="M8 3H120L125 8V120L120 125H8L3 120V8Z" fill="none" stroke="url(#rim)" stroke-width="3"/>
- <path d="M13 7H115L121 13V115L115 121H13L7 115V13Z" fill="none" stroke="#151410"/>
- <g stroke="#b8a076" fill="#302a21" stroke-width="1">
-  <path id="c" d="M2 20V7L7 2H20L13 6 10 10 6 13Z"/>
-  <use href="#c" transform="translate(128 0) scale(-1 1)"/><use href="#c" transform="translate(0 128) scale(1 -1)"/><use href="#c" transform="translate(128 128) scale(-1 -1)"/>
- </g>
+ <path d="M5 1H123L127 5V123L123 127H5L1 123V5Z" fill="none" stroke="#29383e" stroke-width="1"/>
+ <path d="M8 4H120M4 8V30" fill="none" stroke="#566970" stroke-opacity=".45"/>
 </svg>

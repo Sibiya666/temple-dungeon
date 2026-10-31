@@ -80,10 +80,15 @@ public partial class Main : Control
     public ChartsWindow? ChartsView { get; private set; }
 
     private Label _errorLabel = null!;
+    internal int FocusLossEvents { get; private set; }
 
     public override void _Notification(int what)
     {
-        if (what == NotificationApplicationFocusOut) ClearHeldInput();
+        if (what == NotificationApplicationFocusOut)
+        {
+            FocusLossEvents++;
+            ClearHeldInput();
+        }
     }
 
     private void ClearHeldInput()
@@ -130,6 +135,9 @@ public partial class Main : Control
 
         if (LoadError == null && OS.GetCmdlineUserArgs().Contains(RoomHudSkin.EnableArg))
             RoomHudSkin.Apply(this);
+
+        if (LoadError == null && OS.GetCmdlineUserArgs().Contains(TowerWaterfallHud.EnableArg))
+            TowerWaterfallHud.Install(this);
 
         if (OS.GetCmdlineUserArgs().Contains(SelfTestArg))
             new SelfTest(this).Start();

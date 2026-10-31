@@ -25,8 +25,8 @@ public static class HudColors
     public static readonly Color Corruption = new(0.5f, 0.24f, 0.66f);
     public static readonly Color CorruptionCore = new(0.17f, 0.05f, 0.24f);
 
-    /// <summary>The buff row's frame: matte bronze.</summary>
-    public static readonly Color Bronze = new(0.62f, 0.45f, 0.24f);
+    /// <summary>The buff row's neutral iron frame (legacy API name).</summary>
+    public static readonly Color Bronze = new("55666d");
 
     /// <summary>The debuff row's torn frame: dark red.</summary>
     public static readonly Color DebuffFrame = new(0.6f, 0.1f, 0.08f);

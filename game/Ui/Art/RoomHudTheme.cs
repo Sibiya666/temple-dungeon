@@ -2,14 +2,14 @@ using Godot;
 
 namespace Dialoid.Game.Ui.Art;
 
-/// <summary>Original dark-stone and antique-bronze skin. No layout, input or combat rules.</summary>
+/// <summary>Quiet charcoal and iron surfaces from ART_DIRECTION. No layout, input or combat rules.</summary>
 public static class RoomHudTheme
 {
-    public static readonly Color Parchment = new("e2d5b9");
-    public static readonly Color Bronze = new("876746");
-    public static readonly Color LitBronze = new("c0a575");
-    public static readonly Color Focus = new("efd29a");
-    public static readonly Color Stone = new("191918");
+    public static readonly Color Parchment = new("d8d5c6");
+    public static readonly Color Bronze = new("334147");
+    public static readonly Color LitBronze = new("71858c");
+    public static readonly Color Focus = new("b7cbd0");
+    public static readonly Color Stone = new("0c1114");
     private const string Root = "res://Ui/Art/";
 
     /// <summary>Each call returns a separate mutable style; no component shares focus state.</summary>

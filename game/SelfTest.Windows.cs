@@ -2,6 +2,7 @@
 using Dialoid.Game.Room;
 using Dialoid.Game.Ui;
 using Dialoid.Game.Ui.Hud;
+using Dialoid.Game.Ui.Art;
 using Dialoid.Sandbox;
 using Godot;
 
@@ -84,7 +85,14 @@ public sealed partial class SelfTest
                 case WindowEdge.Left: Check(left, $"окно «{spec.Title}» не у левого края: {rect}"); break;
                 case WindowEdge.Right or WindowEdge.RightTop: Check(right, $"окно «{spec.Title}» не у правого края: {rect}"); break;
                 case WindowEdge.LeftBottom:
-                    Check(left && rect.End.Y >= screen.Y - WindowHost.Margin - 0.5f, $"журнал не слева внизу: {rect}");
+                    var fitWidth = Mathf.Min(spec.Width, screen.X * WindowHost.MaxSideFraction);
+                    var limit = windows.LeftBottomRightLimit?.Invoke(screen);
+                    var lifted = limit is { } edge && edge - WindowHost.Margin < Mathf.Min(WindowHost.MinNarrowLog, fitWidth);
+                    var expectedBottom = screen.Y - WindowHost.Margin - (lifted ? windows.BottomInset() : 0);
+                    Check(left && Mathf.Abs(rect.End.Y - expectedBottom) <= 0.5f, $"журнал не у безопасного нижнего края: {rect}");
+                    if (_main.Hud!.GetNodeOrNull<TowerWaterfallHud>("TowerWaterfalls") is { } waterfalls)
+                        Check(!rect.Intersects(waterfalls.Health.GetGlobalRect()) && !rect.Intersects(waterfalls.Resource.GetGlobalRect()),
+                            "журнал перекрывает водопад");
                     break;
             }
             // The hero stands in the centre: a window at an edge never covers it; a side window takes at most a third.

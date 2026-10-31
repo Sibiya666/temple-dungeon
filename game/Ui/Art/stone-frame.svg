@@ -1,17 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
- <defs>
-  <linearGradient id="stone" x2="0" y2="1"><stop stop-color="#262824"/><stop offset=".45" stop-color="#171918"/><stop offset="1" stop-color="#101211"/></linearGradient>
-  <linearGradient id="metal" x2=".3" y2="1"><stop stop-color="#967e58"/><stop offset=".2" stop-color="#786044"/><stop offset=".5" stop-color="#352d23"/><stop offset=".8" stop-color="#8c734d"/><stop offset="1" stop-color="#3a3024"/></linearGradient>
-  <pattern id="grain" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M0 7 12 6 15 0M8 32 10 23 0 20M32 12 23 14 20 25 32 29" fill="none" stroke="#74736a" stroke-opacity=".07"/><path d="m1 9 10-1m11 7 10-2M11 24l7 2" stroke="#000" stroke-opacity=".2"/><path d="M3 3h1m13 11h2m6 15h1M4 27h2m18-24h1" stroke="#bdb5a0" stroke-opacity=".12"/></pattern>
- </defs>
- <path d="M8 0H120L128 8V120L120 128H8L0 120V8Z" fill="#080909"/>
- <path d="M8 2H120L126 8V120L120 126H8L2 120V8Z" fill="url(#metal)"/>
- <path d="M10 6H118L122 10V118L118 122H10L6 118V10Z" fill="#080a09" stroke="#211b15"/>
- <path d="M13 8H115L120 13V115L115 120H13L8 115V13Z" fill="url(#stone)" stroke="#7d7057" stroke-width=".6"/>
- <path d="M14 10H114L118 14V114L114 118H14L10 114V14Z" fill="url(#grain)"/>
- <path d="M16 12H112M12 16V112" stroke="#c3bba5" stroke-opacity=".13"/>
- <g fill="none" stroke="#947e59" stroke-width="1.1">
-  <path id="corner" d="M3 18V8L8 3H18M6 16V9L9 6H16M8 11l3-3 3 3-3 3Z"/>
-  <use href="#corner" transform="translate(128 0) scale(-1 1)"/><use href="#corner" transform="translate(0 128) scale(1 -1)"/><use href="#corner" transform="translate(128 128) scale(-1 -1)"/>
- </g>
+ <defs><linearGradient id="shadow" x2="0" y2="1"><stop stop-color="#162126"/><stop offset=".45" stop-color="#10191d"/><stop offset="1" stop-color="#0c1114"/></linearGradient></defs>
+ <rect width="128" height="128" fill="url(#shadow)"/>
+ <path d="M4 1H124L127 4V124L124 127H4L1 124V4Z" fill="none" stroke="#29383e"/>
+ <path d="M8 4H120M4 8V27" stroke="#53666e" stroke-opacity=".4"/>
 </svg>

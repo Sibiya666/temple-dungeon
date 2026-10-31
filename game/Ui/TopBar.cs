@@ -19,6 +19,8 @@ public partial class TopBar : PanelContainer
     private WindowHost _host = null!;
     private Func<string>? _currentDummy;
     private Action<string>? _selectDummy;
+    private HBoxContainer _row = null!;
+    private int _fontSize;
 
     /// <summary>The window buttons by window id.</summary>
     public IReadOnlyDictionary<string, Button> Buttons => _buttons;
@@ -34,17 +36,17 @@ public partial class TopBar : PanelContainer
         _currentDummy = currentDummy;
         _selectDummy = selectDummy;
         Name = "TopBar";
-        // Only the gold focus frame of the windows' theme (the buttons keep their look); the gamepad reaches the bar by Menu.
+        // The windows' focus frame (the buttons keep their look); the gamepad reaches the bar by Menu.
         var theme = new Theme();
         WindowHost.AddFocusStyles(theme);
         Theme = theme;
         MouseFilter = MouseFilterEnum.Stop;
         CustomMinimumSize = new Vector2(0, Height);
-        var style = new StyleBoxFlat { BgColor = new Color(0.075f, 0.07f, 0.065f, 1f), BorderColor = WindowHost.Border, ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 4, ContentMarginBottom = 4 };
+        var style = new StyleBoxFlat { BgColor = new Color("0c1114"), BorderColor = WindowHost.Border, ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 4, ContentMarginBottom = 4 };
         style.BorderWidthBottom = 1;
         AddThemeStyleboxOverride("panel", style);
 
-        var row = new HBoxContainer { Name = "Row" };
+        var row = _row = new HBoxContainer { Name = "Row" };
         row.AddThemeConstantOverride("separation", 4);
         AddChild(row);
         foreach (var spec in WindowHost.Specs)
@@ -169,6 +171,15 @@ public partial class TopBar : PanelContainer
 
     public override void _Process(double delta)
     {
+        // Keep the preset selector reachable at 1366px after adding the service icons.
+        var fontSize = GetViewportRect().Size.X < 1500 ? 14 : 16;
+        if (_fontSize != fontSize)
+        {
+            _fontSize = fontSize;
+            foreach (var button in _buttons.Values) button.AddThemeFontSizeOverride("font_size", fontSize);
+            DummyOptions?.AddThemeFontSizeOverride("font_size", fontSize);
+            _row.AddThemeConstantOverride("separation", fontSize == 14 ? 2 : 4);
+        }
         // The fight may change its preset elsewhere (the self-test, a later window): the list follows.
         if (DummyOptions == null || _currentDummy == null) return;
         var index = _dummyIds.IndexOf(_currentDummy());
