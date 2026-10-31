@@ -536,6 +536,15 @@ public sealed partial class SelfTest
         var session = _main.Session!;
         var ids = session.Data.Classes[session.Build.ClassId].SkillIds;
         Check(panel.CatalogButtons.Keys.SequenceEqual(ids), "каталог не совпадает со скиллами класса");
+        foreach (var button in panel.CatalogButtons.Values)
+        {
+            var portrait = button.GetNodeOrNull<TextureRect>("SkillIcon");
+            Check(portrait?.Texture != null, "в рамке скилла нет изображения");
+            Check(Math.Abs(button.Size.X - button.Size.Y) < 1, "рамка каталога не квадратная");
+            Check(portrait!.GetGlobalRect().IsEqualApprox(button.GetGlobalRect().Grow(-1)),
+                "иконка должна заполнять рамку до внутреннего края");
+            Check(portrait.MouseFilter == Control.MouseFilterEnum.Ignore, "картинка перехватывает нажатие");
+        }
         if (_screenshotDir != null) await Shot("skills-icon-catalog", full: true);
         var id = ids.First(s => session.Data.Skills[s].UnlockLevel > 1);
         var revision = session.Revision;
@@ -551,6 +560,7 @@ public sealed partial class SelfTest
         Check(!panel.PadBack(), "B на верхнем уровне должна закрывать окно");
         Check(_main.Character!.SelectLevel(20).Ok && panel.SelectSkill(0, id).Ok, "скилл не установлен для проверки дерева");
         await Settle();
+        if (_screenshotDir != null) await Shot("skills-filled-frames", full: true);
         try
         {
             await PadMode();

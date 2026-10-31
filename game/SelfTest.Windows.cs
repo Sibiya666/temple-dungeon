@@ -287,6 +287,13 @@ public sealed partial class SelfTest
     private async Task HudCombatScreen()
     {
         var hud = _main.Hud ?? throw new Failure("нет экрана боя");
+        foreach (var slot in hud.Slots)
+        {
+            var face = slot.GetNode<Control>("Face");
+            var portrait = face.GetNode<TextureRect>("SkillIcon");
+            Check(portrait.GetGlobalRect().IsEqualApprox(face.GetGlobalRect().Grow(-1)),
+                "HUD: изображение скилла не заполняет рамку");
+        }
         var waterfalls = hud.GetNodeOrNull<TowerWaterfallHud>("TowerWaterfalls");
         Check(waterfalls != null && ReferenceEquals(waterfalls, TowerWaterfallHud.Install(_main)),
             "основной HUD должен включать водопады и тему без флагов, ровно один раз");

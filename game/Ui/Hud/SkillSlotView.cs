@@ -75,12 +75,7 @@ public partial class SkillSlotView : Control
         _inner.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _inner.Draw += () => _inner.DrawRect(new Rect2(Vector2.Zero, _inner.Size), Background);
         AddChild(_inner);
-        _icon = new TextureRect
-        {
-            Name = "SkillIcon", Position = new Vector2((Width - 32) / 2, 0), Size = new Vector2(32, 32),
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-            MouseFilter = MouseFilterEnum.Ignore,
-        };
+        _icon = SkillPortrait.Create();
         _inner.AddChild(_icon);
 
         _frame = new Control { MouseFilter = MouseFilterEnum.Ignore };
@@ -104,6 +99,8 @@ public partial class SkillSlotView : Control
 
         _key = new Label { Text = number.ToString(), MouseFilter = MouseFilterEnum.Ignore, Position = new Vector2(6, 1) };
         _key.AddThemeFontSizeOverride("font_size", 14);
+        _key.AddThemeColorOverride("font_outline_color", Colors.Black);
+        _key.AddThemeConstantOverride("outline_size", 3);
         _key.AddThemeColorOverride("font_color", new Color("d8d5c6"));
         _inner.AddChild(_key);
 
@@ -200,6 +197,8 @@ public partial class SkillSlotView : Control
     {
         var size = _frame.Size;
         var rect = new Rect2(Vector2.Zero, size);
+        if (Info != null)
+            _frame.DrawRect(new Rect2(1, size.Y - 40, size.X - 2, 39), new Color(0, 0, 0, 0.65f));
         if (Info is { } info && CooldownLeft is { } left)
         {
             // A curtain from the top: its height is the cooldown still left.

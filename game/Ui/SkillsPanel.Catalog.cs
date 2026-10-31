@@ -46,14 +46,12 @@ public partial class SkillsPanel : IPadPanel
             var button = new Button
             {
                 Name = "Skill_" + id,
-                Icon = GameIcons.Skill(id),
-                ExpandIcon = true,
-                IconAlignment = HorizontalAlignment.Center,
-                CustomMinimumSize = new Vector2(140, 64),
+                CustomMinimumSize = new Vector2(96, 96),
+                SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
                 TooltipText = $"{skill.Name}\nОткрыть дерево скилла" + (locked ? $"\nОткроется на {skill.UnlockLevel} уровне" : ""),
                 FocusMode = FocusModeEnum.All,
             };
-            button.AddThemeConstantOverride("icon_max_width", 48);
+            button.AddChild(SkillPortrait.Create(GameIcons.Skill(id)));
             button.SetMeta(ButtonPrompts.AcceptMeta, "Открыть дерево");
             button.Pressed += () =>
             {
