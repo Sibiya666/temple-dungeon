@@ -1,0 +1,12 @@
+{
+  "service": "Venice API",
+  "mode": "generate",
+  "model": "seedream-v5-pro",
+  "seed": 102,
+  "input_image": "",
+  "prompt": "Exploratory full-body ascension character concept for Dialoid, square composition, no lettering or UI. A lean adult anthropomorphic fox rogue with narrow fox muzzle, upright ears, subdued ash-russet fur and one single natural tail, humanlike upright posture and dexterous hands. Charcoal cloth layers, dark leather belts, restrained dull steel fastenings and short practical blades. The central solid character is completing a fast lateral attack after a short teleport across an ancient tower gallery. One bent planted leg, torso turning, decisive readable action; the whole main figure and feet visible, no motion blur on the main figure. Two faint displaced decoy silhouettes trace the previous positions, each recognizably the same fox, low contrast and incomplete, never competing with the solid character. One thin pale broken spatial seam suggests the instant of departure, minimal local accent without a glowing portal or broad magical halo. Show teleportation and illusion as one continuous fighting art. This is an exploration of decoy shadows, not a claim about their final mechanics. Tall arches and a high window recede behind a clear landing. Cold diffuse daylight from that window, soft deep connected shadows, muted blue-green charcoal, old ivory light, dull silver. Fur, cloth, leather and steel react differently to light. Quiet surfaces, soft edges, economical detail. The solid character belongs to scene illumination. No cultural costume, Japanese robes or masks, extra tails, bright foxfire, neon, gold decoration, bloom, saturated purple fog, universal scratches, grain, luminous outlines or glossy fantasy illustration. Art direction references viewed by artist: approved Dialoid Venice D4 and Venice tower backgrounds, for their light, depth and materials.",
+  "negative_prompt": "",
+  "blurred": "false",
+  "date": "2026-10-31T15:15:26",
+  "license_note": "Venice: personal non-commercial (research stage, owner decision 2026-10-30)"
+}

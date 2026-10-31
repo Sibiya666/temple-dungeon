@@ -1,0 +1,12 @@
+{
+  "service": "Venice API",
+  "mode": "generate",
+  "model": "seedream-v5-pro",
+  "seed": 103,
+  "input_image": "",
+  "prompt": "Exploratory full-body ascension character concept for Dialoid, square composition, no lettering or UI. A lean adult anthropomorphic fox rogue, narrow fox muzzle, upright ears, subdued ash-russet fur and one single natural tail, humanlike upright posture, dexterous hands. Practical charcoal jacket and dark leather harness carrying a few compact recovered ancient tower mechanisms; functional straps and tools, restrained dull steel. Complete figure and feet visible, three-quarter view, standing behind an established firing position on a broad tower landing. The fox holds a compact ancient mechanical ranged weapon. At one side, one low tripod turret made of dark iron, nested mechanical plates, visible hinged joints and a clearly directed short barrel. In the foreground, one small floor trap with a simple hinged trigger and recessed energy chamber, clearly distinct from the turret. Devices feel like found remnants of the same ancient tower, adapted and awakened, not newly manufactured modern technology. A very small muted pale blue-green energy point in each device and at the fox's hand implies the fox's energy powers these tangible mechanisms; mechanical forms remain dominant. No electric cable tether. Readable spatial arrangement: rogue, turret firing lane, trap intercepting the approach. Tower depth, repeated vertical supports, a high window, clear ground. Cold diffuse window light, soft deep connected shadows, blue-green charcoal palette, old ivory and dull silver. Fur, matte cloth, leather, iron and small glass inserts remain distinct. Quiet surfaces and restrained wear, no piles of gears. No cultural costume, Japanese robes, masks, extra tails, steampunk brass, modern assault rifles, cyberpunk panels, neon, gold trim, broad aura, bloom, universal scratches, all-over grain or glossy fantasy illustration. Art direction references viewed by artist: approved Dialoid Venice D4 and Venice tower backgrounds, for lighting and material handling.",
+  "negative_prompt": "",
+  "blurred": "false",
+  "date": "2026-10-31T15:16:13",
+  "license_note": "Venice: personal non-commercial (research stage, owner decision 2026-10-30)"
+}

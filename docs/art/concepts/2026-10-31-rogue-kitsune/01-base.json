@@ -1,0 +1,12 @@
+{
+  "service": "Venice API",
+  "mode": "generate",
+  "model": "seedream-v5-pro",
+  "seed": 101,
+  "input_image": "",
+  "prompt": "Exploratory full-body character concept for Dialoid, square composition, no lettering or UI. A lean adult anthropomorphic fox rogue standing alert on an ancient tower landing, three-quarter view, complete figure and feet visible. Clearly foxlike narrow muzzle, upright ears, subdued ash-russet fur and one single natural tail; humanlike upright posture, dexterous hands. Grounded practical proportions, composed expression. Simple charcoal cloth jacket, dark leather belt and small tool pouches, restrained dull steel fastenings. A short practical knife held low; a compact unadorned ranged mechanism secured at the belt. Modest starter equipment, functional construction, economical detail. No cultural costume, no Japanese robes or masks, no additional tails, no mystical aura. Character silhouette is the focus, inhabiting a vast vertical tower: distant repeating arches, a narrow high window and deep space behind the landing. Cold diffuse daylight from the upper left window, soft deep connected shadows, muted blue-green charcoal stone, old ivory light and dull silver metal. Material separation between fur, cloth, leather and steel. Quiet surfaces, soft edges, natural tonal depth. Keep the figure readable in the environmental light without a studio spotlight. No gold trim, saturated colors, bloom, luminous edge outlining, universal scratches, all-over grain, glossy fantasy illustration or decorative brushstrokes. Art direction reference viewed by artist: Dialoid approved Venice D4 and approved Venice tower backgrounds. These are lighting and material references, not compositions to reproduce.",
+  "negative_prompt": "",
+  "blurred": "false",
+  "date": "2026-10-31T15:14:44",
+  "license_note": "Venice: personal non-commercial (research stage, owner decision 2026-10-30)"
+}
