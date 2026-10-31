@@ -3,13 +3,15 @@ using Dialoid.Game.Ui;
 
 namespace Dialoid.Game.Ui.Art;
 
-/// <summary>Opt-in art review scene. The game's main scene and existing HUD components stay untouched.</summary>
+/// <summary>Geometry review scene: measures the ordinary UI before applying the shared skin; rejects --hud-art.</summary>
 public partial class HudArtPreview : Node
 {
     public override async void _Ready()
     {
         try
         {
+            if (OS.GetCmdlineUserArgs().Contains(RoomHudSkin.EnableArg))
+                throw new InvalidOperationException("Run the geometry preview without --hud-art; it must measure the unstyled UI first.");
             var room = GD.Load<PackedScene>("res://Main.tscn").Instantiate<Control>();
             AddChild(room);
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
@@ -30,7 +32,11 @@ public partial class HudArtPreview : Node
             var geometry = Descendants(room).OfType<Control>()
                 .Where(c => c.IsVisibleInTree() && (c is BaseButton || c.GetType().Name is "SkillSlotView" or "GameWindow"))
                 .ToDictionary(c => c, c => (c.GetGlobalRect(), c.GetCombinedMinimumSize()));
-            Install(room);
+            RoomHudSkin.Apply(room);
+            var installedCount = Descendants(room).Count();
+            if (RoomHudSkin.Apply(room) || Descendants(room).Count() != installedCount)
+                throw new InvalidOperationException("HUD skin must be idempotent");
+            GD.Print("HUD_ART_IDEMPOTENT: OK");
             await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
             var changed = new List<string>();
             foreach (var (control, before) in geometry)
@@ -59,46 +65,5 @@ public partial class HudArtPreview : Node
         }
     }
 
-    /// <summary>Preview-only adapter; production integration is owned by the room's implementer.</summary>
-    public static void Install(Control root)
-    {
-        var theme = RoomHudTheme.Create(root.Theme);
-        root.Theme = theme;
-        var controls = Descendants(root).OfType<Control>().ToArray();
-        foreach (var control in controls)
-        {
-            // Apply to local theme roots too. Local style overrides deliberately keep their semantic state colours.
-            if (control.Theme != null) control.Theme = RoomHudTheme.Create(control.Theme);
-            if (control.GetType().Name == "SkillSlotView" && control.GetNodeOrNull<Control>("Face") is { } face)
-            {
-                // Behind the existing cooldown, state frame, text and key; semantic state remains unobstructed.
-                var surface = new RoomHudDecoration { Solid = true };
-                face.AddChild(surface);
-                face.MoveChild(surface, 0);
-            }
-            if (control.Name == "Bottom" && control.GetParent().Name == "CombatHud")
-            {
-                // Place behind the VBox and all its descendants; the backdrop is clipped to the existing HUD bounds.
-                var backing = new RoomHudDecoration { Solid = true, Follow = control };
-                var owner = control.GetParent();
-                owner.AddChild(backing);
-                owner.MoveChild(backing, 0);
-            }
-            if (control is PanelContainer panel && control.GetType().Name is "GameWindow" or "TargetPlateView")
-            {
-                // Keep the window's live focus-style instance and padding. Texture corners affect drawing only.
-                if (panel.GetThemeStylebox("panel") is StyleBoxFlat previous) previous.BgColor = RoomHudTheme.Stone;
-                panel.GetParent().AddChild(new RoomHudDecoration { Follow = panel });
-            }
-        }
-    }
-
-    private static IEnumerable<Node> Descendants(Node node)
-    {
-        foreach (var child in node.GetChildren())
-        {
-            yield return child;
-            foreach (var descendant in Descendants(child)) yield return descendant;
-        }
-    }
+    private static IEnumerable<Node> Descendants(Node node) => RoomHudSkin.Descendants(node);
 }
