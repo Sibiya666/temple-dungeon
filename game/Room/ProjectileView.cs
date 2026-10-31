@@ -15,7 +15,7 @@ public enum EffectKind
     Dark,
 }
 
-/// <summary>Colours and shapes per damage type: saturated on the muted room, and different in shape, not only in colour.</summary>
+/// <summary>Local damage accents under docs/art/ART_DIRECTION.md; types also differ in shape, not only colour.</summary>
 public static class DamageVisuals
 {
     /// <summary>The bright part (projectile, burst, number).</summary>
@@ -125,8 +125,8 @@ public sealed partial class ProjectileView : VisualEffect
         {
             case EffectKind.Dark:
                 p.AddChild(EffectLayer.Sphere(0.33f, new StandardMaterial3D { ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, AlbedoColor = DamageVisuals.Core(kind) }));
-                var shell = layer.Halo(DamageVisuals.Light(kind), 0.5f, cullFront: true); // only the back shell: a rim behind the core
-                p.AddChild(EffectLayer.Sphere(0.4f, shell));
+                var shell = layer.Halo(DamageVisuals.Light(kind), 0.35f, cullFront: true); // narrow back rim, not a violet fog bank
+                p.AddChild(EffectLayer.Sphere(0.36f, shell));
                 break;
             case EffectKind.Physical:
                 p.AddChild(new MeshInstance3D
@@ -140,24 +140,24 @@ public sealed partial class ProjectileView : VisualEffect
                 p.AddChild(new MeshInstance3D
                 {
                     Mesh = new BoxMesh { Size = new Vector3(0.22f, 0.22f, 1.1f) },
-                    MaterialOverride = layer.Glow(DamageVisuals.Core(kind), 1.6f),
+                    MaterialOverride = layer.Glow(DamageVisuals.Core(kind), 0.65f),
                     CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
                 });
                 break;
             default: // fire and anything else: a ball with a yellow centre, fire gets the flame tail
                 // Fire: a yellow-orange centre (not white: a low glow energy) inside the red-orange ball, and a flame tail.
                 p.AddChild(EffectLayer.Sphere(0.1f, layer.Glow(kind == EffectKind.Fire ? new Color(1f, 0.8f, 0.25f) : DamageVisuals.Core(kind), kind == EffectKind.Fire ? 1f : 1.8f)));
-                p.AddChild(EffectLayer.Sphere(0.24f, layer.Halo(DamageVisuals.Core(kind), 0.75f)));
+                p.AddChild(EffectLayer.Sphere(0.24f, layer.Halo(DamageVisuals.Core(kind), 0.45f)));
                 if (kind == EffectKind.Fire)
                 {
                     p.AddChild(FireTail());
-                    p.AddChild(Streak(layer, new Color(1f, 0.4f, 0.08f), 0.55f, 0.2f, 0.75f));
-                    p.AddChild(Streak(layer, new Color(1f, 0.75f, 0.25f), 0.6f, 0.1f, 0.35f));
+                    p.AddChild(Streak(layer, new Color(1f, 0.4f, 0.08f), 0.35f, 0.16f, 0.55f));
+                    p.AddChild(Streak(layer, new Color(1f, 0.75f, 0.25f), 0.4f, 0.08f, 0.25f));
                 }
                 break;
         }
         if (lit)
-            p.AddChild(new OmniLight3D { Name = "Light", LightColor = DamageVisuals.Light(kind), LightEnergy = 1.2f, OmniRange = 2.5f, ShadowEnabled = false });
+            p.AddChild(new OmniLight3D { Name = "Light", LightColor = DamageVisuals.Light(kind), LightEnergy = 0.45f, OmniRange = 1.2f, ShadowEnabled = false });
         return p;
     }
 
@@ -217,11 +217,11 @@ public sealed partial class ProjectileView : VisualEffect
         return new GpuParticles3D
         {
             Name = "Tail",
-            Amount = 24,
-            Lifetime = 0.35,
+            Amount = 16,
+            Lifetime = 0.24,
             LocalCoords = false,
             ProcessMaterial = process,
-            DrawPass1 = new QuadMesh { Size = new Vector2(0.35f, 0.35f), Material = EffectLayer.BlobMaterial },
+            DrawPass1 = new QuadMesh { Size = new Vector2(0.24f, 0.24f), Material = EffectLayer.BlobMaterial },
             VisibilityAabb = new Aabb(new Vector3(-20, -2, -20), new Vector3(40, 8, 40)),
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
         };
@@ -314,8 +314,8 @@ public sealed partial class EffectLayer : Node3D
     public void Arc(Vector3 from, Vector3 to)
     {
         var mesh = new ImmediateMesh();
-        var halo = Halo(DamageVisuals.Light(EffectKind.Lightning), 0.32f, cullDisabled: true);
-        var core = Glow(DamageVisuals.Core(EffectKind.Lightning), 1.6f, cullDisabled: true);
+        var halo = Halo(DamageVisuals.Light(EffectKind.Lightning), 0.22f, cullDisabled: true);
+        var core = Glow(DamageVisuals.Core(EffectKind.Lightning), 0.9f, cullDisabled: true);
         int drawn = 0;
         TweenEffect? fx = null;
         fx = new TweenEffect(0.22, t =>
@@ -405,8 +405,8 @@ public sealed partial class EffectLayer : Node3D
         var big = crit ? CritScale : 1f;
         if (_flashLights < MaxFlashLights)
         {
-            var light = new OmniLight3D { LightColor = DamageVisuals.Light(kind), OmniRange = 3f * (crit ? 1.25f : 1f), ShadowEnabled = false };
-            var energy = (tick ? 1.2f : 3f) * big;
+            var light = new OmniLight3D { LightColor = DamageVisuals.Light(kind), OmniRange = 1.2f * (crit ? 1.25f : 1f), ShadowEnabled = false };
+            var energy = (tick ? 0.25f : 0.9f) * big;
             light.LightEnergy = energy;
             _flashLights++;
             var released = false;
@@ -441,16 +441,16 @@ public sealed partial class EffectLayer : Node3D
                     Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
                     BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
                     AlbedoTexture = BlobMaterial.AlbedoTexture,
-                    AlbedoColor = DamageVisuals.Core(kind) with { A = 0.45f },
+                    AlbedoColor = DamageVisuals.Core(kind) with { A = 0.28f },
                 };
-                // The glow must let the target show through: centre alpha ≤ 0.45, a crit only 1.3× larger (the rest is the brighter core and light).
-                var size = 1.1f * Mathf.Min(big, 1.3f);
+                // Keep the target visible; colour is a local contact accent, not a full-body overlay.
+                var size = 0.8f * Mathf.Min(big, 1.3f);
                 var burst = new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(size, size) }, MaterialOverride = material, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
-                var core = Sphere(0.09f * big, Glow(kind == EffectKind.Fire ? new Color(1f, 0.72f, 0.3f) : DamageVisuals.Core(kind), crit ? 2.4f : 1.6f));
+                var core = Sphere(0.09f * big, Glow(kind == EffectKind.Fire ? new Color(1f, 0.72f, 0.3f) : DamageVisuals.Core(kind), crit ? 1.2f : 0.8f));
                 var fx = new TweenEffect(0.16, t =>
                 {
                     burst.Scale = Vector3.One * (0.6f + 0.9f * t);
-                    material.AlbedoColor = material.AlbedoColor with { A = 0.45f * (1 - t * t) };
+                    material.AlbedoColor = material.AlbedoColor with { A = 0.28f * (1 - t * t) };
                     core.Visible = t < 0.5f;
                 }) { Name = "Burst" };
                 fx.AddChild(burst);
@@ -464,7 +464,7 @@ public sealed partial class EffectLayer : Node3D
 
     private void Sparks(Vector3 at, Color c, int n, float big)
     {
-        var material = Glow(c, 2f);
+        var material = Glow(c, 0.8f);
         var mesh = new BoxMesh { Size = new Vector3(0.025f, 0.025f, 0.33f * big) };
         var sparks = new (MeshInstance3D Mesh, Vector3 Dir, float Reach)[n];
         for (int i = 0; i < n; i++)
@@ -489,11 +489,11 @@ public sealed partial class EffectLayer : Node3D
 
     private void DarkBurst(Vector3 at, float big)
     {
-        var ball = Sphere(0.25f * big, new StandardMaterial3D { AlbedoColor = DamageVisuals.Core(EffectKind.Dark), Roughness = 0.3f });
+        var ball = Sphere(0.25f * big, new StandardMaterial3D { AlbedoColor = DamageVisuals.Core(EffectKind.Dark), Roughness = 0.85f });
         var ring = new MeshInstance3D
         {
-            Mesh = new TorusMesh { InnerRadius = 0.32f * big, OuterRadius = 0.42f * big },
-            MaterialOverride = Glow(DamageVisuals.Light(EffectKind.Dark), 1.6f),
+            Mesh = new TorusMesh { InnerRadius = 0.32f * big, OuterRadius = 0.36f * big },
+            MaterialOverride = Glow(DamageVisuals.Light(EffectKind.Dark), 0.75f),
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
         };
         var fx = new TweenEffect(0.18, t =>
@@ -537,7 +537,7 @@ public sealed partial class EffectLayer : Node3D
     }
 
     /// <summary>Unshaded glowing material (prototype `_glow_mat`), cached per colour.</summary>
-    public StandardMaterial3D Glow(Color c, float energy = 2f, bool cullDisabled = false)
+    public StandardMaterial3D Glow(Color c, float energy = 0.8f, bool cullDisabled = false)
     {
         var key = (c, energy, 1f, cullDisabled);
         if (_materials.TryGetValue(key, out var m)) return m;
@@ -564,7 +564,7 @@ public sealed partial class EffectLayer : Node3D
             AlbedoColor = new Color(c.R, c.G, c.B, alpha),
             EmissionEnabled = true,
             Emission = c,
-            EmissionEnergyMultiplier = 1.5f,
+            EmissionEnergyMultiplier = 0.35f,
             Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
             RenderPriority = -1,
             CullMode = cullFront ? BaseMaterial3D.CullModeEnum.Front : cullDisabled ? BaseMaterial3D.CullModeEnum.Disabled : BaseMaterial3D.CullModeEnum.Back,

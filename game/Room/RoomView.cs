@@ -68,6 +68,7 @@ public partial class RoomView : Node3D
 
     public AssetLibrary Assets { get; private set; } = null!;
     public Godot.Environment Environment { get; private set; } = null!;
+    private SpotLight3D _windowLight = null!;
     public CameraRig CameraRig { get; private set; } = null!;
 
     /// <summary>The hero's body (collisions, position, movement, clips); the model is <see cref="HeroModel"/>.</summary>
@@ -229,13 +230,15 @@ public partial class RoomView : Node3D
     /// <summary>
     /// The hero light always casts a full shadow. On High the torches nearest the hero (within <see cref="TorchShadowRadius"/>,
     /// a shadowed one within the radius + <see cref="ShadowHysteresis"/>) cast partial shadows, at most
-    /// <see cref="MaxShadowLights"/> − 1 of them; every other torch casts none. A light is touched only when its state changes
+    /// <see cref="MaxShadowLights"/> − 2 of them (hero and high opening reserve one each); every other torch casts none. A light is touched only when its state changes
     /// (each change re-pairs it in the renderer); no allocations per frame.
     /// </summary>
     public void UpdateShadowBudget()
     {
         if (!HeroLight.ShadowEnabled) HeroLight.ShadowEnabled = true;
-        var allowed = _quality == GraphicsQuality.High ? MaxShadowLights - 1 : 0;
+        var windowShadow = _quality == GraphicsQuality.High;
+        if (_windowLight.ShadowEnabled != windowShadow) _windowLight.ShadowEnabled = windowShadow;
+        var allowed = _quality == GraphicsQuality.High ? MaxShadowLights - 2 : 0;
         var n = _torches.Count;
         if (_scores.Length != n) (_scores, _order) = (new float[n], new int[n]);
         var hero = Flat(Hero.Position);
@@ -312,25 +315,43 @@ public partial class RoomView : Node3D
             BackgroundMode = Godot.Environment.BGMode.Color,
             BackgroundColor = new Color(0.005f, 0.005f, 0.008f),
             AmbientLightSource = Godot.Environment.AmbientSource.Color,
-            AmbientLightColor = new Color(0.35f, 0.4f, 0.55f),
-            AmbientLightEnergy = 0.12f,
+            AmbientLightColor = new Color(0.38f, 0.47f, 0.49f),
+            AmbientLightEnergy = 0.24f,
             TonemapMode = Godot.Environment.ToneMapper.Filmic,
             TonemapExposure = 1.1f,
             GlowEnabled = true,
-            GlowIntensity = 0.6f,
-            GlowBloom = 0.08f,
+            GlowIntensity = 0.22f,
+            GlowBloom = 0f,
             GlowHdrThreshold = 1.2f,
             SsaoEnabled = true,
             SsaoRadius = 1.5f,
-            SsaoIntensity = 2.5f,
+            SsaoIntensity = 1.4f,
             VolumetricFogEnabled = false,
             VolumetricFogDensity = 0.015f,
             VolumetricFogAlbedo = new Color(0.6f, 0.55f, 0.5f),
             AdjustmentEnabled = true,
-            AdjustmentSaturation = 0.75f,
-            AdjustmentContrast = 1.1f,
+            AdjustmentSaturation = 0.72f,
+            AdjustmentContrast = 1.03f,
         };
         AddChild(new WorldEnvironment { Name = "Environment", Environment = Environment });
+        // High opening above the room's cutaway: a broad, fixed cool key, not a camera-following blue wash.
+        _windowLight = new SpotLight3D
+        {
+            Name = "HighOpeningLight",
+            LightColor = new Color(0.65f, 0.79f, 0.82f),
+            LightEnergy = 3.4f,
+            LightSize = 2f,
+            ShadowBlur = 2f,
+            ShadowOpacity = 0.8f,
+            SpotRange = 24f,
+            SpotAngle = 43f,
+            SpotAttenuation = 0.65f,
+            SpotAngleAttenuation = 0.8f,
+            ShadowEnabled = false,
+        };
+        AddChild(_windowLight);
+        _windowLight.Position = new Vector3(-7f, 9f, -5f);
+        _windowLight.LookAt(new Vector3(1f, 0, 1f));
     }
 
     private static StandardMaterial3D Plain(Color c, float roughness = 0.8f, float metallic = 0f) =>
@@ -368,20 +389,20 @@ public partial class RoomView : Node3D
     // ---------- floor ----------
 
     /// <summary>
-    /// Stone slabs 0.75–1 m with grout gaps, height and tint jitter, merged into one mesh per 4×3 m chunk (spec §4: the floor
+    /// Broad worn slabs with narrow grout gaps and subtle height/tint variation, merged into one mesh per 4×3 m chunk (spec §4: the floor
     /// is in chunks, not one mesh and not hundreds of nodes). The dark grout bed below shows through the gaps.
     /// </summary>
     private void BuildFloor()
     {
-        var bed = Box(new Vector3(HalfX * 2 + 2, 0.2f, HalfZ * 2 + 2), new Vector3(0, -0.13f, 0), Plain(new Color(0.03f, 0.028f, 0.026f), 1f));
+        var bed = Box(new Vector3(HalfX * 2 + 2, 0.2f, HalfZ * 2 + 2), new Vector3(0, -0.13f, 0), Plain(new Color(0.12f, 0.115f, 0.11f), 1f));
         bed.Layers = 1 | FloorLayer;
         Solid(new Vector3(HalfX * 2 + 2, 1f, HalfZ * 2 + 2), new Vector3(0, -0.5f, 0), "FloorBody");
 
         var material = Assets.Surface("floor");
         material.VertexColorUseAsAlbedo = true;
-        const float chunkX = 4f, chunkZ = 3f, rowDepth = 1f;
-        float[] rowA = [0.8f, 0.8f, 0.8f, 0.8f, 0.8f];
-        float[] rowB = [1f, 0.75f, 0.75f, 0.75f, 0.75f];
+        const float chunkX = 4f, chunkZ = 3f, rowDepth = 1.5f;
+        float[] rowA = [1.8f, 2.2f];
+        float[] rowB = [1.2f, 2.8f];
         for (float cx = -HalfX; cx < HalfX - 0.01f; cx += chunkX)
         {
             for (float cz = -HalfZ; cz < HalfZ - 0.01f; cz += chunkZ)
@@ -397,10 +418,10 @@ public partial class RoomView : Node3D
                     for (int i = 0; i < widths.Length; i++)
                     {
                         var w = widths[(i + shift) % widths.Length];
-                        var tint = (float)_rng.RandfRange(0.82f, 1.08f);
-                        var dirt = (float)_rng.RandfRange(0.9f, 1f);
-                        var color = new Color(tint * dirt, tint * dirt * 0.98f, tint * dirt * 0.95f);
-                        Slab(st, new Vector3(cx + x, 0, cz + z), w, rowDepth, (float)_rng.RandfRange(-0.012f, 0.012f), color);
+                        var tint = (float)_rng.RandfRange(0.94f, 1.02f);
+                        var dirt = (float)_rng.RandfRange(0.97f, 1f);
+                        var color = new Color(tint * dirt, tint * dirt, tint * dirt);
+                        Slab(st, new Vector3(cx + x, 0, cz + z), w, rowDepth, (float)_rng.RandfRange(-0.003f, 0.003f), color);
                         x += w;
                     }
                 }
@@ -414,7 +435,7 @@ public partial class RoomView : Node3D
     /// <summary>One slab: top and four sides, 0.1 m thick, inset by the grout gap.</summary>
     private static void Slab(SurfaceTool st, Vector3 corner, float width, float depth, float lift, Color color)
     {
-        const float gap = 0.018f, thick = 0.1f;
+        const float gap = 0.004f, thick = 0.1f;
         var x0 = corner.X + gap; var x1 = corner.X + width - gap;
         var z0 = corner.Z + gap; var z1 = corner.Z + depth - gap;
         var top = lift; var bottom = -thick;
@@ -605,7 +626,7 @@ public partial class RoomView : Node3D
         var flame = Flame(new Vector3(0.08f, 0.02f, 0.08f), 18, 0.3f, 1.1f);
         AddChild(flame);
         flame.Position = p + new Vector3(0, 1.95f, 0);
-        TorchLight(p + new Vector3(0, 2.3f, 0), 2.2f, 7f);
+        TorchLight(p + new Vector3(0, 2.3f, 0), 0.75f, 3.7f);
         var body = new StaticBody3D { Name = "TorchStand" };
         body.AddChild(new CollisionShape3D { Shape = new CylinderShape3D { Radius = 0.3f, Height = 2f } });
         AddChild(body, true);
@@ -621,7 +642,7 @@ public partial class RoomView : Node3D
         AddChild(flame);
         flame.Position = p + new Vector3(0, 0.12f, 0);
         // The light hangs 0.6 m off the wall, weaker and with a steeper falloff: a warm halo on the wall, no whitish hot spot (art review).
-        TorchLight(p + awayFromWall * 0.6f + new Vector3(0, 0.3f, 0), 0.9f, 5f, 2f);
+        TorchLight(p + awayFromWall * 0.6f + new Vector3(0, 0.3f, 0), 0.45f, 3f, 2f);
     }
 
     /// <summary>Procedural blood decal (prototype `_blood`): radial falloff times noise, dark red; projects onto the floor only.</summary>
@@ -660,13 +681,14 @@ public partial class RoomView : Node3D
     {
         Hero = HeroView.Create(Assets);
         AddChild(Hero);
+        foreach (var mesh in Hero.Model.Meshes) mesh.Layers |= 4;
 
         // Light circle around the hero, like D2: the only full shadow (spec §4).
         HeroLight = new OmniLight3D
         {
             Name = "HeroLight",
-            LightColor = new Color(1f, 0.88f, 0.7f),
-            LightEnergy = 2f,
+            LightColor = new Color(0.78f, 0.84f, 0.82f),
+            LightEnergy = 1.25f,
             OmniRange = 8.5f,
             OmniAttenuation = 1.2f,
             ShadowEnabled = true,
@@ -678,9 +700,10 @@ public partial class RoomView : Node3D
         FillLight = new OmniLight3D
         {
             Name = "FillLight",
-            LightColor = new Color(1f, 0.92f, 0.8f),
-            LightEnergy = 2.2f,
-            OmniRange = 4f,
+            LightColor = new Color(0.82f, 0.88f, 0.87f),
+            LightEnergy = 3.2f,
+            OmniRange = 2.8f,
+            LightCullMask = 4,
             ShadowEnabled = false,
         };
         AddChild(FillLight);

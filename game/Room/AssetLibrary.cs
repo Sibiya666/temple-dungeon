@@ -70,13 +70,13 @@ public sealed class AssetLibrary
     public const string HeroId = "hero";
 
     /// <summary>World-space outline width of the hero, metres (prototype: 0.022 / model scale).</summary>
-    public const float OutlineWidth = 0.022f;
+    public const float OutlineWidth = 0.012f;
 
     /// <summary>Enemy skin multiplier (prototype `_style` had 0.62; the art review asked for ~0.5).</summary>
     public static readonly Color EnemyDim = new(0.5f, 0.49f, 0.47f, 1f);
 
     /// <summary>The hero's outline: warm white / pale cream (HUD spec §9; gold is the rare leader's mark, enemies spec 7.2).</summary>
-    public static readonly Color OutlineColor = new(1f, 0.95f, 0.84f);
+    public static readonly Color OutlineColor = new(0.55f, 0.58f, 0.55f);
 
     private const string OutlineShaderCode = """
         shader_type spatial;
