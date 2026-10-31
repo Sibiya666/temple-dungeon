@@ -1,0 +1,1807 @@
+{
+  "rule": "AGENTS.md; docs/art/ART_DIRECTION.md",
+  "scope": "Existing active skill-tree nodes without dedicated node art. Does not include future skill definitions.",
+  "missing_count": 200,
+  "nodes": [
+    {
+      "skill_id": "crush",
+      "node_id": "brute_force",
+      "skill_name": "Сокрушение",
+      "node_name": "Грубая сила",
+      "description": "+8% урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/brute_force.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "wide_impact",
+      "skill_name": "Сокрушение",
+      "node_name": "Широкий удар",
+      "description": "+15% площади за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/wide_impact.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "shockwave",
+      "skill_name": "Сокрушение",
+      "node_name": "Ударная волна",
+      "description": "Развилка. Зона становится линией: волна пробивает 2 цели за основной (до 3 целей подряд), урон −15% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/shockwave.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "earthquake",
+      "skill_name": "Сокрушение",
+      "node_name": "Землетрясение",
+      "description": "Развилка. Удар вызывает повторный толчок: копия Сокрушения с силой 40%.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/earthquake.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "deep_tremors",
+      "skill_name": "Сокрушение",
+      "node_name": "Глубокие толчки",
+      "description": "Повторный толчок и другие триггерные копии Сокрушения: +25% More урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/deep_tremors.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "fissures",
+      "skill_name": "Сокрушение",
+      "node_name": "Трещины",
+      "description": "Толчок раскалывает землю: зона 3 с наносит 10% базы удара физическим уроном в секунду.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/fissures.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "thunder_hammer",
+      "skill_name": "Сокрушение",
+      "node_name": "Громовой молот",
+      "description": "Весь урон становится молнией, шанс шока 25%. Кровотечение (физический недуг) и бонусы к физическому урону после этого не работают.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/thunder_hammer.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "static_discharge",
+      "skill_name": "Сокрушение",
+      "node_name": "Остаточный разряд",
+      "description": "+5% эффекта шока за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/static_discharge.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "torn_earth",
+      "skill_name": "Сокрушение",
+      "node_name": "Рваная земля",
+      "description": "+6% шанса кровотечения за очко. Не работает вместе с «Громовым молотом».",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/torn_earth.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "bloody_harvest",
+      "skill_name": "Сокрушение",
+      "node_name": "Кровавая жатва",
+      "description": "+8% More урона по каждой кровоточащей цели за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/bloody_harvest.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "cold_calculation",
+      "skill_name": "Сокрушение",
+      "node_name": "Холодный расчет",
+      "description": "−2 Ярости к стоимости за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/cold_calculation.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "fury_return",
+      "skill_name": "Сокрушение",
+      "node_name": "Возврат ярости",
+      "description": "Часть Ярости возвращается сразу: стоимость еще −4. Не зависит от бонусов к генерации Ярости.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/fury_return.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "peak_fury",
+      "skill_name": "Сокрушение",
+      "node_name": "Пик ярости",
+      "description": "Стойка: если после оплаты Ярость выше 50%, удар наносит +15% More урона.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/peak_fury.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "stun",
+      "skill_name": "Сокрушение",
+      "node_name": "Оглушение",
+      "description": "Попадание оглушает основную цель на 1 с (как заморозка, без броска шанса).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/stun.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "concussion",
+      "skill_name": "Сокрушение",
+      "node_name": "Сотрясение",
+      "description": "+25% длительности оглушения за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/concussion.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "heavy_blow",
+      "skill_name": "Сокрушение",
+      "node_name": "Тяжкий удар",
+      "description": "+2% шанса крита за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/crush/heavy_blow.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "war_roar",
+      "skill_name": "Боевой клич",
+      "node_name": "Боевой рев",
+      "description": "Развилка клича. Бафф «Боевой клич»: +20% урона на 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/war_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "iron_cry",
+      "skill_name": "Боевой клич",
+      "node_name": "Железный клич",
+      "description": "Развилка клича. Вместо урона бафф «Боевой клич» дает +250 брони и −5% получаемого урона на 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/iron_cry.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "intimidation",
+      "skill_name": "Боевой клич",
+      "node_name": "Устрашение",
+      "description": "Враги устрашены: весь урон +10% More на 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/intimidation.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "battle_rhythm",
+      "skill_name": "Боевой клич",
+      "node_name": "Боевой ритм",
+      "description": "Клич дает +12% скорости атаки на 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/battle_rhythm.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "ancestral_fury",
+      "skill_name": "Боевой клич",
+      "node_name": "Ярость предков",
+      "description": "Клич дает +3% шанса крита на 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/ancestral_fury.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "long_roar",
+      "skill_name": "Боевой клич",
+      "node_name": "Протяжный рев",
+      "description": "Развилка темпа. Основной бафф урона «Боевой клич» длится 12 с вместо 8 (другие баффы клича — по-прежнему 8 с).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/long_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "unyielding",
+      "skill_name": "Боевой клич",
+      "node_name": "Несгибаемость",
+      "description": "Клич дает 1.5% регенерации здоровья в секунду на 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/unyielding.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "steel_will",
+      "skill_name": "Боевой клич",
+      "node_name": "Стальная воля",
+      "description": "Клич дает +15% ко всем сопротивлениям на 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/steel_will.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "hardened_body",
+      "skill_name": "Боевой клич",
+      "node_name": "Закаленное тело",
+      "description": "Клич дает +15% максимума здоровья на 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/hardened_body.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "long_stand",
+      "skill_name": "Боевой клич",
+      "node_name": "Долгая стойкость",
+      "description": "Развилка темпа. Основной бафф брони «Боевой клич» длится 12 с вместо 8 (другие баффы клича — по-прежнему 8 с).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/long_stand.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "sharp_roar",
+      "skill_name": "Боевой клич",
+      "node_name": "Отрывистый рев",
+      "description": "Развилка темпа. +40% скорости перезарядки клича.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/sharp_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "blood_cry",
+      "skill_name": "Боевой клич",
+      "node_name": "Клич крови",
+      "description": "Клич дает +30% к генерации Ярости на 8 с (отдельный бафф, с любым корнем).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/blood_cry.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "endless_rage",
+      "skill_name": "Боевой клич",
+      "node_name": "Неиссякаемая ярость",
+      "description": "Клич: Ярость восстанавливается на 3 в секунду 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/endless_rage.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "inspiration",
+      "skill_name": "Боевой клич",
+      "node_name": "Воодушевление",
+      "description": "Клич: спендеры стоят на 20% меньше Ярости 8 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/inspiration.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "fury_surge",
+      "skill_name": "Боевой клич",
+      "node_name": "Прилив ярости",
+      "description": "Клич сразу дает +6 Ярости за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/fury_surge.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "tireless",
+      "skill_name": "Боевой клич",
+      "node_name": "Неумолчный клич",
+      "description": "+6% скорости перезарядки клича за очко: баффы держатся большую часть боя.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/tireless.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "thunder_roar",
+      "skill_name": "Боевой клич",
+      "node_name": "Громовой рев",
+      "description": "Клич накладывает шок на основную цель без броска шанса: цель получает больше урона 3 с (с «Заземлением» Громовержца — 5 с).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/thunder_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "rolling_thunder",
+      "skill_name": "Боевой клич",
+      "node_name": "Раскаты",
+      "description": "+7.5% эффекта шока от клича за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/rolling_thunder.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "deafening_roar",
+      "skill_name": "Боевой клич",
+      "node_name": "Оглушающий рев",
+      "description": "Клич оглушает основную цель на 1 с (как заморозка, без броска шанса): оглушенный враг не бьет.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/deafening_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "ringing_ears",
+      "skill_name": "Боевой клич",
+      "node_name": "Звон в ушах",
+      "description": "+50% длительности оглушения от клича за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/battle_cry/ringing_ears.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "steel_storm",
+      "skill_name": "Вихрь",
+      "node_name": "Стальной смерч",
+      "description": "+8% урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/steel_storm.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "spin_up",
+      "skill_name": "Вихрь",
+      "node_name": "Раскрутка",
+      "description": "Со второго удара канала (0.4 с): +5% More урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/spin_up.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "blade_hurricane",
+      "skill_name": "Вихрь",
+      "node_name": "Ураган клинков",
+      "description": "С третьего удара канала (0.8 с): +25% More урона.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/blade_hurricane.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "fast_turns",
+      "skill_name": "Вихрь",
+      "node_name": "Быстрые обороты",
+      "description": "Удар каждые 0.03 с чаще за очко (стоимость в секунду та же).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/fast_turns.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "wide_circle",
+      "skill_name": "Вихрь",
+      "node_name": "Широкий круг",
+      "description": "+15% площади за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/wide_circle.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "thrifty_spin",
+      "skill_name": "Вихрь",
+      "node_name": "Экономное вращение",
+      "description": "−1 Ярости в секунду за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/thrifty_spin.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "grinding_spin",
+      "skill_name": "Вихрь",
+      "node_name": "Жернов",
+      "description": "Развилка роли. Вихрь становится генератором: не тратит Ярость, дает 2 Ярости за удар, урон −45% (More). Канал не прерывается, поэтому «Раскрутка» действует почти всегда.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/grinding_spin.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "frenzied_spin",
+      "skill_name": "Вихрь",
+      "node_name": "Неистовое вращение",
+      "description": "Развилка роли. 14 Ярости в секунду, урон +30% More.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/frenzied_spin.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "ice_whirl",
+      "skill_name": "Вихрь",
+      "node_name": "Ледяной вихрь",
+      "description": "Развилка стихии. Весь урон становится холодом (охлаждает), шанс заморозки 5%. Кровотечение и бонусы к физическому урону после этого не работают.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/ice_whirl.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "frostbite",
+      "skill_name": "Вихрь",
+      "node_name": "Обморожение",
+      "description": "+6% More урона по охлажденным целям за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/frostbite.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "ice_crumbs",
+      "skill_name": "Вихрь",
+      "node_name": "Ледяная крошка",
+      "description": "+3% шанса заморозки за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/ice_crumbs.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "fire_whirl",
+      "skill_name": "Вихрь",
+      "node_name": "Огненный смерч",
+      "description": "Развилка стихии. 50% физического урона становится огнем, шанс поджога 15%.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/fire_whirl.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "fanned_flames",
+      "skill_name": "Вихрь",
+      "node_name": "Раздувание пламени",
+      "description": "+8% шанса поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/fanned_flames.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "smoldering",
+      "skill_name": "Вихрь",
+      "node_name": "Тлеющие угли",
+      "description": "+1 к максимуму стаков поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/smoldering.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "cutting_wind",
+      "skill_name": "Вихрь",
+      "node_name": "Режущий ветер",
+      "description": "+12% шанса кровотечения за очко. Не работает с «Ледяным вихрем».",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/cutting_wind.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "thousand_cuts",
+      "skill_name": "Вихрь",
+      "node_name": "Тысяча порезов",
+      "description": "+10% More урона по кровоточащим целям за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/thousand_cuts.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "steel_cocoon",
+      "skill_name": "Вихрь",
+      "node_name": "Стальной кокон",
+      "description": "Пока воин вращается, он получает +120 брони (бафф на 1 с, обновляется каждым ударом).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/whirlwind/steel_cocoon.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "momentum",
+      "skill_name": "Рывок",
+      "node_name": "Разгон",
+      "description": "+8% урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/momentum.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "ram",
+      "skill_name": "Рывок",
+      "node_name": "Таран",
+      "description": "Развилка. Удар в конце рывка: +60% More урона.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/ram.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "crushing_ram",
+      "skill_name": "Рывок",
+      "node_name": "Сокрушающий таран",
+      "description": "Таран: +10% шанса крита.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/crushing_ram.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "stunning_ram",
+      "skill_name": "Рывок",
+      "node_name": "Оглушающий таран",
+      "description": "Таран оглушает основную цель на 1 с (как заморозка, без броска шанса).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/stunning_ram.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "trample",
+      "skill_name": "Рывок",
+      "node_name": "Сквозной натиск",
+      "description": "Развилка. Урон по пути: рывок бьет все цели на линии (зона радиуса 2.5), урон −30% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/trample.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "long_run",
+      "skill_name": "Рывок",
+      "node_name": "Дальний бросок",
+      "description": "+20% площади натиска за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/long_run.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "unstoppable",
+      "skill_name": "Рывок",
+      "node_name": "Неудержимость",
+      "description": "Убийство рывком почти сбрасывает перезарядку: следующий рывок в течение 9 с перезаряжается в 4 раза быстрее.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/unstoppable.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "burning_trail",
+      "skill_name": "Рывок",
+      "node_name": "Огненный след",
+      "description": "Рывок оставляет горящий след на 3 с: 25% базы удара огнем в секунду.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/burning_trail.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "embers",
+      "skill_name": "Рывок",
+      "node_name": "Раскаленные угли",
+      "description": "+5% базы удара в секунду для горящего следа за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/embers.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "furious_charge",
+      "skill_name": "Рывок",
+      "node_name": "Яростный натиск",
+      "description": "Рывок дает +5 Ярости за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/furious_charge.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "quick_feet",
+      "skill_name": "Рывок",
+      "node_name": "Быстрые ноги",
+      "description": "+8% скорости перезарядки за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/quick_feet.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "bloody_path",
+      "skill_name": "Рывок",
+      "node_name": "Кровавый путь",
+      "description": "+15% шанса кровотечения за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/bloody_path.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "gore",
+      "skill_name": "Рывок",
+      "node_name": "Пронзание",
+      "description": "+30% More урона по кровоточащим целям.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/gore.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "shoulder_bash",
+      "skill_name": "Рывок",
+      "node_name": "Удар плечом",
+      "description": "После рывка атаки на 4 с быстрее на 12%.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/shoulder_bash.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "armored_charge",
+      "skill_name": "Рывок",
+      "node_name": "Бронированный натиск",
+      "description": "После рывка +150 брони на 4 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/armored_charge.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "storm_charge",
+      "skill_name": "Рывок",
+      "node_name": "Грозовой рывок",
+      "description": "50% физического урона становится молнией, шанс шока 25%.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/storm_charge.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "true_lunge",
+      "skill_name": "Рывок",
+      "node_name": "Точный выпад",
+      "description": "+2% шанса крита за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/true_lunge.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "finishing_blow",
+      "skill_name": "Рывок",
+      "node_name": "Добивающий удар",
+      "description": "+30% критического урона.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/charge/finishing_blow.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "whetstone",
+      "skill_name": "Метательный топор",
+      "node_name": "Заточка",
+      "description": "+8% урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/whetstone.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "returning",
+      "skill_name": "Метательный топор",
+      "node_name": "Возвращение",
+      "description": "Развилка полета. Топор возвращается и еще раз бьет основную цель: отдельный удар 70% оружия (узлы дерева на него не действуют).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/returning.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "axe_fan",
+      "skill_name": "Метательный топор",
+      "node_name": "Веер топоров",
+      "description": "Развилка полета. +2 топора: каждый летит в свою цель.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/axe_fan.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "boomerang",
+      "skill_name": "Метательный топор",
+      "node_name": "Бумеранг",
+      "description": "Развилка полета. Легкий топор-бумеранг: +10 Ярости за применение, +20% скорости атаки, урон −25% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/boomerang.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "catch",
+      "skill_name": "Метательный топор",
+      "node_name": "Ловля на лету",
+      "description": "Пойманный топор дает +4 Ярости.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/catch.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "spare_axe",
+      "skill_name": "Метательный топор",
+      "node_name": "Запасной топор",
+      "description": "+1 топор за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/spare_axe.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "piercing_throw",
+      "skill_name": "Метательный топор",
+      "node_name": "Пробивной бросок",
+      "description": "Топор пробивает +1 цель за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/piercing_throw.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "ricochet",
+      "skill_name": "Метательный топор",
+      "node_name": "Рикошет",
+      "description": "Топор отскакивает в еще одну цель.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/ricochet.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "poisoned_blades",
+      "skill_name": "Метательный топор",
+      "node_name": "Отравленные лезвия",
+      "description": "15% физического урона становится ядом и +10% шанса отравления за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/poisoned_blades.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "lethal_dose",
+      "skill_name": "Метательный топор",
+      "node_name": "Смертельная доза",
+      "description": "+25% More урона по отравленным целям.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/lethal_dose.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "thrower_fury",
+      "skill_name": "Метательный топор",
+      "node_name": "Ярость метателя",
+      "description": "+2 Ярости за применение за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/thrower_fury.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "jagged_edge",
+      "skill_name": "Метательный топор",
+      "node_name": "Зазубренное лезвие",
+      "description": "+10% шанса кровотечения за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/jagged_edge.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "keen_throw",
+      "skill_name": "Метательный топор",
+      "node_name": "Меткий бросок",
+      "description": "+2% шанса крита за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/keen_throw.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "headshot",
+      "skill_name": "Метательный топор",
+      "node_name": "В голову",
+      "description": "+20% критического урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/headshot.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "quick_throw",
+      "skill_name": "Метательный топор",
+      "node_name": "Быстрый бросок",
+      "description": "+6% скорости атаки за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/quick_throw.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "storm_edge",
+      "skill_name": "Метательный топор",
+      "node_name": "Грозовое лезвие",
+      "description": "40% физического урона становится молнией, шанс шока 15%.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/throwing_axe/storm_edge.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "crackle",
+      "skill_name": "Искра",
+      "node_name": "Треск",
+      "description": "+8% урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/crackle.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "storm_fan",
+      "skill_name": "Искра",
+      "node_name": "Грозовой веер",
+      "description": "Веер искр чаще шокирует: +6% шанса шока за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/storm_fan.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "spark_fan",
+      "skill_name": "Искра",
+      "node_name": "Веер искр",
+      "description": "Развилка потока. +2 искры, каждая летит в свою цель и цепляет соседей. Убийство искрой разгоняет каст: +25% скорости каста на 3 с (работает только там, где враги умирают; по одной цели веер ничего не дает).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/spark_fan.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "focused_arc",
+      "skill_name": "Искра",
+      "node_name": "Сфокусированный разряд",
+      "description": "Развилка потока. Одна искра без цепи: число искр всегда 1 и цепь всегда 0 (бонусы к снарядам и цепи не работают), весь разряд уходит в цель — урон +45% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/focused_arc.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "mana_siphon",
+      "skill_name": "Искра",
+      "node_name": "Сифон маны",
+      "description": "Развилка потока. Искра вытягивает ману: +3 маны за применение, урон −25% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/mana_siphon.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "static",
+      "skill_name": "Искра",
+      "node_name": "Статика",
+      "description": "+8% шанса шока за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/static.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "breakdown",
+      "skill_name": "Искра",
+      "node_name": "Пробой",
+      "description": "+5% эффекта шока за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/breakdown.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "ionize",
+      "skill_name": "Искра",
+      "node_name": "Ионизация",
+      "description": "+20% More урона по шокированным целям.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/ionize.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "overload",
+      "skill_name": "Искра",
+      "node_name": "Перегрузка",
+      "description": "Каждая 10-я искра обрушивает малый Метеор: копия Метеора с уроном 30% (с его деревом, если Метеор в слоте). Если у Метеора есть «Огненное поле», копия обновляет это же поле, а не добавляет второе (зона одна на скилл).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/overload.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "ember_spark",
+      "skill_name": "Искра",
+      "node_name": "Огненная искра",
+      "description": "Весь урон становится огнем, шанс поджога 15%. Шок от урона и бонусы к молнии после этого не работают: «Статика», «Пробой», «Ионизация» бесполезны (шок «Ослепления» остается).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/ember_spark.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "smolder",
+      "skill_name": "Искра",
+      "node_name": "Тлеющая искра",
+      "description": "+8% шанса поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/smolder.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "mana_current",
+      "skill_name": "Искра",
+      "node_name": "Ток маны",
+      "description": "+1 маны за применение за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/mana_current.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "quick_spark",
+      "skill_name": "Искра",
+      "node_name": "Искромет",
+      "description": "+6% скорости каста за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/quick_spark.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "bright_flash",
+      "skill_name": "Искра",
+      "node_name": "Яркая вспышка",
+      "description": "+2% шанса крита за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/bright_flash.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "dazzle",
+      "skill_name": "Искра",
+      "node_name": "Ослепление",
+      "description": "Крит шокирует основную цель без броска шанса (шок 3 с).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/dazzle.png"
+    },
+    {
+      "skill_id": "spark",
+      "node_id": "spark_ward",
+      "skill_name": "Искра",
+      "node_name": "Искровой щит",
+      "description": "Попадание искры дает −5% получаемого урона на 2 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/spark/spark_ward.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "heat",
+      "skill_name": "Огненный шар",
+      "node_name": "Жар",
+      "description": "+8% урона любого типа за очко (только этого скилла).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/heat.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "wide_blast",
+      "skill_name": "Огненный шар",
+      "node_name": "Широкий взрыв",
+      "description": "+15% площади взрыва за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/wide_blast.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "molten_core",
+      "skill_name": "Огненный шар",
+      "node_name": "Раскаленное ядро",
+      "description": "+10% шанса поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/molten_core.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "eternal_flame",
+      "skill_name": "Огненный шар",
+      "node_name": "Вечное пламя",
+      "description": "+2 к максимуму стаков поджога этого скилла.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/eternal_flame.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "lingering_heat",
+      "skill_name": "Огненный шар",
+      "node_name": "Остаточный жар",
+      "description": "+15% урона поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/lingering_heat.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "ring_of_fire",
+      "skill_name": "Огненный шар",
+      "node_name": "Пламенное кольцо",
+      "description": "Взрыв оставляет горящую землю на 2 с: 25% базы недуга удара в секунду по задетым целям (одна зона на скилл: обновляется каждым шаром, копии шара — «Огненный выход» Мерцания — обновляют ее же; бонусы к DoT действуют).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/ring_of_fire.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "scatter",
+      "skill_name": "Огненный шар",
+      "node_name": "Разделение",
+      "description": "Развилка формы. +2 шара, каждый летит в свою цель; урон −15% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/scatter.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "compress",
+      "skill_name": "Огненный шар",
+      "node_name": "Сжатие",
+      "description": "Развилка формы. Один сжатый шар без взрыва: снимает тег area (бонусы к площади не работают), число шаров всегда 1 (бонусы к снарядам не работают), +60% More урона, пробивает 1 цель.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/compress.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "frost_orb",
+      "skill_name": "Огненный шар",
+      "node_name": "Морозный шар",
+      "description": "Развилка стихии. Базовый урон становится холодом (тег fire → cold): шар охлаждает, шанс заморозки 10%. Поджог и бонусы к огню после этого не работают: «Раскаленное ядро», «Вечное пламя», «Остаточный жар», «Метка пламени», «Пламя души» бесполезны.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/frost_orb.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "storm_orb",
+      "skill_name": "Огненный шар",
+      "node_name": "Грозовой шар",
+      "description": "Развилка стихии. Базовый урон становится молнией (тег fire → lightning): шанс шока 25%, +1 цепь. Поджог и бонусы к огню после этого не работают: «Раскаленное ядро», «Вечное пламя», «Остаточный жар», «Метка пламени», «Пламя души» бесполезны.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/storm_orb.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "mana_focus",
+      "skill_name": "Огненный шар",
+      "node_name": "Концентрация маны",
+      "description": "−1 маны к стоимости за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/mana_focus.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "backlash",
+      "skill_name": "Огненный шар",
+      "node_name": "Отдача",
+      "description": "Крит возвращает ману, в движке — в среднем: стоимость −0.02 маны за очко за каждый 1% шанса крита от бонусов (базовые 6% скилла не считаются), не больше −0.5 маны за применение.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/backlash.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "swift_orb",
+      "skill_name": "Огненный шар",
+      "node_name": "Летучий шар",
+      "description": "+8% скорости каста за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/swift_orb.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "flame_mark",
+      "skill_name": "Огненный шар",
+      "node_name": "Метка пламени",
+      "description": "Попадание по подожженной цели: +30% More урона.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/flame_mark.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "overheat",
+      "skill_name": "Огненный шар",
+      "node_name": "Перегрев",
+      "description": "+2% шанса крита за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/overheat.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "blast_wave",
+      "skill_name": "Огненный шар",
+      "node_name": "Взрывная волна",
+      "description": "Крит вызывает вторичный взрыв: триггерный скилл «Взрыв» с уроном 50% (всегда огненный, без собственного шанса поджога; узлы дерева на него не действуют).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/blast_wave.png"
+    },
+    {
+      "skill_id": "fireball",
+      "node_id": "soul_flame",
+      "skill_name": "Огненный шар",
+      "node_name": "Пламя души",
+      "description": "+1 к максимуму стаков поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/fireball/soul_flame.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "frost_edge",
+      "skill_name": "Ледяное копье",
+      "node_name": "Ледяная кромка",
+      "description": "+8% урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/frost_edge.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "glacial_block",
+      "skill_name": "Ледяное копье",
+      "node_name": "Ледяная глыба",
+      "description": "Развилка формы. Медленнее и сильнее: глыба не пробивает, стоит 16 маны, каст на 25% медленнее, урон +100% More.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/glacial_block.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "piercing_cold",
+      "skill_name": "Ледяное копье",
+      "node_name": "Сквозной холод",
+      "description": "Развилка формы. Копье пробивает еще 1 цель и бьет сильнее: урон +15% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/piercing_cold.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "binding_lance",
+      "skill_name": "Ледяное копье",
+      "node_name": "Сковывающее копье",
+      "description": "Развилка формы. Копье сковывает врага: шанс заморозки +25%, длительность заморозки +100% (замороженный враг не бьет), попадание ослабляет удары врага — −10% получаемого урона на 2 с; урон −20% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/binding_lance.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "ice_wedge",
+      "skill_name": "Ледяное копье",
+      "node_name": "Ледяной клин",
+      "description": "Тяжелая глыба сковывает цель: +8% шанса заморозки за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/ice_wedge.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "bitter_cold",
+      "skill_name": "Ледяное копье",
+      "node_name": "Стужа",
+      "description": "+4% шанса заморозки за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/bitter_cold.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "deep_freeze",
+      "skill_name": "Ледяное копье",
+      "node_name": "Глубокая заморозка",
+      "description": "+25% длительности заморозки за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/deep_freeze.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "ice_shards",
+      "skill_name": "Ледяное копье",
+      "node_name": "Осколки льда",
+      "description": "По замороженной цели копье дробится: осколки летят в 3 соседние цели (+3 цепи) и бьют саму цель сильнее (+25% More урона по замороженным).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/ice_shards.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "point",
+      "skill_name": "Ледяное копье",
+      "node_name": "Острие",
+      "description": "+2% шанса крита за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/point.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "ice_crown",
+      "skill_name": "Ледяное копье",
+      "node_name": "Ледяной венец",
+      "description": "Крит замораживает основную цель без броска шанса.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/ice_crown.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "cold_precision",
+      "skill_name": "Ледяное копье",
+      "node_name": "Холодная точность",
+      "description": "+15% критического урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/cold_precision.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "cold_poise",
+      "skill_name": "Ледяное копье",
+      "node_name": "Ледяная выдержка",
+      "description": "−1 маны к стоимости за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/cold_poise.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "swift_ice",
+      "skill_name": "Ледяное копье",
+      "node_name": "Стремительный лед",
+      "description": "+6% скорости каста за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/swift_ice.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "ice_sting",
+      "skill_name": "Ледяное копье",
+      "node_name": "Ледяное жало",
+      "description": "Копье пробивает 4% сопротивления холоду за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/ice_sting.png"
+    },
+    {
+      "skill_id": "ice_lance",
+      "node_id": "ice_carapace",
+      "skill_name": "Ледяное копье",
+      "node_name": "Ледяной панцирь",
+      "description": "Бросок копья дает +100 брони на 2 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ice_lance/ice_carapace.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "storm_core",
+      "skill_name": "Шаровая молния",
+      "node_name": "Грозовое ядро",
+      "description": "+8% урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/storm_core.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "long_flight",
+      "skill_name": "Шаровая молния",
+      "node_name": "Долгий полет",
+      "description": "Шар живет дольше и дает больше разрядов: в движке +8% урона за очко (число разрядов за применение фиксировано).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/long_flight.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "big_orb",
+      "skill_name": "Шаровая молния",
+      "node_name": "Большой шар",
+      "description": "+15% площади за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/big_orb.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "static_orb",
+      "skill_name": "Шаровая молния",
+      "node_name": "Неподвижная сфера",
+      "description": "Развилка формы. Шар останавливается у цели и становится турелью: поле радиусом 3 м, все разряды бьют по месту — в движке +15% урона (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/static_orb.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "dense_orb",
+      "skill_name": "Шаровая молния",
+      "node_name": "Плотный сгусток",
+      "description": "Развилка формы. Шар сжимается: радиус 1 м, один шар без дуг (число шаров всегда 1 и цепь всегда 0; бонусы к снарядам и цепи не работают), урон +50% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/dense_orb.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "arc_discharge",
+      "skill_name": "Шаровая молния",
+      "node_name": "Дуговой разряд",
+      "description": "Шар бьет дугой еще 1 цель (+1 цепь).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/arc_discharge.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "sun_orb",
+      "skill_name": "Шаровая молния",
+      "node_name": "Солнечный шар",
+      "description": "Весь урон становится огнем, шанс поджога 5% за разряд. Шок от урона и бонусы к молнии после этого не работают: «Статическое поле», «Искровой каскад» бесполезны.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/sun_orb.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "solar_corona",
+      "skill_name": "Шаровая молния",
+      "node_name": "Солнечная корона",
+      "description": "+1 к максимуму стаков поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/solar_corona.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "static_field",
+      "skill_name": "Шаровая молния",
+      "node_name": "Статическое поле",
+      "description": "+4% шанса шока за разряд за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/static_field.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "spark_cascade",
+      "skill_name": "Шаровая молния",
+      "node_name": "Искровой каскад",
+      "description": "+5% эффекта шока за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/spark_cascade.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "capacitor",
+      "skill_name": "Шаровая молния",
+      "node_name": "Конденсатор",
+      "description": "−2 маны к стоимости за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/capacitor.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "quick_charge",
+      "skill_name": "Шаровая молния",
+      "node_name": "Быстрый заряд",
+      "description": "+6% скорости каста за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/quick_charge.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "bright_discharge",
+      "skill_name": "Шаровая молния",
+      "node_name": "Яркий разряд",
+      "description": "+2% шанса крита за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/bright_discharge.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "flash",
+      "skill_name": "Шаровая молния",
+      "node_name": "Всполох",
+      "description": "Крит шокирует основную цель без броска шанса (шок 3 с).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/flash.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "ion_shield",
+      "skill_name": "Шаровая молния",
+      "node_name": "Ионный щит",
+      "description": "Каст шара дает +10% уклонения на 3 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/ion_shield.png"
+    },
+    {
+      "skill_id": "ball_lightning",
+      "node_id": "twin_orb",
+      "skill_name": "Шаровая молния",
+      "node_name": "Двойной шар",
+      "description": "Каждый 3-й шар раздваивается: копия шара с уроном 50% (бесплатно, без проков).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/ball_lightning/twin_orb.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "sky_fire",
+      "skill_name": "Метеор",
+      "node_name": "Небесный огонь",
+      "description": "+8% урона за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/sky_fire.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "comet_core",
+      "skill_name": "Метеор",
+      "node_name": "Ядро кометы",
+      "description": "Развилка формы. Плотный метеор: радиус 1.2 м, урон +50% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/comet_core.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "starfall",
+      "skill_name": "Метеор",
+      "node_name": "Звездопад",
+      "description": "Развилка формы. Вместо одного падают 3 малых метеора (тег projectile, бонусы к снарядам действуют), каждый в свою цель, взрыв 1.6 м; урон −20% (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/starfall.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "fire_field",
+      "skill_name": "Метеор",
+      "node_name": "Огненное поле",
+      "description": "Место падения горит 3 с: 30% базы недуга удара в секунду по задетым целям (с «Ледяным метеором» поле холодное). Поле одно на скилл: копии Метеора («Осколок кометы», «Перегрузка» Искры) обновляют его, а не добавляют второе.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/fire_field.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "scorched_earth",
+      "skill_name": "Метеор",
+      "node_name": "Выжженная земля",
+      "description": "Поле сильнее: +5% базы недуга в секунду за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/scorched_earth.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "ice_meteor",
+      "skill_name": "Метеор",
+      "node_name": "Ледяной метеор",
+      "description": "Весь урон становится холодом: охлаждает, шанс заморозки 15%. Поджог и бонусы к огню после этого не работают: «Воспламенение» и «Жар недр» бесполезны.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/ice_meteor.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "frost_shatter",
+      "skill_name": "Метеор",
+      "node_name": "Ледяное крошево",
+      "description": "+25% длительности заморозки за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/frost_shatter.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "instant_fall",
+      "skill_name": "Метеор",
+      "node_name": "Мгновенное падение",
+      "description": "Метеор падает без замаха: в движке +30% скорости каста ценой −10% урона (More).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/instant_fall.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "crater",
+      "skill_name": "Метеор",
+      "node_name": "Кратер",
+      "description": "+15% площади за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/crater.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "kindling",
+      "skill_name": "Метеор",
+      "node_name": "Воспламенение",
+      "description": "+10% шанса поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/kindling.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "core_heat",
+      "skill_name": "Метеор",
+      "node_name": "Жар недр",
+      "description": "+20% урона поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/core_heat.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "star_thrift",
+      "skill_name": "Метеор",
+      "node_name": "Звездная экономия",
+      "description": "−2 маны к стоимости за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/star_thrift.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "falling_star",
+      "skill_name": "Метеор",
+      "node_name": "Падающая звезда",
+      "description": "+2% шанса крита за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/falling_star.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "comet_fragment",
+      "skill_name": "Метеор",
+      "node_name": "Осколок кометы",
+      "description": "Крит откалывает осколок: копия Метеора с уроном 40% (бесплатно, без проков). С «Огненным полем» копия обновляет то же поле (база недуга у копии та же), второго поля нет.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/comet_fragment.png"
+    },
+    {
+      "skill_id": "meteor",
+      "node_id": "ash_veil",
+      "skill_name": "Метеор",
+      "node_name": "Пепельная завеса",
+      "description": "Каст Метеора дает −8% получаемого урона на 3 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/meteor/ash_veil.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "short_step",
+      "skill_name": "Мерцание",
+      "node_name": "Короткий шаг",
+      "description": "+6% скорости перезарядки за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/short_step.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "light_step",
+      "skill_name": "Мерцание",
+      "node_name": "Легкий шаг",
+      "description": "−2 маны к стоимости Мерцания за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/light_step.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "arrival_flare",
+      "skill_name": "Мерцание",
+      "node_name": "Вспышка прибытия",
+      "description": "Развилка взрыва. На месте прибытия вспыхивает огонь: триггерный скилл «Вспышка» (радиус 3 м; узлы дерева на нее не действуют).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/arrival_flare.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "double_flare",
+      "skill_name": "Мерцание",
+      "node_name": "Двойная вспышка",
+      "description": "Вспышка срабатывает дважды: еще одна «Вспышка» с тем же уроном.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/double_flare.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "frost_wake",
+      "skill_name": "Мерцание",
+      "node_name": "Ледяной след",
+      "description": "Развилка взрыва. На месте старта остается лед: основная цель заморожена (без броска шанса), чародей получает +150 брони на 1.5 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/frost_wake.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "deep_cold",
+      "skill_name": "Мерцание",
+      "node_name": "Глубокий холод",
+      "description": "+25% длительности заморозки от Мерцания за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/deep_cold.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "storm_step",
+      "skill_name": "Мерцание",
+      "node_name": "Грозовой шаг",
+      "description": "Каждое 2-е Мерцание шокирует основную цель без броска шанса (3 с); эффект шока от Мерцания +10%.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/storm_step.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "high_voltage",
+      "skill_name": "Мерцание",
+      "node_name": "Высокое напряжение",
+      "description": "+3% эффекта шока от Мерцания за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/high_voltage.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "blink_focus",
+      "skill_name": "Мерцание",
+      "node_name": "Фокус перемещения",
+      "description": "После Мерцания заклинания наносят +20% More урона 1 с (≈ следующее заклинание).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/blink_focus.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "lingering_focus",
+      "skill_name": "Мерцание",
+      "node_name": "Долгий фокус",
+      "description": "«Фокус перемещения» держится 1.7 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/lingering_focus.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "elusive",
+      "skill_name": "Мерцание",
+      "node_name": "Неуловимость",
+      "description": "После Мерцания +25% уклонения на 1.5 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/elusive.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "afterimage",
+      "skill_name": "Мерцание",
+      "node_name": "Остаточный образ",
+      "description": "После Мерцания −10% получаемого урона на 1.5 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/afterimage.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "phase_barrier",
+      "skill_name": "Мерцание",
+      "node_name": "Фазовый барьер",
+      "description": "После Мерцания +15% ко всем сопротивлениям на 1.5 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/phase_barrier.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "ether_mend",
+      "skill_name": "Мерцание",
+      "node_name": "Эфирное исцеление",
+      "description": "После Мерцания +3% регенерации здоровья в секунду на 1.5 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/ether_mend.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "impulse",
+      "skill_name": "Мерцание",
+      "node_name": "Импульс",
+      "description": "После Мерцания +15% скорости каста на 1.5 с.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/impulse.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "spark_trail",
+      "skill_name": "Мерцание",
+      "node_name": "Искровой след",
+      "description": "Мерцание выпускает Искру: копия Искры с уроном 30% (с ее деревом, если Искра в слоте; маны не дает).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/spark_trail.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "twin_spark",
+      "skill_name": "Мерцание",
+      "node_name": "Двойная искра",
+      "description": "Искровой след выпускает вторую Искру: еще одна копия с уроном 30%.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/twin_spark.png"
+    },
+    {
+      "skill_id": "blink",
+      "node_id": "fire_exit",
+      "skill_name": "Мерцание",
+      "node_name": "Огненный выход",
+      "description": "Мерцание выпускает Огненный шар: копия шара с уроном 20% (с его деревом, если шар в слоте; маны не стоит и не дает). С «Пламенным кольцом» копия обновляет ту же горящую землю.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/blink/fire_exit.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "thick_mist",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Густой туман",
+      "description": "+15% площади за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/thick_mist.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "expansion",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Расползание",
+      "description": "+20% площади за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/expansion.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "long_haze",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Затяжная пелена",
+      "description": "Облако висит дольше: +0.5 с за очко к времени жизни зоны (базовые 3 с). Повторное применение обновляет облако (зона одна на скилл), а не добавляет второе.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/long_haze.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "lingering",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Стойкие испарения",
+      "description": "Облако ядовитее: +6% базы недуга в секунду за очко к урону зоны (базовые 25%).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/lingering.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "quick_brew",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Быстрая варка",
+      "description": "+20% скорости перезарядки за очко: облака выходят чаще. Зона одна на скилл: новое облако заменяет старое, а яд держится 3 с, поэтому отравления накладываются друг на друга только при перезарядке короче 3 с (для этого нужны пассивные бонусы к перезарядке).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/quick_brew.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "venom_dose",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Едкий состав",
+      "description": "+12% урона отравления за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/venom_dose.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "rot",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Гниение",
+      "description": "+20% урона за очко по отравленным целям.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/rot.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "caustic_burst",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Едкий выброс",
+      "description": "+3% шанса крита за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/caustic_burst.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "acrid_haze",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Едкая взвесь",
+      "description": "+10% урона за очко от отравления и зоны облака (урон со временем).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/acrid_haze.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "erosion",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Разъедание",
+      "description": "Яд пробивает защиту: +6% пробивания сопротивления яду за очко. Огненному туману не помогает.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/erosion.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "plague_mist",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Моровой туман",
+      "description": "Развилка стихии. Остается ядом. Основная цель попадания получает вторую порцию отравления без броска шанса (прок «при попадании» срабатывает один раз за применение, на основную цель); облако шире: +30% площади; когда яд или зона облака убивает цель, облако выпускает копию с уроном 60% (бесплатно, без проков; копия обновляет ту же зону, второй зоны нет). Убийство, добитое копией, новой копии не дает.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/plague_mist.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "fire_mist",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Горючий туман",
+      "description": "Развилка стихии. Весь урон становится огнем: шанс поджога 50%, +25% урона (More). Отравление и бонусы к яду после этого не работают: «Едкий состав», «Гниение», «Моровой туман», «Разъедание» бесполезны.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/fire_mist.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "ember_fume",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Тлеющий дым",
+      "description": "+20% урона поджога за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/ember_fume.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "ash_smoke",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Горячий пепел",
+      "description": "Огненная зона сильнее: +8% базы недуга в секунду за очко.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/ash_smoke.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "mist_cloak",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Туманный покров",
+      "description": "Каст дает −8% получаемого урона на 1.4 с (не дольше половины самой короткой перезарядки при максимальном ее ускорении ≈ 2.9 с).",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/mist_cloak.png"
+    },
+    {
+      "skill_id": "poison_cloud",
+      "node_id": "toxic_echo",
+      "skill_name": "Ядовитый туман",
+      "node_name": "Ядовитое эхо",
+      "description": "Каждое 2-е применение выпускает копию облака с уроном 50% (бесплатно, без проков). Копия обновляет ту же зону, второй зоны нет.",
+      "status": "missing_dedicated_art",
+      "runtime_target": "game/Ui/Art/Icons/skill_nodes/poison_cloud/toxic_echo.png"
+    }
+  ]
+}
