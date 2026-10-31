@@ -9,6 +9,7 @@ public partial class RoomHudDecoration : Control
     /// <summary>Use a sibling backdrop for a Container: never insert decoration into its layout.</summary>
     public Control? Follow { get; set; }
     private StyleBoxTexture _frame = null!;
+    private bool _focused;
 
     public RoomHudDecoration()
     {
@@ -27,11 +28,18 @@ public partial class RoomHudDecoration : Control
         Position = GetParent<Control>().GetGlobalTransform().AffineInverse() * Follow.GlobalPosition;
         Size = Follow.Size;
         Visible = Follow.Visible;
+        var focused = Follow is GameWindow { PadFocused: true };
+        if (focused != _focused)
+        {
+            _focused = focused;
+            QueueRedraw();
+        }
     }
 
     public override void _Draw()
     {
         if (_frame == null || Size.X < 1 || Size.Y < 1) return;
         DrawStyleBox(_frame, new Rect2(Vector2.Zero, Size));
+        if (_focused) DrawRect(new Rect2(Vector2.Zero, Size).Grow(-1), WindowHost.FocusedBorder, false, 2);
     }
 }

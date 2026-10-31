@@ -2,6 +2,7 @@ using Dialoid.Core.Data;
 using Dialoid.Core.Explain;
 using Dialoid.Game.Room;
 using Dialoid.Game.Ui;
+using Dialoid.Game.Ui.Art;
 using Dialoid.Sandbox;
 using Godot;
 
@@ -126,6 +127,9 @@ public partial class Main : Control
             };
             BuildError();
         }
+
+        if (LoadError == null && OS.GetCmdlineUserArgs().Contains(RoomHudSkin.EnableArg))
+            RoomHudSkin.Apply(this);
 
         if (OS.GetCmdlineUserArgs().Contains(SelfTestArg))
             new SelfTest(this).Start();
