@@ -161,7 +161,7 @@ public sealed class SandboxSession
 
     /// <summary>
     /// Puts a skill into an open slot (null empties the slot). The replaced skill is remembered with its level and nodes for
-    /// <see cref="UndoSlot"/>. A new skill starts at the highest level its cap and the character level allow, with no nodes.
+    /// <see cref="UndoSlot"/>. A new skill starts at its full cap for training, regardless of character level, with no nodes.
     /// Refused for a slot closed by the level, an unknown or already slotted skill, or a skill that is neither the class's
     /// nor granted by an equipped item. A class skill below its unlock level is accepted and shown as the
     /// skill_locked_by_level violation (the same over-budget policy as passives).
@@ -180,7 +180,7 @@ public sealed class SandboxSession
         if (!Data.Skills.TryGetValue(skillId, out var skill)) return CommandResult.Fail(Texts.UnknownSkill(skillId));
         if (CheckSlottable(slot, skill) is { } refusal) return refusal;
         int cap = BuildRules.SkillLevelCap(_build, skillId, Data);
-        Replace(slot, new SkillSlot { SkillId = skillId, Level = Math.Max(1, Math.Min(cap, _build.Level)) });
+        Replace(slot, new SkillSlot { SkillId = skillId, Level = cap });
         return Commit();
     }
 

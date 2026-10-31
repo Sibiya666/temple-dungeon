@@ -5,6 +5,61 @@ namespace Dialoid.Sandbox.Tests;
 
 public class SessionSkillTests
 {
+    [Theory]
+    [InlineData(1)]
+    [InlineData(4)]
+    public void New_native_skill_has_full_training_budget_at_low_character_level(int level)
+    {
+        var s = NewSorcerer(level);
+
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+
+        Assert.Equal(20, s.GetSlot(0)!.Level);
+        Assert.Equal(20, s.SkillPointsFree(0));
+        Assert.True(s.AddSkillNodePoint(0, "heat").Ok);
+        Assert.True(s.AddSkillNodePoint(0, "heat").Ok);
+        Assert.Equal(18, s.SkillPointsFree(0));
+        Assert.Equal(level, s.Build.Level);
+    }
+
+    [Theory]
+    [InlineData("ring_of_mist", "poison_cloud", 10)]
+    [InlineData("veteran_axe", "throwing_axe", 12)]
+    public void New_loot_skill_has_item_budget_at_character_level_one(string item, string skill, int budget)
+    {
+        var s = NewSorcerer(level: 1);
+        Assert.True(s.ToggleItem(item).Ok);
+
+        Assert.True(s.SetSlotSkill(0, skill).Ok);
+
+        Assert.Equal(budget, s.GetSlot(0)!.Level);
+        Assert.Equal(budget, s.SkillPointsFree(0));
+        Assert.False(s.SetSkillLevel(0, budget + 1).Ok);
+    }
+
+    [Fact]
+    public void Deliberate_skill_level_survives_reselection_import_and_training_combat()
+    {
+        var s = NewSorcerer(level: 4);
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.True(s.SetSkillLevel(0, 3).Ok);
+        Assert.True(s.AddSkillNodePoint(0, "heat").Ok);
+        Assert.True(s.SetSlotSkill(0, "fireball").Ok);
+        Assert.Equal(3, s.GetSlot(0)!.Level);
+
+        var code = s.ExportCode();
+        Assert.True(s.Import(code).Ok);
+        Assert.Equal(3, s.GetSlot(0)!.Level);
+        var revision = s.Revision;
+        var room = new TrainingRoom(s);
+
+        var segment = Rooms.HitAndWaitForClose(room, 1);
+
+        Assert.NotEmpty(segment.Damage);
+        Assert.Equal(revision, s.Revision);
+        Assert.Equal(code, s.ExportCode());
+    }
+
     private static SandboxSession NewSorcerer(int level = 60)
     {
         var s = SandboxSession.Create(TestData.Data, "sorcerer");
