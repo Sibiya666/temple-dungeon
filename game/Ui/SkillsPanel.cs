@@ -135,10 +135,14 @@ public partial class SkillsPanel : SessionPanel
         _slotChoices.Clear();
         _blocked.Clear();
         _undoButtons.Clear();
+        _catalogButtons.Clear();
+        _previewNodeIds.Clear();
         PointsText = "";
 
         var build = Session.Build;
+        if (DrawBrowsedSkill()) return;
         if (_commandError != null) AddText("Команда отклонена: " + _commandError, Red);
+        DrawCatalog();
         AddText($"Открыто слотов: {Session.SlotsOpen} из {SandboxSession.SlotCount}");
 
         if (_treeSlot < 0 || Session.GetSlot(_treeSlot) == null)
@@ -248,7 +252,7 @@ public partial class SkillsPanel : SessionPanel
     {
         if (_treeSlot < 0 || Session.GetSlot(_treeSlot) is not { } slot || !Session.Data.Skills.TryGetValue(slot.SkillId, out var skill))
         {
-            AddText("Поставьте скилл в слот, чтобы увидеть его дерево.");
+            AddText("Для просмотра дерева выберите иконку скилла выше.");
             return;
         }
 

@@ -1,4 +1,4 @@
-﻿using Dialoid.Core.Builds;
+using Dialoid.Core.Builds;
 using Dialoid.Core.Effects;
 using Dialoid.Core.Passives;
 using Dialoid.Core.Simulation;
@@ -154,6 +154,7 @@ public sealed partial class SelfTest
         steps.Add(new("passives.drag-vs-click", PassiveDragVsClick));
         steps.Add(new("passives.noop-clears-error", PassiveNoopClearsError));
         steps.Add(new("skills.slots", SkillsSlots));
+        steps.Add(new("skills.icon-catalog", SkillsIconCatalog));
         if (mains.Count > 0)
         {
             var reference = mains.FirstOrDefault(m => m.Path.EndsWith("warrior_berserker_whirlwind.json", StringComparison.Ordinal)) ?? mains[0];
@@ -528,6 +529,57 @@ public sealed partial class SelfTest
     }
 
     /// <summary>Closed slots, the OptionButton signal, level, undo, a refusal and the rotation editor on a fresh build.</summary>
+    private async Task SkillsIconCatalog()
+    {
+        await FreshBuild(1, WindowIds.Skills);
+        var panel = _main.Skills!;
+        var session = _main.Session!;
+        var ids = session.Data.Classes[session.Build.ClassId].SkillIds;
+        Check(panel.CatalogButtons.Keys.SequenceEqual(ids), "каталог не совпадает со скиллами класса");
+        if (_screenshotDir != null) await Shot("skills-icon-catalog", full: true);
+        var id = ids.First(s => session.Data.Skills[s].UnlockLevel > 1);
+        var revision = session.Revision;
+        PushButton(panel.CatalogButtons[id].GetGlobalRect().GetCenter(), MouseButton.Left);
+        await Settle();
+        Check(panel.BrowsedSkillId == id && panel.PreviewNodeIds.SequenceEqual(session.Data.Skills[id].Tree.Select(n => n.Id)),
+            "иконка не открыла дерево ещё не установленного скилла");
+        Check(session.Revision == revision && session.Build.Slots.Count == 0, "просмотр изменил билд");
+        if (_screenshotDir != null) await Shot("skills-icon-preview", full: true);
+        Check(panel.PadBack(), "B не вернула каталог");
+        await Settle();
+        Check(panel.BrowsedSkillId == null && panel.CatalogButtons.ContainsKey(id), "каталог не восстановлен");
+        Check(!panel.PadBack(), "B на верхнем уровне должна закрывать окно");
+        Check(_main.Character!.SelectLevel(20).Ok && panel.SelectSkill(0, id).Ok, "скилл не установлен для проверки дерева");
+        await Settle();
+        try
+        {
+            await PadMode();
+            Host.FocusWindow(WindowIds.Skills);
+            panel.CatalogButtons[id].GrabFocus();
+            PadTap(JoyButton.A);
+            await Settle();
+            Check(panel.TreeSlot == 0 && panel.LevelNumber != null && panel.PreviewNodeIds.Count == 0,
+                "установленный скилл не открыл настоящее редактируемое дерево");
+            Check(_main.Character.SelectLevel(1).Ok, "понижение уровня отклонено");
+            revision = session.Revision;
+            await Settle();
+            Check(panel.PreviewNodeIds.SequenceEqual(session.Data.Skills[id].Tree.Select(n => n.Id)) && panel.LevelNumber == null,
+                "закрытый по уровню установленный скилл открыл редактор");
+            Check(session.Revision == revision, "просмотр заблокированного скилла изменил билд");
+            PadTap(JoyButton.B);
+            await Settle();
+            Check(panel.BrowsedSkillId == null && Host.IsOpen(WindowIds.Skills) && panel.CatalogButtons[id].HasFocus(),
+                "B не вернула фокус на иконку, сохранив окно");
+            panel.PadClosed();
+            await Settle();
+            Check(panel.BrowsedSkillId == null, "закрытие сохранило вложенный экран");
+        }
+        finally
+        {
+            Device.Set(Dialoid.Game.Input.InputKind.KeyboardMouse);
+        }
+    }
+
     private async Task SkillsSlots()
     {
         var panel = _main.Skills!;
