@@ -1,0 +1,35 @@
+[
+  {
+    "id": "spear",
+    "service": "built-in GPT imagegen",
+    "operation": "background extraction",
+    "input": "docs/art/cursor/2026-11-03-venice-358/spear.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-520002a5-b2e8-4e83-a595-45b993edc28e.png",
+    "output": "cutouts/spear.png",
+    "prompt": "Background extraction only. Remove the uniform dark backdrop and the cast shadow from this image, producing a true transparent RGBA background. Preserve the exact object, its shape, orientation, material, colors, exposure, shading, edge highlights, detail and proportions. Do not redraw, improve, sharpen, relight, recolor or stylize the object. Do not add outlines, glow, effects or extra objects. Keep the complete object with transparent margin, same square canvas and same placement. ",
+    "date": "2026-11-03",
+    "runtimeInstalled": false
+  },
+  {
+    "id": "key",
+    "service": "built-in GPT imagegen",
+    "operation": "background extraction",
+    "input": "docs/art/cursor/2026-11-03-venice-358/key.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-3b3b9bcb-817b-4575-b556-b09d30eef2b6.png",
+    "output": "cutouts/key.png",
+    "prompt": "Background extraction only. Remove the uniform dark backdrop and the cast shadow from this image, producing a true transparent RGBA background. Preserve the exact object, its shape, orientation, material, colors, exposure, shading, edge highlights, detail and proportions. Do not redraw, improve, sharpen, relight, recolor or stylize the object. Do not add outlines, glow, effects or extra objects. Keep the complete object with transparent margin, same square canvas and same placement. The open hole inside the key's gothic bow must also become transparent.",
+    "date": "2026-11-03",
+    "runtimeInstalled": false
+  },
+  {
+    "id": "glass",
+    "service": "built-in GPT imagegen",
+    "operation": "background extraction",
+    "input": "docs/art/cursor/2026-11-03-venice-358/glass.png",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f35-6479-7470-afb8-dc75237f39fc\\exec-63edb53b-6ac0-4eee-948e-5bfa8745a1a8.png",
+    "output": "cutouts/glass.png",
+    "prompt": "Background extraction only. Remove the uniform dark backdrop and the cast shadow from this image, producing a true transparent RGBA background. Preserve the exact object, its shape, orientation, material, colors, exposure, shading, edge highlights, detail and proportions. Do not redraw, improve, sharpen, relight, recolor or stylize the object. Do not add outlines, glow, effects or extra objects. Keep the complete object with transparent margin, same square canvas and same placement. The blue stained glass IS the object, retain its entire blue face, reflections, lead rim, lead dividers and tiny red fragment. Do not remove the glass interior as if it were background.",
+    "date": "2026-11-03",
+    "runtimeInstalled": false
+  }
+]
