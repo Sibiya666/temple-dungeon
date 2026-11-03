@@ -1,0 +1,32 @@
+[
+  {
+    "id": "cleave",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "5CAB8745456323050CB3074FD72E1297BA7AC43253986F7019DF670F38A5F65D"
+  },
+  {
+    "id": "battle_cry",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "20A4695956DB8A58B436A305476B1628D64B4BD3A31D81CFB9AA53AC49463EE9"
+  },
+  {
+    "id": "fireball",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "771E9C740C06468F928281B0053032C26A9908148ED584255ABFC7F6388012F7"
+  },
+  {
+    "id": "ice_lance",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "8CB6C46C9BB3D12670F43C06E4D029F114B1014A45F5074EB75147D0E67897A6"
+  },
+  {
+    "id": "spark",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "1515B8669851C41CACF93CC9A42C0694114EFBE24C7F31672580143CC599EB4A"
+  }
+]

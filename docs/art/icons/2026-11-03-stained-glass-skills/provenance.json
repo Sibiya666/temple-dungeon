@@ -1,0 +1,67 @@
+[
+  {
+    "skillId": "cleave",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "date": "2026-11-03",
+    "reference": "reference/venice-glass.png",
+    "originalReference": "docs/art/cursor/2026-11-03-venice-358/glass.png",
+    "promptFile": "prompts/cleave.txt",
+    "prompt": "Edit the supplied reference into ONE square ARPG skill icon. Replace the central triangular shard completely with a diagonal sword silhouette crossed by one sweeping cutting crescent, both constructed from large pale smoky ivory-blue glass pieces in thin dark lead seams; the sword and slash must remain distinguishable. The skill symbol ITSELF is assembled from a few broad pieces of smoky stained glass joined by dimensional dark lead came: glass and metal form the silhouette, not a painting of a symbol on a common triangular shard. Preserve the reference's tangible glass depth, dark lead material, restrained transmitted cold light, soft shadows, background charcoal tone, contrast and rendering. Strong readable subject occupies about 75% of canvas with clear margin. Keep restrained material highlights, no general glow or bloom. No additional stylization, expressive brush strokes, white drawn outlines, gold, stone texture, gritty overlay, geometric SVG flatness, full window, scenery, border, text or UI states. One complete object centered on the same quiet dark background. ",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1a235-adfb-7d13-8616-4305e9e86fb9\\exec-13e55903-3982-44b2-b5da-38f6b6240cc8.png",
+    "master": "masters/cleave.png",
+    "runtimeInstalled": false
+  },
+  {
+    "skillId": "battle_cry",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "date": "2026-11-03",
+    "reference": "reference/venice-glass.png",
+    "originalReference": "docs/art/cursor/2026-11-03-venice-358/glass.png",
+    "promptFile": "prompts/battle_cry.txt",
+    "prompt": "Edit the supplied reference into ONE square ARPG skill icon. Replace the central triangular shard completely with a curved war horn facing upward-right with two broad short radiating sound wedges, constructed from smoky blue-green and pale ivory glass pieces in dark lead came; clear open bell silhouette. The skill symbol ITSELF is assembled from a few broad pieces of smoky stained glass joined by dimensional dark lead came: glass and metal form the silhouette, not a painting of a symbol on a common triangular shard. Preserve the reference's tangible glass depth, dark lead material, restrained transmitted cold light, soft shadows, background charcoal tone, contrast and rendering. Strong readable subject occupies about 75% of canvas with clear margin. Keep restrained material highlights, no general glow or bloom. No additional stylization, expressive brush strokes, white drawn outlines, gold, stone texture, gritty overlay, geometric SVG flatness, full window, scenery, border, text or UI states. One complete object centered on the same quiet dark background. ",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1a235-adfb-7d13-8616-4305e9e86fb9\\exec-0e14363b-1232-42f4-81d2-2177ab710d84.png",
+    "master": "masters/battle_cry.png",
+    "runtimeInstalled": false
+  },
+  {
+    "skillId": "fireball",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "date": "2026-11-03",
+    "reference": "reference/venice-glass.png",
+    "originalReference": "docs/art/cursor/2026-11-03-venice-358/glass.png",
+    "promptFile": "prompts/fireball.txt",
+    "prompt": "Edit the supplied reference into ONE square ARPG skill icon. Replace the central triangular shard completely with one compact descending fireball, a rounded ember core with a short flame tail, constructed from smoky charcoal, dark burgundy and restrained amber glass pieces in dark lead came; light passes through the glass, not a luminous fire effect. The skill symbol ITSELF is assembled from a few broad pieces of smoky stained glass joined by dimensional dark lead came: glass and metal form the silhouette, not a painting of a symbol on a common triangular shard. Preserve the reference's tangible glass depth, dark lead material, restrained transmitted cold light, soft shadows, background charcoal tone, contrast and rendering. Strong readable subject occupies about 75% of canvas with clear margin. Keep restrained material highlights, no general glow or bloom. No additional stylization, expressive brush strokes, white drawn outlines, gold, stone texture, gritty overlay, geometric SVG flatness, full window, scenery, border, text or UI states. One complete object centered on the same quiet dark background. ",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1a235-adfb-7d13-8616-4305e9e86fb9\\exec-580e6c42-1780-4b03-8c14-8a75dfb07dab.png",
+    "master": "masters/fireball.png",
+    "runtimeInstalled": false
+  },
+  {
+    "skillId": "ice_lance",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "date": "2026-11-03",
+    "reference": "reference/venice-glass.png",
+    "originalReference": "docs/art/cursor/2026-11-03-venice-358/glass.png",
+    "promptFile": "prompts/ice_lance.txt",
+    "prompt": "Edit the supplied reference into ONE square ARPG skill icon. Replace the central triangular shard completely with one long narrow diagonal ice spear pointing upward-left, constructed from three or four broad cold blue and pale icy glass pieces in dark lead came; clean pointed spear silhouette rather than a snowflake. The skill symbol ITSELF is assembled from a few broad pieces of smoky stained glass joined by dimensional dark lead came: glass and metal form the silhouette, not a painting of a symbol on a common triangular shard. Preserve the reference's tangible glass depth, dark lead material, restrained transmitted cold light, soft shadows, background charcoal tone, contrast and rendering. Strong readable subject occupies about 75% of canvas with clear margin. Keep restrained material highlights, no general glow or bloom. No additional stylization, expressive brush strokes, white drawn outlines, gold, stone texture, gritty overlay, geometric SVG flatness, full window, scenery, border, text or UI states. One complete object centered on the same quiet dark background. ",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1a235-adfb-7d13-8616-4305e9e86fb9\\exec-00700a18-aa46-44ad-8a7e-97ce5dfe4409.png",
+    "master": "masters/ice_lance.png",
+    "runtimeInstalled": false
+  },
+  {
+    "skillId": "spark",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "date": "2026-11-03",
+    "reference": "reference/venice-glass.png",
+    "originalReference": "docs/art/cursor/2026-11-03-venice-358/glass.png",
+    "promptFile": "prompts/spark.txt",
+    "prompt": "Edit the supplied reference into ONE square ARPG skill icon. Replace the central triangular shard completely with a bold branching zigzag lightning bolt, constructed from a few broad pale lavender-blue glass pieces joined by dark lead came; strong two-branch silhouette, not a thin glowing filament. The skill symbol ITSELF is assembled from a few broad pieces of smoky stained glass joined by dimensional dark lead came: glass and metal form the silhouette, not a painting of a symbol on a common triangular shard. Preserve the reference's tangible glass depth, dark lead material, restrained transmitted cold light, soft shadows, background charcoal tone, contrast and rendering. Strong readable subject occupies about 75% of canvas with clear margin. Keep restrained material highlights, no general glow or bloom. No additional stylization, expressive brush strokes, white drawn outlines, gold, stone texture, gritty overlay, geometric SVG flatness, full window, scenery, border, text or UI states. One complete object centered on the same quiet dark background. ",
+    "generatedSource": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1a235-adfb-7d13-8616-4305e9e86fb9\\exec-d2cb52d1-1a83-4399-a1f9-93da989111da.png",
+    "master": "masters/spark.png",
+    "runtimeInstalled": false
+  }
+]
