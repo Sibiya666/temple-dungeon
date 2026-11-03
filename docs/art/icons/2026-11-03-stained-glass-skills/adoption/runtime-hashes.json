@@ -1,0 +1,37 @@
+[
+  {
+    "skillId": "cleave",
+    "source": "docs/art/icons/2026-11-03-stained-glass-skills/export/cleave-64.png",
+    "runtime": "game/Ui/Art/Icons/skills/cleave.png",
+    "sha256": "3B0FD635AF5CA3C1EFBFECDA9882658901A8F3A68CC1CC4CDFF86721A4F417F4",
+    "previousSha256": "D615CCE9D05AE40E5E454F78B8ED6D87E0D75023DEECA113B4121706C04D73D6"
+  },
+  {
+    "skillId": "battle_cry",
+    "source": "docs/art/icons/2026-11-03-stained-glass-skills/export/battle_cry-64.png",
+    "runtime": "game/Ui/Art/Icons/skills/battle_cry.png",
+    "sha256": "CD5289668379D47D48F2F5F1F216817078C3A4A7E9CB43C65D33D66382425D58",
+    "previousSha256": "3566C3345E46D027A5F2F16CD36C444F88D3ED78D68883825C1CA7CEF2BC0E35"
+  },
+  {
+    "skillId": "fireball",
+    "source": "docs/art/icons/2026-11-03-stained-glass-skills/export/fireball-64.png",
+    "runtime": "game/Ui/Art/Icons/skills/fireball.png",
+    "sha256": "68CA60C38701E3D3EF35E15A78FCB416B4804E3A2D24775CD94B23E19917E1B5",
+    "previousSha256": "6E6E765ACB592D752812DB65DF33E5120600FBDD7FE9AB690F2B8EE69A5B3FBE"
+  },
+  {
+    "skillId": "ice_lance",
+    "source": "docs/art/icons/2026-11-03-stained-glass-skills/export/ice_lance-64.png",
+    "runtime": "game/Ui/Art/Icons/skills/ice_lance.png",
+    "sha256": "817AD47C5DA32646D2175B1793D51438BC66950F2DC4CFD3A86C5420AA47B9A9",
+    "previousSha256": "609C4649201BD2B317B31EE24736FE262C3D0DB4882BAFD0A2C88886EA5CA447"
+  },
+  {
+    "skillId": "spark",
+    "source": "docs/art/icons/2026-11-03-stained-glass-skills/export/spark-64.png",
+    "runtime": "game/Ui/Art/Icons/skills/spark.png",
+    "sha256": "0262F277391BD81A2912A1E82DCDCC3D93C2FB6BC9C4840819307D05C1EAD4B7",
+    "previousSha256": "079656CC4D9A78F6222DE8A7BAAB9F1709487A8AA5D21EE7AFBA4D469C23044C"
+  }
+]
