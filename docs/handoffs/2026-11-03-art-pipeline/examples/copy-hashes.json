@@ -1,0 +1,98 @@
+[
+  {
+    "file": "examples/reference/approved-ui.png",
+    "sha256": "0DFD575C9AE257C481C13357262D65F7196F798417295773FA791C443DF33B4F"
+  },
+  {
+    "file": "examples/reference/approved-glass.png",
+    "sha256": "0F86D277A42D498DD02D95A3878DCEF196CE833BA8335D089048EABCDEF7B632"
+  },
+  {
+    "file": "examples/backgrounds/ascendancy.png",
+    "sha256": "4495D85BC4E37D99122D0EF21C98697CFDDEBF612A2D90BCF994C1AC0B769D12"
+  },
+  {
+    "file": "examples/backgrounds/ascendancy.txt",
+    "sha256": "B94D92A01AA5CAC62007BEDB2341F0C579B456C6E8A51B31E0365E7D402224AB"
+  },
+  {
+    "file": "examples/comparisons/backgrounds-full.png",
+    "sha256": "456FCBC753992CA8E5BCF3970F3C5D1D86647138563BEDB657AB07A85B805BDA"
+  },
+  {
+    "file": "examples/comparisons/backgrounds-overconstrained.png",
+    "sha256": "15507691B73451B5A19AE8FA018B863FAF48429C694F40113229E4E3678FB9E0"
+  },
+  {
+    "file": "examples/comparisons/controlled-edit.png",
+    "sha256": "6376E64FCF3CC9699E8FD98C993428E80293BF317B3B357FF5C785F9304B9F30"
+  },
+  {
+    "file": "examples/comparisons/overstyled-gpt-icons.png",
+    "sha256": "42252F0C50632FA1AA7DAA770A4A2A5468A450F30D28BD515DACB560E0DB1C87"
+  },
+  {
+    "file": "examples/stained-glass/preview.png",
+    "sha256": "4B4429687A09FB2484CB231CC88ED31ED531F02A5554AEAFABB91BA890847238"
+  },
+  {
+    "file": "examples/runtime/ice-lance.png",
+    "sha256": "8E7AF243F90F4801A4CFAC1769DB2F75187F550B9BE2D2657D7B8EAF814ECBE7"
+  },
+  {
+    "file": "examples/stained-glass/masters/cleave.png",
+    "sha256": "5CAB8745456323050CB3074FD72E1297BA7AC43253986F7019DF670F38A5F65D"
+  },
+  {
+    "file": "examples/stained-glass/prompts/cleave.txt",
+    "sha256": "2A761D23F1C81549C7792D49D3D1F7426CEC341E53A9CE4F410807F4736AB5FC"
+  },
+  {
+    "file": "examples/stained-glass/masters/battle_cry.png",
+    "sha256": "20A4695956DB8A58B436A305476B1628D64B4BD3A31D81CFB9AA53AC49463EE9"
+  },
+  {
+    "file": "examples/stained-glass/prompts/battle_cry.txt",
+    "sha256": "51CFEE02DC8A1C8C0079C0E5C8FC4F54D048A2A35ADB4D7BB3A8131B6623CEB9"
+  },
+  {
+    "file": "examples/stained-glass/masters/fireball.png",
+    "sha256": "771E9C740C06468F928281B0053032C26A9908148ED584255ABFC7F6388012F7"
+  },
+  {
+    "file": "examples/stained-glass/prompts/fireball.txt",
+    "sha256": "60961F404F1815EEB79613C5E9D77C8E60C9BDBB172BABEE73D978CDF4CC9334"
+  },
+  {
+    "file": "examples/stained-glass/masters/ice_lance.png",
+    "sha256": "8CB6C46C9BB3D12670F43C06E4D029F114B1014A45F5074EB75147D0E67897A6"
+  },
+  {
+    "file": "examples/stained-glass/prompts/ice_lance.txt",
+    "sha256": "F6EDE22309D9E616381A73C12E81F2C1A4B183C12AE686523927FB70B7518785"
+  },
+  {
+    "file": "examples/stained-glass/masters/spark.png",
+    "sha256": "1515B8669851C41CACF93CC9A42C0694114EFBE24C7F31672580143CC599EB4A"
+  },
+  {
+    "file": "examples/stained-glass/prompts/spark.txt",
+    "sha256": "D9F03F66CDAA571AAFA34760E8368D00567902026F74FBB68538F9C23F2B77C0"
+  },
+  {
+    "file": "examples/reference/approved-glass-prompt.txt",
+    "sha256": "16657D9F43028C9E577CF01FF703F6931A73DB5E0AD1C43FF8425814A1EFAF75"
+  },
+  {
+    "file": "examples/reference/approved-ui-prompt.txt",
+    "sha256": "588006625D23734268544E466ABB003A34DBEB61B5E78938B90B94767E4B3BCF"
+  },
+  {
+    "file": "examples/reference/original-cleave.png",
+    "sha256": "E62B056D74ABE9E26CD56822B96E0B98CF2F0E6BA85BECCBE7EB639210D52A53"
+  },
+  {
+    "file": "examples/reference/original-cleave-prompt.txt",
+    "sha256": "AE2EE32BBFB5173E1FE587A6EC1B7850F276E3B342C8EC6CA94BC43C88D901F8"
+  }
+]

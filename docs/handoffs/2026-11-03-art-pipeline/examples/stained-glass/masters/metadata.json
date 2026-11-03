@@ -1,0 +1,52 @@
+[
+  {
+    "id": "cleave",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "inputReference": "../../reference/approved-glass.png",
+    "promptFile": "../prompts/cleave.txt",
+    "masterPath": "cleave.png",
+    "approvalDate": "2026-11-03",
+    "runtimeStatus": "adopted"
+  },
+  {
+    "id": "battle_cry",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "inputReference": "../../reference/approved-glass.png",
+    "promptFile": "../prompts/battle_cry.txt",
+    "masterPath": "battle_cry.png",
+    "approvalDate": "2026-11-03",
+    "runtimeStatus": "adopted"
+  },
+  {
+    "id": "fireball",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "inputReference": "../../reference/approved-glass.png",
+    "promptFile": "../prompts/fireball.txt",
+    "masterPath": "fireball.png",
+    "approvalDate": "2026-11-03",
+    "runtimeStatus": "adopted"
+  },
+  {
+    "id": "ice_lance",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "inputReference": "../../reference/approved-glass.png",
+    "promptFile": "../prompts/ice_lance.txt",
+    "masterPath": "ice_lance.png",
+    "approvalDate": "2026-11-03",
+    "runtimeStatus": "adopted"
+  },
+  {
+    "id": "spark",
+    "service": "built-in GPT imagegen",
+    "operation": "edit from approved Venice reference",
+    "inputReference": "../../reference/approved-glass.png",
+    "promptFile": "../prompts/spark.txt",
+    "masterPath": "spark.png",
+    "approvalDate": "2026-11-03",
+    "runtimeStatus": "adopted"
+  }
+]

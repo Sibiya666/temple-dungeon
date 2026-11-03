@@ -1,0 +1,44 @@
+[
+  {
+    "id": "approved-ui",
+    "service": "Venice API",
+    "model": "seedream-v5-pro",
+    "mode": "generate",
+    "seedSent": true,
+    "seed": 731102,
+    "date": "2026-10-31T12:33:15",
+    "image": "approved-ui.png",
+    "prompt": "approved-ui-prompt.txt",
+    "reference": null,
+    "blurred": "false",
+    "rightsStatus": "not_verified"
+  },
+  {
+    "id": "original-cleave",
+    "service": "Venice API",
+    "model": "seedream-v5-pro-edit",
+    "mode": "edit",
+    "seedSent": false,
+    "seed": null,
+    "date": "2026-10-31T12:38:28",
+    "image": "original-cleave.png",
+    "prompt": "original-cleave-prompt.txt",
+    "reference": "approved-ui.png",
+    "blurred": "false",
+    "rightsStatus": "not_verified"
+  },
+  {
+    "id": "approved-glass",
+    "service": "Venice API",
+    "model": "seedream-v5-pro-edit",
+    "mode": "edit",
+    "seedSent": false,
+    "seed": null,
+    "date": "2026-11-03T18:13:32",
+    "image": "approved-glass.png",
+    "prompt": "approved-glass-prompt.txt",
+    "reference": "original-cleave.png",
+    "blurred": "false",
+    "rightsStatus": "not_verified"
+  }
+]
