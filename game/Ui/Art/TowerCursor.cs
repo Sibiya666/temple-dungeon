@@ -5,14 +5,22 @@ namespace Dialoid.Game.Ui.Art;
 /// <summary>Native pointer art; text editing and resize cursors retain their system shapes.</summary>
 public partial class TowerCursor : Node
 {
-    public const string TexturePath = "res://Ui/Art/Cursors/tower-sword.svg";
-    public const string HandTexturePath = "res://Ui/Art/Cursors/tower-hand.svg";
-    public static readonly Vector2 Hotspot = new(3, 3);
-    public static readonly Vector2 HandHotspot = new(12, 3);
+    public const string GlassId = "glass";
+    public const string SpearId = "spear";
+    public const string KeyId = "key";
+    public const string DefaultId = GlassId;
+    public static IReadOnlyList<string> Designs { get; } = Array.AsReadOnly(new[] { GlassId, SpearId, KeyId });
+    public string SettingsPath { get; set; } = "user://cursor.cfg";
+    public string SelectedId { get; private set; } = DefaultId;
+    public Vector2 Hotspot => HotspotFor(SelectedId);
+    public Vector2 HandHotspot => Hotspot;
     public Texture2D? Pointer { get; private set; }
-    public Texture2D? Hand { get; private set; }
+    public Texture2D? Hand => Pointer;
     public bool NativeInstalled { get; private set; }
     private SceneTree? _tree;
+    private Label? _toast;
+    private double _toastRemaining;
+    private readonly Dictionary<string, Texture2D> _textures = new(StringComparer.Ordinal);
     private readonly Dictionary<BaseButton, ButtonBinding> _buttons = new();
 
     private sealed class ButtonBinding
@@ -27,17 +35,121 @@ public partial class TowerCursor : Node
         _tree = GetTree();
         _tree.NodeAdded += OnNodeAdded;
         VisitExisting(_tree.Root);
-        Pointer = GD.Load<Texture2D>(TexturePath);
-        Hand = GD.Load<Texture2D>(HandTexturePath);
-        if (Pointer == null || Hand == null || Pointer.GetSize() != new Vector2(40, 40) || Hand.GetSize() != new Vector2(40, 40))
+        SetProcess(false);
+        Select(LoadSelection(SettingsPath), persist: false, showToast: false);
+    }
+
+    public static string NormalizeId(string? id) => id is GlassId or SpearId or KeyId ? id : DefaultId;
+
+    public static Vector2 HotspotFor(string id) => NormalizeId(id) == SpearId ? new Vector2(6, 3) : new Vector2(2, 2);
+
+    public static string LoadSelection(string path)
+    {
+        if (!Godot.FileAccess.FileExists(path)) return DefaultId;
+        using var config = new ConfigFile();
+        if (config.Load(path) != Error.Ok) return DefaultId;
+        var value = config.GetValue("cursor", "design", DefaultId);
+        return value.VariantType == Variant.Type.String ? NormalizeId(value.AsString()) : DefaultId;
+    }
+
+    public static Error SaveSelection(string path, string? id)
+    {
+        using var config = new ConfigFile();
+        config.SetValue("cursor", "design", NormalizeId(id));
+        return config.Save(path);
+    }
+
+    public Texture2D? TextureFor(string id)
+    {
+        id = NormalizeId(id);
+        if (_textures.TryGetValue(id, out var cached)) return cached;
+        var texture = GD.Load<Texture2D>($"res://Ui/Art/Cursors/{id}.png");
+        if (texture != null && texture.GetSize() == new Vector2(48, 48)) _textures[id] = texture;
+        return texture;
+    }
+
+    public bool Select(string? id, bool persist = true, bool showToast = true)
+    {
+        var wanted = NormalizeId(id);
+        var texture = TextureFor(wanted);
+        if (texture == null || texture.GetSize() != new Vector2(48, 48))
         {
             GD.PushError("Tower cursor texture is missing or has an unexpected size; system cursor retained.");
-            return;
+            return false;
         }
-        if (DisplayServer.GetName() == "headless") return;
-        Godot.Input.SetCustomMouseCursor(Pointer, Godot.Input.CursorShape.Arrow, Hotspot);
-        Godot.Input.SetCustomMouseCursor(Hand, Godot.Input.CursorShape.PointingHand, HandHotspot);
-        NativeInstalled = true;
+        SelectedId = wanted;
+        Pointer = texture;
+        if (DisplayServer.GetName() != "headless")
+        {
+            Godot.Input.SetCustomMouseCursor(texture, Godot.Input.CursorShape.Arrow, Hotspot);
+            Godot.Input.SetCustomMouseCursor(texture, Godot.Input.CursorShape.PointingHand, Hotspot);
+            NativeInstalled = true;
+        }
+        if (persist && SaveSelection(SettingsPath, wanted) != Error.Ok)
+            GD.PushWarning("Cursor preference could not be saved.");
+        if (showToast) ShowToast();
+        return wanted == id;
+    }
+
+    public void Cycle(bool persist = true, bool showToast = true)
+    {
+        var next = SelectedId switch { GlassId => SpearId, SpearId => KeyId, _ => GlassId };
+        Select(next, persist, showToast);
+    }
+
+    public static bool IsCycleKey(InputEvent input, bool editingText, bool popupOpen) =>
+        !editingText && !popupOpen && input is InputEventKey { Pressed: true, Echo: false } key &&
+        (key.Keycode == Godot.Key.F8 || key.PhysicalKeycode == Godot.Key.F8) &&
+        !key.CtrlPressed && !key.AltPressed && !key.ShiftPressed && !key.MetaPressed;
+
+    public bool CanCycle(InputEvent input) => IsCycleKey(input,
+        GetViewport().GuiGetFocusOwner() is LineEdit or TextEdit or SpinBox,
+        HasVisiblePopup(GetTree().Root));
+
+    private static bool HasVisiblePopup(Node node)
+    {
+        if (node is Popup popup && popup.Visible) return true;
+        foreach (var child in node.GetChildren(includeInternal: true)) if (HasVisiblePopup(child)) return true;
+        return false;
+    }
+
+    public override void _UnhandledKeyInput(InputEvent input)
+    {
+        if (!CanCycle(input)) return;
+        Cycle();
+        GetViewport().SetInputAsHandled();
+    }
+
+    private void ShowToast()
+    {
+        if (_toast == null)
+        {
+            var layer = new CanvasLayer { Layer = 110 };
+            AddChild(layer);
+            _toast = new Label
+            {
+                Name = "CursorToast",
+                AnchorRight = 1, OffsetTop = 52, OffsetBottom = 82,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                MouseFilter = Control.MouseFilterEnum.Ignore, FocusMode = Control.FocusModeEnum.None,
+            };
+            _toast.AddThemeColorOverride("font_color", new Color("d8d5c6"));
+            _toast.AddThemeColorOverride("font_outline_color", new Color("10161b"));
+            _toast.AddThemeConstantOverride("outline_size", 5);
+            layer.AddChild(_toast);
+        }
+        _toast.Text = "Курсор: " + (SelectedId switch { GlassId => "Витраж", SpearId => "Наконечник", _ => "Ключ" }) + " · F8";
+        _toast.Show();
+        _toastRemaining = 2;
+        SetProcess(true);
+    }
+
+    public override void _Process(double delta)
+    {
+        _toastRemaining -= delta;
+        if (_toastRemaining > 0) return;
+        _toast?.Hide();
+        SetProcess(false);
     }
 
     private void VisitExisting(Node node)
