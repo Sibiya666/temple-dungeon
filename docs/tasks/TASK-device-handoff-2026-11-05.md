@@ -1,6 +1,6 @@
 # TASK-device-handoff-2026-11-05: перенос работы на другое устройство
 
-Статус: blocked
+Статус: done
 Исполнитель: основной агент, интеграция Git
 Цель: сохранить текущее состояние в ветке `codex/device-handoff-2026-11-05` и отправить в origin.
 Основа: поручение владельца «Закомить все» от 2026-11-05.
@@ -33,7 +33,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot_check.ps1
 
 ## Результат проверки
 
-Локальный снимок закоммичен. Отправка ветки в origin заблокирована автоматической проверкой безопасности: требуется явное подтверждение владельца на отправку полного содержимого, включая логи и артефакты, в `https://github.com/Sibiya666/temple-dungeon.git`. До успешного push ветка на другом устройстве недоступна.
+Снимок `cf9da70` отправлен в `origin/codex/device-handoff-2026-11-05`. Владелец явно подтвердил отправку полного содержимого, включая логи и артефакты, в `https://github.com/Sibiya666/temple-dungeon.git`. Ветка доступна для продолжения на другом устройстве.
 
 - `dotnet test core/Dialoid.sln --nologo -p:NuGetAudit=false`: 999 тестов Core и 144 Sandbox прошли, пропусков нет.
 - `dotnet build game/Dialoid.Game.csproj --nologo -p:NuGetAudit=false`: успешно, 0 предупреждений и ошибок.
