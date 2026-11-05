@@ -1,0 +1,122 @@
+[
+  {
+    "master": "battle_cry.png",
+    "masterSha256": "20A4695956DB8A58B436A305476B1628D64B4BD3A31D81CFB9AA53AC49463EE9",
+    "export": "export/battle_cry-64.png",
+    "width": 64,
+    "height": 64,
+    "exportSha256": "CD5289668379D47D48F2F5F1F216817078C3A4A7E9CB43C65D33D66382425D58"
+  },
+  {
+    "master": "battle_cry.png",
+    "masterSha256": "20A4695956DB8A58B436A305476B1628D64B4BD3A31D81CFB9AA53AC49463EE9",
+    "export": "export/battle_cry-32.png",
+    "width": 32,
+    "height": 32,
+    "exportSha256": "985515E426B879B21A38F6704B1A76572A2202D295045AAAB7241EE60D76B15D"
+  },
+  {
+    "master": "battle_cry.png",
+    "masterSha256": "20A4695956DB8A58B436A305476B1628D64B4BD3A31D81CFB9AA53AC49463EE9",
+    "export": "export/battle_cry-24.png",
+    "width": 24,
+    "height": 24,
+    "exportSha256": "59C8B10C3FC8B77A92B0AAE690D81CC4EEBE8B48EAEF66FA813599E058B77708"
+  },
+  {
+    "master": "cleave.png",
+    "masterSha256": "5CAB8745456323050CB3074FD72E1297BA7AC43253986F7019DF670F38A5F65D",
+    "export": "export/cleave-64.png",
+    "width": 64,
+    "height": 64,
+    "exportSha256": "3B0FD635AF5CA3C1EFBFECDA9882658901A8F3A68CC1CC4CDFF86721A4F417F4"
+  },
+  {
+    "master": "cleave.png",
+    "masterSha256": "5CAB8745456323050CB3074FD72E1297BA7AC43253986F7019DF670F38A5F65D",
+    "export": "export/cleave-32.png",
+    "width": 32,
+    "height": 32,
+    "exportSha256": "DEB31DA9D7E3D1C12ED03C563A60A38E85B4BDEDEDD0D12ADF6E7D35F920FC24"
+  },
+  {
+    "master": "cleave.png",
+    "masterSha256": "5CAB8745456323050CB3074FD72E1297BA7AC43253986F7019DF670F38A5F65D",
+    "export": "export/cleave-24.png",
+    "width": 24,
+    "height": 24,
+    "exportSha256": "0281D2C940607557C5FE68C6A859CC60FFC74A696DEC7D5854719B72CCBC9900"
+  },
+  {
+    "master": "fireball.png",
+    "masterSha256": "771E9C740C06468F928281B0053032C26A9908148ED584255ABFC7F6388012F7",
+    "export": "export/fireball-64.png",
+    "width": 64,
+    "height": 64,
+    "exportSha256": "68CA60C38701E3D3EF35E15A78FCB416B4804E3A2D24775CD94B23E19917E1B5"
+  },
+  {
+    "master": "fireball.png",
+    "masterSha256": "771E9C740C06468F928281B0053032C26A9908148ED584255ABFC7F6388012F7",
+    "export": "export/fireball-32.png",
+    "width": 32,
+    "height": 32,
+    "exportSha256": "E9D5D7D4B71DCD6A49C46B70A39765D2F55EAEA82DD7AB3E60DCFB058BEDBBFA"
+  },
+  {
+    "master": "fireball.png",
+    "masterSha256": "771E9C740C06468F928281B0053032C26A9908148ED584255ABFC7F6388012F7",
+    "export": "export/fireball-24.png",
+    "width": 24,
+    "height": 24,
+    "exportSha256": "32BC21DD5230BC167DF7AEB2CC908D04FDD950B048FC204CEC3436B2C66E8D7C"
+  },
+  {
+    "master": "ice_lance.png",
+    "masterSha256": "8CB6C46C9BB3D12670F43C06E4D029F114B1014A45F5074EB75147D0E67897A6",
+    "export": "export/ice_lance-64.png",
+    "width": 64,
+    "height": 64,
+    "exportSha256": "817AD47C5DA32646D2175B1793D51438BC66950F2DC4CFD3A86C5420AA47B9A9"
+  },
+  {
+    "master": "ice_lance.png",
+    "masterSha256": "8CB6C46C9BB3D12670F43C06E4D029F114B1014A45F5074EB75147D0E67897A6",
+    "export": "export/ice_lance-32.png",
+    "width": 32,
+    "height": 32,
+    "exportSha256": "7A6C351336B2400801F5FDB06866C09980C5A8717D878EB47650CE9E75C6B0AF"
+  },
+  {
+    "master": "ice_lance.png",
+    "masterSha256": "8CB6C46C9BB3D12670F43C06E4D029F114B1014A45F5074EB75147D0E67897A6",
+    "export": "export/ice_lance-24.png",
+    "width": 24,
+    "height": 24,
+    "exportSha256": "7C1C1D7870E6DF39B5EC0D07BD6A8CC30E296C6FECD0BC47E801A8554BCF179C"
+  },
+  {
+    "master": "spark.png",
+    "masterSha256": "1515B8669851C41CACF93CC9A42C0694114EFBE24C7F31672580143CC599EB4A",
+    "export": "export/spark-64.png",
+    "width": 64,
+    "height": 64,
+    "exportSha256": "0262F277391BD81A2912A1E82DCDCC3D93C2FB6BC9C4840819307D05C1EAD4B7"
+  },
+  {
+    "master": "spark.png",
+    "masterSha256": "1515B8669851C41CACF93CC9A42C0694114EFBE24C7F31672580143CC599EB4A",
+    "export": "export/spark-32.png",
+    "width": 32,
+    "height": 32,
+    "exportSha256": "BF5A79C70809FAC5A0DCB1942618014A8C48A118ED89ED70F9F3646A9F7BF30D"
+  },
+  {
+    "master": "spark.png",
+    "masterSha256": "1515B8669851C41CACF93CC9A42C0694114EFBE24C7F31672580143CC599EB4A",
+    "export": "export/spark-24.png",
+    "width": 24,
+    "height": 24,
+    "exportSha256": "58C2C5047E28F0124FA6378FE0E3804E00F100E3BF25042C43B2B0A13E37C0DF"
+  }
+]

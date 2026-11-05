@@ -1,0 +1,5 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+TOWER ART: 24 SVG x 64/32/24/16 px OK; row order: ["activities/bosses.svg", "activities/clear.svg", "activities/timed_run.svg", "activities/trial.svg", "activities/waves.svg", "currencies/bias_value.svg", "currencies/biased_epic_elite.svg", "currencies/biased_epic_reward.svg", "currencies/biased_rare_elite.svg", "currencies/biased_rare_reward.svg", "currencies/clear.svg", "currencies/imbue.svg", "currencies/imbue_tower.svg", "currencies/imbue_type.svg", "currencies/remove.svg", "currencies/reroll.svg", "currencies/reroll_variant.svg", "currencies/shuffle.svg", "currencies/upgrade.svg", "symbols/close.svg", "symbols/confirm.svg", "symbols/empty_floor.svg", "symbols/summit.svg", "symbols/tower.svg"]

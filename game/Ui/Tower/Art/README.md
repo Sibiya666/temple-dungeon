@@ -1,0 +1,82 @@
+# Tower board service art
+
+Оригинальные векторные служебные знаки, не иллюстрации навыков или предметов.
+Автор: Codex, роль dialoid-technical-artist, 2026-11-01, задача TASK-tower-icons-frames.
+Созданы вручную SVG-кодом для Dialoid; внешние ассеты, шрифты и трассировка не использованы.
+Права: оригинальный вклад в проект, под условиями лицензии проекта; сторонних лицензионных обязательств нет.
+Платные сервисы и генерации не использованы, стоимость 0. Модель/seed/промпт генератора: неприменимо.
+
+Входное задание: docs/tasks/TASK-tower-icons-frames.md и поручение владельца.
+Просмотренные референсы: docs/art/ART_DIRECTION.md,
+docs/art/icons/2026-10-31-venice-ui-concepts/d4.png,
+docs/art/icons/2026-10-31-venice-tower-icons/comparison.png,
+docs/art/icons/2026-10-31-venice-tower-backgrounds/comparison.png.
+Стиль служебных знаков: game/Ui/Art/Icons/symbols/, без изменения общих ассетов.
+
+## Семантика и ID
+
+Каждый ID соответствует одноимённому SVG в своей папке. Activity и Currency имеют
+раздельные пространства имён: их clear намеренно различаются.
+
+| Папка | ID | Смысл |
+|---|---|---|
+| activities | timed_run | Песочные часы |
+| activities | trial | Алтарь с ритуальным ромбом |
+| activities | clear | Сложенная карта и меч |
+| activities | waves | Три волны |
+| activities | bosses | Рогатая маска |
+| currencies | imbue | Плюс |
+| currencies | imbue_type | Плюс и ромб типа этажа |
+| currencies | imbue_tower | Плюс и башня |
+| currencies | clear | Корзина: удаление всех модификаторов |
+| currencies | shuffle | Перекрещённые стрелки обмена |
+| currencies | reroll | Возвратная стрелка и квадрат: один модификатор |
+| currencies | reroll_variant | Возвратная стрелка и ромб: разновидность |
+| currencies | upgrade | Стрелка вверх над опорой |
+| currencies | remove | Минус: снять один модификатор |
+| currencies | biased_rare_elite | Одна стрелка к маске элиты |
+| currencies | biased_rare_reward | Одна стрелка к огранённой награде |
+| currencies | biased_epic_elite | Две стрелки к маске элиты |
+| currencies | biased_epic_reward | Две стрелки к огранённой награде |
+| currencies | bias_value | Растущие числовые столбцы со стрелкой |
+| symbols | empty_floor | Пустые ярусы |
+| symbols | summit | Ступенчатая вершина с флагом |
+| symbols | tower | Вертикальная башня с ярусами |
+| symbols | confirm | Галочка |
+| symbols | close | Крест |
+
+## Размеры и подключение
+
+24 знака: SVG 32×32, viewBox 0 0 32 32, прозрачный фон, штрих 2,
+цвет #d8d5c6, без фильтров, свечения и растровых включений.
+Четыре рамки frames/: SVG 64×64; 9-slice с отступами текстуры 16 px.
+Панель, карточка, выбранная карточка и прозрачный фокус имеют холодные железные
+границы и неподвижные архитектурные уголки. Выбор отличается светлотой границы
+и фоном; фокус накладывается без заливки центра. Без золота, зерна и glow.
+
+API: ../TowerBoardArt.cs, public static TowerBoardArt в Dialoid.Game.Ui.Tower.
+Activity(string? id), Currency(string id), Symbol(string id) возвращают Texture2D?.
+Activity(null) возвращает empty_floor. Неизвестный ID возвращает null.
+Decorate(Button, Texture2D?, int size=28) использует Icon/ExpandIcon и icon_max_width,
+сохраняет текст, управление и фокус; не добавляет дочерних контролов.
+Panel(), Card(bool selected=false), Focus() возвращают независимые StyleBoxTexture
+через контракт StyleBox. Текстуры кэшированы, экземпляры стилей не разделяются.
+Импорт SVG и применение helper в TowerBoardView выполняет интегратор.
+
+## Проверка
+
+Сборка game/Dialoid.Game.csproj --no-restore успешна, ошибок 0.
+Имеются NU1900: недоступен индекс NuGet для проверки уязвимостей.
+Сверено покрытие JSON: 5/5 типов этажей, 14/14 валют и 5/5 служебных знаков.
+verify.gd растеризует все 24 SVG нативным Godot в 64/32/24/16 px, проверяет
+размер и непустой alpha-контур. Результат: size-check.png, столбцы 64/32/24/16.
+Строки идут по алфавиту: activities, currencies, symbols (ID внутри папки).
+Просмотрена контактная таблица: основные силуэты и одиночные/двойные стрелки
+различаются на 24 px; внутренности reroll и направленных знаков плотные на 16 px.
+На 16 px читать знак вместе с текстом; основной размер операций 28 px.
+verify.log фиксирует результат запуска. Godot также сообщает недоступность
+системного хранилища сертификатов в sandbox; растеризация успешно завершена.
+
+Остаётся интегратору: импорт ресурсов, runtime tower.icons и остальные tower selftests,
+проверка Icon/ExpandIcon с настоящим текстом, кадров 1600/720p, фокуса, гнёзд 5/3
+и независимое UI/арт-ревью. Автор не объявляет этот комплект художественно утверждённым.

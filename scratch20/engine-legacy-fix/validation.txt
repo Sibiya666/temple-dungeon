@@ -1,0 +1,2 @@
+Fingerprint and formatting/hash functions byte-identical in before/after.
+git apply --check: PASS (unapplied).

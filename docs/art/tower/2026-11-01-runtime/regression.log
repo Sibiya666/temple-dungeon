@@ -1,0 +1,216 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\Documents\project\dialoid\data
+SELFTEST OK panels
+SELFTEST OK room.asset-names
+SELFTEST NOTE комната: модели есть, текстуры есть, строк ASSET_MISSING: 0, качество High
+SELFTEST OK room.built
+ASSET_MISSING: клип hero_idle: mixamo/anims/sword/нет такого клипа (1).fbx — заглушка
+ASSET_MISSING: текстура floor: polyhaven/monastery_stone_floor/нет такой текстуры.jpg — заглушка
+SELFTEST OK room.partial-assets
+SELFTEST NOTE рост: hero 1,85 м (масштаб 1, макушка 1,85 м), zombie 1,8 м (масштаб 0,873, макушка 1,79 м), orc 2,25 м (масштаб 0,944, макушка 1,98 м), boss 3,15 м (масштаб 1,322, макушка 2,77 м)
+SELFTEST OK room.scale
+SELFTEST NOTE клипы: 10 × 3 моделей, выброшены треки костей, которых нет у модели: hero:RightArmour1, zombie:RightArmour1
+SELFTEST OK room.clips-find-bones
+ASSET_MISSING: клип hero_idle: __selftest_missing_embedded__.fbx — заглушка
+SELFTEST OK room.embedded-clips
+SELFTEST NOTE animated grounding hero_idle t=0: mesh min=0,009821 max=1,561912 head=1,555094 m
+SELFTEST NOTE animated grounding hero_idle t=0,25: mesh min=0,009456 max=1,553763 head=1,550532 m
+SELFTEST NOTE animated grounding hero_idle t=0,5: mesh min=0,009284 max=1,595375 head=1,586525 m
+SELFTEST NOTE animated grounding hero_idle t=0,75: mesh min=0,010023 max=1,575419 head=1,569446 m
+SELFTEST NOTE animated grounding hero_idle t=1: mesh min=0,009821 max=1,561912 head=1,555094 m
+SELFTEST NOTE animated grounding hero_walk t=0: mesh min=0,002902 max=1,682567 head=1,670562 m
+SELFTEST NOTE animated grounding hero_walk t=0,25: mesh min=0,041294 max=1,668668 head=1,659955 m
+SELFTEST NOTE animated grounding hero_walk t=0,5: mesh min=-0,005657 max=1,666789 head=1,655425 m
+SELFTEST NOTE animated grounding hero_walk t=0,75: mesh min=0,022475 max=1,676847 head=1,667853 m
+SELFTEST NOTE animated grounding hero_walk t=1: mesh min=0,002902 max=1,682567 head=1,670562 m
+SELFTEST NOTE animated grounding hero_run t=0: mesh min=0,012522 max=1,401891 head=1,388635 m
+SELFTEST NOTE animated grounding hero_run t=0,25: mesh min=0,060098 max=1,508642 head=1,490981 m
+SELFTEST NOTE animated grounding hero_run t=0,5: mesh min=-0,010317 max=1,484576 head=1,473474 m
+SELFTEST NOTE animated grounding hero_run t=0,75: mesh min=0,050771 max=1,560661 head=1,547892 m
+SELFTEST NOTE animated grounding hero_run t=1: mesh min=0,012522 max=1,401891 head=1,388635 m
+SELFTEST NOTE animated grounding hero_slash t=0: mesh min=0,009809 max=1,561973 head=1,555147 m
+SELFTEST NOTE animated grounding hero_slash t=0,25: mesh min=0,002027 max=1,643069 head=1,540588 m
+SELFTEST NOTE animated grounding hero_slash t=0,5: mesh min=0,007372 max=1,261571 head=1,244088 m
+SELFTEST NOTE animated grounding hero_slash t=0,75: mesh min=0,039995 max=1,309307 head=1,289015 m
+SELFTEST NOTE animated grounding hero_slash t=1: mesh min=0,009809 max=1,561976 head=1,555156 m
+SELFTEST NOTE animated grounding hero_attack t=0: mesh min=0,012522 max=1,401890 head=1,388634 m
+SELFTEST NOTE animated grounding hero_attack t=0,25: mesh min=0,229134 max=2,329113 head=2,060282 m
+SELFTEST NOTE animated grounding hero_attack t=0,5: mesh min=0,213508 max=1,775378 head=1,762804 m
+SELFTEST NOTE animated grounding hero_attack t=0,75: mesh min=-0,048348 max=1,017491 head=1,000668 m
+SELFTEST NOTE animated grounding hero_attack t=1: mesh min=0,009809 max=1,561973 head=1,555147 m
+SELFTEST NOTE animated grounding hero_cast t=0: mesh min=0,009820 max=1,561971 head=1,555139 m
+SELFTEST NOTE animated grounding hero_cast t=0,25: mesh min=0,000593 max=1,616967 head=1,608855 m
+SELFTEST NOTE animated grounding hero_cast t=0,5: mesh min=0,002577 max=1,587001 head=1,577695 m
+SELFTEST NOTE animated grounding hero_cast t=0,75: mesh min=0,003767 max=1,601471 head=1,592583 m
+SELFTEST NOTE animated grounding hero_cast t=1: mesh min=0,009820 max=1,561971 head=1,555139 m
+SELFTEST NOTE animated grounding hit_react t=0: mesh min=0,030725 max=1,384694 head=1,379589 m
+SELFTEST NOTE animated grounding hit_react t=0,25: mesh min=0,025300 max=1,453683 head=1,449904 m
+SELFTEST NOTE animated grounding hit_react t=0,5: mesh min=0,021236 max=1,447248 head=1,443992 m
+SELFTEST NOTE animated grounding hit_react t=0,75: mesh min=0,028462 max=1,394477 head=1,385278 m
+SELFTEST NOTE animated grounding hit_react t=1: mesh min=0,030725 max=1,384688 head=1,379585 m
+SELFTEST OK room.animated-grounding
+SELFTEST OK room.camera-on-screen
+SELFTEST NOTE зум: 9,49–14 м, по умолчанию 10,5 м, кадр 1,78:1
+SELFTEST OK room.camera-zoom-limits
+SELFTEST FAIL room.shadow-budget: у (-5, 0, 0.2): факелов с тенью 6 при 8 рядом
+SELFTEST OK room.quality-low
+SELFTEST OK room.occlusion
+SELFTEST OK room.collisions
+SELFTEST OK tower.crafting
+SELFTEST OK tower.open-close
+SELFTEST OK builds.main-listed
+SELFTEST OK builds.load Чародей, Криомант — Ледяное копье
+SELFTEST OK builds.load Чародей, Пироман — Огненный шар
+SELFTEST OK builds.load Чародей, Криомант — Искра (гибрид)
+SELFTEST OK builds.load Воитель, Берсерк — Вихрь
+SELFTEST OK builds.load Воитель, Громовержец — огненный Рассекающий удар с критом
+SELFTEST OK builds.load Воитель, Громовержец — Сокрушение
+SELFTEST OK character.lines-match
+SELFTEST OK builds.import-garbage
+SELFTEST OK character.illegal-level
+SELFTEST OK character.signal-redraw
+SELFTEST OK passives.click-take
+SELFTEST OK passives.click-unavailable
+SELFTEST OK passives.attribute-menu
+SELFTEST OK passives.hover-zoom-pan
+SELFTEST OK ascendancy.take
+SELFTEST OK passives.drag-vs-click
+SELFTEST OK passives.noop-clears-error
+SELFTEST OK skills.slots
+SELFTEST OK skills.icon-catalog
+SELFTEST OK skills.radial-graph
+SELFTEST OK skills.all-layouts
+SELFTEST OK skills.node-point
+SELFTEST OK simulation.reference
+SELFTEST OK simulation.stale
+SELFTEST OK simulation.violations
+SELFTEST OK acceptance Чародей, Криомант — Ледяное копье
+SELFTEST OK acceptance Чародей, Пироман — Огненный шар
+SELFTEST OK acceptance Чародей, Криомант — Искра (гибрид)
+SELFTEST OK acceptance Воитель, Берсерк — Вихрь
+SELFTEST OK acceptance Воитель, Громовержец — огненный Рассекающий удар с критом
+SELFTEST OK acceptance Воитель, Громовержец — Сокрушение
+SELFTEST OK class-change-resets
+SELFTEST NOTE подписи дерева: 34 из 40 при масштабе 0,61111116
+SELFTEST OK passives.captions-no-overlap
+SELFTEST OK combat.skill-animations
+SELFTEST NOTE живой бой: 5 с, DPS 4718, атак 6, вспышек 18, реакций 6, hit-stop 6, последний клип hero_slash ×1,67
+SELFTEST OK combat.live-fight
+SELFTEST NOTE отказ над героем: «Перезарядка 5,6 с»; в журнале: «0,9 с · Рывок · отказ: перезарядка 5,6 с»
+SELFTEST OK combat.refusal-cooldown
+SELFTEST OK combat.out-of-reach
+SELFTEST NOTE вне кадра: Метеор (в эталоне снаряд со «Звездопадом», проверен без узлов) — TargetNotVisible
+SELFTEST OK combat.target-not-visible
+SELFTEST OK combat.channel-walk-away
+SELFTEST NOTE hit-stop: 6 кадров, реальное время 47 мс (из них замирание 47 мс), время боя +50 мс, по часам 41 мс
+SELFTEST OK combat.hit-stop
+SELFTEST FAIL combat.fire-particles: GPU не на паузе
+SELFTEST NOTE контакт: применение 0,896 с, контакт 0,403 с, вспышка 0,417 с
+SELFTEST OK combat.melee-contact
+SELFTEST NOTE снаряды: 3 каста подряд с 8,5 м, из них во время полета прошлого шара 2; попаданий после прилета 3 из 3
+SELFTEST OK combat.projectile-lands-first
+SELFTEST NOTE тики: 20 тиков → 3 чисел без реакции, за секунду с ударами реакций 1
+SELFTEST OK combat.ticks-no-reaction
+SELFTEST NOTE «Рой»: попадания по целям 1, 2
+SELFTEST OK combat.swarm-ring
+SELFTEST OK combat.dummy-light
+SELFTEST NOTE пресеты: armored 1×orc, attacking_boss 1×boss, boss 1×boss, elemental 1×zombie, swarm 5×zombie, training 1×zombie
+SELFTEST OK combat.presets-outline
+SELFTEST OK combat.input-and-move
+SELFTEST OK combat.restore
+SELFTEST NOTE ширина окон: Персонаж 498, Пассивки 528, Асцендант 528, Скиллы 528, Билды 528, Разбор 528, Симуляция 528, Журнал 500, Измеритель 440, Графики 528; верхняя панель 1424
+SELFTEST OK windows.layout
+SELFTEST OK windows.hotkeys
+SELFTEST OK windows.remember-position
+SELFTEST OK windows.focus-blocks-keys
+SELFTEST OK windows.mouse-over-window
+SELFTEST OK hud.combat-screen
+SELFTEST NOTE плашка манекена (warrior_fire_cleave_crit.json): Тренировочный: Поджог 4,0 с
+SELFTEST OK hud.ailment-on-plate
+SELFTEST NOTE плашка при появлении: (607.2691, 50.705482), (240, 52), ноги манекена (727.2691, 234.57445), экран (1600, 900)
+SELFTEST OK hud.plate-in-frame-at-spawn
+SELFTEST NOTE графики над журналом: (8, 48), (528, 456) / (8, 512), (500, 380) на (1600, 900)
+SELFTEST OK windows.charts-above-log
+SELFTEST NOTE измеритель = журнал: сегмент №10 · 0:09 · Тренировочный · после правки билда, урон 40667,657, журнал видимые 30071,859 + скрытые 10595,797, разница 0; строк журнала 360; колонка имени 193 px при имени 185 px
+SELFTEST OK meter.matches-segment-and-log
+SELFTEST NOTE клик по полосе «Вихрь»: Вихрь · сегмент №10 — DPS за сегмент: 1401,0 | Сегмент №10 · 0:09 · Тренировочный · после правки билда: урон 13 660 за 9,8 с, с учетом защиты манекена. / Защита манекена: до защиты 9 474; броня −0; сопротивления −0; пробивание +837; множитель получаемого урона −0; уязвимость +3 348; обнулено 0; дошло 13 660. / Лист скилла (текущий билд, без защиты манекена): Среднее попадание с учетом крита: 1407,5 (без крита 1095,57; крит ×2,15 с шансом 24,76%). Эта строка — в истории «Разбора» ниже.
+SELFTEST OK meter.bar-opens-breakdown
+SELFTEST NOTE журнал: строк 341, тиков скрыто 53, прокрутка до 13916
+SELFTEST OK log.filters-and-autoscroll
+SELFTEST NOTE потеря на защите (№12 · 0:17 · Тренировочный · после правки билда): до защиты 119450, дошло 148129 (124%), броня 0 (0%), сопротивления 0 (0%), множитель получаемого урона 0 (0%), обнулено 0 (0%), +21 тыс. от уязвимости 21008 (17,6%), +7,7 тыс. от пробивания 7671 (6,4%); Σ потерь − прибавки − до защиты = 0
+SELFTEST OK meter.mitigation-identity
+SELFTEST NOTE графики: линий 5, точек 18, столбиков DPS 4, типов 2, потеря на защите 4, высота 840
+SELFTEST OK charts.series
+SELFTEST NOTE fresh segment: damage 68173,40829992961, dps 6401,2589952985545, focus losses 0
+SELFTEST NOTE fresh segment: damage 68173,40829992961, dps 6401,2589952985545, focus losses 0
+SELFTEST NOTE fresh segment: damage 68173,40829992961, dps 6401,2589952985545, focus losses 0
+SELFTEST NOTE fresh segment: damage 68173,40829992961, dps 6401,2589952985545, focus losses 0
+SELFTEST NOTE fresh segment: damage 65020,676050621674, dps 6105,227798180439, focus losses 0
+SELFTEST NOTE правка билда: контроль без правки DPS 6401,26 = 6401,26; снят int_inferno; «№15 · 0:10 · Тренировочный» DPS 6401,26 → «№17 · 0:10 · Тренировочный · после правки билда» DPS 6105,23 (DPS −5%)
+SELFTEST OK meter.segment-after-build-edit
+SELFTEST OK meter.reset-confirm
+SELFTEST OK meter.restore
+SELFTEST OK input-safety.window-route
+SELFTEST OK input-safety.focus-loss
+SELFTEST OK gamepad.bindings
+SELFTEST OK gamepad.combat-buttons
+SELFTEST OK gamepad.stick-move
+SELFTEST OK gamepad.lb-rb-target
+SELFTEST OK gamepad.window-focus
+SELFTEST OK gamepad.view-and-ring
+SELFTEST NOTE достижимость с геймпада: Персонаж 27/27, Пассивки 2/2, Асцендант 3/3, Скиллы 28/28, Билды 6/6, Разбор 1/1, Симуляция 6/6, Журнал 3/3, Измеритель 10/8, Графики 0/0
+SELFTEST OK gamepad.reachability
+SELFTEST OK gamepad.tooltip-on-focus
+SELFTEST OK gamepad.passive-tree
+SELFTEST FAIL gamepad.lists-slider-seed: нет поля уровня скилла
+SELFTEST OK gamepad.meter-reset
+SELFTEST OK gamepad.device-switch
+SELFTEST OK gamepad.disconnect
+SELFTEST NOTE 1366: экран (1366, 768), журнал (8, 216), (450.78003, 356), панель боя (531, 640), (304, 116), измеритель (918, 48), (440, 524)
+SELFTEST OK layout.log-clear-of-hud-1366
+SELFTEST OK log.short-types
+SELFTEST OK gamepad.restore
+SELFTEST OK hud.components-standalone
+SELFTEST OK hud.assigned-slots-without-fight
+SELFTEST NOTE HUD в бою: Ярость 22 / 110; баффы Ярость предков 7,2 с, Боевой клич 7,2 с, Боевой ритм 7,2 с, Клич крови 7,2 с, Воодушевление 7,2 с, Устрашение 7,2 с; плашка Тренировочный 162 408 / 166 164: Заморозка 2,2 с, Поджог 3,9 с, Шок 4,2 с
+SELFTEST OK hud.components-match-state
+SELFTEST OK hud.resource-colours
+SELFTEST FAIL hud.rows-fold-and-list: ряды налезают: колонка с 390
+SELFTEST NOTE плашка «Роя» над фигурой 0: (680, 297.93948), (240, 153), голова (800, 460.93948), метка (800, 460.93948)
+SELFTEST OK hud.plate-target-rule
+SELFTEST OK hud.pad-rows-route
+SELFTEST OK hud.restore
+SELFTEST NOTE «Чародей, Криомант — Ледяное копье»: DPS полос 8806,53062948793 = сегмент 8806,53062948794 = журнал 68250,6123785316 / 7,75 с (относительный допуск 1e-6)
+SELFTEST NOTE «Чародей, Пироман — Огненный шар»: DPS полос 4482,708117597094 = сегмент 4482,708117597123 = журнал 57602,7993111225 / 12,850000000000001 с (относительный допуск 1e-6)
+SELFTEST NOTE «Чародей, Криомант — Искра (гибрид)»: DPS полос 10503,264826226003 = сегмент 10503,264826225999 = журнал 48840,1814419509 / 4,65 с (относительный допуск 1e-6)
+SELFTEST NOTE «Воитель, Берсерк — Вихрь»: DPS полос 9319,777680468635 = сегмент 9319,777680468633 = журнал 30289,27746152306 / 3,25 с (относительный допуск 1e-6)
+SELFTEST NOTE «Воитель, Громовержец — огненный Рассекающий удар с критом»: DPS полос 7330,572746021975 = сегмент 7330,572746021946 = журнал 46182,6082999384 / 6,300000000000001 с (относительный допуск 1e-6)
+SELFTEST NOTE «Воитель, Громовержец — Сокрушение»: DPS полос 7483,090335267784 = сегмент 7483,090335267821 = журнал 56871,486548035085 / 7,6 с (относительный допуск 1e-6)
+SELFTEST ROOM эталон | строк журнала сегмента | DPS (5 с клавишами, «среднее») | урон: измеритель = журнал | отказ на перезарядке | снят узел → DPS нового сегмента
+SELFTEST ROOM Чародей, Криомант — Ледяное копье | 75 | 8807 | 68251 = 68251 | «Мерцание»: Перезарядка 3,9 с | «Острый глаз» → 8494 (DPS −4%)
+SELFTEST ROOM Чародей, Пироман — Огненный шар | 88 | 4483 | 57603 = 57603 | «Мерцание»: Перезарядка 3,7 с | «Сноровка» → 4447 (DPS −1%)
+SELFTEST ROOM Чародей, Криомант — Искра (гибрид) | 88 | 10503 | 48840 = 48840 | «Мерцание»: Перезарядка 3,7 с | «Острый глаз» → 10228 (DPS −3%)
+SELFTEST ROOM Воитель, Берсерк — Вихрь | 28 | 9320 | 30289 = 30289 | «Боевой клич»: Перезарядка 2,6 с | «Острый глаз» → 9158 (DPS −2%)
+SELFTEST ROOM Воитель, Громовержец — огненный Рассекающий удар с критом | 38 | 7331 | 46183 = 46183 | «Боевой клич»: Перезарядка 0,9 с | «Град снарядов» → 7476 (DPS +2%)
+SELFTEST ROOM Воитель, Громовержец — Сокрушение | 40 | 7483 | 56871 = 56871 | «Боевой клич»: Перезарядка 0,1 с | «Сноровка» → 7423 (DPS −1%)
+SELFTEST OK acceptance.room-six-references
+SELFTEST NOTE числа и плашка на «Рое»: 240 кадров с плашкой, 554 положений чисел, на плашке 0 (чисел всего 15)
+SELFTEST OK hud.numbers-clear-of-plate
+SELFTEST NOTE полный подъем у панели: 360 положений, крит + тик, слева/над плашкой/справа
+SELFTEST OK hud.numbers-safe-through-rise
+SELFTEST OK meter.fractional-duration
+SELFTEST OK hud.marker-hides-with-plate
+SELFTEST OK acceptance.restore
+SELFTEST OK windows.restore
+SELFTEST OK restore-reference
+SELFTEST TABLE билд | главный скилл | DPS до | узел скилла «−»: DPS после, строка множителя, DPS после «+» | notable: DPS после, строка, DPS после возврата
+SELFTEST TABLE Чародей, Криомант — Ледяное копье | «Ледяное копье» | 8372 | Ледяная кромка (4→3): 8280, «+32% — Ледяная кромка» → «+24% — Ледяная кромка» в hit_mult_cold, после «+» 8372 | — (все 11 notables держат путь к старту, сессия отклоняет снятие)
+SELFTEST TABLE Чародей, Пироман — Огненный шар | «Огненный шар» | 13010 | Сжатие (1→0): 10350, «Больше: ×1,6 (+60%) — Сжатие» → нет строки в hit_mult_fire, после «+» 13010 | Железная воля: 13067, ушла «−8% — Железная воля» из resource_cost, после возврата 13010 (держат путь: Архимаг, Испепеление, Убийца, Чародейская точность, Разящая мысль)
+SELFTEST TABLE Чародей, Криомант — Искра (гибрид) | «Шаровая молния» | 8825 | Долгий полет (3→2): 8695, «+24% — Долгий полет» → «+16% — Долгий полет» в hit_mult_lightning, после «+» 8825 | Железная воля: 8398, ушла «−8% — Железная воля» из resource_cost, после возврата 8825 (держат путь: Архимаг, Грозовой фронт, Убийца, Чародейская точность, Разящая мысль)
+SELFTEST TABLE Воитель, Берсерк — Вихрь | «Вихрь» | 8733 | Неистовое вращение (1→0): 8000, «Больше: ×1,3 (+30%) — Неистовое вращение» → нет строки в hit_mult_physical, после «+» 8733 | Открытые раны: 8130, ушла «+10 — Открытые раны» из ailment_chance_bleed, после возврата 8733 (держат путь: Безупречная техника, Шквал ударов, Мясник, Убийца, Безжалостный удар)
+SELFTEST TABLE Воитель, Громовержец — огненный Рассекающий удар с критом | «Рассекающий удар» | 9172 | Кромка (2→1): 9086, «+30 — Кромка» → «+15 — Кромка» в crit_damage, после «+» 9172 (из hit_mult «−» отклонен: Тяжелая рука: Нельзя снять очко с «Тяжелая рука»: на нем держится узел «Сокрушительная сила»; Точный удар: Нельзя снять очко с «Точный удар»: на нем держится узел «Кромка») | Неуемная ярость: 8616, ушла «+15% — Неуемная ярость» из resource_gen, после возврата 9172 (держат путь: Безупречная техника, Шквал ударов, Испепеление, Мясник, Убийца, Безжалостный удар)
+SELFTEST TABLE Воитель, Громовержец — Сокрушение | «Сокрушение» | 13698 | Грубая сила (4→3): 13466, «+32% — Грубая сила» → «+24% — Грубая сила» в hit_mult_lightning, после «+» 13698 | Неиссякаемый источник: 12519, ушла «+12% — Неиссякаемый источник» из resource_gen, после возврата 13698 (держат путь: Безупречная техника, Шквал ударов, Грозовой фронт, Убийца, Мясник, Безжалостный удар, Неуемная ярость)
+SELFTEST 113/117
+SELFTEST FAILED: 4

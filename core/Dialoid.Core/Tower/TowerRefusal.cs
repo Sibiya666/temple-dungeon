@@ -5,6 +5,7 @@ public enum TowerRefusal
 {
     None, UnknownCurrency, CurrencyLocked, WrongTarget, KindNotAllowed, SlotOutOfRange, UnknownType, EmptySlot, SlotFull, NoMods,
     PoolEmpty, NotATrial, NothingToUpgrade, ModNotFound, NotEnoughCurrency, RankLocked, InvalidMods, ModAboveRank, NoUberBoss,
+    NoEmptyFloors, NotEnoughActivities,
 }
 
 /// <summary>Player-facing texts of the tower module.</summary>
@@ -31,6 +32,8 @@ public static class TowerTexts
         TowerRefusal.InvalidMods => "Свойства башни противоречат друг другу или не подходят этажам",
         TowerRefusal.ModAboveRank => "В башне есть свойство, недоступное на этом ранге",
         TowerRefusal.NoUberBoss => "Не выбран убер-босс вершины",
+        TowerRefusal.NoEmptyFloors => "В башне нет пустых этажей",
+        TowerRefusal.NotEnoughActivities => "Не хватает активностей этого ранга",
         _ => throw new ArgumentOutOfRangeException(nameof(r), r, "Неизвестная причина отказа"),
     };
 }

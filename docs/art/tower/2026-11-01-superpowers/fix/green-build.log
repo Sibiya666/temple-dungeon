@@ -1,0 +1,16 @@
+C:\Users\sibiya666\Documents\project\dialoid\game\Dialoid.Game.csproj : warning NU1900: Произошла ошибка при получении данных уязвимости пакета: Не удалось загрузить индекс служб для источника https://api.nuget.org/v3/index.json.
+C:\Users\sibiya666\Documents\project\dialoid\core\Dialoid.Core\Dialoid.Core.csproj : warning NU1900: Произошла ошибка при получении данных уязвимости пакета: Не удалось загрузить индекс служб для источника https://api.nuget.org/v3/index.json.
+C:\Users\sibiya666\Documents\project\dialoid\core\Dialoid.Sandbox\Dialoid.Sandbox.csproj : warning NU1900: Произошла ошибка при получении данных уязвимости пакета: Не удалось загрузить индекс служб для источника https://api.nuget.org/v3/index.json.
+  Dialoid.Core -> C:\Users\sibiya666\Documents\project\dialoid\core\Dialoid.Core\bin\Debug\net8.0\Dialoid.Core.dll
+  Dialoid.Sandbox -> C:\Users\sibiya666\Documents\project\dialoid\core\Dialoid.Sandbox\bin\Debug\net8.0\Dialoid.Sandbox.dll
+  Dialoid.Game -> C:\Users\sibiya666\Documents\project\dialoid\game\.godot\mono\temp\bin\Debug\Dialoid.Game.dll
+
+Сборка успешно завершена.
+
+C:\Users\sibiya666\Documents\project\dialoid\game\Dialoid.Game.csproj : warning NU1900: Произошла ошибка при получении данных уязвимости пакета: Не удалось загрузить индекс служб для источника https://api.nuget.org/v3/index.json.
+C:\Users\sibiya666\Documents\project\dialoid\core\Dialoid.Core\Dialoid.Core.csproj : warning NU1900: Произошла ошибка при получении данных уязвимости пакета: Не удалось загрузить индекс служб для источника https://api.nuget.org/v3/index.json.
+C:\Users\sibiya666\Documents\project\dialoid\core\Dialoid.Sandbox\Dialoid.Sandbox.csproj : warning NU1900: Произошла ошибка при получении данных уязвимости пакета: Не удалось загрузить индекс служб для источника https://api.nuget.org/v3/index.json.
+    Предупреждений: 3
+    Ошибок: 0
+
+Прошло времени 00:00:02.18

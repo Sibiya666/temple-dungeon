@@ -1,0 +1,69 @@
+ERROR: Failed to open 'user://logs/godot2026-10-31T15.43.20.log'.
+   at: copy (core/io/dir_access.cpp:429)
+ERROR: Failed to open log file for writing: user://logs/godot.log
+   at: rotate_file (core/io/logger.cpp:169)
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\Documents\project\dialoid\data
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=room: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (14) — это не приемка !!!
+SELFTEST OK panels
+SELFTEST OK room.asset-names
+SELFTEST NOTE комната: модели есть, текстуры есть, строк ASSET_MISSING: 0, качество High
+SELFTEST OK room.built
+ASSET_MISSING: клип hero_idle: mixamo/anims/sword/нет такого клипа (1).fbx — заглушка
+ASSET_MISSING: текстура floor: polyhaven/monastery_stone_floor/нет такой текстуры.jpg — заглушка
+SELFTEST OK room.partial-assets
+SELFTEST NOTE рост: hero 1,85 м (масштаб 1, макушка 1,85 м), zombie 1,8 м (масштаб 0,873, макушка 1,79 м), orc 2,25 м (масштаб 0,944, макушка 1,98 м), boss 3,15 м (масштаб 1,322, макушка 2,77 м)
+SELFTEST OK room.scale
+SELFTEST NOTE клипы: 10 × 3 моделей, выброшены треки костей, которых нет у модели: hero:RightArmour1, zombie:RightArmour1
+SELFTEST OK room.clips-find-bones
+ASSET_MISSING: клип hero_idle: __selftest_missing_embedded__.fbx — заглушка
+SELFTEST OK room.embedded-clips
+SELFTEST NOTE animated grounding hero_idle t=0: mesh min=0,009821 max=1,561912 head=1,555094 m
+SELFTEST NOTE animated grounding hero_idle t=0,25: mesh min=0,009456 max=1,553763 head=1,550532 m
+SELFTEST NOTE animated grounding hero_idle t=0,5: mesh min=0,009284 max=1,595375 head=1,586525 m
+SELFTEST NOTE animated grounding hero_idle t=0,75: mesh min=0,010023 max=1,575419 head=1,569446 m
+SELFTEST NOTE animated grounding hero_idle t=1: mesh min=0,009821 max=1,561912 head=1,555094 m
+SELFTEST NOTE animated grounding hero_walk t=0: mesh min=0,002902 max=1,682567 head=1,670562 m
+SELFTEST NOTE animated grounding hero_walk t=0,25: mesh min=0,041294 max=1,668668 head=1,659955 m
+SELFTEST NOTE animated grounding hero_walk t=0,5: mesh min=-0,005657 max=1,666789 head=1,655425 m
+SELFTEST NOTE animated grounding hero_walk t=0,75: mesh min=0,022475 max=1,676847 head=1,667853 m
+SELFTEST NOTE animated grounding hero_walk t=1: mesh min=0,002902 max=1,682567 head=1,670562 m
+SELFTEST NOTE animated grounding hero_run t=0: mesh min=0,012522 max=1,401891 head=1,388635 m
+SELFTEST NOTE animated grounding hero_run t=0,25: mesh min=0,060098 max=1,508642 head=1,490981 m
+SELFTEST NOTE animated grounding hero_run t=0,5: mesh min=-0,010317 max=1,484576 head=1,473474 m
+SELFTEST NOTE animated grounding hero_run t=0,75: mesh min=0,050771 max=1,560661 head=1,547892 m
+SELFTEST NOTE animated grounding hero_run t=1: mesh min=0,012522 max=1,401891 head=1,388635 m
+SELFTEST NOTE animated grounding hero_slash t=0: mesh min=0,009809 max=1,561973 head=1,555147 m
+SELFTEST NOTE animated grounding hero_slash t=0,25: mesh min=0,002027 max=1,643069 head=1,540588 m
+SELFTEST NOTE animated grounding hero_slash t=0,5: mesh min=0,007372 max=1,261571 head=1,244088 m
+SELFTEST NOTE animated grounding hero_slash t=0,75: mesh min=0,039995 max=1,309307 head=1,289015 m
+SELFTEST NOTE animated grounding hero_slash t=1: mesh min=0,009809 max=1,561976 head=1,555156 m
+SELFTEST NOTE animated grounding hero_attack t=0: mesh min=0,012522 max=1,401890 head=1,388634 m
+SELFTEST NOTE animated grounding hero_attack t=0,25: mesh min=0,229134 max=2,329113 head=2,060282 m
+SELFTEST NOTE animated grounding hero_attack t=0,5: mesh min=0,213508 max=1,775378 head=1,762804 m
+SELFTEST NOTE animated grounding hero_attack t=0,75: mesh min=-0,048348 max=1,017491 head=1,000668 m
+SELFTEST NOTE animated grounding hero_attack t=1: mesh min=0,009809 max=1,561973 head=1,555147 m
+SELFTEST NOTE animated grounding hero_cast t=0: mesh min=0,009820 max=1,561971 head=1,555139 m
+SELFTEST NOTE animated grounding hero_cast t=0,25: mesh min=0,000593 max=1,616967 head=1,608855 m
+SELFTEST NOTE animated grounding hero_cast t=0,5: mesh min=0,002577 max=1,587001 head=1,577695 m
+SELFTEST NOTE animated grounding hero_cast t=0,75: mesh min=0,003767 max=1,601471 head=1,592583 m
+SELFTEST NOTE animated grounding hero_cast t=1: mesh min=0,009820 max=1,561971 head=1,555139 m
+SELFTEST NOTE animated grounding hit_react t=0: mesh min=0,030725 max=1,384694 head=1,379589 m
+SELFTEST NOTE animated grounding hit_react t=0,25: mesh min=0,025300 max=1,453683 head=1,449904 m
+SELFTEST NOTE animated grounding hit_react t=0,5: mesh min=0,021236 max=1,447248 head=1,443992 m
+SELFTEST NOTE animated grounding hit_react t=0,75: mesh min=0,028462 max=1,394477 head=1,385278 m
+SELFTEST NOTE animated grounding hit_react t=1: mesh min=0,030725 max=1,384688 head=1,379585 m
+SELFTEST OK room.animated-grounding
+SELFTEST OK room.camera-on-screen
+SELFTEST NOTE зум: 9,49–14 м, по умолчанию 10,5 м, кадр 1,78:1
+SELFTEST OK room.camera-zoom-limits
+SELFTEST FAIL room.shadow-budget: у (-5, 0, 0.2): факелов с тенью 6 при 8 рядом
+SELFTEST OK room.quality-low
+SELFTEST OK room.occlusion
+SELFTEST OK room.collisions
+SELFTEST 13/14
+SELFTEST FAILED: 1

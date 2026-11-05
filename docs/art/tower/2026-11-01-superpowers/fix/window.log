@@ -1,0 +1,22 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.315 - Forward+ - Using Device #0: AMD - AMD Radeon RX 6750 XT
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\Documents\project\dialoid\data
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=tower: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (10) — это не приемка !!!
+SELFTEST OK panels
+TOWER WHEEL ActivityGrid: 445/445
+SELFTEST OK tower.wheel-ActivityGrid
+TOWER WHEEL CurrencyGrid: 352/352
+SELFTEST OK tower.wheel-CurrencyGrid
+SELFTEST OK tower.close-unfocusable
+SELFTEST OK tower.icons
+SELFTEST OK tower.empty-start
+SELFTEST OK tower.explicit-shuffle
+SELFTEST OK tower.crafting
+SELFTEST OK tower.inventory-transfer
+SELFTEST OK tower.open-close
+SELFTEST 10/10
+SELFTEST PASSED

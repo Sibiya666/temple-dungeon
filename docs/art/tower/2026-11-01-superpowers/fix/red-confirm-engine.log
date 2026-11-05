@@ -1,0 +1,56 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\Documents\project\dialoid\data
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=tower: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (10) — это не приемка !!!
+SELFTEST OK panels
+TOWER WHEEL ActivityGrid: 256/445
+SELFTEST FAIL tower.wheel-ActivityGrid: ActivityGrid: колесо не достигло конца панели
+TOWER WHEEL CurrencyGrid: 66/352
+SELFTEST FAIL tower.wheel-CurrencyGrid: CurrencyGrid: колесо не достигло конца панели
+WARNING: This control can't grab focus. Use set_focus_mode() and set_focus_behavior_recursive() to allow a control to get focus.
+   at: grab_focus (scene/gui/control.cpp:3011)
+   C# backtrace (most recent call first):
+       [0] void Godot.NativeCalls.godot_icall_0_3(nint, nint) (/root/godot/modules/mono/glue/GodotSharp/GodotSharp/Generated/NativeCalls.cs:51)
+       [1] void Godot.Control.GrabFocus() (/root/godot/modules/mono/glue/GodotSharp/GodotSharp/Generated/GodotObjects/Control.cs:3662)
+       [2] void Dialoid.Game.Main.CloseTowerBoard() (C:\Users\sibiya666\Documents\project\dialoid\game\Main.Tower.cs:48)
+       [3] void Dialoid.Game.SelfTest+<<TowerSteps>b__200_0>d.MoveNext() (C:\Users\sibiya666\Documents\project\dialoid\game\SelfTest.Tower.cs:114)
+       [4] void System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start<TStateMachine>(TStateMachine&)
+       [5] System.Threading.Tasks.Task Dialoid.Game.SelfTest.<TowerSteps>b__200_0()
+       [6] void Dialoid.Game.SelfTest+<RunAll>d__51.MoveNext() (C:\Users\sibiya666\Documents\project\dialoid\game\SelfTest.cs:99)
+       [7] void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext, System.Threading.ContextCallback, object)
+       [8] void System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1.MoveNext(System.Threading.Thread)
+       [9] void System.Threading.Tasks.AwaitTaskContinuation.RunCallback(System.Threading.ContextCallback, object, System.Threading.Tasks.Task&)
+       [10] void System.Threading.Tasks.Task.RunContinuations(object)
+       [11] void System.Threading.Tasks.Task.FinishSlow(bool)
+       [12] bool System.Threading.Tasks.Task.TrySetException(object)
+       [13] void System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetException(System.Exception, System.Threading.Tasks.Task`1[TResult]&)
+       [14] void Dialoid.Game.SelfTest+<>c__DisplayClass200_0+<<TowerSteps>b__7>d.MoveNext() (C:\Users\sibiya666\Documents\project\dialoid\game\SelfTest.Tower.cs:101)
+       [15] void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext, System.Threading.ContextCallback, object)
+       [16] void System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1.MoveNext(System.Threading.Thread)
+       [17] void System.Threading.Tasks.AwaitTaskContinuation.RunCallback(System.Threading.ContextCallback, object, System.Threading.Tasks.Task&)
+       [18] void System.Threading.Tasks.Task.RunContinuations(object)
+       [19] bool System.Threading.Tasks.Task`1.TrySetResult(TResult)
+       [20] void System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetExistingTaskResult(System.Threading.Tasks.Task`1[TResult], TResult)
+       [21] void Dialoid.Game.SelfTest+<Settle>d__89.MoveNext() (C:\Users\sibiya666\Documents\project\dialoid\game\SelfTest.cs:1188)
+       [22] void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext, System.Threading.ContextCallback, object)
+       [23] void System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1.MoveNext(System.Threading.Thread)
+       [24] void System.Threading.Tasks.AwaitTaskContinuation.RunCallback(System.Threading.ContextCallback, object, System.Threading.Tasks.Task&)
+       [25] void System.Threading.Tasks.Task.RunContinuations(object)
+       [26] bool System.Threading.Tasks.Task`1.TrySetResult(TResult)
+       [27] void System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetExistingTaskResult(System.Threading.Tasks.Task`1[TResult], TResult)
+       [28] void Dialoid.Game.SelfTest+<NextFrame>d__88.MoveNext() (C:\Users\sibiya666\Documents\project\dialoid\game\SelfTest.cs:1181)
+       [29] void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext, System.Threading.ContextCallback, object)
+       [30] void System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1.MoveNext(System.Threading.Thread)
+       [31] void Godot.SignalAwaiter.SignalCallback(nint, Godot.NativeInterop.godot_variant**, int, Godot.NativeInterop.godot_bool*) (/root/godot/modules/mono/glue/GodotSharp/GodotSharp/Core/SignalAwaiter.cs:65)
+SELFTEST OK tower.close-unfocusable
+SELFTEST OK tower.icons
+SELFTEST OK tower.empty-start
+SELFTEST OK tower.explicit-shuffle
+SELFTEST OK tower.crafting
+SELFTEST OK tower.inventory-transfer
+SELFTEST OK tower.open-close
+SELFTEST 8/10
+SELFTEST FAILED: 2

@@ -1,0 +1,92 @@
+diff --git a/core/Dialoid.Core.Tests/Simulation/CombatEngineTests.cs b/core/Dialoid.Core.Tests/Simulation/CombatEngineTests.cs
+index b27a0e5..30942a3 100644
+--- a/core/Dialoid.Core.Tests/Simulation/CombatEngineTests.cs
++++ b/core/Dialoid.Core.Tests/Simulation/CombatEngineTests.cs
+@@ -13,7 +13,7 @@ namespace Dialoid.Core.Tests.Simulation;
+ 
+ /// <summary>
+ /// The shared step engine (training room plan, task 1). The reference results in engine-baseline.json were taken from the simulator
+-/// before the step loop moved into <see cref="CombatEngine"/>; every build file × dummy preset × mode must still match them to the bit.
++/// before the step loop moved into <see cref="CombatEngine"/>; the frozen legacy codes × dummy preset × mode must still match them to the bit.
+ /// Set DIALOID_WRITE_BASELINE=1 to rewrite the baseline from the current code.
+ /// </summary>
+ public class CombatEngineTests
+@@ -31,22 +31,26 @@ public class CombatEngineTests
+     public void Write_engine_baseline()
+     {
+         if (!Writing) return;
+-        File.WriteAllText(BaselinePath, JsonSerializer.Serialize(Fingerprints(), Json) + "\n");
++        File.WriteAllText(BaselinePath, JsonSerializer.Serialize(Fingerprints(historical: LegacyBuilds()), Json) + "\n");
+     }
+ 
+     [Fact]
+-    public void Engine_extraction_keeps_every_reference_result_identical()
++    public void Engine_extraction_keeps_frozen_32_legacy_reference_results_identical()
+     {
+         if (Writing) return; // the baseline is being rewritten by the test above
+         AssertMatchesBaseline(_ => true);
+     }
+ 
+     /// <summary>The build files the filter keeps (path relative to data/builds, e.g. "keystones/x.json") still give their baseline
+-    /// results to the bit; every baseline run of those builds must be present.</summary>
++    /// results to the bit using historical code inputs; every baseline run of those builds must be present.</summary>
+     internal static void AssertMatchesBaseline(Func<string, bool> buildFilter)
+     {
+         var expected = JsonSerializer.Deserialize<SortedDictionary<string, SortedDictionary<string, string>>>(File.ReadAllText(BaselinePath))!;
+-        var actual = Fingerprints(buildFilter);
++        var legacy = LegacyBuilds();
++        var baselinePaths = expected.Keys.Select(run => run[..run.IndexOf('|')]).Distinct(StringComparer.Ordinal)
++            .OrderBy(path => path, StringComparer.Ordinal);
++        Assert.Equal(baselinePaths, legacy.Keys); // exact corpus before any caller's filter is applied
++        var actual = Fingerprints(buildFilter, legacy);
+         var kept = expected.Where(kv => buildFilter(kv.Key[..kv.Key.IndexOf('|')])).ToList();
+         Assert.NotEmpty(kept);
+         Assert.Equal(kept.Select(kv => kv.Key), actual.Keys);
+@@ -55,6 +59,22 @@ public class CombatEngineTests
+                 Assert.True(value == actual[run][field], $"{run} {field}: expected {value}, got {actual[run][field]}");
+     }
+ 
++    // Historical inputs are shared with the codec compatibility corpus, never current optimized references.
++    private static SortedDictionary<string, Build> LegacyBuilds()
++    {
++        var legacy = new SortedDictionary<string, Build>(StringComparer.Ordinal);
++        foreach (var line in File.ReadLines(Path.Combine(AppContext.BaseDirectory, "Fixtures", "legacy_codes.txt")).Where(line => line.Length > 0))
++        {
++            var row = line.Split('\t');
++            Assert.Equal(3, row.Length);
++            Assert.True(BuildCodec.TryImport(row[1], ContentHarness.Data, out var build, out var error), row[0] + ": " + error);
++            Assert.True(build!.ClassId is "warrior" or "sorcerer", row[0]);
++            Assert.True(legacy.TryAdd(row[0], build), "Duplicate legacy path: " + row[0]);
++        }
++        Assert.Equal(32, legacy.Count);
++        return legacy;
++    }
++
+     [Fact]
+     public void Infinite_life_only_removes_target_death()
+     {
+@@ -100,17 +120,20 @@ public class CombatEngineTests
+     }
+ 
+     /// <summary>Every build file × dummy preset × (Average, Roll seed 1, Roll seed 7). Presets with an attack run in defensive mode.</summary>
+-    private static SortedDictionary<string, SortedDictionary<string, string>> Fingerprints(Func<string, bool>? buildFilter = null)
++    private static SortedDictionary<string, SortedDictionary<string, string>> Fingerprints(Func<string, bool>? buildFilter = null, IReadOnlyDictionary<string, Build>? historical = null)
+     {
+         var data = ContentHarness.Data;
+         var sim = new Simulator(data, MechanicRegistry.Default);
+         var buildsDir = Path.Combine(FixturePaths.RealData, "builds");
+         var runs = new SortedDictionary<string, SortedDictionary<string, string>>(StringComparer.Ordinal);
+-        foreach (var file in Directory.GetFiles(buildsDir, "*.json", SearchOption.AllDirectories).OrderBy(f => f, StringComparer.Ordinal))
++        var names = historical != null ? historical.Keys : Directory.GetFiles(buildsDir, "*.json", SearchOption.AllDirectories)
++            .Select(file => Path.GetRelativePath(buildsDir, file).Replace(Path.DirectorySeparatorChar, '/'));
++        foreach (var name in names.OrderBy(name => name, StringComparer.Ordinal))
+         {
+-            var name = Path.GetRelativePath(buildsDir, file).Replace('\\', '/');
+             if (buildFilter != null && !buildFilter(name)) continue;
+-            Assert.True(BuildCodec.TryFromJson(File.ReadAllText(file), data, out var build, out var error), $"{name}: {error}");
++            Build? build;
++            if (historical != null) build = historical[name];
++            else Assert.True(BuildCodec.TryFromJson(File.ReadAllText(Path.Combine(buildsDir, name)), data, out build, out var error), $"{name}: {error}");
+             foreach (var dummy in data.Dummies.Values.OrderBy(d => d.Id, StringComparer.Ordinal))
+             {
+                 var attacks = dummy.Attack != null;

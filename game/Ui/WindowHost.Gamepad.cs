@@ -120,8 +120,12 @@ public partial class WindowHost
         if (IsAncestorOf(c) || Bar?.IsAncestorOf(c) == true) ButtonPrompts.ApplyFocusModes(c, true);
     }
 
+    public void RefreshInputDevice() => OnDeviceChanged(InputDevice.Instance?.Active ?? InputKind.KeyboardMouse);
+
     private void OnDeviceChanged(InputKind kind)
     {
+        // A modal screen owns focus while this host is suspended.
+        if (!CanProcess()) return;
         var gamepad = kind == InputKind.Gamepad;
         ButtonPrompts.ApplyFocusModes(this, gamepad);
         if (Bar != null) ButtonPrompts.ApplyFocusModes(Bar, gamepad);
