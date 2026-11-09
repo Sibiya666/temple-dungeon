@@ -211,7 +211,15 @@ public sealed partial class SelfTest
         Check(log.ShownEntries.Count(e => e.Kind == LogKind.DotTick) == ticks, $"тиков в окне {log.ShownEntries.Count(e => e.Kind == LogKind.DotTick)}, в журнале {ticks}");
         var popup = log.KindsMenu.GetPopup();
         Check(popup.IsItemChecked(popup.GetItemIndex((int)LogKind.DotTick)), "галочка тиков не стоит");
-        log.SetKindVisible(LogKind.DotTick, false);
+        log.SetKindVisible(LogKind.Hit, false);
+        var resetIndex = Enumerable.Range(0, popup.ItemCount).Single(i => popup.GetItemText(i) == "Восстановить виды по умолчанию");
+        popup.EmitSignal(PopupMenu.SignalName.IdPressed, popup.GetItemId(resetIndex));
+        foreach (var (kind, _) in CombatLogWindow.Kinds)
+        {
+            var expected = !TrainingRoom.DefaultHiddenKinds.Contains(kind);
+            Check(log.VisibleKinds.Contains(kind) == expected && popup.IsItemChecked(popup.GetItemIndex((int)kind)) == expected,
+                $"сброс фильтра не восстановил вид события {kind}");
+        }
 
         var skill = Training.Log.First(e => e.SkillId != null).SkillId!;
         log.Refresh();
