@@ -233,7 +233,20 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
             popup.AddCheckItem(name, (int)kind);
             popup.SetItemChecked(popup.GetItemIndex((int)kind), _kinds.Contains(kind));
         }
-        popup.IdPressed += id => SetKindVisible((LogKind)(int)id, !_kinds.Contains((LogKind)(int)id));
+        popup.AddSeparator();
+        popup.AddItem("Восстановить виды по умолчанию");
+        var resetKindsId = popup.GetItemId(popup.ItemCount - 1);
+        popup.IdPressed += id =>
+        {
+            if (id == resetKindsId)
+            {
+                foreach (var (kind, _) in Kinds)
+                    SetKindVisible(kind, !TrainingRoom.DefaultHiddenKinds.Contains(kind));
+                return;
+            }
+            var selected = (LogKind)(int)id;
+            SetKindVisible(selected, !_kinds.Contains(selected));
+        };
         filters.AddChild(_kindsMenu);
 
         _skillOption = new OptionButton { Name = "Skill", FocusMode = FocusModeEnum.None, ClipText = true, FitToLongestItem = false, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(110, 0), TooltipText = "Строки одного скилла" };
