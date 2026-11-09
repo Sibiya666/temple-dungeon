@@ -1,0 +1,87 @@
+name: Dialoid CI
+run-name: Verify ${{ inputs.sha || github.event.pull_request.head.sha || github.sha }}
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full SHA of a commit already on main
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Dialoid verification
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Select and record exact revision
+        id: revision
+        shell: bash
+        env:
+          REQUESTED_SHA: ${{ inputs.sha }}
+          EVENT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          target="$EVENT_SHA"
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            [[ "$GITHUB_REF" == refs/heads/main ]]
+            [[ "$REQUESTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+            git merge-base --is-ancestor "$REQUESTED_SHA" "$GITHUB_SHA"
+            target="$REQUESTED_SHA"
+            git checkout --detach "$target"
+          fi
+          [[ "$(git rev-parse HEAD)" == "$target" ]]
+          echo "sha=$target" >> "$GITHUB_OUTPUT"
+          echo "Verified source revision: $target" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Run Core and Sandbox tests
+        run: dotnet test core/Dialoid.sln --configuration Release --logger trx --results-directory "${{ runner.temp }}/dialoid-evidence"
+
+      - name: Build Godot game
+        run: dotnet build game/Dialoid.Game.csproj --configuration Release
+
+      - name: Check navigation icon
+        shell: pwsh
+        run: |
+          [xml]$icon = Get-Content -Raw -LiteralPath game/Ui/Art/Icons/symbols/builds.svg
+          if ($icon.DocumentElement.LocalName -ne 'svg' -or $icon.DocumentElement.NamespaceURI -ne 'http://www.w3.org/2000/svg') {
+            throw 'Invalid navigation SVG'
+          }
+
+      - name: Record successful checks
+        shell: pwsh
+        env:
+          VERIFIED_SHA: ${{ steps.revision.outputs.sha }}
+        run: |
+          @{
+            verified_sha = $env:VERIFIED_SHA
+            workflow_sha = $env:GITHUB_WORKFLOW_SHA
+            run_id = $env:GITHUB_RUN_ID
+            run_attempt = $env:GITHUB_RUN_ATTEMPT
+            event = $env:GITHUB_EVENT_NAME
+            checks = @('core-and-sandbox-tests', 'game-build', 'navigation-svg')
+          } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP/dialoid-evidence/receipt.json" -Encoding utf8
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verification-${{ steps.revision.outputs.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dialoid-evidence/
+          if-no-files-found: error
