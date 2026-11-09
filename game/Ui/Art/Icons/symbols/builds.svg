@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><title>builds</title><g fill="#d8d5c6"><path d="M7 4H27V28H7V4ZM7 4Q0 4 4 10H8M11 11H23M11 17H23M11 23H20" fill="none" stroke="#d8d5c6" stroke-width="2"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <title>Open ledger</title>
+  <!-- Original Dialoid navigation glyph, dialoid-9ke. Reference: Venice D4 UI, 2026-10-31. -->
+  <g fill="#d8d5c6">
+    <path d="M3 5Q10 4 15 8V24Q10 20 3 21Z"/>
+    <path d="M29 5Q22 4 17 8V24Q22 20 29 21Z"/>
+  </g>
+  <path d="M3 25Q10 24 16 28Q22 24 29 25" fill="none" stroke="#d8d5c6" stroke-width="2"/>
+</svg>
