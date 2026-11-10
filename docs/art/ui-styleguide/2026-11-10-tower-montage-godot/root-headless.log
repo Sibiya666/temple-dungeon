@@ -1,0 +1,26 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\.codex\worktrees\tower-ui-reference\dialoid\data
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=tower: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (16) — это не приемка !!!
+SELFTEST OK panels
+SELFTEST OK tower.montage
+SELFTEST OK tower.focus-contained
+SELFTEST OK tower.activity-input-mouse
+SELFTEST OK tower.activity-input-keyboard
+SELFTEST OK tower.activity-input-gamepad
+TOWER WHEEL CurrencyGrid: 247/247
+SELFTEST OK tower.wheel-CurrencyGrid
+SELFTEST OK tower.close-unfocusable
+SELFTEST OK tower.separate-activities
+SELFTEST OK tower.icons
+SELFTEST OK tower.empty-start
+SELFTEST OK tower.explicit-shuffle
+SELFTEST OK tower.crafting
+SELFTEST OK tower.inventory-transfer
+SELFTEST OK tower.open-close
+SELFTEST OK tower.reference
+SELFTEST 16/16
+SELFTEST PASSED

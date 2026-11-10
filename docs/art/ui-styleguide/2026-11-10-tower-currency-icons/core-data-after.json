@@ -1,0 +1,110 @@
+[
+  {
+    "path": "core/Dialoid.Core/Tower/ActivityInventory.cs",
+    "sha256": "E39F43E7C0D7A8EBDACE7AB095C9207A2314EE8B31BB46ED0DAAA9BB65A8E5D0"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/Crafting.cs",
+    "sha256": "B15ABA3C5FDC686F863E97598636A1BEC6A46EDEE99F5BF597A7A12B0407FBA8"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/RankRules.cs",
+    "sha256": "B3935D337C0108A504C9B92480B47E8CD985757316CF5DB6BFCD90B348633750"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/Rewards.cs",
+    "sha256": "F0078F557B60AFB69330A14664BB13B1131E5770A3929CA8DBB97760C44E44E5"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerAssembly.cs",
+    "sha256": "5ED542ABC4C6F67F708AC6A9C2C2EACD643BDEB45EE6C5BFAB8468C5311F552B"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerData.cs",
+    "sha256": "39B72ABDAF86043C59EB04865F7264077B5A96E9C702B7BC7EAFC81CE85C330C"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerDataLoader.cs",
+    "sha256": "E1EA469C12FC4FE0E6C2EDDBBF2CAB9DC9520E5AAE11AF63C868553F97A5781A"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerRandom.cs",
+    "sha256": "077842CCD7828E61E8B203C4D756E17315830E8EA595FB94452E1290709A3BA3"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerRefusal.cs",
+    "sha256": "C5A50293233B20408C098B950DD39AD5CEE2C8ED688F8DCB335F9A4DBA97906F"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerRun.cs",
+    "sha256": "D50DCCDB735BD5EE84EF44D39ABC601634A4A88418D66DE29A0AD90D38F21444"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerSpec.cs",
+    "sha256": "39560A579EBD0F04E47EBAEBDF9A5279F657FC6A9262AB4E3851D82D45F8F634"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/Wallet.cs",
+    "sha256": "5A03829807280B479528F800034A0362871A702DA5D70ABF16F89365CBEC8901"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/ActivityInventoryTests.cs",
+    "sha256": "64AB1F87C39DC271F370CF32DFA4906B89E934251B0F22BEE21823EC2920C041"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/CraftingTests.cs",
+    "sha256": "E99EAA5531DCA8705C9E9D80D3CD797B1058F1C5A21A1A947C9216BE46AC637B"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/EconomyAcceptanceTests.cs",
+    "sha256": "2DEA7D34F962E6F1075B0222A7D7FE993A492B0051F49E5B3A151D188854CF98"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/RankRulesTests.cs",
+    "sha256": "AE9916AB48A29C0DA1E6E710B18F21CCB3F3E6EB9A85E733012017E7D191339C"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/RewardsTests.cs",
+    "sha256": "7731FD216D9380A74E02411094F1DBDBE1E4EB82BCDED9BB717B253EB276D765"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/TowerAssemblyTests.cs",
+    "sha256": "FD54B75F0C74ABDC5B300AB01800FB0369E36AA94A455E786E62D074B30B234D"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/TowerCodecTests.cs",
+    "sha256": "8DD00D14B42010E6A29CACE9BE1DB98F0826BC2E16FE58667BD3CB18EF41308D"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/TowerDataLoaderTests.cs",
+    "sha256": "D492DA0296C9A6B263ABEDB75C3942008112B277A587C232AB6FF98CF4B815F6"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/TowerRunTests.cs",
+    "sha256": "264383945A24AAFF87D927C39934758B4E8D836A11DB5EDAF00873B998B133E0"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/WalletTests.cs",
+    "sha256": "B9134E5FE86DD39388D08A8487D054CB6A6938C4AB7E672B796A4D24465B2986"
+  },
+  {
+    "path": "data/tower/biomes.json",
+    "sha256": "58EFDE0BD74EAE2F577F65626FF1CABEE5322F139A403D5003BB8759B57BB4CE"
+  },
+  {
+    "path": "data/tower/currencies.json",
+    "sha256": "913689939CD21B7872618A453596FBBB66DA87607307D68EE35A495355532126"
+  },
+  {
+    "path": "data/tower/floor_mods.json",
+    "sha256": "6CF2D7487068A1A617CF37279342C050E586C3ACCEFF46BD04C99E88AC389DFD"
+  },
+  {
+    "path": "data/tower/floor_types.json",
+    "sha256": "DD055E6BF3A16C732D2019960C411DAF250501D728EB8EED80A670E4DD386306"
+  },
+  {
+    "path": "data/tower/rules.json",
+    "sha256": "20CE60B2E37668CA99287644951FCE448A503A4DD109923622C182CE199E2056"
+  }
+]

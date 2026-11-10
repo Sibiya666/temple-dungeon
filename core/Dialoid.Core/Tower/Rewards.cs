@@ -22,7 +22,7 @@ public static class Rewards
         return tier.Min == tier.Max ? tier.Quality : tier.Quality * m.Value / ((tier.Min + tier.Max) / 2);
     }
 
-    /// <summary>Distinct non-null floor types; trial variants are one type.</summary>
+    /// <summary>Number of distinct activity types across occupied floors.</summary>
     public static int DistinctTypes(TowerSpec t) =>
         t.Floors.Where(f => f.TypeId != null).Select(f => f.TypeId!).Distinct(StringComparer.Ordinal).Count();
 

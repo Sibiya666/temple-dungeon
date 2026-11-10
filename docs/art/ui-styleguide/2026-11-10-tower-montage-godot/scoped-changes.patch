@@ -1,0 +1,813 @@
+diff --git a/game/Ui/Tower/TowerBoardView.cs b/game/Ui/Tower/TowerBoardView.cs
+index 894e8d8..34eeddf 100644
+--- a/game/Ui/Tower/TowerBoardView.cs
++++ b/game/Ui/Tower/TowerBoardView.cs
+@@ -26,8 +26,8 @@ public partial class TowerBoardView : Control
+     private readonly List<Button> _floors = new();
+     private readonly Dictionary<string, Button> _inventoryNodes = new(StringComparer.Ordinal);
+     private readonly List<Button> _currencies = new();
+-    private readonly GridContainer _activityGrid = new() { Name = "ActivityGrid", Columns = 4 };
+-    private readonly GridContainer _currencyGrid = new() { Name = "CurrencyGrid", Columns = 4 };
++    private readonly GridContainer _activityGrid = new() { Name = "ActivityGrid", Columns = 8 };
++    private readonly GridContainer _currencyGrid = new() { Name = "CurrencyGrid", Columns = 3 };
+     private readonly List<Panel> _emptyActivitySlots = new();
+     private readonly TowerGlassWindow _glassWindow = new();
+     private Button _install = null!;
+@@ -95,7 +95,10 @@ public partial class TowerBoardView : Control
+             for (int i = Data.Rules.Floors - 1; i >= 0; i--)
+             {
+                 int slot = i;
+-                var floorButton = AddButton(_middle!, "", () => SelectFloor(slot));
++                var floorButton = AddButton(_floorList, "", () => SelectFloor(slot));
++                floorButton.CustomMinimumSize = new Vector2(0, 72);
++                floorButton.AddThemeFontSizeOverride("font_size", 12);
++                floorButton.Alignment = HorizontalAlignment.Left;
+                 floorButton.Name = "Floor_" + slot;
+                 _floors.Insert(0, floorButton);
+             }
+@@ -115,158 +118,11 @@ public partial class TowerBoardView : Control
+         VisibilityChanged += () => { if (IsVisibleInTree()) _close.GrabFocus(); };
+     }
+ 
+-    private VBoxContainer? _left, _middle, _right;
+     private void Build()
+     {
+         if (_built) return;
+         _built = true;
+-        foreach (var option in new[] { _mod, _biome, _rank })
+-        {
+-            option.FitToLongestItem = false;
+-            option.ClipText = true;
+-        }
+-        Theme = CreateTheme();
+-        // Godot confines Tab traversal and directional focus searches to this GUI root.
+-        TopLevel = true;
+-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+-        MouseFilter = MouseFilterEnum.Stop;
+-        var background = new ColorRect { Color = new Color("0c1114"), MouseFilter = MouseFilterEnum.Ignore };
+-        AddChild(background);
+-        background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+-        var margin = new MarginContainer();
+-        AddChild(margin);
+-        margin.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+-        foreach (string side in new[] { "left", "right", "top", "bottom" }) margin.AddThemeConstantOverride("margin_" + side, 16);
+-        var root = new VBoxContainer();
+-        root.AddThemeConstantOverride("separation", 12);
+-        margin.AddChild(root);
+-        var header = new HBoxContainer();
+-        root.AddChild(header);
+-        header.AddChild(new TextureRect { Texture = TowerBoardArt.Symbol("tower"),
+-            CustomMinimumSize = new Vector2(32, 32), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, MouseFilter = MouseFilterEnum.Ignore });
+-        var title = Text(header, "БАШНЯ  /  Сборка маршрута");
+-        title.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+-        _close.Text = "Закрыть";
+-        _close.TooltipText = "Esc / F6 / B — закрыть";
+-        TowerBoardArt.Decorate(_close, TowerBoardArt.Symbol("close"), 24);
+-        _close.CustomMinimumSize = new Vector2(120, 40);
+-        _close.Pressed += () => CloseRequested?.Invoke();
+-        header.AddChild(_close);
+-        title.MouseFilter = MouseFilterEnum.Pass;
+-        title.TooltipText = $"Тестовый набор: по 5 активностей каждого типа и ранга, по 20 расходников. Персонаж: уровень {TestCharacterLevel}. Набор не сохраняется.\nTab / стрелки — выбор · Enter / A — применить";
+-        var columns = new HBoxContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
+-        columns.AddThemeConstantOverride("separation", 12);
+-        root.AddChild(columns);
+-        _left = Column(columns, "activities", "АКТИВНОСТИ И РАНГ");
+-        _middle = Column(columns, "ascent", "ВОСХОЖДЕНИЕ  ↑");
+-        _middle.AddThemeConstantOverride("separation", 4);
+-        _right = Column(columns, "inscriptions", "СВОЙСТВА И РАСХОДНИКИ");
+-        var inventoryLayout = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
+-        inventoryLayout.AddThemeConstantOverride("separation", 10);
+-        _left.AddChild(inventoryLayout);
+-        _rank.Name = "ActivityRank";
+-        inventoryLayout.AddChild(_rank);
+-        _activityPage.ItemSelected += _ => RefreshInventory();
+-        _rank.ItemSelected += index => { if (!_refreshing) SwitchRank(_rank.GetItemId((int)index)); };
+-        var lattice = new PanelContainer { ThemeTypeVariation = "ActivityLattice", SizeFlagsVertical = SizeFlags.ExpandFill };
+-        inventoryLayout.AddChild(lattice);
+-        _glassWindow.Setup(_activityGrid);
+-        lattice.AddChild(_glassWindow);
+-        lattice.AddChild(_activityGrid);
+-        inventoryLayout.AddChild(_activityPage);
+-        _activityGrid.AddThemeConstantOverride("h_separation", 22);
+-        _activityGrid.AddThemeConstantOverride("v_separation", 22);
+-        _activityGrid.SortChildren += ArrangeActivitySlots;
+-        _install = AddButton(_middle, "Установить на этаж 1", () => InstallSelectedActivity());
+-        _install.Name = "InstallActivity";
+-        TowerBoardArt.Decorate(_install, TowerBoardArt.Symbol("confirm"), 24);
+-        TowerBoardArt.Decorate(_shuffle, TowerBoardArt.Currency("shuffle"));
+-        _shuffle.CustomMinimumSize = new Vector2(0, 42);
+-        _shuffle.Name = "ShuffleInventory";
+-        _shuffle.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+-        _shuffle.Pressed += () => ShuffleInventory();
+-        _shuffle.TooltipText = "Заполнить только пустые этажи экземплярами текущего ранга из инвентаря. Установленные активности и их намазки сохраняются. При отказе ничего не тратится.";
+-        _middle.AddChild(_shuffle);
+-        _middle.AddChild(_bonus);
+-        _bonus.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+-        var check = AddButton(_middle, "Проверить вход", () => Report(ValidateForTest(), "Проверка пройдена."));
+-        TowerBoardArt.Decorate(check, TowerBoardArt.Symbol("confirm"));
+-        var summit = new PanelContainer();
+-        var summitFrame = TowerBoardArt.Card();
+-        summitFrame.ContentMarginTop = summitFrame.ContentMarginBottom = 4;
+-        summit.AddThemeStyleboxOverride("panel", summitFrame);
+-        summit.TooltipText = "После пятого этажа. Каталог боссов отсутствует; босс не назначен. Забег пока недоступен.";
+-        _middle.AddChild(summit);
+-        var summitContent = new HBoxContainer();
+-        summit.AddChild(summitContent);
+-        summitContent.AddChild(new TextureRect { Texture = TowerBoardArt.Symbol("summit"),
+-            CustomMinimumSize = new Vector2(32, 32), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, MouseFilter = MouseFilterEnum.Ignore });
+-        var summitText = Text(summitContent, "ВЕРШИНА · Убер-босс\nЗабег пока недоступен");
+-        summitText.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+-        _wholeTower = AddButton(_middle, "Вся башня · цель расходника", () => SelectFloor(null));
+-        TowerBoardArt.Decorate(_wholeTower, TowerBoardArt.Symbol("tower"));
+-        _removeFloor = AddButton(_middle, "Снять выбранный этаж", () => RemoveSelectedActivity());
+-        _removeFloor.Name = "RemoveActivity";
+-        Text(_right, "ИНВЕНТАРЬ НАМАЗОК");
+-        _right.AddChild(_currencyGrid);
+-        _right.AddChild(_details);
+-        _details.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+-        Text(_right, "Биом (только внешний вид этажа)");
+-        _right.AddChild(_biome);
+-        _biome.ItemSelected += index =>
+-        {
+-            if (!_refreshing && !_targetInventory && Assembly != null && Data != null && SelectedFloor is int slot)
+-            { Assembly.SetBiome(slot, Data.Biomes[(int)index].Id); Refresh(); }
+-        };
+-        Text(_right, "Свойство для адресного Снятия");
+-        _right.AddChild(_mod);
+-        _mod.ItemSelected += _ => RefreshCurrencyDescription();
+-        _currencyInfo.Name = "CurrencyDescription";
+-        _currencyInfo.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+-        _status.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+-        _status.Visible = false;
+-        root.AddChild(_status);
+-        BuildReferenceStyle();
+-    }
+-
+-    private VBoxContainer Column(HBoxContainer parent, string art, string heading)
+-    {
+-        var panel = new PanelContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, ClipContents = true };
+-        panel.AddThemeStyleboxOverride("panel", TowerBoardArt.Panel());
+-        parent.AddChild(panel);
+-        string path = $"res://Ui/Art/TowerPanels/{art}-v2.png";
+-        if (ResourceLoader.Exists(path))
+-        {
+-            var texture = ResourceLoader.Load<Texture2D>(path);
+-            if (texture != null) panel.AddChild(new TextureRect { Texture = texture, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+-                StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered, MouseFilter = MouseFilterEnum.Ignore });
+-        }
+-        var surface = new PanelContainer();
+-        surface.AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = new Color(0.04f, 0.06f, 0.07f, 0.82f),
+-            ContentMarginLeft = 12, ContentMarginRight = 12,
+-            ContentMarginTop = art == "ascent" ? 10 : 14, ContentMarginBottom = art == "ascent" ? 10 : 14 });
+-        panel.AddChild(surface);
+-        var content = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+-        content.AddThemeConstantOverride("separation", 10);
+-        if (art == "activities") surface.AddChild(content);
+-        else
+-        {
+-            var scroll = new ScrollContainer { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FollowFocus = true };
+-            if (art == "inscriptions")
+-            {
+-                var column = new VBoxContainer();
+-                surface.AddChild(column);
+-                scroll.SizeFlagsVertical = SizeFlags.ExpandFill;
+-                column.AddChild(scroll);
+-                column.AddChild(_currencyInfo);
+-            }
+-            else surface.AddChild(scroll);
+-            scroll.AddChild(content);
+-        }
+-        Text(content, heading);
+-        return content;
++        BuildMontage();
+     }
+ 
+     public override void _Input(InputEvent input)
+@@ -288,7 +144,7 @@ public partial class TowerBoardView : Control
+             !GetGlobalRect().HasPoint(mouse.Position)) return;
+         // Explicit mouse scrolling takes over from GUI focus following. Selection is separate;
+         // leave the event unhandled so the panel receives its normal wheel input.
+-        if (_left!.GetGlobalRect().HasPoint(mouse.Position)) return;
++        if (_activityGrid.GetGlobalRect().HasPoint(mouse.Position)) return;
+         var focus = GetViewport().GuiGetFocusOwner();
+         if (focus != null && IsAncestorOf(focus))
+         {
+@@ -371,7 +227,7 @@ public partial class TowerBoardView : Control
+             }
+             button.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+             button.SizeFlagsVertical = SizeFlags.Fill;
+-            button.CustomMinimumSize = new Vector2(48, 48);
++            button.CustomMinimumSize = new Vector2(48, 80);
+             button.RemoveThemeStyleboxOverride("normal");
+             button.RemoveThemeStyleboxOverride("focus");
+             const float halfIcon = 21;
+@@ -379,6 +235,15 @@ public partial class TowerBoardView : Control
+             image.OffsetRight = image.OffsetBottom = halfIcon;
+             count.OffsetRight = count.OffsetBottom = -4;
+             count.AddThemeConstantOverride("outline_size", 3);
++            image.SetAnchorsPreset(LayoutPreset.TopLeft);
++            count.SetAnchorsPreset(LayoutPreset.TopLeft);
++            button.AddChild(new Control { Name = "SocketBounds", MouseFilter = MouseFilterEnum.Ignore });
++            var caption = new Label { Name = "ActivityName", MouseFilter = MouseFilterEnum.Ignore,
++                HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
++            caption.AddThemeFontSizeOverride("font_size", 12);
++            caption.AutowrapMode = TextServer.AutowrapMode.Off;
++            caption.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
++            button.AddChild(caption);
+         }
+         return button;
+     }
+@@ -479,6 +344,7 @@ public partial class TowerBoardView : Control
+             }
+             button.Visible = index / capacity == page;
+             button.GetNode<Label>("Count").Text = group.Count.ToString();
++            button.GetNode<Label>("ActivityName").Text = Data.FloorType(group.TypeId).Name;
+             button.TooltipText = $"{Data.FloorType(group.TypeId).Name} · ранг {group.Rank} · {group.Count} шт.\n" + ActivityObjective(group.TypeId)
+                 + (group.Variant == null ? "" : "\nРазновидность: " + VariantName(group.Variant))
+                 + (group.EverModified ? "\nОтдельный экземпляр после намазки." : "")
+@@ -488,7 +354,10 @@ public partial class TowerBoardView : Control
+             button.ThemeTypeVariation = id == _selectedInventoryId ? "SelectedActivitySlot" : "ActivitySlot";
+         }
+         var selectedGroup = groups.FirstOrDefault(g => g.Id == _selectedInventoryId);
+-        int emptyCount = capacity - Math.Min(capacity, groups.Count - page * capacity);
++        int visibleGroups = Math.Min(capacity, groups.Count - page * capacity);
++        int visibleCapacity = visibleGroups > 8 ? capacity : 8;
++        int emptyCount = visibleCapacity - visibleGroups;
++        _catalogueLattice.CustomMinimumSize = new Vector2(0, visibleCapacity > 8 ? 184 : 104);
+         while (_emptyActivitySlots.Count < emptyCount)
+         {
+             var empty = new Panel { ThemeTypeVariation = "EmptyActivitySlot", SizeFlagsHorizontal = SizeFlags.ExpandFill,
+@@ -518,21 +387,34 @@ public partial class TowerBoardView : Control
+ 
+     private void ArrangeActivitySlots()
+     {
+-        const int inset = 16;
+-        const int rows = 4;
++        const int inset = 8;
++        int rows = Math.Max(1, _activityGrid.GetChildren().OfType<Control>().Count(c => c.Visible) / _activityGrid.Columns);
+         int columns = _activityGrid.Columns;
+         var area = _activityGrid.Size - Vector2.One * (2 * inset);
+-        float width = (area.X - (columns - 1) * _activityGrid.GetThemeConstant("h_separation")) / columns;
+-        float height = (area.Y - (rows - 1) * _activityGrid.GetThemeConstant("v_separation")) / rows;
+-        float side = Mathf.Floor(Mathf.Min(width, height));
++        float width = (area.X - (columns - 1) * 6) / columns;
++        float height = (area.Y - (rows - 1) * 8) / rows;
++        float side = Mathf.Floor(Mathf.Min(width, height - 32));
+         if (side <= 0) return;
+-        var step = new Vector2((area.X - side) / (columns - 1), (area.Y - side) / (rows - 1));
+         int index = 0;
+         foreach (Control slot in _activityGrid.GetChildren())
+         {
+             if (!slot.Visible) continue;
+-            var position = Vector2.One * inset + new Vector2(index % columns, index / columns) * step;
+-            _activityGrid.FitChildInRect(slot, new Rect2(position.Round(), Vector2.One * side));
++            var position = Vector2.One * inset + new Vector2(index % columns * (width + 6), index / columns * (height + 8));
++            _activityGrid.FitChildInRect(slot, new Rect2(position.Round(), new Vector2(Mathf.Floor(width), Mathf.Floor(height))));
++            if (slot.GetNodeOrNull<Control>("SocketBounds") is { } socket)
++            {
++                socket.Position = new Vector2(Mathf.Floor((width - side) / 2), 0);
++                socket.Size = Vector2.One * side;
++                var image = slot.GetChild<TextureRect>(0);
++                image.Position = socket.Position + Vector2.One * side * .12f;
++                image.Size = Vector2.One * side * .76f;
++                var count = slot.GetNode<Label>("Count");
++                count.Position = socket.Position + new Vector2(0, side - 19);
++                count.Size = new Vector2(side - 2, 18);
++                var caption = slot.GetNode<Label>("ActivityName");
++                caption.Position = new Vector2(0, side + 4);
++                caption.Size = new Vector2(Mathf.Floor(width), 30);
++            }
+             index++;
+         }
+         _glassWindow.QueueRedraw();
+@@ -640,9 +522,9 @@ public partial class TowerBoardView : Control
+         _refreshing = true;
+         RefreshInventory();
+         var spec = Assembly.Spec;
+-        _wholeTower.Text = (SelectedFloor == null ? "▶ " : "") + "Вся башня · цель расходника\n" +
++        _wholeTower.Text = (SelectedFloor == null ? "▶ " : "") + "Вся башня · цель\n" +
+             string.Join(" ", Enumerable.Range(0, Data.Rules.TowerSlots).Select(n => n < spec.TowerMods.Count ? "◆" : "◇")) +
+-            $" · свойств {spec.TowerMods.Count}/{Data.Rules.TowerSlots}";
++            $" · {spec.TowerMods.Count}/{Data.Rules.TowerSlots}";
+         var towerFrame = TowerBoardArt.Card(SelectedFloor == null);
+         towerFrame.ContentMarginTop = towerFrame.ContentMarginBottom = 4;
+         _wholeTower.AddThemeStyleboxOverride("normal", towerFrame);
+@@ -665,11 +547,11 @@ public partial class TowerBoardView : Control
+             floorFrame.ContentMarginTop = floorFrame.ContentMarginBottom = 4;
+             _floors[i].AddThemeStyleboxOverride("normal", floorFrame);
+             _floors[i].AddThemeStyleboxOverride("hover", floorFrame);
+-            _floors[i].Text = $"{(SelectedFloor == i ? "▶ " : "")}ЭТАЖ {i + 1} · {(f.TypeId == null ? "Выберите активность" : Data.FloorType(f.TypeId).Name)}\n" +
+-                $"{(f.BiomeId == null ? "Биом не выбран" : Data.Biomes.First(b => b.Id == f.BiomeId).Name)}" +
+-                (f.Variant == null ? "" : " · " + VariantName(f.Variant)) + "\n" +
+-                string.Join(" ", Enumerable.Range(0, Data.Rules.FloorSlots).Select(n => n < f.Mods.Count ? "◆" : "◇")) +
+-                $" · свойств {f.Mods.Count}/{Data.Rules.FloorSlots}";
++            _floors[i].Text = $"{i + 1:00}  Этаж {i + 1}\n{(f.TypeId == null ? "Пустой этаж" : Data.FloorType(f.TypeId).Name)}\n" +
++                $"{(f.BiomeId == null ? "Без биома" : Data.Biomes.First(b => b.Id == f.BiomeId).Name)} · {f.Mods.Count}/{Data.Rules.FloorSlots}";
++            TowerBoardArt.Decorate(_floors[i], TowerBoardArt.Activity(f.TypeId), 28);
++            _floors[i].AccessibilityName = _floors[i].Text;
++
+         }
+         var floor = SelectedFloor is int slot ? spec.Floors[slot] : null;
+         var mods = TargetMods();
+
+diff --git a/game/Ui/Tower/TowerBoardView.ReferenceStyle.cs b/game/Ui/Tower/TowerBoardView.ReferenceStyle.cs
+index 10fbc7e..91014d0 100644
+--- a/game/Ui/Tower/TowerBoardView.ReferenceStyle.cs
++++ b/game/Ui/Tower/TowerBoardView.ReferenceStyle.cs
+@@ -1,3 +1,5 @@
++using System.Linq;
++using Dialoid.Core.Tower;
+ using Dialoid.Game.Ui.Art;
+ using Godot;
+ namespace Dialoid.Game.Ui.Tower;
+@@ -11,36 +13,55 @@ public partial class TowerBoardView
+         var shell = new Panel { Name = "ReferenceShell", MouseFilter = MouseFilterEnum.Ignore };
+         shell.AddThemeStyleboxOverride("panel", RoomHudTheme.ReferenceSurface(0, border: 2));
+         AddChild(shell);
+-        MoveChild(shell, 1);
++        MoveChild(shell, 2);
+         shell.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+         shell.OffsetLeft = shell.OffsetTop = 8;
+         shell.OffsetRight = shell.OffsetBottom = -8;
+-        _referencePortrait = new TextureRect { Name = "ActivityDetailPortrait", CustomMinimumSize = new Vector2(40, 40),
++        _referencePortrait = new TextureRect { Name = "ActivityDetailPortrait", CustomMinimumSize = new Vector2(56, 56),
+             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+             MouseFilter = MouseFilterEnum.Ignore };
+-        _referenceTitle = RoomHudTheme.Heading("Активность", 20);
++        _referenceTitle = RoomHudTheme.Heading("Выберите активность", 20);
+         _referenceTitle.Name = "ActivityDetailTitle";
++        _referenceTitle.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+         var identity = new HBoxContainer();
++        identity.AddThemeConstantOverride("separation", 12);
+         identity.AddChild(_referencePortrait);
+         identity.AddChild(_referenceTitle);
+         _referenceContext = new Label { Name = "ActivityDetailContext", AutowrapMode = TextServer.AutowrapMode.WordSmart };
+         _referenceContext.AddThemeColorOverride("font_color", RoomHudTheme.MutedText);
+-        _referenceContext.AddThemeFontSizeOverride("font_size", RoomHudTheme.CaptionSize);
+-        _right!.AddChild(identity);
+-        _right.MoveChild(identity, 1);
+-        _right.AddChild(_referenceContext);
+-        _right.MoveChild(_referenceContext, 2);
+-        _right.MoveChild(_details, 3);
+-        _details.AddThemeColorOverride("font_color", RoomHudTheme.MutedText);
+-        _details.AddThemeFontSizeOverride("font_size", RoomHudTheme.CaptionSize);
++        _referenceContext.AddThemeFontSizeOverride("font_size", 12);
++        _sourceDetail.AddChild(identity);
++        _sourceDetail.AddChild(_referenceContext);
+     }
+     private void RefreshReferenceDetail()
+     {
+         if (_referencePortrait == null || Assembly == null || Data == null) return;
+-        var inventory = _targetInventory ? SelectedGroup() : null;
+-        string? type = inventory?.TypeId ?? (SelectedFloor is int slot ? Assembly.Spec.Floors[slot].TypeId : null);
+-        _referencePortrait.Texture = TowerBoardArt.Activity(type);
+-        _referenceTitle.Text = type == null ? SelectedFloor == null ? "Вся башня" : "Пустой этаж" : Data.FloorType(type).Name;
+-        _referenceContext.Text = $"Ранг {Assembly.Spec.Rank} · " + (inventory != null ? "Активность инвентаря" : SelectedFloor == null ? "Маршрут целиком" : $"Этаж {SelectedFloor + 1}");
++        // Install source survives choosing a floor/whole-tower crafting target.
++        var source = SelectedGroup();
++        _referencePortrait.Texture = TowerBoardArt.Activity(source?.TypeId);
++        _referenceTitle.Text = source == null ? "Выберите активность" : Data.FloorType(source.TypeId).Name;
++        _referenceContext.Text = source == null ? $"Ранг {Assembly.Spec.Rank} · источник не выбран" :
++            $"Ранг {source.Rank} · {source.Count} шт. · " + (source.EverModified ? "отдельный экземпляр" : "стек");
++        _sourceObjective.Text = source == null ? "Выберите источник для установки или намазки." : ActivityObjective(source.TypeId);
++        _sourceProperties.Text = source == null ? "" : $"Свойства источника · {source.Mods.Count}/{Data.Rules.FloorSlots}\n" +
++            (source.Variant == null ? "" : VariantName(source.Variant) + "\n") +
++            (source.Mods.Count == 0 ? "Свойств пока нет" : string.Join("\n", source.Mods.Select(m => $"{ModText(m)} · тир {m.Tier}")));
++        var spec = Assembly.Spec;
++        var floor = SelectedFloor is int slot ? spec.Floors[slot] : null;
++        _floorTitle.Text = SelectedFloor is int index ? $"Этаж {index + 1}" : "Вся башня";
++        _floorPortrait.Texture = floor == null ? TowerBoardArt.Symbol("tower") : TowerBoardArt.Activity(floor.TypeId);
++        _floorIdentity.Text = floor == null ? "Свойства маршрута" : floor.TypeId == null ? "Активность не установлена" : Data.FloorType(floor.TypeId).Name;
++        var mods = floor?.Mods ?? spec.TowerMods;
++        int capacity = floor == null ? Data.Rules.TowerSlots : Data.Rules.FloorSlots;
++        var quality = SelectedFloor is int q ? Rewards.FloorQuality(Data, spec, q, false, Assembly.ShuffleBonusActive) :
++            Rewards.SummitQuality(Data, spec, false, Assembly.ShuffleBonusActive);
++        _floorProperties.Text = $"Свойства {(floor == null ? "башни" : "этажа")} · {mods.Count}/{capacity} · Прогноз качества ×{quality.Total:0.##}\n" +
++            (floor?.Variant == null ? "" : $"Разновидность: {VariantName(floor.Variant)}\n") +
++            (mods.Count == 0 ? "Свойств пока нет" : string.Join("\n", mods.Select(m => $"{ModText(m)} · тир {m.Tier}")));
++        _sourceRoute.Text = "Источник: " + (source == null ? "не выбран" : $"{Data.FloorType(source.TypeId).Name} · {source.Count} шт.") +
++            (SelectedFloor is int destination ? $" → Этаж {destination + 1}" : " → выберите этаж для установки");
++        _installReason.Text = SelectedFloor == null ? "Для установки выберите этаж." : source == null ?
++            "Выберите экземпляр в каталоге." : floor?.TypeId == null ? "Один экземпляр займёт выбранный этаж." : "Предыдущая активность вернётся в каталог со своими свойствами.";
++        _routeCount.Text = $"{spec.Floors.Count(f => f.TypeId != null)}/{spec.Floors.Count}";
+     }
+-}
+\ No newline at end of file
++}
+
+diff --git a/game/Ui/Tower/TowerGlassWindow.cs b/game/Ui/Tower/TowerGlassWindow.cs
+index db31773..01c59a6 100644
+--- a/game/Ui/Tower/TowerGlassWindow.cs
++++ b/game/Ui/Tower/TowerGlassWindow.cs
+@@ -30,11 +30,16 @@ public partial class TowerGlassWindow : Control
+     {
+         if (_window == null || Size.X <= 0 || Size.Y <= 0) return;
+         // Socket glass belongs to the window. Occupancy changes only the overlaid motif and frame.
+-        DrawTextureRect(_window, new Rect2(Vector2.Zero, Size), false, new Color(0, 1, 1));
++        var textureSize = _window.GetSize();
++        float scale = Mathf.Max(Size.X / textureSize.X, Size.Y / textureSize.Y);
++        var sourceSize = Size / scale;
++        var source = new Rect2((textureSize - sourceSize) / 2, sourceSize);
++        DrawTextureRectRegion(_window, new Rect2(Vector2.Zero, Size), source, new Color(0, 1, 1, .25f));
+         foreach (Control slot in _grid.GetChildren())
+         {
+             if (!slot.Visible) continue;
+-            var r = slot.GetGlobalRect();
++            // Catalogue labels belong to the hit target, never to the square glass socket.
++            var r = slot.GetNodeOrNull<Control>("SocketBounds")?.GetGlobalRect() ?? slot.GetGlobalRect();
+             var origin = r.Position - GlobalPosition;
+             float w = r.Size.X, h = r.Size.Y;
+             var button = slot as Button;
+@@ -44,8 +49,8 @@ public partial class TowerGlassWindow : Control
+             for (int i = 0; i < points.Length; i++)
+                 points[i] += origin;
+             var uv = new Vector2[points.Length];
+-            for (int i = 0; i < points.Length; i++) uv[i] = points[i] / Size;
+-            DrawPolygon(points, new[] { new Color(.5f, 1, 1) }, uv, _window);
++            for (int i = 0; i < points.Length; i++) uv[i] = (source.Position + points[i] / Size * source.Size) / textureSize;
++            DrawPolygon(points, new[] { new Color(.5f, 1, 1, .25f) }, uv, _window);
+             if (button == null)
+             {
+                 for (int i = 0; i < points.Length; i++)
+
+diff --git a/game/SelfTest.Tower.cs b/game/SelfTest.Tower.cs
+index fb1be2d..17414ac 100644
+--- a/game/SelfTest.Tower.cs
++++ b/game/SelfTest.Tower.cs
+@@ -117,25 +117,18 @@ public sealed partial class SelfTest
+                 {
+                     window.Size = size;
+                     await Settle();
+-                    var rankRect = rankControl.GetGlobalRect();
+                     var gridRect = lattice.GetGlobalRect();
+-                    var available = lattice.GetParent().GetParent<Control>().GetGlobalRect();
+-                    var row = grid.GetChildren().OfType<Control>().Where(c => c.Visible).Take(grid.Columns).ToArray();
+-                    var rows = grid.GetChildren().OfType<Control>().Where(c => c.Visible).Chunk(grid.Columns)
+-                        .Select(r => r[0].GetGlobalRect()).ToArray();
+-                    Check(rows.Length == 4 && Mathf.Abs(gridRect.End.Y - available.End.Y) <= 1 &&
+-                        Mathf.Abs(rows[0].Position.Y - gridRect.Position.Y - (gridRect.End.Y - rows[^1].End.Y)) <= 2 &&
+-                        rows.Zip(rows.Skip(1), (a, b) => b.Position.Y - a.End.Y).All(gap => gap >= 22) &&
+-                        row.Zip(row.Skip(1), (a, b) => b.Position.X - a.GetRect().End.X).All(gap => gap >= 22),
+-                        $"четыре ряда не распределены по высоте панели при {size}");
+-                    Check(rankRect.Position.X == available.Position.X && rankRect.End.X == available.End.X &&
+-                        row[0].GetGlobalRect().Position.X - grid.GetGlobalRect().Position.X == 16 &&
+-                        grid.GetGlobalRect().End.X - row[^1].GetGlobalRect().End.X == 16 &&
+-                        rows[0].Position.Y - grid.GetGlobalRect().Position.Y == 16 &&
+-                        grid.GetGlobalRect().End.Y - rows[^1].End.Y == 16 &&
+-                        row.All(c => Mathf.Abs(c.Size.X - c.Size.Y) <= 1), $"ячейки не заполняют внутреннюю ширину при {size}");
+-                    Check(Mathf.IsEqualApprox(rankRect.Position.X, gridRect.Position.X) &&
+-                        Mathf.IsEqualApprox(rankRect.End.X, gridRect.End.X), $"границы выбора ранга и сетки расходятся при {size}");
++                    var nodesAtSize = grid.GetChildren().OfType<Button>().Where(c => c.Visible).ToArray();
++                    Check(grid.Columns == 8 && board.GetGlobalRect().Encloses(gridRect), $"каталог не помещается при {size}");
++                    foreach (var item in nodesAtSize)
++                    {
++                        var socket = item.GetNode<Control>("SocketBounds").GetGlobalRect();
++                        Check(Mathf.Abs(socket.Size.X - socket.Size.Y) <= 1 && item.GetGlobalRect().Encloses(socket),
++                            $"квадратное гнездо вышло за ячейку при {size}");
++                        Check(item.GetGlobalRect().Encloses(item.GetNode<Label>("Count").GetGlobalRect()), $"счётчик вне ячейки при {size}");
++                    }
++                    foreach (var name in new[] { "Floor_0", "Floor_4", "WholeTowerTarget", "InstallActivity", "RemoveActivity", "ShuffleInventory", "ValidateEntry", "TowerSummit" })
++                        Check(board.GetGlobalRect().Encloses(((Control)board.FindChild(name, true, false)!).GetGlobalRect()), $"{name} вне экрана при {size}");
+                 }
+             }
+             for (Node? parent = grid.GetParent(); parent != null && parent != board; parent = parent.GetParent())
+@@ -147,7 +140,7 @@ public sealed partial class SelfTest
+             var group = board.Inventory!.Groups(rank).Single(g => g.Id == board.SelectedInventoryId);
+             var typeName = board.Data!.FloorType(group.TypeId).Name;
+             Check(board.InventoryTarget && node.TooltipText.Contains(typeName, StringComparison.Ordinal), "нет описания выбранной активности");
+-            var count = node.GetChildren().OfType<Label>().Single();
++            var count = node.GetNode<Label>("Count");
+             Check(node.TooltipText.Contains(typeName, StringComparison.Ordinal) && count.Text == group.Count.ToString() &&
+                 count.HorizontalAlignment == HorizontalAlignment.Right && count.VerticalAlignment == VerticalAlignment.Bottom,
+                 "название должно быть в подсказке, а количество — справа внизу карточки");
+@@ -196,6 +189,7 @@ public sealed partial class SelfTest
+ 
+     private IEnumerable<Step> TowerSteps()
+     {
++        yield return new Step("tower.montage", TowerMontage);
+         yield return new Step("tower.focus-contained", async () =>
+         {
+             var board = _main.TowerBoard!;
+
+diff --git a/game/Ui/Tower/TowerBoardView.Montage.cs b/game/Ui/Tower/TowerBoardView.Montage.cs
+new file mode 100644
+index 0000000..0f22a0e
+--- /dev/null
++++ b/game/Ui/Tower/TowerBoardView.Montage.cs
+@@ -0,0 +1,219 @@
++using System.Linq;
++using Dialoid.Game.Ui.Art;
++using Godot;
++
++namespace Dialoid.Game.Ui.Tower;
++
++public partial class TowerBoardView
++{
++    private VBoxContainer _floorList = null!;
++    private VBoxContainer _editor = null!;
++    private VBoxContainer _sourceDetail = null!;
++    private PanelContainer _catalogueLattice = null!;
++    private readonly Label _floorTitle = new() { Name = "FloorEditorTitle" };
++    private readonly Label _floorIdentity = new() { Name = "FloorInstalledTitle" };
++    private readonly TextureRect _floorPortrait = new() { Name = "FloorInstalledPortrait" };
++    private readonly Label _floorProperties = new() { Name = "FloorProperties" };
++    private readonly Label _sourceRoute = new() { Name = "InstallSourceTarget" };
++    private readonly Label _installReason = new() { Name = "InstallReason" };
++    private readonly Label _sourceProperties = new() { Name = "SourceProperties" };
++    private readonly Label _sourceObjective = new() { Name = "SourceObjective" };
++    private readonly Label _routeCount = new() { Name = "RouteCount" };
++
++    private void BuildMontage()
++    {
++        Theme = CreateTheme();
++        TopLevel = true;
++        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
++        MouseFilter = MouseFilterEnum.Stop;
++        var background = new ColorRect { Color = new Color("0c1114"), MouseFilter = MouseFilterEnum.Ignore };
++        AddChild(background);
++        background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
++        var architecture = new TextureRect { Texture = GD.Load<Texture2D>("res://Ui/Art/TowerPanels/ascent-v2.png"),
++            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
++            Modulate = new Color(.55f, .65f, .7f, .22f), MouseFilter = MouseFilterEnum.Ignore };
++        AddChild(architecture);
++        architecture.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
++        var margin = new MarginContainer();
++        AddChild(margin);
++        margin.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
++        foreach (string side in new[] { "left", "right", "top", "bottom" }) margin.AddThemeConstantOverride("margin_" + side, 24);
++        var root = new VBoxContainer();
++        root.AddThemeConstantOverride("separation", 12);
++        margin.AddChild(root);
++        var header = new HBoxContainer();
++        header.AddThemeConstantOverride("separation", 20);
++        root.AddChild(header);
++        header.AddChild(RoomHudTheme.Heading("DIALOID", 22));
++        var title = Text(header, "Башня / Сборка маршрута");
++        title.SizeFlagsHorizontal = SizeFlags.ExpandFill;
++        title.TooltipText = $"Тестовый набор: по 5 активностей каждого типа и ранга, по 20 расходников. Уровень {TestCharacterLevel}. Набор не сохраняется.";
++        title.MouseFilter = MouseFilterEnum.Pass;
++        _rank.Name = "ActivityRank";
++        _rank.CustomMinimumSize = new Vector2(124, 36);
++        header.AddChild(_rank);
++        _rank.ItemSelected += index => { if (!_refreshing) SwitchRank(_rank.GetItemId((int)index)); };
++        _close.Text = "Закрыть";
++        _close.TooltipText = "Esc / F6 / B — закрыть";
++        _close.CustomMinimumSize = new Vector2(100, 36);
++        _close.Pressed += () => CloseRequested?.Invoke();
++        header.AddChild(_close);
++        root.AddChild(new HSeparator());
++        var columns = new HBoxContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
++        columns.AddThemeConstantOverride("separation", 24);
++        root.AddChild(columns);
++        var route = new VBoxContainer { Name = "RouteColumn", CustomMinimumSize = new Vector2(184, 0) };
++        route.AddThemeConstantOverride("separation", 8);
++        columns.AddChild(route);
++        var routeHeader = new HBoxContainer();
++        route.AddChild(routeHeader);
++        Text(routeHeader, "МАРШРУТ").SizeFlagsHorizontal = SizeFlags.ExpandFill;
++        routeHeader.AddChild(_routeCount);
++        _floorList = new VBoxContainer { Name = "FloorList", SizeFlagsVertical = SizeFlags.ExpandFill };
++        _floorList.AddThemeConstantOverride("separation", 7);
++        route.AddChild(_floorList);
++        _wholeTower = AddButton(route, "Вся башня · цель расходника", () => SelectFloor(null));
++        _wholeTower.Name = "WholeTowerTarget";
++        TowerBoardArt.Decorate(_wholeTower, TowerBoardArt.Symbol("tower"), 24);
++
++        var work = new VBoxContainer { Name = "MontageWork", SizeFlagsHorizontal = SizeFlags.ExpandFill };
++        work.AddThemeConstantOverride("separation", 10);
++        columns.AddChild(work);
++        var editorPanel = new PanelContainer { Name = "FloorEditor", SizeFlagsVertical = SizeFlags.ExpandFill };
++        editorPanel.AddThemeStyleboxOverride("panel", RoomHudTheme.ReferenceSurface(12));
++        work.AddChild(editorPanel);
++        _editor = new VBoxContainer();
++        _editor.AddThemeConstantOverride("separation", 4);
++        editorPanel.AddChild(_editor);
++        _floorTitle.HorizontalAlignment = HorizontalAlignment.Center;
++        _floorTitle.AddThemeFontSizeOverride("font_size", 24);
++        _editor.AddChild(_floorTitle);
++        var installed = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
++        installed.AddThemeConstantOverride("separation", 16);
++        _editor.AddChild(installed);
++        _floorPortrait.CustomMinimumSize = new Vector2(48, 48);
++        _floorPortrait.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
++        _floorPortrait.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
++        _floorPortrait.MouseFilter = MouseFilterEnum.Ignore;
++        installed.AddChild(_floorPortrait);
++        _floorIdentity.AddThemeFontSizeOverride("font_size", 18);
++        installed.AddChild(_floorIdentity);
++        var biomeRow = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
++        installed.AddChild(biomeRow);
++        Text(biomeRow, "Биом").AutowrapMode = TextServer.AutowrapMode.Off;
++        _biome.Name = "FloorBiome";
++        _biome.CustomMinimumSize = new Vector2(150, 30);
++        _biome.AddThemeFontSizeOverride("font_size", 12);
++        biomeRow.AddChild(_biome);
++        _biome.ItemSelected += index =>
++        {
++            if (!_refreshing && !_targetInventory && Assembly != null && Data != null && SelectedFloor is int slot)
++            { Assembly.SetBiome(slot, Data.Biomes[(int)index].Id); Refresh(); }
++        };
++        var properties = new ScrollContainer { Name = "FloorPropertiesScroll", CustomMinimumSize = new Vector2(0, 24),
++            SizeFlagsVertical = SizeFlags.ExpandFill, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
++        _editor.AddChild(properties);
++        properties.AddChild(_floorProperties);
++        _floorProperties.SizeFlagsHorizontal = SizeFlags.ExpandFill;
++        _floorProperties.AutowrapMode = TextServer.AutowrapMode.WordSmart;
++        _floorProperties.AddThemeFontSizeOverride("font_size", 12);
++        _sourceRoute.AutowrapMode = TextServer.AutowrapMode.WordSmart;
++        _sourceRoute.AddThemeFontSizeOverride("font_size", 12);
++        _editor.AddChild(_sourceRoute);
++        var actionRow = new HBoxContainer();
++        actionRow.AddThemeConstantOverride("separation", 8);
++        _editor.AddChild(actionRow);
++        _install = AddButton(actionRow, "Для установки выберите активность", () => InstallSelectedActivity());
++        _install.Name = "InstallActivity";
++        _install.CustomMinimumSize = new Vector2(0, 38);
++        _install.SizeFlagsHorizontal = SizeFlags.ExpandFill;
++        _install.SizeFlagsStretchRatio = 2;
++        _install.AddThemeFontSizeOverride("font_size", 14);
++        _install.AddThemeStyleboxOverride("normal", RoomHudTheme.ReferenceSurface(8, true));
++        _installReason.AutowrapMode = TextServer.AutowrapMode.WordSmart;
++        _installReason.AddThemeFontSizeOverride("font_size", 12);
++        _editor.AddChild(_installReason);
++        _removeFloor = AddButton(actionRow, "Снять активность", () => RemoveSelectedActivity());
++        _removeFloor.Name = "RemoveActivity";
++        _removeFloor.CustomMinimumSize = new Vector2(0, 30);
++        _removeFloor.SizeFlagsHorizontal = SizeFlags.ExpandFill;
++        _removeFloor.AddThemeFontSizeOverride("font_size", 12);
++        var statusScroll = new ScrollContainer { Name = "ActionResult", CustomMinimumSize = new Vector2(0, 29),
++            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
++        _editor.AddChild(statusScroll);
++        statusScroll.AddChild(_status);
++        _status.SizeFlagsHorizontal = SizeFlags.ExpandFill;
++        _status.AutowrapMode = TextServer.AutowrapMode.WordSmart;
++        _status.AddThemeFontSizeOverride("font_size", 12);
++        _status.Visible = false;
++
++        var catalogueHeader = new HBoxContainer();
++        work.AddChild(catalogueHeader);
++        Text(catalogueHeader, "КАТАЛОГ АКТИВНОСТЕЙ").SizeFlagsHorizontal = SizeFlags.ExpandFill;
++        _activityPage.Name = "ActivityPage";
++        _activityPage.CustomMinimumSize = new Vector2(80, 28);
++        catalogueHeader.AddChild(_activityPage);
++        _activityPage.ItemSelected += _ => RefreshInventory();
++        var lattice = _catalogueLattice = new PanelContainer { Name = "CatalogueLattice", CustomMinimumSize = new Vector2(0, 112) };
++        lattice.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
++        work.AddChild(lattice);
++        _glassWindow.Setup(_activityGrid);
++        lattice.AddChild(_glassWindow);
++        lattice.AddChild(_activityGrid);
++        _activityGrid.AddThemeConstantOverride("h_separation", 6);
++        _activityGrid.AddThemeConstantOverride("v_separation", 8);
++        _activityGrid.SortChildren += ArrangeActivitySlots;
++        var commands = new HBoxContainer();
++        commands.AddThemeConstantOverride("separation", 8);
++        work.AddChild(commands);
++        _shuffle.Name = "ShuffleInventory";
++        _shuffle.SizeFlagsHorizontal = SizeFlags.ExpandFill;
++        _shuffle.AutowrapMode = TextServer.AutowrapMode.WordSmart;
++        _shuffle.AddThemeFontSizeOverride("font_size", 11);
++        _shuffle.Pressed += () => ShuffleInventory();
++        _shuffle.TooltipText = "Заполнить только пустые этажи экземплярами текущего ранга. Занятые этажи и их свойства сохраняются; при отказе ничего не тратится.";
++        commands.AddChild(_shuffle);
++        var check = AddButton(commands, "Проверить вход", () => Report(ValidateForTest(), "Проверка пройдена."));
++        check.Name = "ValidateEntry";
++        check.CustomMinimumSize = new Vector2(126, 38);
++        check.AddThemeFontSizeOverride("font_size", 12);
++        var summit = Text(commands, "Вершина · Убер-босс\nЗабег пока недоступен");
++        summit.Name = "TowerSummit";
++        summit.AddThemeFontSizeOverride("font_size", 11);
++        summit.CustomMinimumSize = new Vector2(130, 0);
++
++        var sidebar = new VBoxContainer { Name = "SourceColumn", CustomMinimumSize = new Vector2(270, 0) };
++        columns.AddChild(new VSeparator());
++        columns.AddChild(sidebar);
++        var rightScroll = new ScrollContainer { Name = "CurrencyTargetScroll", SizeFlagsVertical = SizeFlags.ExpandFill,
++            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FollowFocus = true };
++        sidebar.AddChild(rightScroll);
++        _sourceDetail = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
++        _sourceDetail.AddThemeConstantOverride("separation", 9);
++        rightScroll.AddChild(_sourceDetail);
++        Text(_sourceDetail, "ВЫБРАНО В КАТАЛОГЕ");
++        BuildReferenceStyle();
++        _sourceDetail.AddChild(_sourceObjective);
++        _sourceDetail.AddChild(_sourceProperties);
++        _sourceDetail.AddChild(new HSeparator());
++        Text(_sourceDetail, "ЦЕЛЬ НАМАЗКИ");
++        _sourceDetail.AddChild(_details);
++        Text(_sourceDetail, "Свойство для адресного снятия");
++        _sourceDetail.AddChild(_mod);
++        _mod.Name = "TargetModifier";
++        _mod.ItemSelected += _ => RefreshCurrencyDescription();
++        Text(_sourceDetail, "РАСХОДНИКИ");
++        _sourceDetail.AddChild(_currencyGrid);
++        _currencyInfo.Name = "CurrencyDescription";
++        sidebar.AddChild(_currencyInfo);
++        foreach (var label in new[] { _details, _currencyInfo, _sourceObjective, _sourceProperties, _bonus })
++        {
++            label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
++            label.AddThemeFontSizeOverride("font_size", 12);
++            label.AddThemeColorOverride("font_color", RoomHudTheme.MutedText);
++        }
++        foreach (var option in new[] { _rank, _mod, _biome }) { option.FitToLongestItem = false; option.ClipText = true; }
++        _bonus.AddThemeFontSizeOverride("font_size", 11);
++        root.AddChild(_bonus);
++    }
++}
+
+diff --git a/game/SelfTest.TowerMontage.cs b/game/SelfTest.TowerMontage.cs
+new file mode 100644
+index 0000000..5925ad4
+--- /dev/null
++++ b/game/SelfTest.TowerMontage.cs
+@@ -0,0 +1,88 @@
++using Dialoid.Core.Tower;
++using Godot;
++
++namespace Dialoid.Game;
++
++public sealed partial class SelfTest
++{
++    private async Task TowerMontage()
++    {
++        var board = _main.TowerBoard!;
++        var rank = board.Assembly!.Spec.Rank;
++        var originalSize = _main.GetTree().Root.Size;
++        try
++        {
++            board.SwitchRank(13);
++            _main.OpenTowerBoard();
++            await Settle();
++            Check(board.FindChild("FloorEditor", true, false) is Control, "нет отдельного редактора выбранного этажа");
++            var source = board.Inventory!.Groups(13).First(g => g.TypeId == "waves");
++            board.SelectInventory(source.Id);
++            board.SelectFloor(1);
++            Check(!board.InventoryTarget && board.SelectedInventoryId == source.Id, "выбор этажа потерял источник установки");
++            var sourceTitle = (Label)board.FindChild("ActivityDetailTitle", true, false)!;
++            Check(sourceTitle.Text == board.Data!.FloorType(source.TypeId).Name, "detail источника подменён целью");
++            Check(board.InstallSelectedActivity() == TowerRefusal.None, "не установлен источник");
++            Check(board.ApplyCurrency("imbue") == TowerRefusal.None, "реальная намазка этажа не работает");
++            Check(board.Assembly.Spec.Floors[1].Mods.Count == 1, "свойство не записано в этаж");
++            await Settle();
++            CaptureTower("montage-real-floor-currency.png");
++            Check(board.RemoveSelectedActivity() == TowerRefusal.None, "модифицированный экземпляр не возвращён");
++            var modified = board.Inventory.Groups(13).First(g => g.TypeId == source.TypeId && g.EverModified);
++            board.SelectInventory(modified.Id);
++            Check(board.InstallSelectedActivity() == TowerRefusal.None, "модифицированный экземпляр не установлен");
++            board.SelectInventory(source.Id);
++            Check(board.InstallSelectedActivity() == TowerRefusal.None, "замена на тот же тип ошибочно запрещена");
++            Check(board.Assembly.Spec.Floors[1].Mods.Count == 0 && board.Inventory.Groups(13).Any(g => g.Id == modified.Id),
++                "замена того же типа потеряла модифицированный экземпляр");
++            board.SelectFloor(null);
++            Check(!board.InventoryTarget && board.SelectedInventoryId == source.Id, "цель всей башни потеряла источник");
++            Check(board.ApplyCurrency("imbue_tower") == TowerRefusal.None && board.Assembly.Spec.TowerMods.Count == 1,
++                "намазка всей башни не работает");
++            await Settle();
++            CaptureTower("montage-whole-tower-currency.png");
++            board.SelectInventory(source.Id);
++            Check(board.InventoryTarget && ((Label)board.FindChild("InstallReason", true, false)!).Text == "Для установки выберите этаж.",
++                "пояснение установки подменяет инвентарную цель намазки всей башней");
++            board.Inventory.Add("waves", 13, 20);
++            for (int i = 0; i < 9; i++)
++            {
++                board.SelectInventory(source.Id);
++                Check(board.ApplyCurrency("imbue") == TowerRefusal.None, "не создан модифицированный экземпляр каталога");
++            }
++            Check(board.Inventory.Groups(13).Count > 16, "fixture не создал вторую страницу");
++            await Settle();
++            CaptureTower("montage-real-inventory-currency.png");
++            foreach (var size in new[] { new Vector2I(1280, 720), new Vector2I(1600, 900) })
++            {
++                if (DisplayServer.GetName() == "headless") _main.GetTree().Root.Size = size;
++                else DisplayServer.WindowSetSize(size);
++                board.SelectFloor(1);
++                await Settle();
++                var grid = (GridContainer)board.FindChild("ActivityGrid", true, false)!;
++                var page = (OptionButton)board.FindChild("ActivityPage", true, false)!;
++                Check(page.Visible && page.ItemCount == 2, "страницы не появились после разделения стека");
++                Check(grid.GetChildren().OfType<Button>().Count(c => c.Visible) == 16, "первая страница потеряла экземпляры");
++                CaptureTower($"montage-{size.Y}-modified-layout.png");
++                foreach (var name in new[] { "Floor_0", "Floor_4", "WholeTowerTarget", "InstallActivity", "RemoveActivity", "ShuffleInventory", "ValidateEntry", "TowerSummit", "ActivityPage", "ActivityGrid" })
++                    Check(board.GetGlobalRect().Encloses(((Control)board.FindChild(name, true, false)!).GetGlobalRect()), $"{name} вне экрана в насыщенном каталоге при {size}");
++                if (DisplayServer.GetName() != "headless") await _main.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
++                CaptureTower($"montage-{size.Y}-modified-page1.png");
++                page.Select(1);
++                page.EmitSignal(OptionButton.SignalName.ItemSelected, 1L);
++                await Settle();
++                Check(grid.GetChildren().OfType<Button>().Count(c => c.Visible) == board.Inventory.Groups(13).Count - 16,
++                    "вторая страница показывает неверные группы");
++                CaptureTower($"montage-{size.Y}-modified-page2.png");
++                page.Select(0);
++                page.EmitSignal(OptionButton.SignalName.ItemSelected, 0L);
++            }
++        }
++        finally
++        {
++            _main.CloseTowerBoard(); board.SwitchRank(rank);
++            if (DisplayServer.GetName() == "headless") _main.GetTree().Root.Size = originalSize;
++            else DisplayServer.WindowSetSize(originalSize);
++        }
++    }
++}

@@ -1,7 +1,10 @@
 [
   { "id": "timed_run", "name": "Забег на время", "has_end_boss": true, "variants": [] },
-  { "id": "trial", "name": "Испытание", "has_end_boss": false, "variants": ["escort", "hold", "ritual", "levers"] },
+  { "id": "ritual", "name": "Ритуал", "has_end_boss": false, "variants": [] },
   { "id": "clear", "name": "Зачистка", "has_end_boss": false, "variants": [] },
-  { "id": "waves", "name": "Волны монстров", "has_end_boss": false, "variants": [] },
-  { "id": "bosses", "name": "Боссы", "has_end_boss": true, "variants": [] }
+  { "id": "waves", "name": "Прорывы", "has_end_boss": false, "variants": [] },
+  { "id": "bosses", "name": "Боссы", "has_end_boss": true, "variants": [] },
+  { "id": "escort", "name": "Сопровождение", "has_end_boss": false, "variants": [] },
+  { "id": "hold", "name": "Удержание позиции", "has_end_boss": false, "variants": [] },
+  { "id": "levers", "name": "Переключение", "has_end_boss": false, "variants": [] }
 ]

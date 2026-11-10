@@ -1,0 +1,58 @@
+[
+  {
+    "id": "v01",
+    "floors": 5,
+    "activities": 8,
+    "currencies": 12,
+    "bad": [],
+    "overlap": []
+  },
+  {
+    "id": "v02",
+    "floors": 5,
+    "activities": 8,
+    "currencies": 12,
+    "bad": [],
+    "overlap": []
+  },
+  {
+    "id": "v03",
+    "floors": 5,
+    "activities": 8,
+    "currencies": 12,
+    "bad": [],
+    "overlap": []
+  },
+  {
+    "id": "v04",
+    "floors": 5,
+    "activities": 8,
+    "currencies": 12,
+    "bad": [],
+    "overlap": []
+  },
+  {
+    "id": "v05",
+    "floors": 5,
+    "activities": 8,
+    "currencies": 12,
+    "bad": [],
+    "overlap": []
+  },
+  {
+    "id": "v06",
+    "floors": 5,
+    "activities": 8,
+    "currencies": 12,
+    "bad": [],
+    "overlap": []
+  },
+  {
+    "id": "v07",
+    "floors": 5,
+    "activities": 8,
+    "currencies": 12,
+    "bad": [],
+    "overlap": []
+  }
+]

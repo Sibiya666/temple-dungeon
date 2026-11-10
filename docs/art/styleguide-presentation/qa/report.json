@@ -1,0 +1,104 @@
+{
+  "errors": [],
+  "externalRequests": [],
+  "checks": [
+    {
+      "message": "All desktop images load",
+      "passed": true
+    },
+    {
+      "message": "Images are embedded and portable",
+      "passed": true
+    },
+    {
+      "message": "No desktop horizontal overflow",
+      "passed": true
+    },
+    {
+      "message": "Component selection sample responds",
+      "passed": true
+    },
+    {
+      "message": "Component selection sample resets",
+      "passed": true
+    },
+    {
+      "message": "Section navigation is available",
+      "passed": true
+    },
+    {
+      "message": "Navigation opens its named section",
+      "passed": true
+    },
+    {
+      "message": "Image zoom trigger is available",
+      "passed": true
+    },
+    {
+      "message": "Image dialog opens",
+      "passed": true
+    },
+    {
+      "message": "Escape closes image dialog",
+      "passed": true
+    },
+    {
+      "message": "Dialog restores trigger focus",
+      "passed": true
+    },
+    {
+      "message": "Arrow key advances the presentation",
+      "passed": true
+    },
+    {
+      "message": "No mobile horizontal overflow",
+      "passed": true
+    },
+    {
+      "message": "All mobile images load",
+      "passed": true
+    },
+    {
+      "message": "Print hides presentation navigation",
+      "passed": true
+    },
+    {
+      "message": "No browser console or page errors",
+      "passed": true
+    },
+    {
+      "message": "No external network dependencies",
+      "passed": true
+    }
+  ],
+  "desktop": {
+    "brokenImages": [],
+    "overflow": false,
+    "imageCount": 16,
+    "embedded": true,
+    "sections": [
+      "cover",
+      "foundations",
+      "icons",
+      "sheet",
+      "skills",
+      "tower",
+      "usage"
+    ]
+  },
+  "mobile": {
+    "brokenImages": [],
+    "overflow": false,
+    "imageCount": 16,
+    "embedded": true,
+    "sections": [
+      "cover",
+      "foundations",
+      "icons",
+      "sheet",
+      "skills",
+      "tower",
+      "usage"
+    ]
+  }
+}

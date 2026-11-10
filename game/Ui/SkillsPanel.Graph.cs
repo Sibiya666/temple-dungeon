@@ -70,14 +70,15 @@ public partial class SkillsPanel
             else foreach (var requirement in node.Requires) edges.Add((requirement.NodeId, node.Id));
         }
         SkillGraphEdges = edges;
-        var toolbar = new HBoxContainer();
+        var toolbar = new HFlowContainer();
         var fit = new Button { Text = "Вписать дерево" };
         toolbar.AddChild(fit);
         Content!.AddChild(toolbar);
-        AddText("Колесо / LT/RT — масштаб · перетаскивание — сдвиг", Grey);
+        var graphHint = AddText("Колесо / LT/RT — масштаб · перетаскивание — сдвиг", Grey);
+        graphHint.AddThemeFontSizeOverride("font_size", RoomHudTheme.CaptionSize);
         var graph = new SkillTreeGraphView
         {
-            CustomMinimumSize = new Vector2(0, 310), SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            CustomMinimumSize = new Vector2(0, 260), SizeFlagsHorizontal = SizeFlags.ExpandFill,
             DescriptionInPanel = true
         };
         SkillGraph = graph;
@@ -285,8 +286,19 @@ public partial class SkillTreeGraphView : TreeView, IPadControl
                 DrawTextureRect(node.Icon, rect.Grow(-1), false,
                     taken || available ? Colors.White : new Color(0.68f, 0.71f, 0.72f));
             DrawRect(rect, border, false, 1f);
-            if (node.Id == SelectedId || node.Id == HoveredId)
+            if (node.Id == SelectedId)
                 DrawRect(rect.Grow(2), new Color("b9c9cb"), false, 1f);
+            if (node.Id == HoveredId)
+            {
+                // Corner focus remains distinct from the closed selection line, even when they coincide.
+                var focus = rect.Grow(4);
+                var color = RoomHudTheme.Focus;
+                float arm = Mathf.Min(8, focus.Size.X / 3);
+                DrawLine(focus.Position, focus.Position + new Vector2(arm, 0), color, 2f);
+                DrawLine(focus.Position, focus.Position + new Vector2(0, arm), color, 2f);
+                DrawLine(focus.End, focus.End - new Vector2(arm, 0), color, 2f);
+                DrawLine(focus.End, focus.End - new Vector2(0, arm), color, 2f);
+            }
             if (node.Badge != null && radius >= 10)
             {
                 int size = Mathf.Clamp((int)(radius * 0.65f), 10, 14);

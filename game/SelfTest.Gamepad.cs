@@ -674,6 +674,14 @@ public sealed partial class SelfTest
         // The skill level field: edit mode.
         Host.FocusWindow(WindowIds.Skills);
         await Settle();
+        // The skills window opens at the catalog; enter the assigned skill through the same A path as the player.
+        if (_main.Skills!.BrowsedSkillId == null)
+        {
+            var assignedSkill = _main.Session!.Build.Slots.First().SkillId;
+            _main.Skills.CatalogButtons[assignedSkill].GrabFocus();
+            PadTap(JoyButton.A);
+            await Settle();
+        }
         var spin = ButtonPrompts.Walk(_main.Skills!).OfType<SpinBox>().FirstOrDefault(s => s.HasMeta(ButtonPrompts.EditMeta)) ?? throw new Failure("нет поля уровня скилла");
         var slotLevel = (int)spin.Value;
         spin.GetLineEdit().GrabFocus();

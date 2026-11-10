@@ -1,0 +1,8 @@
+Use case: stylized-concept.
+Asset type: single production inventory currency icon for Dialoid, transparent cutout.
+Input image 1 is the approved original Venice glass craft reference; input image 2 is the approved hourglass palette reference; input image 3 is the approved shield palette reference. These are style references, not subjects to repeat.
+Primary request: create currency ID imbue, the physical tool for adding one modifier. Subject: a short stout glass quill/applicator, diagonal, with ONE large pale ivory drop suspended over ONE small open lilac glass plate. Simplify to a bold immediately legible silhouette.
+Style: hand-soldered dark metal/lead edges enclosing a FEW LARGE translucent lilac panes, ink-blue glass recesses, cold white highlights and a small pale-yellow accent. Match the physical craftsmanship of image 1 and the restrained lilac/ivory palette of images 2/3. Matte dark lead, no polished gold. Not flat UI line art.
+Composition: one compact connected object group, centered in square, fills 82% of canvas, entire tool and plate visible, broad robust silhouettes readable at 24 px. The applicator and falling drop are main identifying shapes; no tiny decorations.
+Background: genuine transparent alpha, no backdrop or ground plane, no cast shadow outside object.
+Constraints: no text, numerals, symbols, plus/minus glyph, arrows, card border, octagon UI frame, UI states, counters, watermark or glow. No full scene. No additional props. No hourglass or shield.

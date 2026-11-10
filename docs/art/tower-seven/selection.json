@@ -1,0 +1,12 @@
+{
+  "round": "Dialoid Tower / 7 layouts / 2026-11-10",
+  "selected": "v05",
+  "name": "Монтажный пролёт",
+  "source": "v05.html",
+  "status": "owner_selected",
+  "owner_response": "5",
+  "refinement": "../tower-selected/index.html",
+  "runtime_implementation": true,
+  "runtime_scope": "local tower-ui-reference Godot checkout; not main delivery",
+  "runtime_evidence": "../ui-styleguide/2026-11-10-tower-montage-godot/parity-correction/README.md"
+}

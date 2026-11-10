@@ -32,7 +32,9 @@ public class TowerDataLoaderTests
     public void Real_tower_data_loads_without_errors()
     {
         var d = LoadOk(FixturePaths.RealTowerData);
-        Assert.Equal(5, d.FloorTypes.Count);
+        Assert.Equal(new[] { "timed_run", "ritual", "clear", "waves", "bosses", "escort", "hold", "levers" },
+            d.FloorTypes.Select(t => t.Id));
+        Assert.All(d.FloorTypes, t => Assert.Empty(t.Variants));
         Assert.Equal(15, d.Rules.Ranks.Count);
         Assert.Equal(5, d.Rules.Floors);
         Assert.Equal(5, d.Rules.FloorSlots);
@@ -44,7 +46,8 @@ public class TowerDataLoaderTests
     {
         var d = LoadOk(FixturePaths.TowerFixture);
         Assert.Equal(15, d.Rules.Ranks.Count);
-        Assert.Equal(d.Currencies.Count, LoadOk(FixturePaths.RealTowerData).Currencies.Count);
+        Assert.True(d.TryGetCurrency("reroll_variant", out _));
+        Assert.False(LoadOk(FixturePaths.RealTowerData).TryGetCurrency("reroll_variant", out _));
     }
 
     [Fact]
@@ -73,7 +76,8 @@ public class TowerDataLoaderTests
         {
             var d = LoadOk(dir);
             Assert.Equal(Levelled.OrderBy(x => x), d.Currencies.Where(c => c.HasLevel).Select(c => c.Id).OrderBy(x => x));
-            Assert.Equal(DropsFrom.Keys.OrderBy(x => x), d.Currencies.Select(c => c.Id).OrderBy(x => x));
+            var expected = DropsFrom.Keys.Where(id => dir == FixturePaths.TowerFixture || id != "reroll_variant");
+            Assert.Equal(expected.OrderBy(x => x), d.Currencies.Select(c => c.Id).OrderBy(x => x));
             foreach (var c in d.Currencies) Assert.Equal(DropsFrom[c.Id], c.DropsFromRank);
         }
     }

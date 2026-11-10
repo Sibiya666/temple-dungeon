@@ -9,7 +9,7 @@ public enum HardCounter { None, NoLifeRegen, NoResourceRegen, NoHealing }
 /// <summary>What a currency does when applied (spec 9.4–9.5).</summary>
 public enum CurrencyOp { AddMod, AddModBiased, RerollOne, RerollValueHigh, UpgradeTier, Clear, RemoveOne, RerollVariant, Shuffle }
 
-/// <summary>Floor type; <see cref="Variants"/> is non-empty only for the trial family.</summary>
+/// <summary>Selectable activity and any variants declared by its catalog.</summary>
 public sealed record FloorTypeDef(string Id, string Name, bool HasEndBoss, IReadOnlyList<string> Variants);
 
 /// <summary>Tier of a mod: value range (always non-negative, direction is in the mod text) and reward quality bonus.</summary>
@@ -17,7 +17,7 @@ public sealed record ModTier(int Tier, double Min, double Max, double Quality);
 
 /// <summary>
 /// Floor or tower mod. Empty <see cref="FloorTypes"/> = compatible with every type. A FloorType mod has exactly one type
-/// (and a <see cref="Variant"/> for trial). <see cref="Group"/> = incompatibility group, <see cref="Directions"/> = axes for biased imbues.
+/// (and a <see cref="Variant"/> if that type defines variants). <see cref="Group"/> = incompatibility group, <see cref="Directions"/> = axes for biased imbues.
 /// A tower mod acts on the summit (and counts for its reward) iff FloorTypes is empty or contains "bosses"; the loader
 /// requires every such mod to be in group "gate", so at most one acts on the summit (spec 5.2).
 /// </summary>

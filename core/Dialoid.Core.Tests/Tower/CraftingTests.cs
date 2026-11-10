@@ -28,10 +28,10 @@ public class CraftingTests
 
     private static FloorSpec Empty() => new(null, null, null, Array.Empty<ModInstance>());
 
-    private static TowerAssembly FromFloor(int rank, int seed, FloorSpec floor)
+    private static TowerAssembly FromFloor(int rank, int seed, FloorSpec floor, TowerData? data = null)
     {
         var floors = new[] { floor }.Concat(Enumerable.Range(0, 4).Select(_ => Empty())).ToArray();
-        return TowerAssembly.FromSpec(D, new TowerSpec(rank, floors, Array.Empty<ModInstance>(), null), Rng(seed));
+        return TowerAssembly.FromSpec(data ?? D, new TowerSpec(rank, floors, Array.Empty<ModInstance>(), null), Rng(seed));
     }
 
     private static TowerData WithDropRank(string currencyId, int rank)
@@ -91,7 +91,7 @@ public class CraftingTests
         var w = Rich(D);
         Assert.Equal(TowerRefusal.WrongTarget, Crafting.Apply(D, a, w, "imbue", null));
         Assert.Equal(TowerRefusal.WrongTarget, Crafting.Apply(D, a, w, "imbue_type", null));
-        Assert.Equal(TowerRefusal.WrongTarget, Crafting.Apply(D, a, w, "reroll_variant", null));
+        Assert.Equal(TowerRefusal.UnknownCurrency, Crafting.Apply(D, a, w, "reroll_variant", null));
         Assert.Empty(a.Spec.TowerMods);
         Assert.Equal(100, w.CountUsable("imbue", 4));
     }
@@ -275,15 +275,16 @@ public class CraftingTests
     [Fact]
     public void Reroll_variant_changes_variant_and_drops_type_mods()
     {
+        var legacy = TowerDataLoader.Load(FixturePaths.TowerFixture).Data!;
         for (int seed = 0; seed < 100; seed++)
         {
             var mods = new[] { new ModInstance("escort_hunters", 1, 12), new ModInstance("monster_life", 1, 20) };
-            var a = FromFloor(1, seed, new FloorSpec("trial", "escort", "swamp", mods));
-            var w = Rich(D);
-            Assert.Equal(TowerRefusal.None, Crafting.Apply(D, a, w, "reroll_variant", 0));
+            var a = FromFloor(1, seed, new FloorSpec("trial", "escort", "swamp", mods), legacy);
+            var w = Rich(legacy);
+            Assert.Equal(TowerRefusal.None, Crafting.Apply(legacy, a, w, "reroll_variant", 0));
             var f = a.Spec.Floors[0];
             Assert.NotEqual("escort", f.Variant);
-            Assert.Contains(f.Variant, D.FloorType("trial").Variants);
+            Assert.Contains(f.Variant, legacy.FloorType("trial").Variants);
             Assert.Equal(new[] { mods[1] }, f.Mods);
             Assert.False(a.ShuffleBonusActive);
             // The slot remembers the new variant.
@@ -292,8 +293,8 @@ public class CraftingTests
             Assert.Equal(TowerRefusal.None, a.SetFloorType(0, "trial"));
             Assert.Equal(variant, a.Spec.Floors[0].Variant);
         }
-        var c = WithFloor(1, 1, "clear");
-        Assert.Equal(TowerRefusal.NotATrial, Crafting.Apply(D, c, Rich(D), "reroll_variant", 0));
+        var c = WithFloor(1, 1, "clear", legacy);
+        Assert.Equal(TowerRefusal.NotATrial, Crafting.Apply(legacy, c, Rich(legacy), "reroll_variant", 0));
     }
 
     [Fact]
@@ -302,11 +303,9 @@ public class CraftingTests
         var a = new TowerAssembly(D, 5, Rng(9));
         var w = Rich(D);
         Assert.Equal(TowerRefusal.None, a.Shuffle(w));
-        int trial = a.Spec.Floors.ToList().FindIndex(f => f.TypeId == "trial");
         Assert.Equal(TowerRefusal.None, Crafting.Apply(D, a, w, "imbue", 0));
         Assert.Equal(TowerRefusal.None, Crafting.Apply(D, a, w, "reroll", 0));
         Assert.Equal(TowerRefusal.None, Crafting.Apply(D, a, w, "imbue_tower", null));
-        if (trial >= 0) Assert.Equal(TowerRefusal.None, Crafting.Apply(D, a, w, "reroll_variant", trial));
         Assert.True(a.ShuffleBonusActive);
     }
 

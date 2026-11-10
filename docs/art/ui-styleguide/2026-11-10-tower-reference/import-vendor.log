@@ -1,0 +1,224 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Инициализация проекта (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Сканирование структуры файлов…[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Загрузка глобальных имен классов…[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Проверка GDExtensions…[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Создание скриптов автозагрузки…[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Инициализация плагинов…[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Начало сканирование файлов…[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Сканирование действий… (36 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | diff.jpg[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | nor_gl.jpg[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | rough.jpg[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | diff.jpg[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | nor_gl.jpg[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | rough.jpg[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | diff.jpg[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | nor_gl.jpg[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | rough.jpg[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | diff.jpg[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | nor_gl.jpg[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | rough.jpg[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | sword_and_shield_attack.fbx[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | sword_and_shield_casting.fbx[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | sword_and_shield_idle.fbx[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | sword_and_shield_impact.fbx[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | sword_and_shield_run.fbx[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | sword_and_shield_slash.fbx[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | sword_and_shield_walk.fbx[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | zombie_attack.fbx[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | zombie_idle.fbx[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | zombie_walk.fbx[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | paladin_wprop_j_nordstrom.fbx[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | paladin_wprop_j_nordstrom_0.png[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | paladin_wprop_j_nordstrom_1.png[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | paladin_wprop_j_nordstrom_2.png[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | skeletonzombie_t_avelange.fbx[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | skeletonzombie_t_avelange_0.png[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | skeletonzombie_t_avelange_1.png[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | skeletonzombie_t_avelange_2.png[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | skeletonzombie_t_avelange_3.png[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | skeletonzombie_t_avelange_4.png[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | warrok_w_kurniawan.fbx[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | warrok_w_kurniawan_0.png[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | warrok_w_kurniawan_1.png[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | warrok_w_kurniawan_2.png[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started Импорт или повторный импорт ассетов (36 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   2% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   5% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   8% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  10% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  13% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  16% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  18% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  21% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  24% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  27% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  29% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  32% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  35% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  37% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  40% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  43% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  45% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  48% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  51% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  54% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  56% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  59% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  62% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  64% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  67% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  70% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  72% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  75% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  78% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  81% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  83% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  86% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  89% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  91% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  94% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   0% ] [90m[1mreimport[22m | Выполнение предимпортных операций…[39m[0m
+[   0% ] [90m[1mpreload_reimporting_scene[22m | Started Подготовка сцен к перезагрузке (1 steps)[39m[0m
+[   0% ] [90m[1mpreload_reimporting_scene[22m | Анализ сцены [пусто][39m[0m
+[  50% ] [90m[1mpreload_reimporting_scene[22m | Подготовка завершена.[39m[0m
+[92m[ DONE ][39m [1mpreload_reimporting_scene[22m
+[0m
+[   0% ] [90m[1mreimport[22m | warrok_w_kurniawan_2.png[39m[0m
+[   2% ] [90m[1mreimport[22m | warrok_w_kurniawan_1.png[39m[0m
+[   2% ] [90m[1mreimport[22m | warrok_w_kurniawan_1.png[39m[0m
+[   5% ] [90m[1mreimport[22m | warrok_w_kurniawan_0.png[39m[0m
+[   8% ] [90m[1mreimport[22m | skeletonzombie_t_avelange_4.png[39m[0m
+[  10% ] [90m[1mreimport[22m | skeletonzombie_t_avelange_3.png[39m[0m
+[  13% ] [90m[1mreimport[22m | skeletonzombie_t_avelange_2.png[39m[0m
+[  16% ] [90m[1mreimport[22m | skeletonzombie_t_avelange_1.png[39m[0m
+[  18% ] [90m[1mreimport[22m | skeletonzombie_t_avelange_0.png[39m[0m
+[  21% ] [90m[1mreimport[22m | paladin_wprop_j_nordstrom_2.png[39m[0m
+[  24% ] [90m[1mreimport[22m | paladin_wprop_j_nordstrom_1.png[39m[0m
+[  27% ] [90m[1mreimport[22m | paladin_wprop_j_nordstrom_0.png[39m[0m
+[  29% ] [90m[1mreimport[22m | diff.jpg[39m[0m
+[  32% ] [90m[1mreimport[22m | nor_gl.jpg[39m[0m
+[  35% ] [90m[1mreimport[22m | rough.jpg[39m[0m
+[  37% ] [90m[1mreimport[22m | diff.jpg[39m[0m
+[  40% ] [90m[1mreimport[22m | nor_gl.jpg[39m[0m
+[  43% ] [90m[1mreimport[22m | rough.jpg[39m[0m
+[  45% ] [90m[1mreimport[22m | diff.jpg[39m[0m
+[  48% ] [90m[1mreimport[22m | nor_gl.jpg[39m[0m
+[  51% ] [90m[1mreimport[22m | rough.jpg[39m[0m
+[  54% ] [90m[1mreimport[22m | diff.jpg[39m[0m
+[  56% ] [90m[1mreimport[22m | nor_gl.jpg[39m[0m
+[  59% ] [90m[1mreimport[22m | rough.jpg[39m[0m
+[  62% ] [90m[1mreimport[22m | paladin_wprop_j_nordstrom.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+WARNING: FBX: Node 'mixamorig:LeftForeArm' has multiple bind poses, using initial pose as rest pose.
+   at: _parse_nodes (modules/fbx/fbx_document.cpp:408)
+WARNING: FBX: Node 'mixamorig:RightForeArm' has multiple bind poses, using initial pose as rest pose.
+   at: _parse_nodes (modules/fbx/fbx_document.cpp:408)
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  64% ] [90m[1mreimport[22m | zombie_walk.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  67% ] [90m[1mreimport[22m | zombie_idle.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  70% ] [90m[1mreimport[22m | zombie_attack.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  72% ] [90m[1mreimport[22m | skeletonzombie_t_avelange.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  75% ] [90m[1mreimport[22m | sword_and_shield_walk.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  78% ] [90m[1mreimport[22m | sword_and_shield_slash.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  81% ] [90m[1mreimport[22m | sword_and_shield_run.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  83% ] [90m[1mreimport[22m | sword_and_shield_impact.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  86% ] [90m[1mreimport[22m | sword_and_shield_idle.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  89% ] [90m[1mreimport[22m | warrok_w_kurniawan.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  91% ] [90m[1mreimport[22m | sword_and_shield_casting.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | sword_and_shield_attack.fbx[39m[0m
+[   0% ] [90m[1mimport[22m | Started Импортировать сцену (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Импорт сцены…[39m[0m
+[   1% ] [90m[1mimport[22m | Запуск пользовательского скрипта…[39m[0m
+[  99% ] [90m[1mimport[22m | Сохранение…[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | Завершение импорта активов…[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started Импорт или повторный импорт ассетов (36 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Выполнение операций после реимпорта…[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Загрузка редактора (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Загрузка макета редактора…[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Загрузка док-панели…[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m

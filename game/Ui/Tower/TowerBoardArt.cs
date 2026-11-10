@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui.Tower;
 
@@ -12,22 +13,24 @@ public static class TowerBoardArt
 
     public static Texture2D? Activity(string? id) => id switch
     {
-        null or "empty_floor" => Symbol("empty_floor"),
-        "timed_run" or "trial" or "clear" or "waves" or "bosses" => Load("activities/" + id + ".svg"),
+        null or "empty_floor" => null,
+        "timed_run" or "ritual" or "escort" or "hold" or "levers" or "clear" or "waves" or "bosses" => Load("activities/" + id + ".png"),
         _ => null,
     };
 
     public static Texture2D? Currency(string id) => id switch
     {
         "imbue" or "imbue_type" or "imbue_tower" or "clear" or "shuffle" or "reroll" or
-        "reroll_variant" or "upgrade" or "remove" or "biased_rare_elite" or "biased_rare_reward" or
-        "biased_epic_elite" or "biased_epic_reward" or "bias_value" => Load("currencies/" + id + ".svg"),
+        "upgrade" or "remove" or "biased_rare_elite" or "biased_rare_reward" or
+        "biased_epic_elite" or "biased_epic_reward" or "bias_value" => Load("currencies/" + id + ".png"),
+        "reroll_variant" => Load("currencies/reroll_variant.svg"),
         _ => null,
     };
 
     public static Texture2D? Symbol(string id) => id switch
     {
-        "empty_floor" or "summit" or "tower" or "confirm" or "close" => Load("symbols/" + id + ".svg"),
+        "summit" or "tower" => Load("symbols/" + id + ".png"),
+        "empty_floor" or "confirm" or "close" => Load("symbols/" + id + ".svg"),
         _ => null,
     };
 
@@ -40,9 +43,9 @@ public static class TowerBoardArt
         button.AddThemeConstantOverride("h_separation", 8);
     }
 
-    public static StyleBox Panel() => Frame("panel", 14);
-    public static StyleBox Card(bool selected = false) => Frame(selected ? "selected" : "card", 10);
-    public static StyleBox Focus() => Frame("focus", 0);
+    public static StyleBox Panel() => new StyleBoxEmpty();
+    public static StyleBox Card(bool selected = false) => RoomHudTheme.ReferenceSurface(10, selected);
+    public static StyleBox Focus() => RoomHudTheme.ReferenceFocus();
 
     private static StyleBoxTexture Frame(string id, int margin) => new()
     {

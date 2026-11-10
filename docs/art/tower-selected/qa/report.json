@@ -1,0 +1,134 @@
+{
+  "checks": [
+    {
+      "name": "All five floor tabs exist",
+      "passed": true
+    },
+    {
+      "name": "All eight activities exist",
+      "passed": true
+    },
+    {
+      "name": "All twelve currencies exist",
+      "passed": true
+    },
+    {
+      "name": "Initial totals are five per type",
+      "passed": true
+    },
+    {
+      "name": "Initial route is empty",
+      "passed": true
+    },
+    {
+      "name": "Remove is disabled for an empty floor",
+      "passed": true
+    },
+    {
+      "name": "No desktop horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "All primary objects visible at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Hover does not change inventory or floors",
+      "passed": true
+    },
+    {
+      "name": "Install conserves counts",
+      "passed": true
+    },
+    {
+      "name": "Install targets floor two once",
+      "passed": true
+    },
+    {
+      "name": "Action result is visible at 720p",
+      "passed": true
+    },
+    {
+      "name": "Identical installation cannot spend twice",
+      "passed": true
+    },
+    {
+      "name": "Replace conserves both types",
+      "passed": true
+    },
+    {
+      "name": "Replace returns previous activity once",
+      "passed": true
+    },
+    {
+      "name": "Remove conserves counts",
+      "passed": true
+    },
+    {
+      "name": "Remove returns to inventory",
+      "passed": true
+    },
+    {
+      "name": "Two floors share a type without duplication",
+      "passed": true
+    },
+    {
+      "name": "Changing target preserves other floor",
+      "passed": true
+    },
+    {
+      "name": "Reset restores original data",
+      "passed": true
+    },
+    {
+      "name": "Exhausted stack still conserves counts",
+      "passed": true
+    },
+    {
+      "name": "Five placements exhaust exactly five items",
+      "passed": true
+    },
+    {
+      "name": "ArrowDown moves floor keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "Keyboard choice conserves counts",
+      "passed": true
+    },
+    {
+      "name": "Keyboard can select activity and floor",
+      "passed": true
+    },
+    {
+      "name": "Keyboard removal conserves counts",
+      "passed": true
+    },
+    {
+      "name": "Tab and Space can remove activity",
+      "passed": true
+    },
+    {
+      "name": "No mobile horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "Mobile editor title stays inside its panel",
+      "passed": true
+    },
+    {
+      "name": "All images load",
+      "passed": true
+    },
+    {
+      "name": "No browser errors",
+      "passed": true
+    },
+    {
+      "name": "No external requests",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "external": []
+}

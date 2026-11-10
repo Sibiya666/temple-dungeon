@@ -5,6 +5,7 @@ using System.Linq;
 using Dialoid.Core.Simulation;
 using Dialoid.Core.Tower;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui.Tower;
 
@@ -25,9 +26,10 @@ public partial class TowerBoardView : Control
     private readonly List<Button> _floors = new();
     private readonly Dictionary<string, Button> _inventoryNodes = new(StringComparer.Ordinal);
     private readonly List<Button> _currencies = new();
-    private readonly GridContainer _activityGrid = new() { Name = "ActivityGrid", Columns = 3 };
-    private readonly GridContainer _currencyGrid = new() { Name = "CurrencyGrid", Columns = 4 };
-    private readonly Label _inventoryInfo = new() { Name = "ActivityDescription" };
+    private readonly GridContainer _activityGrid = new() { Name = "ActivityGrid", Columns = 8 };
+    private readonly GridContainer _currencyGrid = new() { Name = "CurrencyGrid", Columns = 3 };
+    private readonly List<Panel> _emptyActivitySlots = new();
+    private readonly TowerGlassWindow _glassWindow = new();
     private Button _install = null!;
     private Button _removeFloor = null!;
     private string? _selectedInventoryId;
@@ -35,9 +37,9 @@ public partial class TowerBoardView : Control
     private readonly Label _status = new();
     private readonly Label _details = new();
     private readonly Label _currencyInfo = new();
-    private readonly Label _rankInfo = new();
     private readonly Label _bonus = new();
     private readonly OptionButton _rank = new();
+    private readonly OptionButton _activityPage = new() { Visible = false };
     private readonly OptionButton _biome = new();
     private readonly OptionButton _mod = new();
     private readonly Button _shuffle = new();
@@ -59,6 +61,7 @@ public partial class TowerBoardView : Control
             if (result.Data == null)
             {
                 _status.Text = "Не удалось загрузить башню: " + string.Join("; ", result.Errors);
+                _status.Show();
                 return;
             }
             Data = result.Data;
@@ -77,23 +80,38 @@ public partial class TowerBoardView : Control
                 string id = currency.Id;
                 var button = AddInventoryNode(_currencyGrid, TowerBoardArt.Currency(id), () => ApplyCurrency(id));
                 button.Name = "Currency_" + id;
+                button.CustomMinimumSize = new Vector2(60, 44);
+                button.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                var currencyImage = button.GetChild<TextureRect>(0);
+                currencyImage.OffsetLeft = currencyImage.OffsetTop = -12;
+                currencyImage.OffsetRight = currencyImage.OffsetBottom = 12;
+                button.GetNode<Label>("Count").AddThemeFontSizeOverride("font_size", 11);
                 button.FocusEntered += () => DescribeCurrency(id);
                 button.MouseEntered += () => DescribeCurrency(id);
+                void ClearPreview()
+                {
+                    if (_describedCurrency != id || button.HasFocus() || button.IsHovered()) return;
+                    _describedCurrency = null;
+                    _currencyInfo.Text = "";
+                }
+                button.FocusExited += ClearPreview;
+                button.MouseExited += ClearPreview;
                 _currencies.Add(button);
             }
-            for (int i = Data.Rules.Floors - 1; i >= 0; i--)
+            for (int i = 0; i < Data.Rules.Floors; i++)
             {
                 int slot = i;
-                var floorButton = AddButton(_middle!, "", () => SelectFloor(slot));
+                var floorButton = AddButton(_floorList, "", () => SelectFloor(slot));
+                ConfigureMontageFloor(floorButton, slot);
                 floorButton.Name = "Floor_" + slot;
-                _floors.Insert(0, floorButton);
+                _floors.Add(floorButton);
             }
             SwitchRank(1);
-            _status.Text = "Выберите экземпляр активности слева и этаж в центре, затем установите. Намазки применяются к выбранной цели. Игровые этажи ещё не реализованы.";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {
             _status.Text = "Не удалось загрузить башню: " + ex.Message;
+            _status.Show();
         }
     }
 
@@ -104,138 +122,11 @@ public partial class TowerBoardView : Control
         VisibilityChanged += () => { if (IsVisibleInTree()) _close.GrabFocus(); };
     }
 
-    private VBoxContainer? _left, _middle, _right;
     private void Build()
     {
         if (_built) return;
         _built = true;
-        foreach (var option in new[] { _mod, _biome, _rank })
-        {
-            option.FitToLongestItem = false;
-            option.ClipText = true;
-        }
-        Theme = CreateTheme();
-        // Godot confines Tab traversal and directional focus searches to this GUI root.
-        TopLevel = true;
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        MouseFilter = MouseFilterEnum.Stop;
-        var background = new ColorRect { Color = new Color("0c1114"), MouseFilter = MouseFilterEnum.Ignore };
-        AddChild(background);
-        background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        var margin = new MarginContainer();
-        AddChild(margin);
-        margin.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        foreach (string side in new[] { "left", "right", "top", "bottom" }) margin.AddThemeConstantOverride("margin_" + side, 16);
-        var root = new VBoxContainer();
-        root.AddThemeConstantOverride("separation", 12);
-        margin.AddChild(root);
-        var header = new HBoxContainer();
-        root.AddChild(header);
-        header.AddChild(new TextureRect { Texture = TowerBoardArt.Symbol("tower"),
-            CustomMinimumSize = new Vector2(32, 32), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, MouseFilter = MouseFilterEnum.Ignore });
-        var title = Text(header, "БАШНЯ  /  Сборка маршрута");
-        title.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        _close.Text = "Закрыть";
-        TowerBoardArt.Decorate(_close, TowerBoardArt.Symbol("close"), 24);
-        _close.CustomMinimumSize = new Vector2(120, 40);
-        _close.Pressed += () => CloseRequested?.Invoke();
-        header.AddChild(_close);
-        Text(root, "Тестовый набор: по 5 активностей каждого типа/ранга, по 20 расходников · один раз · не сохраняется. Персонаж: уровень " + TestCharacterLevel + ".");
-        Text(root, "Esc / F6 / B — закрыть · Tab / стрелки — выбор · Enter / A — применить");
-        var columns = new HBoxContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
-        columns.AddThemeConstantOverride("separation", 12);
-        root.AddChild(columns);
-        _left = Column(columns, "activities", "АКТИВНОСТИ И РАНГ");
-        _middle = Column(columns, "ascent", "ВОСХОЖДЕНИЕ  ↑");
-        _middle.AddThemeConstantOverride("separation", 4);
-        _right = Column(columns, "inscriptions", "СВОЙСТВА И РАСХОДНИКИ");
-        _left.AddChild(_rank);
-        _rank.ItemSelected += index => { if (!_refreshing) SwitchRank(_rank.GetItemId((int)index)); };
-        _left.AddChild(_rankInfo);
-        _rankInfo.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        Text(_left, "ИНВЕНТАРЬ АКТИВНОСТЕЙ");
-        _left.AddChild(_activityGrid);
-        _left.AddChild(_inventoryInfo);
-        _inventoryInfo.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _install = AddButton(_left, "Установить на этаж 1", () => InstallSelectedActivity());
-        _install.Name = "InstallActivity";
-        TowerBoardArt.Decorate(_install, TowerBoardArt.Symbol("confirm"), 24);
-        TowerBoardArt.Decorate(_shuffle, TowerBoardArt.Currency("shuffle"));
-        _shuffle.CustomMinimumSize = new Vector2(0, 42);
-        _shuffle.Name = "ShuffleInventory";
-        _shuffle.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _shuffle.Pressed += () => ShuffleInventory();
-        _shuffle.TooltipText = "Заполнить только пустые этажи экземплярами текущего ранга из инвентаря. Установленные активности и их намазки сохраняются. При отказе ничего не тратится.";
-        _left.AddChild(_shuffle);
-        _left.AddChild(_bonus);
-        _bonus.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        var check = AddButton(_left, "Проверить вход", () => Report(ValidateForTest(), "Проверка пройдена."));
-        TowerBoardArt.Decorate(check, TowerBoardArt.Symbol("confirm"));
-        var summit = new PanelContainer();
-        var summitFrame = TowerBoardArt.Card();
-        summitFrame.ContentMarginTop = summitFrame.ContentMarginBottom = 4;
-        summit.AddThemeStyleboxOverride("panel", summitFrame);
-        summit.TooltipText = "После пятого этажа. Каталог боссов отсутствует; босс не назначен. Забег пока недоступен.";
-        _middle.AddChild(summit);
-        var summitContent = new HBoxContainer();
-        summit.AddChild(summitContent);
-        summitContent.AddChild(new TextureRect { Texture = TowerBoardArt.Symbol("summit"),
-            CustomMinimumSize = new Vector2(32, 32), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, MouseFilter = MouseFilterEnum.Ignore });
-        var summitText = Text(summitContent, "ВЕРШИНА · Убер-босс\nЗабег пока недоступен");
-        summitText.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        _wholeTower = AddButton(_middle, "Вся башня · цель расходника", () => SelectFloor(null));
-        TowerBoardArt.Decorate(_wholeTower, TowerBoardArt.Symbol("tower"));
-        _removeFloor = AddButton(_middle, "Снять выбранный этаж", () => RemoveSelectedActivity());
-        _removeFloor.Name = "RemoveActivity";
-        Text(_right, "ИНВЕНТАРЬ НАМАЗОК");
-        _right.AddChild(_currencyGrid);
-        _right.AddChild(_details);
-        _details.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        Text(_right, "Биом (только внешний вид этажа)");
-        _right.AddChild(_biome);
-        _biome.ItemSelected += index =>
-        {
-            if (!_refreshing && !_targetInventory && Assembly != null && Data != null && SelectedFloor is int slot)
-            { Assembly.SetBiome(slot, Data.Biomes[(int)index].Id); Refresh(); }
-        };
-        Text(_right, "Свойство для адресного Снятия");
-        _right.AddChild(_mod);
-        _mod.ItemSelected += _ => RefreshCurrencyDescription();
-        _currencyInfo.Name = "CurrencyDescription";
-        _currencyInfo.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _currencyInfo.Text = "Расходники: наведите указатель или выберите кнопку клавиатурой / геймпадом — здесь появятся цель, стоимость и последствия.";
-        root.AddChild(_currencyInfo);
-        _status.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _status.CustomMinimumSize = new Vector2(0, 54);
-        root.AddChild(_status);
-    }
-
-    private static VBoxContainer Column(HBoxContainer parent, string art, string heading)
-    {
-        var panel = new PanelContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, ClipContents = true };
-        panel.AddThemeStyleboxOverride("panel", TowerBoardArt.Panel());
-        parent.AddChild(panel);
-        string path = $"res://Ui/Art/TowerPanels/{art}-v2.png";
-        if (ResourceLoader.Exists(path))
-        {
-            var texture = ResourceLoader.Load<Texture2D>(path);
-            if (texture != null) panel.AddChild(new TextureRect { Texture = texture, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-                StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered, MouseFilter = MouseFilterEnum.Ignore });
-        }
-        var surface = new PanelContainer();
-        surface.AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = new Color(0.04f, 0.06f, 0.07f, 0.82f),
-            ContentMarginLeft = 12, ContentMarginRight = 12,
-            ContentMarginTop = art == "ascent" ? 10 : 14, ContentMarginBottom = art == "ascent" ? 10 : 14 });
-        panel.AddChild(surface);
-        var scroll = new ScrollContainer { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FollowFocus = true };
-        surface.AddChild(scroll);
-        var content = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        content.AddThemeConstantOverride("separation", 10);
-        scroll.AddChild(content);
-        Text(content, heading);
-        return content;
+        BuildMontage();
     }
 
     public override void _Input(InputEvent input)
@@ -257,6 +148,7 @@ public partial class TowerBoardView : Control
             !GetGlobalRect().HasPoint(mouse.Position)) return;
         // Explicit mouse scrolling takes over from GUI focus following. Selection is separate;
         // leave the event unhandled so the panel receives its normal wheel input.
+        if (_activityGrid.GetGlobalRect().HasPoint(mouse.Position)) return;
         var focus = GetViewport().GuiGetFocusOwner();
         if (focus != null && IsAncestorOf(focus))
         {
@@ -308,7 +200,7 @@ public partial class TowerBoardView : Control
         return button;
     }
 
-    private static Button AddInventoryNode(GridContainer grid, Texture2D? icon, Action action, string? activityName = null)
+    private static Button AddInventoryNode(GridContainer grid, Texture2D? icon, Action action, bool activity = false)
     {
         var button = AddButton(grid, "", action);
         button.CustomMinimumSize = new Vector2(64, 64);
@@ -328,30 +220,34 @@ public partial class TowerBoardView : Control
         count.OffsetLeft = count.OffsetTop = 4;
         count.OffsetRight = count.OffsetBottom = -5;
         count.AddThemeFontSizeOverride("font_size", 13);
-        var rank = new Label { Name = "Rank", MouseFilter = MouseFilterEnum.Ignore };
-        button.AddChild(rank);
-        rank.Position = new Vector2(5, 3);
-        rank.AddThemeFontSizeOverride("font_size", 12);
-        if (activityName != null)
+        if (activity)
         {
-            button.CustomMinimumSize = new Vector2(84, 82);
+            if (icon?.ResourcePath.EndsWith("timed_run.png", StringComparison.Ordinal) == true)
+            {
+                var motif = new ShaderMaterial { Shader = GD.Load<Shader>("res://Ui/Tower/activity_glass_motif.gdshader") };
+                motif.SetShaderParameter("hourglass", true);
+                motif.SetShaderParameter("silhouette", GD.Load<Texture2D>("res://Ui/Tower/Art/activities/hourglass_silhouette.svg"));
+                image.Material = motif;
+            }
             button.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            image.SetAnchorsAndOffsetsPreset(LayoutPreset.CenterTop);
-            image.OffsetLeft = -16;
-            image.OffsetRight = 16;
-            image.OffsetTop = 8;
-            image.OffsetBottom = 40;
-            count.VerticalAlignment = VerticalAlignment.Top;
-            var caption = Text(button, activityName);
-            caption.Name = "Type";
-            caption.HorizontalAlignment = HorizontalAlignment.Center;
-            caption.VerticalAlignment = VerticalAlignment.Center;
-            caption.AddThemeFontSizeOverride("font_size", 13);
-            caption.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-            caption.OffsetLeft = 4;
-            caption.OffsetRight = -4;
-            caption.OffsetTop = 40;
-            caption.OffsetBottom = -4;
+            button.SizeFlagsVertical = SizeFlags.Fill;
+            button.CustomMinimumSize = new Vector2(48, 80);
+            button.RemoveThemeStyleboxOverride("normal");
+            button.RemoveThemeStyleboxOverride("focus");
+            const float halfIcon = 21;
+            image.OffsetLeft = image.OffsetTop = -halfIcon;
+            image.OffsetRight = image.OffsetBottom = halfIcon;
+            count.OffsetRight = count.OffsetBottom = -4;
+            count.AddThemeConstantOverride("outline_size", 3);
+            image.SetAnchorsPreset(LayoutPreset.TopLeft);
+            count.SetAnchorsPreset(LayoutPreset.TopLeft);
+            button.AddChild(new Control { Name = "SocketBounds", MouseFilter = MouseFilterEnum.Ignore });
+            var caption = new Label { Name = "ActivityName", MouseFilter = MouseFilterEnum.Ignore,
+                HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
+            caption.AddThemeFontSizeOverride("font_size", 10);
+            caption.AutowrapMode = TextServer.AutowrapMode.Word;
+            caption.TextOverrunBehavior = TextServer.OverrunBehavior.NoTrimming;
+            button.AddChild(caption);
         }
         return button;
     }
@@ -396,9 +292,12 @@ public partial class TowerBoardView : Control
     private static string ActivityObjective(string typeId) => typeId switch
     {
         "timed_run" => "Очистите алтари до конца отсчёта, затем победите босса.",
-        "trial" => "Выполните задачу испытания: сопровождение, удержание, ритуал или рычаги.",
+        "escort" => "Доведите союзника до цели, защищая его по пути.",
+        "hold" => "Удерживайте позицию, пока шкала не заполнится.",
+        "ritual" => "Активируйте точки ритуала и отбивайте вызванные волны.",
+        "levers" => "Переключите механизмы этажа, чтобы открыть ворота мегаструктуры.",
         "clear" => "Истребите нужное число монстров на этаже.",
-        "waves" => "Отбейте все волны монстров на арене.",
+        "waves" => "Отбейте все волны монстров, прорывающихся из разлома.",
         "bosses" => "Победите всех боссов на этаже.",
         _ => ""
     };
@@ -422,34 +321,62 @@ public partial class TowerBoardView : Control
             _selectedInventoryId = null;
             _targetInventory = false;
         }
-        foreach (var group in groups)
+        const int capacity = 16;
+        int pages = Math.Max(1, (groups.Count + capacity - 1) / capacity);
+        int page = Math.Clamp(_activityPage.Selected, 0, pages - 1);
+        if (_activityPage.ItemCount != pages)
         {
+            _activityPage.Clear();
+            for (int i = 0; i < pages; i++) _activityPage.AddItem($"{i + 1}/{pages}");
+            _activityPage.Select(page);
+        }
+        _activityPage.Visible = pages > 1;
+        for (int index = 0; index < groups.Count; index++)
+        {
+            var group = groups[index];
             string id = group.Id;
             if (!_inventoryNodes.TryGetValue(id, out var button))
             {
-                button = AddInventoryNode(_activityGrid, TowerBoardArt.Activity(group.TypeId), () => SelectInventory(id), Data.FloorType(group.TypeId).Name);
+                button = AddInventoryNode(_activityGrid, TowerBoardArt.Activity(group.TypeId), () => SelectInventory(id), activity: true);
                 button.Name = "Activity_" + id.Replace(':', '_');
+                button.MouseEntered += _glassWindow.QueueRedraw;
+                button.MouseExited += _glassWindow.QueueRedraw;
+                button.FocusEntered += _glassWindow.QueueRedraw;
+                button.FocusExited += _glassWindow.QueueRedraw;
+                _activityGrid.MoveChild(button, _inventoryNodes.Count);
                 _inventoryNodes.Add(id, button);
             }
+            button.Visible = index / capacity == page;
             button.GetNode<Label>("Count").Text = group.Count.ToString();
-            button.GetNode<Label>("Rank").Text = "Р" + group.Rank;
-            button.TooltipText = $"{Data.FloorType(group.TypeId).Name} · ранг {group.Rank} · {group.Count} шт.\n" + ActivityObjective(group.TypeId);
+            button.GetNode<Label>("ActivityName").Text = Data.FloorType(group.TypeId).Name;
+            button.TooltipText = $"{Data.FloorType(group.TypeId).Name} · ранг {group.Rank} · {group.Count} шт.\n" + ActivityObjective(group.TypeId)
+                + (group.Variant == null ? "" : "\nРазновидность: " + VariantName(group.Variant))
+                + (group.EverModified ? "\nОтдельный экземпляр после намазки." : "")
+                + string.Concat(group.Mods.Select(m => $"\n{ModText(m)} · тир {m.Tier}"));
             button.AccessibilityName = (id == _selectedInventoryId ? "Выбрано. " : "") + $"{Data.FloorType(group.TypeId).Name}, ранг {group.Rank}, {group.Count} шт.";
             button.AccessibilityDescription = button.TooltipText;
-            button.AddThemeStyleboxOverride("normal", TowerBoardArt.Card(id == _selectedInventoryId));
-            button.AddThemeStyleboxOverride("hover", TowerBoardArt.Card(id == _selectedInventoryId));
+            button.ThemeTypeVariation = id == _selectedInventoryId ? "SelectedActivitySlot" : "ActivitySlot";
         }
         var selectedGroup = groups.FirstOrDefault(g => g.Id == _selectedInventoryId);
-        if (selectedGroup != null)
+        int visibleGroups = Math.Min(capacity, groups.Count - page * capacity);
+        int visibleCapacity = visibleGroups > 8 ? capacity : 8;
+        int emptyCount = visibleCapacity - visibleGroups;
+        _catalogueLattice.CustomMinimumSize = new Vector2(0, visibleCapacity > 8 ? 184 : 130);
+        _floorSocket.CustomMinimumSize = Vector2.One * (visibleCapacity > 8 ? 48 : 86);
+        _floorTitle.AddThemeFontSizeOverride("font_size", visibleCapacity > 8 ? 26 : 32);
+        _portraitGap.CustomMinimumSize = new Vector2(0, visibleCapacity > 8 ? 0 : 14);
+        _metaGap.CustomMinimumSize = new Vector2(0, visibleCapacity > 8 ? 0 : 8);
+        _identityGap.CustomMinimumSize = new Vector2(0, visibleCapacity > 8 ? 0 : 10);
+        while (_emptyActivitySlots.Count < emptyCount)
         {
-            _inventoryInfo.Text = $"Выбрано: {Data.FloorType(selectedGroup.TypeId).Name} · ранг {selectedGroup.Rank} · {selectedGroup.Count} шт.\n" +
-                ActivityObjective(selectedGroup.TypeId) +
-                (selectedGroup.Variant == null ? "" : "\nРазновидность: " + VariantName(selectedGroup.Variant)) +
-                (selectedGroup.EverModified ? "\nОтдельный экземпляр после намазки." : "") +
-                (selectedGroup.Mods.Count == 0 ? "\nБез свойств." : "\n" + string.Join("\n", selectedGroup.Mods.Select(m => $"{ModText(m)} · тир {m.Tier}")));
+            var empty = new Panel { ThemeTypeVariation = "EmptyActivitySlot", SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                MouseFilter = MouseFilterEnum.Ignore };
+            _activityGrid.AddChild(empty);
+            _emptyActivitySlots.Add(empty);
         }
-        else _inventoryInfo.Text = groups.Count == 0 ? "В этом ранге нет свободных активностей. Снимите этаж, чтобы вернуть экземпляр." :
-            "Выберите активность для установки или намазки.";
+        for (int i = 0; i < _emptyActivitySlots.Count; i++) _emptyActivitySlots[i].Visible = i < emptyCount;
+        _activityGrid.QueueSort();
+        _glassWindow.QueueRedraw();
         bool installHadFocus = _install.HasFocus();
         bool removeHadFocus = _removeFloor.HasFocus();
         _install.Text = SelectedFloor is not int slot ? "Для установки выберите этаж" : selectedGroup == null
@@ -460,11 +387,46 @@ public partial class TowerBoardView : Control
             ? $"Этаж {destination + 1} пуст" : $"Снять активность этажа {destination + 1}";
         if ((restoreFocus || installHadFocus && _install.Disabled || removeHadFocus && _removeFloor.Disabled) && IsInsideTree())
         {
-            if (_selectedInventoryId != null && _inventoryNodes.TryGetValue(_selectedInventoryId, out var selectedNode)) selectedNode.GrabFocus();
+            if (_selectedInventoryId != null && _inventoryNodes.TryGetValue(_selectedInventoryId, out var selectedNode) && selectedNode.Visible) selectedNode.GrabFocus();
             else if (!_install.Disabled) _install.GrabFocus();
             else if (SelectedFloor is int floor) _floors[floor].GrabFocus();
             else _wholeTower.GrabFocus();
         }
+    }
+
+    private void ArrangeActivitySlots()
+    {
+        const int inset = 8;
+        int rows = Math.Max(1, _activityGrid.GetChildren().OfType<Control>().Count(c => c.Visible) / _activityGrid.Columns);
+        int columns = _activityGrid.Columns;
+        var area = _activityGrid.Size - Vector2.One * (2 * inset);
+        float width = (area.X - (columns - 1) * 6) / columns;
+        float height = (area.Y - (rows - 1) * 8) / rows;
+        float side = Mathf.Floor(Mathf.Min(48, Mathf.Min(width, height - 32)));
+        if (side <= 0) return;
+        int index = 0;
+        foreach (Control slot in _activityGrid.GetChildren())
+        {
+            if (!slot.Visible) continue;
+            var position = Vector2.One * inset + new Vector2(index % columns * (width + 6), index / columns * (height + 8));
+            _activityGrid.FitChildInRect(slot, new Rect2(position.Round(), new Vector2(Mathf.Floor(width), Mathf.Floor(height))));
+            if (slot.GetNodeOrNull<Control>("SocketBounds") is { } socket)
+            {
+                socket.Position = new Vector2(Mathf.Floor((width - side) / 2), 0);
+                socket.Size = Vector2.One * side;
+                var image = slot.GetChild<TextureRect>(0);
+                image.Position = socket.Position + Vector2.One * side * .12f;
+                image.Size = Vector2.One * side * .76f;
+                var count = slot.GetNode<Label>("Count");
+                count.Position = socket.Position + new Vector2(0, side - 19);
+                count.Size = new Vector2(side - 2, 18);
+                var caption = slot.GetNode<Label>("ActivityName");
+                caption.Position = new Vector2(0, side + 4);
+                caption.Size = new Vector2(Mathf.Floor(width), 30);
+            }
+            index++;
+        }
+        _glassWindow.QueueRedraw();
     }
 
     public void SelectFloor(int? slot)
@@ -520,6 +482,7 @@ public partial class TowerBoardView : Control
             if (changes.Count == 0) changes.Add("Свойства не изменились");
             _status.Text = $"{TargetName()} · {currency.Name}: {TowerTexts.Refusal(result)}. " + string.Join(". ", changes) +
                 $". Потрачено: {(result == TowerRefusal.None ? 1 : 0)} шт. Осталось: {Wallet.CountUsable(currencyId, Assembly.Spec.Rank)} шт.";
+            _status.Show();
             Refresh();
         }
         else Report(result);
@@ -557,8 +520,8 @@ public partial class TowerBoardView : Control
 
     private void Report(TowerRefusal result, string success = "Готово")
     {
-        _status.Text = (result == TowerRefusal.None ? success : TowerTexts.Refusal(result)) +
-            " Игровые этажи ещё не реализованы; забег и награды не создаются.";
+        _status.Text = result == TowerRefusal.None ? success : TowerTexts.Refusal(result);
+        _status.Show();
         Refresh();
     }
 
@@ -568,36 +531,41 @@ public partial class TowerBoardView : Control
         _refreshing = true;
         RefreshInventory();
         var spec = Assembly.Spec;
-        _wholeTower.Text = (SelectedFloor == null ? "▶ " : "") + "Вся башня · цель расходника\n" +
+        _wholeTower.Text = (SelectedFloor == null ? "▶ " : "") + "Вся башня · цель\n" +
             string.Join(" ", Enumerable.Range(0, Data.Rules.TowerSlots).Select(n => n < spec.TowerMods.Count ? "◆" : "◇")) +
-            $" · свойств {spec.TowerMods.Count}/{Data.Rules.TowerSlots}";
+            $" · {spec.TowerMods.Count}/{Data.Rules.TowerSlots}";
         var towerFrame = TowerBoardArt.Card(SelectedFloor == null);
         towerFrame.ContentMarginTop = towerFrame.ContentMarginBottom = 4;
         _wholeTower.AddThemeStyleboxOverride("normal", towerFrame);
         _wholeTower.AddThemeStyleboxOverride("hover", towerFrame);
         _rank.Select(spec.Rank - 1);
         var rule = Data.Rules.Ranks[spec.Rank - 1];
-        _rankInfo.Text = $"Уровень зоны: {RankRules.ZoneLevel(Data.Rules, spec.Rank, TestCharacterLevel)} · тир до {rule.MaxTier}\n" +
+        _rank.TooltipText = $"Уровень зоны: {RankRules.ZoneLevel(Data.Rules, spec.Rank, TestCharacterLevel)} · тир до {rule.MaxTier}\n" +
             $"Множитель опыта: {RankRules.XpMultiplier(Data.Rules, spec.Rank, TestCharacterLevel):0.##}\n" +
             "Все ранги доступны для сборки. Проверка входа: настоящий прогресс, открыт только ранг 1.";
-        _shuffle.Text = $"Перемешать · цена {Assembly.NextShuffleCost} · доступно {Wallet.CountUsable("shuffle", spec.Rank)}\n" +
-            $"Пустых: {spec.Floors.Count(f => f.TypeId == null)} · занятые сохранены";
+        _shuffle.Text = $"Перемешать · цена {Assembly.NextShuffleCost} · {Wallet.CountUsable("shuffle", spec.Rank)} шт.";
         _shuffle.AccessibilityName = _shuffle.Text;
         _shuffle.AccessibilityDescription = _shuffle.TooltipText;
         _bonus.Text = Assembly.ShuffleBonusActive ? $"Бонус перемешивания: +{Data.Rules.ShuffleBonus:P0}" : "Бонус перемешивания не активен";
         for (int i = 0; i < _floors.Count; i++)
         {
             var f = spec.Floors[i];
-            TowerBoardArt.Decorate(_floors[i], TowerBoardArt.Activity(f.TypeId));
-            var floorFrame = TowerBoardArt.Card(SelectedFloor == i);
-            floorFrame.ContentMarginTop = floorFrame.ContentMarginBottom = 4;
+            var floorFrame = MontageSurface(SelectedFloor == i ? .92f : .60f);
+            floorFrame.BgColor = SelectedFloor == i ? new Color(.12f, .20f, .24f, .94f) : new Color(.06f, .10f, .12f, .65f);
+            floorFrame.BorderWidthTop = floorFrame.BorderWidthRight = 0;
+            floorFrame.BorderWidthLeft = SelectedFloor == i ? 2 : 0;
+            floorFrame.BorderWidthBottom = 1;
+            floorFrame.BorderColor = SelectedFloor == i ? new Color("b7cbd0") : new Color("30434c");
             _floors[i].AddThemeStyleboxOverride("normal", floorFrame);
             _floors[i].AddThemeStyleboxOverride("hover", floorFrame);
-            _floors[i].Text = $"{(SelectedFloor == i ? "▶ " : "")}ЭТАЖ {i + 1} · {(f.TypeId == null ? "Выберите активность" : Data.FloorType(f.TypeId).Name)}\n" +
-                $"{(f.BiomeId == null ? "Биом не выбран" : Data.Biomes.First(b => b.Id == f.BiomeId).Name)}" +
-                (f.Variant == null ? "" : " · " + VariantName(f.Variant)) + "\n" +
-                string.Join(" ", Enumerable.Range(0, Data.Rules.FloorSlots).Select(n => n < f.Mods.Count ? "◆" : "◇")) +
-                $" · свойств {f.Mods.Count}/{Data.Rules.FloorSlots}";
+            _floors[i].Icon = null;
+            _floors[i].Text = "";
+            ((TextureRect)_floors[i].FindChild("FloorMotif", true, false)!).Texture = f.TypeId == null ? null : TowerBoardArt.Activity(f.TypeId);
+            _floors[i].GetNode<Label>("FloorActivity").Text = f.TypeId == null ? "Пустой этаж" : Data.FloorType(f.TypeId).Name;
+            _floors[i].GetNode<Label>("FloorMetadata").Text =
+                $"{(f.BiomeId == null ? "Без биома" : Data.Biomes.First(b => b.Id == f.BiomeId).Name)}  {f.Mods.Count}/{Data.Rules.FloorSlots}";
+            _floors[i].AccessibilityName = $"Этаж {i+1}. {_floors[i].GetNode<Label>("FloorActivity").Text}. {_floors[i].GetNode<Label>("FloorMetadata").Text}";
+
         }
         var floor = SelectedFloor is int slot ? spec.Floors[slot] : null;
         var mods = TargetMods();
@@ -638,13 +606,14 @@ public partial class TowerBoardView : Control
         }
         _refreshing = false;
         RefreshCurrencyDescription();
+        RefreshReferenceDetail();
     }
 
     private string ModText(ModInstance mod) => Data!.Mod(mod.ModId).Name.Replace("{v}", mod.Value.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("ru-RU")), StringComparison.Ordinal);
 
     private static Theme CreateTheme()
     {
-        var theme = new Theme { DefaultFontSize = 16 };
+        var theme = RoomHudTheme.ReferenceWindowTheme();
         foreach (string type in new[] { "Button", "OptionButton", "PopupMenu", "Label" })
         {
             theme.SetColor("font_color", type, new Color("d8d5c6"));
@@ -667,6 +636,16 @@ public partial class TowerBoardView : Control
             theme.SetStylebox("disabled", type, Box("0e1519c9", "29363b"));
             theme.SetStylebox("focus", type, TowerBoardArt.Focus());
         }
+        theme.SetTypeVariation("ActivitySlot", "Button");
+        theme.SetTypeVariation("SelectedActivitySlot", "ActivitySlot");
+        theme.SetTypeVariation("ActivityLattice", "PanelContainer");
+        var lead = Box("101a1db3", "303e40");
+        lead.SetContentMarginAll(14);
+        theme.SetStylebox("panel", "ActivityLattice", lead);
+        theme.SetTypeVariation("EmptyActivitySlot", "Panel");
+        theme.SetStylebox("panel", "EmptyActivitySlot", new StyleBoxEmpty());
+        foreach (var state in new[] { "normal", "hover", "pressed", "hover_pressed", "focus" })
+            theme.SetStylebox(state, "ActivitySlot", new StyleBoxEmpty());
         theme.SetStylebox("panel", "PopupMenu", Box("10191d", "526a74"));
         theme.SetStylebox("hover", "PopupMenu", Box("293b42", "7099a8"));
         theme.SetStylebox("panel", "PanelContainer", new StyleBoxEmpty());
@@ -674,7 +653,7 @@ public partial class TowerBoardView : Control
     }
 
     private static string VariantName(string id) => id switch
-    { "escort" => "Сопровождение", "hold" => "Удержание", "ritual" => "Ритуал", "levers" => "Рычаги", _ => id };
+    { "escort" => "Сопровождение", "hold" => "Удержание", "ritual" => "Ритуал", "levers" => "Переключение", _ => id };
     private static string OperationText(CurrencyOp op) => op switch
     {
         CurrencyOp.AddMod => "Добавить случайное свойство к подходящей цели.",
@@ -684,7 +663,7 @@ public partial class TowerBoardView : Control
         CurrencyOp.UpgradeTier => "Повысить тир случайного свойства.",
         CurrencyOp.Clear => "Удалить все свойства цели без возврата валюты.",
         CurrencyOp.RemoveOne => "Удалить выбранное выше свойство.",
-        CurrencyOp.RerollVariant => "Сменить разновидность Испытания; свойства под тип будут сняты.",
+        CurrencyOp.RerollVariant => "Сменить разновидность активности и снять несовместимые свойства.",
         _ => "Перемешать башню."
     };
 }

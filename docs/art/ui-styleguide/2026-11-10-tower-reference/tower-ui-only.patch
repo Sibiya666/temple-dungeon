@@ -1,0 +1,353 @@
+diff --git a/game/SelfTest.TowerReference.cs b/game/SelfTest.TowerReference.cs
+new file mode 100644
+index 0000000..4d186d4
+--- /dev/null
++++ b/game/SelfTest.TowerReference.cs
+@@ -0,0 +1,76 @@
++using Dialoid.Core.Tower;
++using Dialoid.Game.Input;
++using Godot;
++
++namespace Dialoid.Game;
++
++public sealed partial class SelfTest
++{
++    private async Task TowerReference()
++    {
++        var board = _main.TowerBoard!;
++        var original = _main.GetTree().Root.Size;
++        async Task Capture(string name)
++        {
++            await Settle();
++            if (_screenshotDir == null || DisplayServer.GetName() == "headless") return;
++            await _main.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
++            CaptureTower(name);
++        }
++        try
++        {
++            // Exercise geometry at both actual GPU viewports; dummy rendering needs no resize for semantic checks.
++            var sizes = DisplayServer.GetName() == "headless" ? new[] { original }
++                : new[] { new Vector2I(1280, 720), new Vector2I(1600, 900) };
++            foreach (var size in sizes)
++            {
++                if (DisplayServer.GetName() == "headless") _main.GetTree().Root.Size = size;
++                else DisplayServer.WindowSetSize(size);
++                _main.OpenTowerBoard();
++                board.SwitchRank(8);
++                board.SelectFloor(null);
++                await Settle();
++                var install = (Button)board.FindChild("InstallActivity", true, false)!;
++                Check(install.Disabled, "без выбранного этажа установка доступна");
++                await Capture($"reference-{size.Y}-empty.png");
++                var group = board.Inventory!.Groups(8).First(g => g.TypeId == "waves");
++                board.SelectInventory(group.Id);
++                var node = (Button)board.FindChild("Activity_" + group.Id.Replace(':', '_'), true, false)!;
++                await Settle();
++                var count = node.GetNode<Label>("Count");
++                Check(count.Text == group.Count.ToString(), "неверный счётчик активности");
++                var nodeRect = node.GetGlobalRect();
++                var iconRect = node.GetChild<TextureRect>(0).GetGlobalRect();
++                var countRect = count.GetGlobalRect();
++                if (DisplayServer.GetName() != "headless") node.GrabFocus();
++                await Settle();
++                Check(nodeRect.Encloses(countRect), "счётчик выходит за ноду");
++                await Capture($"reference-{size.Y}-selected-focus.png");
++                if (DisplayServer.GetName() != "headless")
++                    Check(node.GetGlobalRect().IsEqualApprox(nodeRect) && node.GetChild<TextureRect>(0).GetGlobalRect().IsEqualApprox(iconRect)
++                        && count.GetGlobalRect().IsEqualApprox(countRect), "фокус сдвинул иконку или счётчик");
++                if (DisplayServer.GetName() != "headless") InputDevice.Instance!.Set(InputKind.Gamepad);
++                await Capture($"reference-{size.Y}-gamepad.png");
++                board.SelectFloor(0);
++                Check(board.InstallSelectedActivity() == TowerRefusal.None, "активность не установлена");
++                Check(board.Assembly!.Spec.Floors[0].TypeId == "waves", "неверный тип на этаже");
++                var installedNode = (Button)board.FindChild("Activity_" + group.Id.Replace(':', '_'), true, false)!;
++                Check(installedNode.GetNode<Label>("Count").Text == (group.Count - 1).ToString(), "неверное количество после установки");
++                await Capture($"reference-{size.Y}-installed.png");
++                Check(board.RemoveSelectedActivity() == TowerRefusal.None, "активность не возвращена");
++                Check(board.Inventory.Groups(8).Single(g => g.Id == group.Id).Count == group.Count, "количество после возврата изменилось");
++                _main.CloseTowerBoard();
++                InputDevice.Instance!.Set(InputKind.KeyboardMouse);
++                await Capture($"reference-{size.Y}-world-hud.png");
++            }
++        }
++        finally
++        {
++            _main.CloseTowerBoard();
++            InputDevice.Instance!.Set(InputKind.KeyboardMouse);
++            if (DisplayServer.GetName() == "headless") _main.GetTree().Root.Size = original;
++            else DisplayServer.WindowSetSize(original);
++            await Settle();
++        }
++    }
++}
+\ No newline at end of file
+diff --git a/game/SelfTest.cs b/game/SelfTest.cs
+index 32f880c..745a876 100644
+--- a/game/SelfTest.cs
++++ b/game/SelfTest.cs
+@@ -135,6 +135,7 @@ public sealed partial class SelfTest
+ 
+         steps.AddRange(RoomSteps());
+         steps.AddRange(TowerSteps());
++        steps.Add(new("tower.reference", TowerReference));
+ 
+         var mains = _main.Builds?.References.Where(r => r.Group == ReferenceBuilds.MainGroup).ToList() ?? new();
+         steps.Add(new("builds.main-listed", () =>
+diff --git a/game/Ui/Art/RoomHudTheme.cs b/game/Ui/Art/RoomHudTheme.cs
+index e7ead90..3f1cb6b 100644
+--- a/game/Ui/Art/RoomHudTheme.cs
++++ b/game/Ui/Art/RoomHudTheme.cs
+@@ -12,6 +12,49 @@ public static class RoomHudTheme
+     public static readonly Color Stone = new("0c1114");
+     private const string Root = "res://Ui/Art/";
+ 
++    // Reference-window vocabulary. Opt-in helpers: existing windows retain their geometry and theme.
++    public const int BodySize = 15;
++    public const int CaptionSize = 14;
++    public const int HeadingSize = 22;
++    public const int GroupGap = 12;
++    public const int ItemGap = 6;
++    public static readonly Color MutedText = new("9baeb3");
++
++    public static StyleBoxFlat ReferenceSurface(float padding = 8, bool selected = false, int border = 1)
++    {
++        var face = new StyleBoxFlat { BgColor = Stone, BorderColor = selected ? Focus : Bronze };
++        face.SetBorderWidthAll(border);
++        face.SetContentMarginAll(padding);
++        return face;
++    }
++
++    public static StyleBoxTexture ReferenceFocus() => new()
++    {
++        Texture = GD.Load<Texture2D>(Root + "cold-focus.svg"),
++        TextureMarginLeft = 16, TextureMarginTop = 16, TextureMarginRight = 16, TextureMarginBottom = 16,
++        ContentMarginLeft = 0, ContentMarginTop = 0, ContentMarginRight = 0, ContentMarginBottom = 0,
++        ExpandMarginLeft = 2, ExpandMarginTop = 2, ExpandMarginRight = 2, ExpandMarginBottom = 2,
++    };
++    public static Label Heading(string text, int size = HeadingSize)
++    {
++        var label = new Label { Text = text, AutowrapMode = TextServer.AutowrapMode.WordSmart,
++            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
++        label.AddThemeFontSizeOverride("font_size", size);
++        label.AddThemeColorOverride("font_color", Parchment);
++        return label;
++    }
++
++    public static Theme ReferenceWindowTheme()
++    {
++        var theme = Create(WindowHost.WindowTheme());
++        theme.DefaultFontSize = BodySize;
++        theme.SetConstant("separation", "VBoxContainer", ItemGap);
++        theme.SetConstant("separation", "HBoxContainer", ItemGap);
++        theme.SetConstant("h_separation", "HFlowContainer", ItemGap);
++        theme.SetConstant("v_separation", "HFlowContainer", ItemGap);
++        return theme;
++    }
++
+     /// <summary>Each call returns a separate mutable style; no component shares focus state.</summary>
+     public static StyleBoxTexture Panel(float margin = 8) => Frame("stone-frame.svg", margin);
+     public static StyleBoxTexture Border() => Frame("bronze-border.svg", 0);
+diff --git a/game/Ui/Art/cold-focus.svg b/game/Ui/Art/cold-focus.svg
+new file mode 100644
+index 0000000..c4c8614
+--- /dev/null
++++ b/game/Ui/Art/cold-focus.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path d="M2 13V2H13 M51 62H62V51" fill="none" stroke="#b7cbd0" stroke-width="2"/></svg>
+\ No newline at end of file
+diff --git a/game/Ui/Tower/TowerBoardArt.cs b/game/Ui/Tower/TowerBoardArt.cs
+index 252b317..bce5a9d 100644
+--- a/game/Ui/Tower/TowerBoardArt.cs
++++ b/game/Ui/Tower/TowerBoardArt.cs
+@@ -1,6 +1,7 @@
+ using System;
+ using System.Collections.Generic;
+ using Godot;
++using Dialoid.Game.Ui.Art;
+ 
+ namespace Dialoid.Game.Ui.Tower;
+ 
+@@ -40,9 +41,9 @@ public static class TowerBoardArt
+         button.AddThemeConstantOverride("h_separation", 8);
+     }
+ 
+-    public static StyleBox Panel() => Frame("panel", 14);
+-    public static StyleBox Card(bool selected = false) => Frame(selected ? "selected" : "card", 10);
+-    public static StyleBox Focus() => Frame("focus", 0);
++    public static StyleBox Panel() => new StyleBoxEmpty();
++    public static StyleBox Card(bool selected = false) => RoomHudTheme.ReferenceSurface(10, selected);
++    public static StyleBox Focus() => RoomHudTheme.ReferenceFocus();
+ 
+     private static StyleBoxTexture Frame(string id, int margin) => new()
+     {
+diff --git a/game/Ui/Tower/TowerBoardView.ReferenceStyle.cs b/game/Ui/Tower/TowerBoardView.ReferenceStyle.cs
+new file mode 100644
+index 0000000..10fbc7e
+--- /dev/null
++++ b/game/Ui/Tower/TowerBoardView.ReferenceStyle.cs
+@@ -0,0 +1,46 @@
++using Dialoid.Game.Ui.Art;
++using Godot;
++namespace Dialoid.Game.Ui.Tower;
++public partial class TowerBoardView
++{
++    private TextureRect _referencePortrait = null!;
++    private Label _referenceTitle = null!;
++    private Label _referenceContext = null!;
++    private void BuildReferenceStyle()
++    {
++        var shell = new Panel { Name = "ReferenceShell", MouseFilter = MouseFilterEnum.Ignore };
++        shell.AddThemeStyleboxOverride("panel", RoomHudTheme.ReferenceSurface(0, border: 2));
++        AddChild(shell);
++        MoveChild(shell, 1);
++        shell.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
++        shell.OffsetLeft = shell.OffsetTop = 8;
++        shell.OffsetRight = shell.OffsetBottom = -8;
++        _referencePortrait = new TextureRect { Name = "ActivityDetailPortrait", CustomMinimumSize = new Vector2(40, 40),
++            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
++            MouseFilter = MouseFilterEnum.Ignore };
++        _referenceTitle = RoomHudTheme.Heading("Активность", 20);
++        _referenceTitle.Name = "ActivityDetailTitle";
++        var identity = new HBoxContainer();
++        identity.AddChild(_referencePortrait);
++        identity.AddChild(_referenceTitle);
++        _referenceContext = new Label { Name = "ActivityDetailContext", AutowrapMode = TextServer.AutowrapMode.WordSmart };
++        _referenceContext.AddThemeColorOverride("font_color", RoomHudTheme.MutedText);
++        _referenceContext.AddThemeFontSizeOverride("font_size", RoomHudTheme.CaptionSize);
++        _right!.AddChild(identity);
++        _right.MoveChild(identity, 1);
++        _right.AddChild(_referenceContext);
++        _right.MoveChild(_referenceContext, 2);
++        _right.MoveChild(_details, 3);
++        _details.AddThemeColorOverride("font_color", RoomHudTheme.MutedText);
++        _details.AddThemeFontSizeOverride("font_size", RoomHudTheme.CaptionSize);
++    }
++    private void RefreshReferenceDetail()
++    {
++        if (_referencePortrait == null || Assembly == null || Data == null) return;
++        var inventory = _targetInventory ? SelectedGroup() : null;
++        string? type = inventory?.TypeId ?? (SelectedFloor is int slot ? Assembly.Spec.Floors[slot].TypeId : null);
++        _referencePortrait.Texture = TowerBoardArt.Activity(type);
++        _referenceTitle.Text = type == null ? SelectedFloor == null ? "Вся башня" : "Пустой этаж" : Data.FloorType(type).Name;
++        _referenceContext.Text = $"Ранг {Assembly.Spec.Rank} · " + (inventory != null ? "Активность инвентаря" : SelectedFloor == null ? "Маршрут целиком" : $"Этаж {SelectedFloor + 1}");
++    }
++}
+\ No newline at end of file
+diff --git a/game/Ui/Tower/TowerBoardView.cs b/game/Ui/Tower/TowerBoardView.cs
+index 7352dec..894e8d8 100644
+--- a/game/Ui/Tower/TowerBoardView.cs
++++ b/game/Ui/Tower/TowerBoardView.cs
+@@ -5,6 +5,7 @@ using System.Linq;
+ using Dialoid.Core.Simulation;
+ using Dialoid.Core.Tower;
+ using Godot;
++using Dialoid.Game.Ui.Art;
+ 
+ namespace Dialoid.Game.Ui.Tower;
+ 
+@@ -227,6 +228,7 @@ public partial class TowerBoardView : Control
+         _status.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+         _status.Visible = false;
+         root.AddChild(_status);
++        BuildReferenceStyle();
+     }
+ 
+     private VBoxContainer Column(HBoxContainer parent, string art, string heading)
+@@ -708,13 +710,14 @@ public partial class TowerBoardView : Control
+         }
+         _refreshing = false;
+         RefreshCurrencyDescription();
++        RefreshReferenceDetail();
+     }
+ 
+     private string ModText(ModInstance mod) => Data!.Mod(mod.ModId).Name.Replace("{v}", mod.Value.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("ru-RU")), StringComparison.Ordinal);
+ 
+     private static Theme CreateTheme()
+     {
+-        var theme = new Theme { DefaultFontSize = 16 };
++        var theme = RoomHudTheme.ReferenceWindowTheme();
+         foreach (string type in new[] { "Button", "OptionButton", "PopupMenu", "Label" })
+         {
+             theme.SetColor("font_color", type, new Color("d8d5c6"));
+diff --git a/game/Ui/Tower/TowerGlassWindow.cs b/game/Ui/Tower/TowerGlassWindow.cs
+index c686b56..db31773 100644
+--- a/game/Ui/Tower/TowerGlassWindow.cs
++++ b/game/Ui/Tower/TowerGlassWindow.cs
+@@ -54,25 +54,25 @@ public partial class TowerGlassWindow : Control
+                 continue;
+             }
+             bool selected = button.ThemeTypeVariation == "SelectedActivitySlot";
+-            bool highlighted = button.IsHovered() || button.HasFocus();
++            bool highlighted = button.IsHovered();
+             Vector2[] closed = [.. points, points[0]];
+-            float intensity = highlighted ? 1f : selected ? .92f : .65f;
+-            var gold = new Color(.25f, intensity, 1);
++            float intensity = highlighted ? .85f : selected ? .95f : .55f;
++            var activeRim = new Color(.25f, intensity, 1);
+             switch (Frame)
+             {
+                 case FrameStyle.Lead:
+                     var metal = new Color(.25f, selected ? .75f : highlighted ? 1f : .55f, selected ? 1f : 0f);
+-                    DrawPolyline(closed, metal, selected || highlighted ? 1.5f : 1f, true);
++                    DrawPolyline(closed, metal, selected ? 1.5f : 1f, true);
+                     break;
+                 case FrameStyle.CornerClips:
+-                    DrawPolyline(closed, selected ? gold : new Color(.25f, .65f, 0), 1f, true);
++                    DrawPolyline(closed, selected ? activeRim : new Color(.25f, .65f, 0), 1f, true);
+                     for (int i = 1; i < points.Length; i += 2)
+                     {
+                         var a = points[i];
+                         var b = points[(i + 1) % points.Length];
+                         Vector2[] clip = [a.MoveToward(points[i - 1], 4), a, b,
+                             b.MoveToward(points[(i + 2) % points.Length], 4)];
+-                        DrawPolyline(clip, gold, highlighted ? 2.75f : 2f, true);
++                        DrawPolyline(clip, activeRim, highlighted ? 2.75f : 2f, true);
+                     }
+                     break;
+                 case FrameStyle.Recessed:
+@@ -86,12 +86,21 @@ public partial class TowerGlassWindow : Control
+                         Vector2[] facet = [closed[i], closed[i + 1], inset[i + 1], inset[i]];
+                         DrawPolygon(facet, new[] { new Color(.25f, inShade ? .32f : .85f, 0) });
+                     }
+-                    DrawPolyline(inset, gold, selected ? 1.8f : 1f, true);
++                    DrawPolyline(inset, activeRim, selected ? 1.8f : 1f, true);
+                     break;
+                 default:
+-                    DrawPolyline(closed, gold, selected ? 2f : 1f, true);
++                    DrawPolyline(closed, activeRim, selected ? 2f : 1f, true);
+                     break;
+             }
++            if (button.HasFocus())
++            {
++                // COLOR encodes material channels decoded by activity_window.gdshader.
++                var cold = new Color(.25f, 1f, 1f);
++                Vector2[] upper = [points[7] + new Vector2(0, 4), points[7], points[0], points[0] + new Vector2(4, 0)];
++                Vector2[] lower = [points[3] - new Vector2(0, 4), points[3], points[4], points[4] - new Vector2(4, 0)];
++                DrawPolyline(upper, cold, 2.5f, true);
++                DrawPolyline(lower, cold, 2.5f, true);
++            }
+         }
+     }
+ }
+diff --git a/game/Ui/Tower/activity_window.gdshader b/game/Ui/Tower/activity_window.gdshader
+index fc998bf..7193d3e 100644
+--- a/game/Ui/Tower/activity_window.gdshader
++++ b/game/Ui/Tower/activity_window.gdshader
+@@ -26,7 +26,7 @@ void fragment() {
+     float aa = max(fwidth(lead), 0.0006);
+     float seam = 1.0 - smoothstep(0.0012, 0.0012 + aa, lead);
+     vec3 tower = texture(TEXTURE, UV).rgb;
+-    vec3 hue = vec3(.13,.34,.38);
++    vec3 hue = vec3(.10,.17,.20);
+     vec3 color;
+     if (surface.r > .4) {
+         float bevel = 1.0 - smoothstep(.0012, .0045 + aa, abs(lead - .004));
+@@ -36,7 +36,7 @@ void fragment() {
+     }
+     color = mix(color, vec3(.025,.032,.034), seam * .55);
+     if (surface.r > .20 && surface.r < .30) {
+-        color = (surface.b > .5 ? vec3(.83,.73,.48) : vec3(.264,.270,.242)) * surface.g;
++        color = (surface.b > .5 ? vec3(.72,.80,.82) : vec3(.24,.30,.34)) * surface.g;
+     }
+     COLOR = vec4(color, surface.a);
+ }

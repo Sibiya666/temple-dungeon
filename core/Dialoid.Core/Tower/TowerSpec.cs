@@ -139,6 +139,13 @@ public static class TowerCodec
             floor = new FloorSpec(null, null, null, Array.Empty<ModInstance>());
             return null;
         }
+        // Older presets stored these four objectives under a common "trial" type.
+        if (f.TypeId == "trial" && !d.TryGetFloorType("trial", out _) &&
+            f.Variant is "escort" or "hold" or "ritual" or "levers")
+        {
+            f.TypeId = f.Variant;
+            f.Variant = null;
+        }
         if (!d.TryGetFloorType(f.TypeId, out var type)) return $"Этаж {number}: неизвестный тип этажа «{f.TypeId}»";
         if (type.Variants.Count == 0 && f.Variant != null) return $"Этаж {number}: у типа «{type.Id}» нет разновидностей, а задана «{f.Variant}»";
         if (type.Variants.Count > 0 && (f.Variant == null || !type.Variants.Contains(f.Variant, StringComparer.Ordinal)))

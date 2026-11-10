@@ -36,27 +36,30 @@ public partial class SkillsPanel : IPadPanel
 
     private void DrawCatalog()
     {
-        AddText("Скиллы персонажа");
-        AddText("Выберите иконку, чтобы открыть дерево. Просмотр не меняет слоты.", Grey);
+        Content!.AddChild(RoomHudTheme.Heading("Навыки персонажа"));
+        var instruction = AddText("Выберите навык, чтобы изучить дерево.", Grey);
+        instruction.AddThemeFontSizeOverride("font_size", RoomHudTheme.CaptionSize);
         var grid = new HFlowContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        grid.AddThemeConstantOverride("h_separation", 8);
-        grid.AddThemeConstantOverride("v_separation", 8);
+        grid.AddThemeConstantOverride("h_separation", RoomHudTheme.GroupGap);
+        grid.AddThemeConstantOverride("v_separation", RoomHudTheme.GroupGap);
         Content!.AddChild(grid);
         foreach (var id in CatalogIds())
         {
             var skill = Session.Data.Skills[id];
             var locked = skill.UnlockLevel > Session.Build.Level;
-            var tile = new VBoxContainer { CustomMinimumSize = new Vector2(140, 0) };
+            var tile = new VBoxContainer { CustomMinimumSize = new Vector2(112, 0) };
             grid.AddChild(tile);
             var button = new Button
             {
                 Name = "Skill_" + id,
-                CustomMinimumSize = new Vector2(96, 96),
+                CustomMinimumSize = new Vector2(80, 80),
                 SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
                 TooltipText = $"{skill.Name}\nОткрыть дерево скилла" + (locked ? $"\nОткроется на {skill.UnlockLevel} уровне" : ""),
                 FocusMode = FocusModeEnum.All,
             };
-            button.AddChild(SkillPortrait.Create(GameIcons.Skill(id)));
+            var portrait = SkillPortrait.Create(GameIcons.Skill(id));
+            if (locked) portrait.Modulate = new Color(0.7f, 0.73f, 0.74f);
+            button.AddChild(portrait);
             button.SetMeta(ButtonPrompts.AcceptMeta, "Открыть дерево");
             button.Pressed += () =>
             {
@@ -75,17 +78,33 @@ public partial class SkillsPanel : IPadPanel
                 Text = skill.Name,
                 AutowrapMode = TextServer.AutowrapMode.WordSmart,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                CustomMinimumSize = new Vector2(140, 0),
+                CustomMinimumSize = new Vector2(112, 42),
             });
-            if (locked) tile.AddChild(new Label { Text = $"С {skill.UnlockLevel} уровня", Modulate = Grey, HorizontalAlignment = HorizontalAlignment.Center });
+            int assigned = Enumerable.Range(0, Dialoid.Sandbox.SandboxSession.SlotCount)
+                .FirstOrDefault(i => Session.GetSlot(i)?.SkillId == id, -1);
+            var status = new Label { Text = locked ? $"С {skill.UnlockLevel} уровня" : assigned >= 0 ? $"Слот {assigned + 1}" : "Не назначен",
+                Modulate = Grey, HorizontalAlignment = HorizontalAlignment.Center };
+            status.AddThemeFontSizeOverride("font_size", RoomHudTheme.CaptionSize);
+            tile.AddChild(status);
             _catalogButtons.Add(id, button);
             if (_returnToSkill == id)
             {
-                button.CallDeferred(Control.MethodName.GrabFocus);
+                RestoreCatalogFocus(button);
                 _returnToSkill = null;
             }
         }
         Content.AddChild(new HSeparator());
+    }
+
+    private async void RestoreCatalogFocus(Button button)
+    {
+        button.CallDeferred(Control.MethodName.GrabFocus);
+        // Flow wrapping and the scroll range settle after the replacement children are sorted.
+        var tree = GetTree();
+        await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+        await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+        if (!GodotObject.IsInstanceValid(button) || !button.IsInsideTree() || !button.HasFocus()) return;
+        if (Content!.GetParent() is ScrollContainer scroll) scroll.EnsureControlVisible(button);
     }
 
     private bool DrawBrowsedSkill()
@@ -96,7 +115,7 @@ public partial class SkillsPanel : IPadPanel
             _browsedSkillId = null;
             return false;
         }
-        var back = new Button { Text = "← Назад к скиллам" };
+        var back = new Button { Name = "BackToSkills", Text = "← Все навыки", SizeFlagsHorizontal = SizeFlags.ShrinkBegin };
         back.Pressed += () => PadBack();
         Content!.AddChild(back);
         if (_focusDetail)
@@ -108,7 +127,6 @@ public partial class SkillsPanel : IPadPanel
             .FirstOrDefault(i => Session.GetSlot(i)?.SkillId == _browsedSkillId, -1);
         if (_commandError != null) AddText("Команда отклонена: " + _commandError, Red);
         var skill = Session.Data.Skills[_browsedSkillId];
-        DrawAssignmentControls();
         if (_treeSlot >= 0 && skill.UnlockLevel <= Session.Build.Level) DrawTree();
         else DrawDefinition(skill);
         return true;
@@ -136,7 +154,10 @@ public partial class SkillsPanel : IPadPanel
         options.Select(_assignmentSlot);
         options.ItemSelected += index => _assignmentSlot = (int)index;
         row.AddChild(options);
-        var assign = new Button { Text = "Назначить", Disabled = Session.SlotsOpen == 0 };
+        var definition = Session.Data.Skills[_browsedSkillId!];
+        bool locked = definition.UnlockLevel > Session.Build.Level;
+        var assign = new Button { Text = "Назначить", Disabled = Session.SlotsOpen == 0 || locked,
+            TooltipText = locked ? $"Назначение откроется на {definition.UnlockLevel} уровне персонажа" : "Назначить навык в выбранный боевой слот" };
         AssignSkillButton = assign;
         assign.Pressed += () => SelectSkill(options.Selected, _browsedSkillId);
         row.AddChild(assign);
@@ -166,11 +187,14 @@ public partial class SkillsPanel : IPadPanel
     {
         var heading = new HBoxContainer();
         if (GameIcons.Skill(_browsedSkillId!) is { } icon) heading.AddChild(GameIcons.View(icon, 40));
-        heading.AddChild(new Label { Text = skill.Name });
+        heading.AddChild(RoomHudTheme.Heading(skill.Name, 20));
         Content!.AddChild(heading);
+        DrawAssignmentControls();
         if (skill.UnlockLevel > Session.Build.Level)
             AddText($"Откроется на {skill.UnlockLevel} уровне. Дерево можно изучить заранее.", Grey);
-        AddText("Просмотр дерева. Для вложения очков установите скилл в слот.");
+        AddText(skill.UnlockLevel > Session.Build.Level
+            ? "Просмотр дерева · назначение и вложение очков пока недоступны."
+            : "Просмотр · для вложения очков назначьте навык в слот.", Grey);
         foreach (var node in skill.Tree) _previewNodeIds.Add(node.Id);
         DrawSkillGraph(skill, null);
     }
@@ -182,9 +206,11 @@ public partial class SkillsPanel : IPadPanel
         _assignmentSkillId = null;
         _returnToSkill = _browsedSkillId;
         _browsedSkillId = null;
-        RequestRedraw();
         if (Content!.GetParent() is ScrollContainer scroll)
-            scroll.SetDeferred(ScrollContainer.PropertyName.ScrollVertical, _catalogScroll);
+            scroll.ScrollVertical = _catalogScroll;
+        // Restore the old viewport before rebuilding; a deferred scroll assignment after GrabFocus
+        // would undo FollowFocus and could leave the focused portrait above the visible area.
+        RequestRedraw();
         return true;
     }
     public IEnumerable<(string Button, string Label)> PadPrompts(Control? focus)

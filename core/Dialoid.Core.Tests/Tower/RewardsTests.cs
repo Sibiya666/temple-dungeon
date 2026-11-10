@@ -124,16 +124,16 @@ public class RewardsTests
     [Fact]
     public void Diversity_bonus_caps_at_3_types()
     {
-        string[] ids = { "timed_run", "clear", "waves", "bosses", "trial" };
-        double Div(int n) => Rewards.FloorQuality(D, Tower(ids.Take(n).Select(i => Floor(i, i == "trial" ? "escort" : null))), 0, false, false).Diversity;
+        string[] ids = { "timed_run", "clear", "waves", "bosses", "escort" };
+        double Div(int n) => Rewards.FloorQuality(D, Tower(ids.Take(n).Select(i => Floor(i))), 0, false, false).Diversity;
         Assert.Equal(1.0, Div(1));
         Assert.Equal(1 + D.Rules.DiversityBonusPerType, Div(2), 12);
         Assert.Equal(Div(3), Div(5), 12);
         Assert.Equal(1 + 2 * D.Rules.DiversityBonusPerType, Div(3), 12);
 
-        var trials = Tower(new[] { Floor("trial", "escort"), Floor("trial", "hold") });
-        Assert.Equal(1, Rewards.DistinctTypes(trials));
-        Assert.Equal(1.0, Rewards.FloorQuality(D, trials, 0, false, false).Diversity);
+        var objectives = Tower(new[] { Floor("escort"), Floor("hold") });
+        Assert.Equal(2, Rewards.DistinctTypes(objectives));
+        Assert.Equal(Div(2), Rewards.FloorQuality(D, objectives, 0, false, false).Diversity);
         Assert.Equal(0, Rewards.DistinctTypes(Tower(Array.Empty<FloorSpec>())));
     }
 

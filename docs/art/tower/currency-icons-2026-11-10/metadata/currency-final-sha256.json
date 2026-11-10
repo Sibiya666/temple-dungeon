@@ -1,0 +1,67 @@
+[
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E52B988353BFEA4C8209FB974778C40F313BA6C37B165A8C39BE7D4DEE8332ED",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\bias_value.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "D4BA748C621AC09F9421CE5893157BB712D750F051C8A0F3BCE5040FD614E45D",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\biased_epic_elite.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "3F20A7A1CC21F05FFAA5E170200F1F1277099D818200C58601C9083CDDCD1675",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\biased_epic_reward.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "94380DF355F41FAC2EBF3DCB10C173FF36100C8AF72AB67CC0DA907301E2E318",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\biased_rare_elite.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "AAC21F1FEB64D40F9FAF410555C68C1A030CEDA6E3471B122D0032FFAC7213B3",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\biased_rare_reward.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "2F21D4104F738AA88B81D327F09EF9CA7C3CA9385272029A51930566778BC645",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\clear.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "24010797CA06D3D4C8A9281EF610318B72A54B7610C443DB93574B29B9D4258B",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\imbue_tower.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "411BCA8607D975EA6408621AEB4DC8A24B846C997BCB9BDF22CDD7B39301C748",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\imbue_type.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "3CC63D316A8F687479A02FE2CA935615795CB335AC45417DEAA3BE289B43F0DA",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\imbue.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A46477E33DCB796E5957B1AC5D1617F501DF420E3C79476421A1E716B4B7C509",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\remove.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "5DFE15B56C4B3D2CB1F205D2E36A84A2F3FE3657582CCE83BDAFDE7137931E28",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\reroll.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "EE292E69CC6AC551C7E951DE350A5FB9790115A3EBFBD2474B8567FEDAA0B292",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\shuffle.png"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "DCF87CF8BD3BD051AA02CA60699D244731378D16799B4F776CFE032E6CA2C28C",
+    "Path": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\upgrade.png"
+  }
+]

@@ -1,0 +1,228 @@
+[
+  {
+    "file": "v01.png",
+    "target": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\docs\\art\\tower-seven\\v01.html",
+    "name": "Разрез Башни",
+    "state": null,
+    "size": "1280x720",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "v02.png",
+    "target": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\docs\\art\\tower-seven\\v02.html",
+    "name": "Маршрутный фриз",
+    "state": null,
+    "size": "1280x720",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "v03.png",
+    "target": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\docs\\art\\tower-seven\\v03.html",
+    "name": "Сборочный стол",
+    "state": null,
+    "size": "1280x720",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "v04.png",
+    "target": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\docs\\art\\tower-seven\\v04.html",
+    "name": "Книга маршрута",
+    "state": null,
+    "size": "1280x720",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "v05.png",
+    "target": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\docs\\art\\tower-seven\\v05.html",
+    "name": "Монтажный пролёт",
+    "state": null,
+    "size": "1280x720",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "v06.png",
+    "target": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\docs\\art\\tower-seven\\v06.html",
+    "name": "Два берега",
+    "state": null,
+    "size": "1280x720",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "v07.png",
+    "target": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\docs\\art\\tower-seven\\v07.html",
+    "name": "План подъёма",
+    "state": null,
+    "size": "1280x720",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "sheet.png",
+    "width": 4624,
+    "height": 440,
+    "columns": 7,
+    "items": [
+      {
+        "naturalWidth": 640,
+        "naturalHeight": 360,
+        "scale": 1,
+        "renderScale": 1,
+        "sourceCrop": {
+          "x": 0,
+          "y": 0,
+          "width": 640,
+          "height": 360
+        },
+        "width": 640,
+        "height": 360,
+        "labelHeight": 32,
+        "x": 24,
+        "y": 24,
+        "label": "Разрез Башни",
+        "labelY": 392
+      },
+      {
+        "naturalWidth": 640,
+        "naturalHeight": 360,
+        "scale": 1,
+        "renderScale": 1,
+        "sourceCrop": {
+          "x": 0,
+          "y": 0,
+          "width": 640,
+          "height": 360
+        },
+        "width": 640,
+        "height": 360,
+        "labelHeight": 32,
+        "x": 680,
+        "y": 24,
+        "label": "Маршрутный фриз",
+        "labelY": 392
+      },
+      {
+        "naturalWidth": 640,
+        "naturalHeight": 360,
+        "scale": 1,
+        "renderScale": 1,
+        "sourceCrop": {
+          "x": 0,
+          "y": 0,
+          "width": 640,
+          "height": 360
+        },
+        "width": 640,
+        "height": 360,
+        "labelHeight": 32,
+        "x": 1336,
+        "y": 24,
+        "label": "Сборочный стол",
+        "labelY": 392
+      },
+      {
+        "naturalWidth": 640,
+        "naturalHeight": 360,
+        "scale": 1,
+        "renderScale": 1,
+        "sourceCrop": {
+          "x": 0,
+          "y": 0,
+          "width": 640,
+          "height": 360
+        },
+        "width": 640,
+        "height": 360,
+        "labelHeight": 32,
+        "x": 1992,
+        "y": 24,
+        "label": "Книга маршрута",
+        "labelY": 392
+      },
+      {
+        "naturalWidth": 640,
+        "naturalHeight": 360,
+        "scale": 1,
+        "renderScale": 1,
+        "sourceCrop": {
+          "x": 0,
+          "y": 0,
+          "width": 640,
+          "height": 360
+        },
+        "width": 640,
+        "height": 360,
+        "labelHeight": 32,
+        "x": 2648,
+        "y": 24,
+        "label": "Монтажный пролёт",
+        "labelY": 392
+      },
+      {
+        "naturalWidth": 640,
+        "naturalHeight": 360,
+        "scale": 1,
+        "renderScale": 1,
+        "sourceCrop": {
+          "x": 0,
+          "y": 0,
+          "width": 640,
+          "height": 360
+        },
+        "width": 640,
+        "height": 360,
+        "labelHeight": 32,
+        "x": 3304,
+        "y": 24,
+        "label": "Два берега",
+        "labelY": 392
+      },
+      {
+        "naturalWidth": 640,
+        "naturalHeight": 360,
+        "scale": 1,
+        "renderScale": 1,
+        "sourceCrop": {
+          "x": 0,
+          "y": 0,
+          "width": 640,
+          "height": 360
+        },
+        "width": 640,
+        "height": 360,
+        "labelHeight": 32,
+        "x": 3960,
+        "y": 24,
+        "label": "План подъёма",
+        "labelY": 392
+      }
+    ],
+    "issues": []
+  }
+]

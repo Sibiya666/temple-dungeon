@@ -21,7 +21,7 @@ public class ActivityInventoryTests
     public void Fill_preserves_installed_and_inventory_mods_and_owned_instances_roundtrip()
     {
         var inventory = new ActivityInventory(Data);
-        inventory.Add("trial", 5, 5);
+        inventory.Add("escort", 5, 5);
         inventory.Add("clear", 1, 9);
         var assembly = Assembly();
         var wallet = Wallet();
@@ -37,7 +37,7 @@ public class ActivityInventoryTests
         Assert.Equal(installed, Snapshot(assembly.Spec.Floors[2]));
         Assert.Empty(inventory.Groups(5));
         Assert.Equal(otherRank, Snapshot(inventory.Groups(1)));
-        Assert.Equal(5, assembly.Spec.Floors.Count(f => f.TypeId == "trial"));
+        Assert.Equal(5, assembly.Spec.Floors.Count(f => f.TypeId == "escort"));
         Assert.True(assembly.ShuffleBonusActive);
         Assert.Equal(1, assembly.ShufflesDone);
         Assert.Equal(10, wallet.CountUsable("shuffle", 5));
@@ -63,8 +63,8 @@ public class ActivityInventoryTests
         var wallet = new Wallet(Data);
         if (failure != "items")
         {
-            inventory.Add("trial", 5, 5);
-            controlInventory.Add("trial", 5, 5);
+            inventory.Add("escort", 5, 5);
+            controlInventory.Add("escort", 5, 5);
             Assert.Equal(TowerRefusal.None, inventory.FillRandom(assembly, wallet));
             Assert.Equal(TowerRefusal.None, controlInventory.FillRandom(control, new Wallet(Data)));
             if (failure == "currency")
@@ -76,8 +76,8 @@ public class ActivityInventoryTests
         }
         else
         {
-            inventory.Add("trial", 5, 4);
-            controlInventory.Add("trial", 5, 4);
+            inventory.Add("escort", 5, 4);
+            controlInventory.Add("escort", 5, 4);
             inventory.Add("clear", 1, 20);
             controlInventory.Add("clear", 1, 20);
             wallet.Add("shuffle", 15, 10);
@@ -144,7 +144,7 @@ public class ActivityInventoryTests
             foreach (var target in new[] { inventory, otherInventory })
             {
                 target.Add("clear", 5, 9);
-                target.Add("trial", 5, 1);
+                target.Add("escort", 5, 1);
             }
             var assembly = new TowerAssembly(Data, 5, RandomSources.Create(SimMode.Roll, seed));
             var other = new TowerAssembly(Data, 5, RandomSources.Create(SimMode.Roll, seed));
@@ -152,13 +152,13 @@ public class ActivityInventoryTests
             bool firstIsClear = RandomSources.Create(SimMode.Roll, seed).InRange(0, 10) < 9;
             Assert.Equal(TowerRefusal.None, inventory.FillRandom(assembly, Wallet()));
             Assert.Equal(TowerRefusal.None, otherInventory.FillRandom(other, Wallet()));
-            Assert.Equal(firstIsClear ? "clear" : "trial", assembly.Spec.Floors[0].TypeId);
+            Assert.Equal(firstIsClear ? "clear" : "escort", assembly.Spec.Floors[0].TypeId);
             Assert.Equal(Snapshot(other.Spec), Snapshot(assembly.Spec));
-            Assert.InRange(assembly.Spec.Floors.Count(f => f.TypeId == "trial"), 0, 1);
+            Assert.InRange(assembly.Spec.Floors.Count(f => f.TypeId == "escort"), 0, 1);
             Assert.Equal(5, inventory.Groups(5).Sum(g => g.Count));
             for (int slot = 0; slot < 5; slot++) inventory.Remove(assembly, slot);
             Assert.Equal(9, inventory.Groups(5).Single(g => g.TypeId == "clear").Count);
-            Assert.Equal(1, inventory.Groups(5).Single(g => g.TypeId == "trial").Count);
+            Assert.Equal(1, inventory.Groups(5).Single(g => g.TypeId == "escort").Count);
         }
     }
 
@@ -166,12 +166,12 @@ public class ActivityInventoryTests
     public void Swapping_returns_prior_and_reuses_exact_variant_biome_and_mods()
     {
         var inventory = new ActivityInventory(Data);
-        inventory.Add("trial", 5, 1);
+        inventory.Add("escort", 5, 1);
         inventory.Add("clear", 5, 1);
         var assembly = Assembly();
         var wallet = Wallet();
-        var trialId = inventory.Groups(5).Single(g => g.TypeId == "trial").Id;
-        Assert.Equal(TowerRefusal.None, inventory.TryInstall(assembly, 0, trialId));
+        var escortId = inventory.Groups(5).Single(g => g.TypeId == "escort").Id;
+        Assert.Equal(TowerRefusal.None, inventory.TryInstall(assembly, 0, escortId));
         Assert.Equal(TowerRefusal.None, inventory.ApplyToFloor(assembly, 0, "imbue", wallet));
         var before = assembly.Spec.Floors[0];
         var clearId = inventory.Groups(5).Single().Id;
@@ -198,7 +198,7 @@ public class ActivityInventoryTests
     public void Repeated_install_and_remove_preserve_each_modified_instance_of_the_same_type()
     {
         var inventory = new ActivityInventory(Data);
-        inventory.Add("trial", 5, 2);
+        inventory.Add("escort", 5, 2);
         var stack = Assert.Single(inventory.Groups(5)).Id;
         var wallet = Wallet();
         Assert.Equal(TowerRefusal.None, inventory.ApplyToInventory(stack, "imbue", wallet, out var first));
@@ -249,8 +249,8 @@ public class ActivityInventoryTests
     {
         var a = new ActivityInventory(Data);
         var b = new ActivityInventory(Data);
-        a.Add("trial", 5, 2);
-        b.Add("trial", 5, 2);
+        a.Add("escort", 5, 2);
+        b.Add("escort", 5, 2);
         var id = Assert.Single(a.Groups(5)).Id;
         var emptyWallet = new Wallet(Data);
         Assert.Equal(TowerRefusal.NotEnoughCurrency, a.ApplyToInventory(id, "imbue", emptyWallet));
@@ -275,18 +275,18 @@ public class ActivityInventoryTests
     }
 
     [Fact]
-    public void Unmodified_trial_keeps_exact_rolls_between_different_assemblies()
+    public void Unmodified_escort_keeps_exact_rolls_between_different_assemblies()
     {
         for (int seed = 0; seed < 30; seed++)
         {
             var inventory = new ActivityInventory(Data);
-            inventory.Add("trial", 5, 2);
+            inventory.Add("escort", 5, 2);
             var first = new TowerAssembly(Data, 5, RandomSources.Create(SimMode.Roll, seed));
             var second = new TowerAssembly(Data, 5, RandomSources.Create(SimMode.Roll, seed + 100));
             var id = Assert.Single(inventory.Groups(5)).Id;
             Assert.Equal(TowerRefusal.None, inventory.TryInstall(first, 0, id));
             var original = first.Spec.Floors[0];
-            Assert.NotNull(original.Variant);
+            Assert.Null(original.Variant);
             Assert.NotNull(original.BiomeId);
             // Consume the unrolled member so the next install selects the returned exact specimen.
             Assert.Equal(TowerRefusal.None, inventory.TryInstall(first, 1, id));

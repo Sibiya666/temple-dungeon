@@ -12,6 +12,49 @@ public static class RoomHudTheme
     public static readonly Color Stone = new("0c1114");
     private const string Root = "res://Ui/Art/";
 
+    // Reference-window vocabulary. Opt-in helpers: existing windows retain their geometry and theme.
+    public const int BodySize = 15;
+    public const int CaptionSize = 14;
+    public const int HeadingSize = 22;
+    public const int GroupGap = 12;
+    public const int ItemGap = 6;
+    public static readonly Color MutedText = new("9baeb3");
+
+    public static StyleBoxFlat ReferenceSurface(float padding = 8, bool selected = false, int border = 1)
+    {
+        var face = new StyleBoxFlat { BgColor = Stone, BorderColor = selected ? Focus : Bronze };
+        face.SetBorderWidthAll(border);
+        face.SetContentMarginAll(padding);
+        return face;
+    }
+
+    public static StyleBoxTexture ReferenceFocus() => new()
+    {
+        Texture = GD.Load<Texture2D>(Root + "cold-focus.svg"),
+        TextureMarginLeft = 16, TextureMarginTop = 16, TextureMarginRight = 16, TextureMarginBottom = 16,
+        ContentMarginLeft = 0, ContentMarginTop = 0, ContentMarginRight = 0, ContentMarginBottom = 0,
+        ExpandMarginLeft = 2, ExpandMarginTop = 2, ExpandMarginRight = 2, ExpandMarginBottom = 2,
+    };
+    public static Label Heading(string text, int size = HeadingSize)
+    {
+        var label = new Label { Text = text, AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+        label.AddThemeFontSizeOverride("font_size", size);
+        label.AddThemeColorOverride("font_color", Parchment);
+        return label;
+    }
+
+    public static Theme ReferenceWindowTheme()
+    {
+        var theme = Create(WindowHost.WindowTheme());
+        theme.DefaultFontSize = BodySize;
+        theme.SetConstant("separation", "VBoxContainer", ItemGap);
+        theme.SetConstant("separation", "HBoxContainer", ItemGap);
+        theme.SetConstant("h_separation", "HFlowContainer", ItemGap);
+        theme.SetConstant("v_separation", "HFlowContainer", ItemGap);
+        return theme;
+    }
+
     /// <summary>Each call returns a separate mutable style; no component shares focus state.</summary>
     public static StyleBoxTexture Panel(float margin = 8) => Frame("stone-frame.svg", margin);
     public static StyleBoxTexture Border() => Frame("bronze-border.svg", 0);

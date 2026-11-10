@@ -1,0 +1,18 @@
+ERROR: Failed to open 'user://logs/godot2026-11-10T20.06.37.log'.
+   at: copy (core/io/dir_access.cpp:429)
+ERROR: Failed to open log file for writing: user://logs/godot.log
+   at: rotate_file (core/io/logger.cpp:169)
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.315 - Forward+ - Using Device #0: AMD - AMD Radeon RX 6750 XT
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\.codex\worktrees\tower-ui-reference\dialoid\data
+ERROR: Condition "f.is_null()" is true.
+   at: _save_to_cache (servers/rendering/renderer_rd/shader_rd.cpp:696)
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=tower.montage: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (2) — это не приемка !!!
+SELFTEST OK panels
+SELFTEST OK tower.montage
+SELFTEST 2/2
+SELFTEST PASSED

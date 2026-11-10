@@ -153,10 +153,10 @@ public class TowerRunTests
         Assert.Equal(TowerRefusal.None, TryAt5(WithFloor0(5, Floor("waves", Max("extra_wave")))));
         // general mod limited to some types
         Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, Floor("bosses", Max("more_packs")))));
-        // trial mod of another variant
+        // objective-specific mod
         var hold = Max("hold_decay");
-        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, new FloorSpec("trial", "escort", D.Biomes[0].Id, new[] { hold }))));
-        Assert.Equal(TowerRefusal.None, TryAt5(WithFloor0(5, new FloorSpec("trial", "hold", D.Biomes[0].Id, new[] { hold }))));
+        Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, new FloorSpec("escort", null, D.Biomes[0].Id, new[] { hold }))));
+        Assert.Equal(TowerRefusal.None, TryAt5(WithFloor0(5, new FloorSpec("hold", null, D.Biomes[0].Id, new[] { hold }))));
         // kind mismatch: a tower mod on a floor, a floor mod on the tower
         Assert.Equal(TowerRefusal.InvalidMods, TryAt5(WithFloor0(5, Floor("clear", Max("tower_reward")))));
         Assert.Equal(TowerRefusal.InvalidMods, TryAt5(Spec(5, null, "boss", Max("monster_life"))));
