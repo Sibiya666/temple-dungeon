@@ -1,0 +1,414 @@
+[
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/ActivityInventoryTests.cs",
+    "sha256": "64AB1F87C39DC271F370CF32DFA4906B89E934251B0F22BEE21823EC2920C041"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/CraftingTests.cs",
+    "sha256": "E99EAA5531DCA8705C9E9D80D3CD797B1058F1C5A21A1A947C9216BE46AC637B"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/RewardsTests.cs",
+    "sha256": "7731FD216D9380A74E02411094F1DBDBE1E4EB82BCDED9BB717B253EB276D765"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/TowerCodecTests.cs",
+    "sha256": "8DD00D14B42010E6A29CACE9BE1DB98F0826BC2E16FE58667BD3CB18EF41308D"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/TowerDataLoaderTests.cs",
+    "sha256": "D492DA0296C9A6B263ABEDB75C3942008112B277A587C232AB6FF98CF4B815F6"
+  },
+  {
+    "path": "core/Dialoid.Core.Tests/Tower/TowerRunTests.cs",
+    "sha256": "264383945A24AAFF87D927C39934758B4E8D836A11DB5EDAF00873B998B133E0"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/Rewards.cs",
+    "sha256": "F0078F557B60AFB69330A14664BB13B1131E5770A3929CA8DBB97760C44E44E5"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerAssembly.cs",
+    "sha256": "5ED542ABC4C6F67F708AC6A9C2C2EACD643BDEB45EE6C5BFAB8468C5311F552B"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerData.cs",
+    "sha256": "39B72ABDAF86043C59EB04865F7264077B5A96E9C702B7BC7EAFC81CE85C330C"
+  },
+  {
+    "path": "core/Dialoid.Core/Tower/TowerSpec.cs",
+    "sha256": "39560A579EBD0F04E47EBAEBDF9A5279F657FC6A9262AB4E3851D82D45F8F634"
+  },
+  {
+    "path": "data/tower/currencies.json",
+    "sha256": "913689939CD21B7872618A453596FBBB66DA87607307D68EE35A495355532126"
+  },
+  {
+    "path": "data/tower/floor_mods.json",
+    "sha256": "6CF2D7487068A1A617CF37279342C050E586C3ACCEFF46BD04C99E88AC389DFD"
+  },
+  {
+    "path": "data/tower/floor_types.json",
+    "sha256": "DD055E6BF3A16C732D2019960C411DAF250501D728EB8EED80A670E4DD386306"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/clear-revision/clear-24.png",
+    "sha256": "6D2C56AFED40A4910233EA7DE594B54F4CD01BCD5E8D4D1569248650B31CA1C0"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/clear-revision/clear-32.png",
+    "sha256": "981AEB9148C8E3092B54F97767380C762E1181FDCA806B1988BE251F66E72B63"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/clear-revision/master.png",
+    "sha256": "EB3AA425216976E4CC598125A6A30B8979FD0F413689209ACB17A36989A977EA"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/clear-revision/panel-720.png",
+    "sha256": "9FEDECBA3403133B2D303C776DCF26791EE18D86E146C6A9CCDAC4FD2080A344"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/clear-revision/prompt.txt",
+    "sha256": "1108E84DE82443630DC59B979C4406EA99C6B45C4E497FA31F77E3800F85DA71"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/horde-breach/horde-24.png",
+    "sha256": "73FC955E4A705DE3DAA0680B336333B5F8B9CAF69C25C14F400AE82CBC1E6FF1"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/horde-breach/horde-32.png",
+    "sha256": "4250B93D65ABBF5EBC823A72CC5199DE1A0C76F91A90C7BE9C59FF3B5AFE3C22"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/horde-breach/master.png",
+    "sha256": "A0EA8AE108402CE75BA6F6BB09F411DCB3CFED5C98756C735CA64CB7F39A04C6"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/horde-breach/panel-720.png",
+    "sha256": "73109FD11C6DEA47900E374C387F2B036BF41189CF4B26B838CBB56CBB81FE7E"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/horde-breach/prompt.txt",
+    "sha256": "CD71294E21B04F56E1F72075120D09AA81C30970213CC30C07D4AE6E1D0268C7"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/master.png",
+    "sha256": "5526CC5E7099820921D813985087AA3533BA90411109BCC9E1FC09A5168DD7E4"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/palette/panel-720.png",
+    "sha256": "27A8A4622234EB1ECF1B96565516FB75B66D26656ED5512656674996ABFF1166"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/panel-720.png",
+    "sha256": "2F8B97964F5EC8FB5AE5B5FE2FB972D18B491E43480FA1606F20112A9791EFB1"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/prompt.txt",
+    "sha256": "4EDABC7387EF9AF2E2C6575B44FF84614B193DA7C84A72436C5FB980E74DF2C9"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/ritual-mechanism/master.png",
+    "sha256": "7C7446D7A2672A94AE2BCD9DC5BED844886A3204B4E589D9D4517AEC0E0C55CA"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/ritual-mechanism/panel-720.png",
+    "sha256": "55119912D95A8F6F0AE4D246C823EEFAE302A401794A0152610D885F2C7AFD44"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/ritual-mechanism/prompt.txt",
+    "sha256": "7FD83CAD4C4D29DB7AA54DB5AECE12CCB8D3CAC2F5AF453B1AD7246E611A1C40"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/ritual-mechanism/ritual-24.png",
+    "sha256": "E28DF2F861F6DDEE6BAB3FEE32A862AF33E0162DC60ADED479CD4E953C89ED92"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/ritual-mechanism/ritual-32.png",
+    "sha256": "E6E67FCF46B379A56F59999419E8AFFD699DBF7B49A500CEA959B146F751FBA1"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/sizes.png",
+    "sha256": "C5F776B4EA3FD5EE8FE05589B87CFFF8B06D6BCB50A8E177E5A556BAD82211EB"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/trial-revision/master.png",
+    "sha256": "0E1222D7DD9342856B3311F0239D07A4A9165FB98F8A3F343D0065BE985E27F0"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/trial-revision/panel-720.png",
+    "sha256": "CC0FFE7E69110E6AE706A244AE6288A51F10653AEBF19330552F997602A58D14"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/trial-revision/prompt.txt",
+    "sha256": "BE0576B0DB292B054F671B8F70E602A1100801752133B9C311EA89AD9EF72829"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/trial-revision/trial-24.png",
+    "sha256": "5DA8621719BF78567D6E368686A264EDFF7C9654A152B11C7561E54856DBFB5F"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/trial-revision/trial-32.png",
+    "sha256": "9013CAB0DBFA8DEECAE71C1CC1E0E7E889B079FFCB2CDBBC72ACF21F4446AE6C"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/waves-revision/master.png",
+    "sha256": "A6988018E332B752B225A93E30EAD3BB3F05AD733B92BDA84674923BDF55E7EF"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/waves-revision/panel-720.png",
+    "sha256": "4FEA9581F65E2D9214F4E0DEEE1BF21FA2CDF740C25BAE11F82F91F1AD2B1CFB"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/waves-revision/prompt.txt",
+    "sha256": "9A5224D916EC2952FC283452A0E18D31D5481715835795AA1624681B66D7050B"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/waves-revision/waves-24.png",
+    "sha256": "E77980EE73EB8650F3BD5ECC5ED63817E72F871EBC42725A8F77441A3D16CE92"
+  },
+  {
+    "path": "docs/art/tower/activity-glass-icons/waves-revision/waves-32.png",
+    "sha256": "849F837C24845FFD39F50DC0EE09426E868CA2F93174ADC89B0318B4171BDC31"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/escort-lantern/escort-24.png",
+    "sha256": "5208E7C11C05971CFC5F19443840367B4E26B9218C46F4F451CDE25DF154718C"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/escort-lantern/escort-32.png",
+    "sha256": "97DD12B066D61E906C4C8B03E2E08AFF1051D8C4336CA738F7F0E4D2A569BC9A"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/escort-lantern/master.png",
+    "sha256": "7FEDC9B418A7CCA0DFBE9C0706901BEB0EA9A4B89B76B86DBC0515F4D3E2D1D2"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/escort-lantern/panel-720.png",
+    "sha256": "FF9DECDBE33D095E3C067D9B4DD4913C67A13A5501099B665D42E1E4C138E554"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/escort-lantern/prompt.txt",
+    "sha256": "97936A798E7C865874F446711C9C6B4CEB1439B1BE6ECFEA3F9021122F26D5EC"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/master.png",
+    "sha256": "225202E9EAC049DC1D26FDC93E0EAC835BBA78275B11C017ABD4F2EBC15157DD"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/panel-720.png",
+    "sha256": "CD1738F7A90F53AE755ED2FF3BE144C09AE86B7395452FC468469C30C6717ABF"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/prompt.txt",
+    "sha256": "F7C8D55980AAE8949EFB8D88E913461D543A13B81C16156CCE08F56E0AB15FC2"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/sizes.png",
+    "sha256": "D14D0A4A8DEAE6E1F47C8C225468D7DA4EF22F48DE4391C67744C62861E673C8"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/switching-gates/gates-24.png",
+    "sha256": "96BE4E4893A2206481B25F35151FAC52F90298B71AB4951419BBFA08F5F1DC77"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/switching-gates/gates-32.png",
+    "sha256": "12C42B08946CCFF7F3D2151CD7E77C3E6783E3F3B4226D1D44F1675B9C83C31A"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/switching-gates/master.png",
+    "sha256": "2CAC666D33D36FEE65C477094B1E237507CD2C325739E03C80C35B1C80E77209"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/switching-gates/panel-720.png",
+    "sha256": "E1F5194FD9FF62D590FB16FDAAC1D2D8142EAD23598AC75FA0ED10B34D28259E"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/switching-gates/panel-detail.png",
+    "sha256": "46BEE579BEE3EB6704048947819CBECC64975FFEC84256C0C33813662DEF4A35"
+  },
+  {
+    "path": "docs/art/tower/standalone-activities/switching-gates/prompt.txt",
+    "sha256": "C6A5704E506EF75294AEABA6AD38F616A1135B28C9F99F1E2E74E4440E79170F"
+  },
+  {
+    "path": "docs/art/tower/timed-run-glass/hourglass-24.png",
+    "sha256": "C73CD41EFE4556B36BE48D0DB8A80712F2BE82E8DB220076ED474CB68977AAEF"
+  },
+  {
+    "path": "docs/art/tower/timed-run-glass/hourglass-32.png",
+    "sha256": "A25405B207EAE78D061F8BC9B500562EA842C692A247A4C68C4BAD99C7D396B3"
+  },
+  {
+    "path": "docs/art/tower/timed-run-glass/master.png",
+    "sha256": "451F8D18239B137D6546BA8B5C74C0DB13CC750E4F8250250FB62A6FC6B908CE"
+  },
+  {
+    "path": "docs/art/tower/timed-run-glass/panel-720.png",
+    "sha256": "A5CC6907D2B6C42E625EE205B83657876433410C358393F46657A0E7D41C6F29"
+  },
+  {
+    "path": "docs/art/tower/timed-run-glass/prompt.txt",
+    "sha256": "F6E2F91C21EAA4C7539926E8E55C561503635FE5C9C39E55D598C2AF2CF99402"
+  },
+  {
+    "path": "docs/art/tower/timed-run-glass/README.md",
+    "sha256": "45B2E37415D21AD0C94607C37355B8B3F16BCE2918DCFAFB7FD23DACDF1B8A8E"
+  },
+  {
+    "path": "docs/art/tower/timed-run-glass/reference-venice.png",
+    "sha256": "0F86D277A42D498DD02D95A3878DCEF196CE833BA8335D089048EABCDEF7B632"
+  },
+  {
+    "path": "docs/art/UI_FRAMES.md",
+    "sha256": "75D411CB3A68AB83F623118CCF97FCC71B7ACEFA29C1DEE488CCAADA271F1D2A"
+  },
+  {
+    "path": "docs/art/ui-frames-720.png",
+    "sha256": "546A7707761787F4155AA0B4C2E4EF1213BB0FCADAA9FE11173E3910125969F0"
+  },
+  {
+    "path": "docs/superpowers/specs/2026-10-29-dialoid-endgame-tower-design.md",
+    "sha256": "AA36DFB6DF6D0196DC8495B93DF67610D584E14806BA6ED21A0D0733E95E4561"
+  },
+  {
+    "path": "docs/tasks/TASK-tower-independent-activities.md",
+    "sha256": "3E686B4E09D61D4902C94A6467401AA273ED532741B2745ED1024F57988EE15A"
+  },
+  {
+    "path": "game/SelfTest.Tower.cs",
+    "sha256": "622E89BA44E9D9BCE26D0D40A153FA2D9FE96497C1D8B2745214CCAC2B76C68A"
+  },
+  {
+    "path": "game/Ui/Tower/activity_glass_motif.gdshader",
+    "sha256": "FE2F8B9AF8B93B950B52058618F9F979E7D63C4409BDA623A6D0709E4E1B4859"
+  },
+  {
+    "path": "game/Ui/Tower/activity_glass_motif.gdshader.uid",
+    "sha256": "FB7A7769579076A14624104F01F2C0851BFB2343088C4A9F6A20EFE1827508B2"
+  },
+  {
+    "path": "game/Ui/Tower/activity_window.gdshader",
+    "sha256": "620A702AF58484C591782216D52CD6A5DAEF94A208D4597B25A28208CC03AB67"
+  },
+  {
+    "path": "game/Ui/Tower/activity_window.gdshader.uid",
+    "sha256": "EA6E09712ECC4C50BA8CE291ED4254926E185BED9B772B345F0F175438CF8760"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/bosses.png",
+    "sha256": "5A475731F0A96E59FAAF0AC064C57BD9BBBB7136E2E8A6A7352061007B6BD2D9"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/bosses.png.import",
+    "sha256": "42F26408E6E774A9109E639DFB8EB8801490BACA77142730238EED5EF85EABA7"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/clear.png",
+    "sha256": "2CDFA4A8C214D5909FFEAFDD6EA58F8B0F02CAA5604DD92FDB08D875AAAEE9E7"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/clear.png.import",
+    "sha256": "D89FD8DC2D2F0F8D8379664EC2E8327CD9AB6E6352536F03F0BD54A0FFAE3A5A"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/escort.png",
+    "sha256": "5F19E1293E1D0816963957A10C4044B24DC09877579622663DA45E9309B6910C"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/escort.png.import",
+    "sha256": "F7061BC269A6AB10DDB722E65543F3EB81AF979D69AD39AF98BE798901726605"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/hold.png",
+    "sha256": "0130D6689B1A2951FBEEF8FABAC7FA796DC0D6811EA11F7D666C3D42C2B6B7B9"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/hold.png.import",
+    "sha256": "DE3C6AB05F41AAEEB8A49BBAFE8C91F05520A23FC0D2129E2683B9980E4E9175"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/hourglass_silhouette.svg",
+    "sha256": "2BEDC3BA267DC46340C5D60BE22426E703CAEC8C978C788999D4891114E34C1A"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/hourglass_silhouette.svg.import",
+    "sha256": "16483596366A9AB39FBA592320EA7371267269E550631998D3487E1FC5120C2D"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/levers.png",
+    "sha256": "ED65691FA61352E1EF0B8AA36F53F4B2A83F8A5FA19A7534CD11137A39198AE8"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/levers.png.import",
+    "sha256": "16C85894240CB800CA01AB29D7C0D81084ACCDA16FB6A981C89FF13D4ABCD45D"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/pending.svg",
+    "sha256": "7EF207B5DE1950743CCD4C332FDFF3BD5147021D7C2625150DA4E487C576A3B4"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/pending.svg.import",
+    "sha256": "6BDDC296C3574B3A0415AB1B89F574D7594C07261309B6374E34D3DDCD59053C"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/ritual.png",
+    "sha256": "51587AE6FEFFCD9A058364891E37AB06B56F7A9CCFAA75F854CAD4CEFA068172"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/ritual.png.import",
+    "sha256": "31AB8BEE148FD5F9865B79B6C2EC4E9BA1F9BC1BBC52F0674C4F10607D20E20A"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/timed_run.png",
+    "sha256": "E70179D00443ECE6176C8BC7CDC65F6E49BE70F19F804631292D396E3E1958F8"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/timed_run.png.import",
+    "sha256": "6A29BC6B464E4D965EA069B584820167719EDE862364B570B91B80AF10251C22"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/trial.png",
+    "sha256": "4302D4C5EE0DC461C9D94B91455BAAFC5DBF0C370757D4BD3E35462EDA5E78DE"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/trial.png.import",
+    "sha256": "6A72620D000B988082EBBA6824D531F86A18CFB297F21B633DE4828D211DBE1D"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/waves.png",
+    "sha256": "4CE063EBF50E0A298A2795B784CB1958C46137362BD3E7F10DF4F0CA72120499"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activities/waves.png.import",
+    "sha256": "EF93CE505C1492D0913D6B3DB67FBDD2437BEB67C8FDE90737B2D7202D215C9A"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activity-window.png",
+    "sha256": "4495D85BC4E37D99122D0EF21C98697CFDDEBF612A2D90BCF994C1AC0B769D12"
+  },
+  {
+    "path": "game/Ui/Tower/Art/activity-window.png.import",
+    "sha256": "19DC7E64CD5FB4AEB6FA87F4E9FC426023D6169DA0CD4BEC9D04ADEB6DB32DA3"
+  },
+  {
+    "path": "game/Ui/Tower/Art/README.md",
+    "sha256": "708DB7B9FA74E615F4590614415DD75251244308CA333A9B935C5728BEE6DB90"
+  },
+  {
+    "path": "game/Ui/Tower/TowerBoardArt.cs",
+    "sha256": "C1A3B0CD45FA17E41398734861DB9DD61A4A4B5EE2211D100F3EFB6B85B99A82"
+  },
+  {
+    "path": "game/Ui/Tower/TowerBoardView.cs",
+    "sha256": "C46E747EBFB61F50121042BFF79F17B0B5AAADF49A9AF125E0FF434E53D50DA9"
+  },
+  {
+    "path": "game/Ui/Tower/TowerGlassWindow.cs",
+    "sha256": "0C4FDE981CD04687E5AE3E952C2B679EFFE7AC713E208C16A7619468B291A1D5"
+  },
+  {
+    "path": "game/Ui/Tower/TowerGlassWindow.cs.uid",
+    "sha256": "2C09DF25F29216DB4A2CA8A1A6C90EC12E30D81E91EF32E6DCE4BB47B30E2339"
+  }
+]

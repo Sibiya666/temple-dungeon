@@ -5,7 +5,7 @@ namespace Dialoid.Core.Tower;
 /// <summary>
 /// A tower being assembled before entry (spec 7): floor types, variants, biomes, mods, uber boss and the shuffle bonus.
 /// <see cref="Rng"/> is the only randomness for assembling and for crafting on this tower. Floor slots are indexed from 0.
-/// Each slot remembers the variant rolled for a type with variants (trial), so switching away and back keeps it;
+/// Each slot remembers the variant rolled for a type with variants, so switching away and back keeps it;
 /// a shuffle overwrites that memory. Any real manual change of a floor type drops the shuffle bonus for this assembly.
 /// </summary>
 public sealed class TowerAssembly

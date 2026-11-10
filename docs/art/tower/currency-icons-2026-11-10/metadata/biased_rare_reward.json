@@ -1,0 +1,16 @@
+{
+  "id": "biased_rare_reward",
+  "provider": "built-in GPT image_gen",
+  "requestType": "generation with original reference images",
+  "generatedOriginal": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1c691-6883-7891-baf4-41eff6c62bcb\\exec-dad0552e-2339-44a3-b594-77c49b7fd3b6.png",
+  "projectOriginal": "originals/biased_rare_reward.png",
+  "prompt": "prompts/biased_rare_reward-production.txt",
+  "references": [
+    "reference/approved-venice-glass.png",
+    "reference/approved-hourglass.png",
+    "reference/approved-shield.png"
+  ],
+  "transparentBackgroundRequested": true,
+  "modelAndSeed": "not exposed by built-in tool",
+  "date": "2026-11-10"
+}

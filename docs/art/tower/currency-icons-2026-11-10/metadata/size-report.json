@@ -1,0 +1,407 @@
+[
+  {
+    "id": "imbue",
+    "original": "originals\\imbue.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      158,
+      56,
+      1079,
+      1222
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\imbue.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "imbue_type",
+    "original": "originals\\imbue_type.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      108,
+      16,
+      1130,
+      1244
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\imbue_type.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "imbue_tower",
+    "original": "originals\\imbue_tower.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      80,
+      77,
+      1162,
+      1184
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\imbue_tower.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "clear",
+    "original": "originals\\clear.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      89,
+      91,
+      1156,
+      1153
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\clear.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "shuffle",
+    "original": "originals\\shuffle.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      64,
+      71,
+      1169,
+      1191
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\shuffle.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "reroll",
+    "original": "originals\\reroll.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      70,
+      50,
+      1171,
+      1190
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\reroll.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "upgrade",
+    "original": "originals\\upgrade.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      129,
+      50,
+      1123,
+      1207
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\upgrade.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "remove",
+    "original": "originals\\remove.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      78,
+      28,
+      1196,
+      1233
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\remove.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "biased_rare_elite",
+    "original": "originals\\biased_rare_elite.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      155,
+      63,
+      1094,
+      1204
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\biased_rare_elite.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "biased_rare_reward",
+    "original": "originals\\biased_rare_reward.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      54,
+      70,
+      1198,
+      1169
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\biased_rare_reward.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "biased_epic_elite",
+    "original": "originals\\biased_epic_elite.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      58,
+      160,
+      1194,
+      1105
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\biased_epic_elite.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "biased_epic_reward",
+    "original": "originals\\biased_epic_reward.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      42,
+      138,
+      1213,
+      1144
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\biased_epic_reward.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "bias_value",
+    "original": "originals\\bias_value.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      64,
+      55,
+      1190,
+      1178
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\currencies\\bias_value.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "tower",
+    "original": "originals\\tower.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      36,
+      72,
+      1213,
+      1200
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\symbols\\tower.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "summit",
+    "original": "originals\\summit.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_alpha_extrema": [
+      0,
+      255
+    ],
+    "visible_bounds": [
+      35,
+      227,
+      1212,
+      1116
+    ],
+    "runtime": "C:\\Users\\sibiya666\\.codex\\worktrees\\tower-ui-reference\\dialoid\\game\\Ui\\Tower\\Art\\symbols\\summit.png",
+    "runtime_size": [
+      128,
+      128
+    ],
+    "runtime_alpha_extrema": [
+      0,
+      255
+    ]
+  }
+]

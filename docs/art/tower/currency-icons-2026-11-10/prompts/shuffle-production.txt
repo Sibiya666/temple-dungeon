@@ -1,0 +1,8 @@
+Use case: stylized-concept.
+Asset type: ONE production inventory icon for the dark ARPG Dialoid.
+Input image 1: approved original Venice physical glass/lead craftsmanship reference ONLY, not its shard shape. Input images 2 and 3: approved hourglass and shield palette references ONLY, do not repeat their subjects.
+Primary request: THREE large overlapping glass tokens arranged in a tight interleaved fan, each visibly a different physical silhouette: rounded token, diamond token, square token. Lilac, ivory and pale yellow glass. The three tokens themselves suggest shuffling, no arrow or motion trail. Compact square mass.
+Style and invariants: keep the hand-soldered graphite lead and physical glass craftsmanship of the Venice original. Use FEW LARGE lilac translucent glass panes, dark ink-blue recesses, restrained cold ivory highlights and a SMALL pale-yellow accent where appropriate. Match the approved activity icons. Quiet matte dark metal, readable broad masses, no micro-decoration, no all-over scratches or grain, no polished gold, no broad glow.
+Composition: compact connected roughly square object group, centered, fills 82% of a square canvas. Entire object visible. Optical silhouette width at least 65–80% of height, with stout substantial forms readable at 24px. Parts overlap closely, no large empty gaps. Big semantic feature dominates. No long thin needles or feather-like tiny handles.
+Background: genuine transparent alpha; no ground plane, backdrop or cast shadow outside the object.
+Do not include text, numerals, plus/minus glyphs, arrows, card border, UI octagonal frame, icon socket, counters, state glow, watermark, scenery or additional props. This is art for an icon, not a finished interface.

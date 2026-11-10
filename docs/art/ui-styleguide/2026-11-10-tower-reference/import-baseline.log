@@ -1,0 +1,604 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Инициализация проекта (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Сканирование структуры файлов…[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Загрузка глобальных имен классов…[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Проверка GDExtensions…[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Создание скриптов автозагрузки…[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Инициализация плагинов…[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Начало сканирование файлов…[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Регистрация глобальных классов… (72 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Сканирование действий… (167 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | tower-hand.svg[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | tower-pointer.svg[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | tower-sword.svg[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | bleed.png[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | chill.png[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | freeze.png[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | ignite.png[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | poison.png[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | shock.png[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | battle_cry.png[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | berserk_frenzy.png[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | blink_focus.png[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | cleave_frenzy.png[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | inspiration.png[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | phase_barrier.png[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | static_charge.png[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | steel_skin.png[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | sorcerer.png[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | warrior.png[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | cold.png[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | cold.svg[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | dark.png[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | dark.svg[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | fire.png[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | fire.svg[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | lightning.png[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | lightning.svg[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | physical.png[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | physical.svg[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | poison.png[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | poison.svg[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | champion.svg[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | rare.svg[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | greataxe.png[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | staff.png[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | sword.png[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | wand.png[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | potion_health.png[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | keystone_avatar_of_fire.png[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | keystone_blade_dance.png[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | keystone_blood_pact.png[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | keystone_inevitability.png[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | keystone_stone_skin.png[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | keystone_titan_will.png[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | ball_lightning.png[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | battle_cry.png[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | blink.png[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | charge.png[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | cleave.png[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | crush.png[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | fireball.png[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | ice_lance.png[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | meteor.png[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | poison_cloud.png[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | spark.png[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | throwing_axe.png[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | whirlwind.png[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | bloodletting.png[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | burning_wounds.png[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | crushing_force.png[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | deep_cut.png[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | echo.png[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | edge.png[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | frenzy.png[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | heavy_hand.png[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | lacerate.png[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | precise_strike.png[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | rolling_echo.png[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | searing_blade.png[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | split.png[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | steel_skin.png[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | thirst.png[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | thunder_strike.png[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | wide_swing.png[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | armor.svg[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | attribute.svg[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | back.svg[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | breakdown.svg[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | builds.svg[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | chain.svg[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | character.svg[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | close.svg[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | collapse.svg[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | confirm.svg[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | crit.svg[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | crown.svg[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | dex.svg[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | expand.svg[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | health.svg[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | int.svg[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | inventory.svg[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | lock.svg[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | map.svg[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | mechanic.svg[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | modifier.svg[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | offense.svg[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | penetration.svg[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | projectiles.svg[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | remove.svg[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | resource.svg[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | ring.svg[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | shuffle.svg[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | simulation.svg[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | speed.svg[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | str.svg[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | tower.svg[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | tree.svg[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | upgrade.svg[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | will.svg[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | activities-v1.png[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | activities-v2.png[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | ascent-v1.png[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | ascent-v2.png[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | inscriptions-v1.png[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | inscriptions-v2.png[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | ascendancy-v1.png[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | breakdown-v1.png[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | builds-v1.png[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | character-v1.png[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | charts-v1.png[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | log-v1.png[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | meter-v1.png[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | passives-v1.png[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | simulation-v1.png[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | skills-v1.png[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | bronze-border.svg[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | stone-frame.svg[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | bosses.png[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | bosses.svg[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | clear.png[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | clear.svg[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | escort.png[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | hold.png[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | hourglass_silhouette.svg[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | levers.png[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | pending.svg[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | ritual.png[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | timed_run.png[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | timed_run.svg[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | trial.png[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | trial.svg[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | waves.png[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | waves.svg[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | biased_epic_elite.svg[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | biased_epic_reward.svg[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | biased_rare_elite.svg[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | biased_rare_reward.svg[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | bias_value.svg[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | clear.svg[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | imbue.svg[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | imbue_tower.svg[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | imbue_type.svg[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | remove.svg[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | reroll.svg[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | reroll_variant.svg[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | shuffle.svg[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | upgrade.svg[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | card.svg[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | focus.svg[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | panel.svg[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | selected.svg[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | close.svg[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | confirm.svg[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | empty_floor.svg[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | summit.svg[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | tower.svg[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | activity-window.png[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started Импорт или повторный импорт ассетов (167 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   0% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   1% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   1% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   2% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   2% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   3% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   4% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   4% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   5% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   5% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   6% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   7% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   7% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   8% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   8% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   9% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  10% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  10% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  11% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  11% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  12% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  13% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  13% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  14% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  14% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  15% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  16% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  16% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  17% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  17% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  18% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  19% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  19% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  20% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  20% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  21% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  22% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  22% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  23% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  23% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  24% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  25% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  25% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  26% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  26% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  27% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  27% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  28% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  29% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  29% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  30% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  30% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  31% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  32% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  32% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  33% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  33% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  34% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  35% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  35% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  36% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  36% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  37% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  38% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  38% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  39% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  39% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  40% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  41% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  41% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  42% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  42% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  43% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  44% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  44% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  45% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  45% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  46% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  47% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  47% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  48% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  48% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  49% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  50% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  50% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  51% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  51% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  52% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  52% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  53% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  54% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  54% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  55% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  55% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  56% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  57% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  57% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  58% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  58% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  59% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  60% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  60% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  61% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  61% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  62% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  63% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  63% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  64% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  64% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  65% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  66% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  66% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  67% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  67% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  68% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  69% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  69% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  70% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  70% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  71% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  72% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  72% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  73% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  73% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  74% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  75% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  75% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  76% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  76% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  77% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  77% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  78% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  79% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  79% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  80% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  80% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  81% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  82% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  82% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  83% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  83% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  84% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  85% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  85% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  86% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  86% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  87% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  88% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  88% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  89% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  89% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  90% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  91% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  91% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  92% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  92% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  93% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  94% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  94% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  95% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  95% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  96% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  97% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  97% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  98% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[  98% ] [90m[1mreimport[22m | Подготовка файлов к повторному импорту…[39m[0m
+[   0% ] [90m[1mreimport[22m | Выполнение предимпортных операций…[39m[0m
+[   0% ] [90m[1mreimport[22m | tower.svg[39m[0m
+[   0% ] [90m[1mreimport[22m | tree.svg[39m[0m
+[   1% ] [90m[1mreimport[22m | upgrade.svg[39m[0m
+[   1% ] [90m[1mreimport[22m | will.svg[39m[0m
+[   2% ] [90m[1mreimport[22m | activities-v1.png[39m[0m
+[   2% ] [90m[1mreimport[22m | activities-v2.png[39m[0m
+[   3% ] [90m[1mreimport[22m | ascent-v1.png[39m[0m
+[   4% ] [90m[1mreimport[22m | ascent-v2.png[39m[0m
+[   4% ] [90m[1mreimport[22m | inscriptions-v1.png[39m[0m
+[   5% ] [90m[1mreimport[22m | inscriptions-v2.png[39m[0m
+[   5% ] [90m[1mreimport[22m | ascendancy-v1.png[39m[0m
+[   6% ] [90m[1mreimport[22m | breakdown-v1.png[39m[0m
+[   7% ] [90m[1mreimport[22m | builds-v1.png[39m[0m
+[   7% ] [90m[1mreimport[22m | character-v1.png[39m[0m
+[   8% ] [90m[1mreimport[22m | charts-v1.png[39m[0m
+[   8% ] [90m[1mreimport[22m | log-v1.png[39m[0m
+[   9% ] [90m[1mreimport[22m | meter-v1.png[39m[0m
+[  10% ] [90m[1mreimport[22m | passives-v1.png[39m[0m
+[  10% ] [90m[1mreimport[22m | simulation-v1.png[39m[0m
+[  11% ] [90m[1mreimport[22m | skills-v1.png[39m[0m
+[  11% ] [90m[1mreimport[22m | crit.svg[39m[0m
+[  12% ] [90m[1mreimport[22m | crown.svg[39m[0m
+[  13% ] [90m[1mreimport[22m | dex.svg[39m[0m
+[  13% ] [90m[1mreimport[22m | expand.svg[39m[0m
+[  14% ] [90m[1mreimport[22m | health.svg[39m[0m
+[  14% ] [90m[1mreimport[22m | int.svg[39m[0m
+[  15% ] [90m[1mreimport[22m | inventory.svg[39m[0m
+[  16% ] [90m[1mreimport[22m | lock.svg[39m[0m
+[  16% ] [90m[1mreimport[22m | map.svg[39m[0m
+[  17% ] [90m[1mreimport[22m | mechanic.svg[39m[0m
+[  17% ] [90m[1mreimport[22m | modifier.svg[39m[0m
+[  18% ] [90m[1mreimport[22m | offense.svg[39m[0m
+[  19% ] [90m[1mreimport[22m | penetration.svg[39m[0m
+[  19% ] [90m[1mreimport[22m | projectiles.svg[39m[0m
+[  20% ] [90m[1mreimport[22m | remove.svg[39m[0m
+[  20% ] [90m[1mreimport[22m | resource.svg[39m[0m
+[  21% ] [90m[1mreimport[22m | ring.svg[39m[0m
+[  22% ] [90m[1mreimport[22m | shuffle.svg[39m[0m
+[  22% ] [90m[1mreimport[22m | simulation.svg[39m[0m
+[  23% ] [90m[1mreimport[22m | speed.svg[39m[0m
+[  23% ] [90m[1mreimport[22m | str.svg[39m[0m
+[  24% ] [90m[1mreimport[22m | biased_rare_reward.svg[39m[0m
+[  25% ] [90m[1mreimport[22m | bias_value.svg[39m[0m
+[  25% ] [90m[1mreimport[22m | clear.svg[39m[0m
+[  26% ] [90m[1mreimport[22m | imbue.svg[39m[0m
+[  26% ] [90m[1mreimport[22m | imbue_tower.svg[39m[0m
+[  27% ] [90m[1mreimport[22m | imbue_type.svg[39m[0m
+[  27% ] [90m[1mreimport[22m | remove.svg[39m[0m
+[  28% ] [90m[1mreimport[22m | reroll.svg[39m[0m
+[  29% ] [90m[1mreimport[22m | reroll_variant.svg[39m[0m
+[  29% ] [90m[1mreimport[22m | shuffle.svg[39m[0m
+[  30% ] [90m[1mreimport[22m | upgrade.svg[39m[0m
+[  30% ] [90m[1mreimport[22m | card.svg[39m[0m
+[  31% ] [90m[1mreimport[22m | focus.svg[39m[0m
+[  32% ] [90m[1mreimport[22m | panel.svg[39m[0m
+[  32% ] [90m[1mreimport[22m | selected.svg[39m[0m
+[  33% ] [90m[1mreimport[22m | close.svg[39m[0m
+[  33% ] [90m[1mreimport[22m | confirm.svg[39m[0m
+[  34% ] [90m[1mreimport[22m | empty_floor.svg[39m[0m
+[  35% ] [90m[1mreimport[22m | summit.svg[39m[0m
+[  35% ] [90m[1mreimport[22m | tower.svg[39m[0m
+[  36% ] [90m[1mreimport[22m | activity-window.png[39m[0m
+[  36% ] [90m[1mreimport[22m | bronze-border.svg[39m[0m
+[  37% ] [90m[1mreimport[22m | stone-frame.svg[39m[0m
+[  38% ] [90m[1mreimport[22m | bosses.png[39m[0m
+[  38% ] [90m[1mreimport[22m | bosses.svg[39m[0m
+[  39% ] [90m[1mreimport[22m | clear.png[39m[0m
+[  39% ] [90m[1mreimport[22m | clear.svg[39m[0m
+[  40% ] [90m[1mreimport[22m | escort.png[39m[0m
+[  41% ] [90m[1mreimport[22m | hold.png[39m[0m
+[  41% ] [90m[1mreimport[22m | hourglass_silhouette.svg[39m[0m
+[  42% ] [90m[1mreimport[22m | levers.png[39m[0m
+[  42% ] [90m[1mreimport[22m | pending.svg[39m[0m
+[  43% ] [90m[1mreimport[22m | ritual.png[39m[0m
+[  44% ] [90m[1mreimport[22m | timed_run.png[39m[0m
+[  44% ] [90m[1mreimport[22m | timed_run.svg[39m[0m
+[  45% ] [90m[1mreimport[22m | trial.png[39m[0m
+[  45% ] [90m[1mreimport[22m | trial.svg[39m[0m
+[  46% ] [90m[1mreimport[22m | waves.png[39m[0m
+[  47% ] [90m[1mreimport[22m | waves.svg[39m[0m
+[  47% ] [90m[1mreimport[22m | biased_epic_elite.svg[39m[0m
+[  48% ] [90m[1mreimport[22m | biased_epic_reward.svg[39m[0m
+[  48% ] [90m[1mreimport[22m | biased_rare_elite.svg[39m[0m
+[  49% ] [90m[1mreimport[22m | dark.png[39m[0m
+[  50% ] [90m[1mreimport[22m | dark.svg[39m[0m
+[  50% ] [90m[1mreimport[22m | fire.png[39m[0m
+[  51% ] [90m[1mreimport[22m | fire.svg[39m[0m
+[  51% ] [90m[1mreimport[22m | lightning.png[39m[0m
+[  52% ] [90m[1mreimport[22m | lightning.svg[39m[0m
+[  52% ] [90m[1mreimport[22m | physical.png[39m[0m
+[  53% ] [90m[1mreimport[22m | physical.svg[39m[0m
+[  54% ] [90m[1mreimport[22m | poison.png[39m[0m
+[  54% ] [90m[1mreimport[22m | poison.svg[39m[0m
+[  55% ] [90m[1mreimport[22m | champion.svg[39m[0m
+[  55% ] [90m[1mreimport[22m | rare.svg[39m[0m
+[  56% ] [90m[1mreimport[22m | greataxe.png[39m[0m
+[  57% ] [90m[1mreimport[22m | staff.png[39m[0m
+[  57% ] [90m[1mreimport[22m | sword.png[39m[0m
+[  58% ] [90m[1mreimport[22m | wand.png[39m[0m
+[  58% ] [90m[1mreimport[22m | potion_health.png[39m[0m
+[  59% ] [90m[1mreimport[22m | keystone_avatar_of_fire.png[39m[0m
+[  60% ] [90m[1mreimport[22m | keystone_blade_dance.png[39m[0m
+[  60% ] [90m[1mreimport[22m | keystone_blood_pact.png[39m[0m
+[  61% ] [90m[1mreimport[22m | keystone_inevitability.png[39m[0m
+[  61% ] [90m[1mreimport[22m | tower-hand.svg[39m[0m
+[  62% ] [90m[1mreimport[22m | tower-pointer.svg[39m[0m
+[  63% ] [90m[1mreimport[22m | tower-sword.svg[39m[0m
+[  63% ] [90m[1mreimport[22m | bleed.png[39m[0m
+[  64% ] [90m[1mreimport[22m | chill.png[39m[0m
+[  64% ] [90m[1mreimport[22m | freeze.png[39m[0m
+[  65% ] [90m[1mreimport[22m | ignite.png[39m[0m
+[  66% ] [90m[1mreimport[22m | poison.png[39m[0m
+[  66% ] [90m[1mreimport[22m | shock.png[39m[0m
+[  67% ] [90m[1mreimport[22m | battle_cry.png[39m[0m
+[  67% ] [90m[1mreimport[22m | berserk_frenzy.png[39m[0m
+[  68% ] [90m[1mreimport[22m | blink_focus.png[39m[0m
+[  69% ] [90m[1mreimport[22m | cleave_frenzy.png[39m[0m
+[  69% ] [90m[1mreimport[22m | inspiration.png[39m[0m
+[  70% ] [90m[1mreimport[22m | phase_barrier.png[39m[0m
+[  70% ] [90m[1mreimport[22m | static_charge.png[39m[0m
+[  71% ] [90m[1mreimport[22m | steel_skin.png[39m[0m
+[  72% ] [90m[1mreimport[22m | sorcerer.png[39m[0m
+[  72% ] [90m[1mreimport[22m | warrior.png[39m[0m
+[  73% ] [90m[1mreimport[22m | cold.png[39m[0m
+[  73% ] [90m[1mreimport[22m | cold.svg[39m[0m
+[  74% ] [90m[1mreimport[22m | frenzy.png[39m[0m
+[  75% ] [90m[1mreimport[22m | heavy_hand.png[39m[0m
+[  75% ] [90m[1mreimport[22m | lacerate.png[39m[0m
+[  76% ] [90m[1mreimport[22m | precise_strike.png[39m[0m
+[  76% ] [90m[1mreimport[22m | rolling_echo.png[39m[0m
+[  77% ] [90m[1mreimport[22m | searing_blade.png[39m[0m
+[  77% ] [90m[1mreimport[22m | split.png[39m[0m
+[  78% ] [90m[1mreimport[22m | steel_skin.png[39m[0m
+[  79% ] [90m[1mreimport[22m | thirst.png[39m[0m
+[  79% ] [90m[1mreimport[22m | thunder_strike.png[39m[0m
+[  80% ] [90m[1mreimport[22m | wide_swing.png[39m[0m
+[  80% ] [90m[1mreimport[22m | armor.svg[39m[0m
+[  81% ] [90m[1mreimport[22m | attribute.svg[39m[0m
+[  82% ] [90m[1mreimport[22m | back.svg[39m[0m
+[  82% ] [90m[1mreimport[22m | breakdown.svg[39m[0m
+[  83% ] [90m[1mreimport[22m | builds.svg[39m[0m
+[  83% ] [90m[1mreimport[22m | chain.svg[39m[0m
+[  84% ] [90m[1mreimport[22m | character.svg[39m[0m
+[  85% ] [90m[1mreimport[22m | close.svg[39m[0m
+[  85% ] [90m[1mreimport[22m | collapse.svg[39m[0m
+[  86% ] [90m[1mreimport[22m | confirm.svg[39m[0m
+[  86% ] [90m[1mreimport[22m | keystone_stone_skin.png[39m[0m
+[  87% ] [90m[1mreimport[22m | keystone_titan_will.png[39m[0m
+[  88% ] [90m[1mreimport[22m | ball_lightning.png[39m[0m
+[  88% ] [90m[1mreimport[22m | battle_cry.png[39m[0m
+[  89% ] [90m[1mreimport[22m | blink.png[39m[0m
+[  89% ] [90m[1mreimport[22m | charge.png[39m[0m
+[  90% ] [90m[1mreimport[22m | cleave.png[39m[0m
+[  91% ] [90m[1mreimport[22m | crush.png[39m[0m
+[  91% ] [90m[1mreimport[22m | fireball.png[39m[0m
+[  92% ] [90m[1mreimport[22m | ice_lance.png[39m[0m
+[  92% ] [90m[1mreimport[22m | meteor.png[39m[0m
+[  93% ] [90m[1mreimport[22m | poison_cloud.png[39m[0m
+[  94% ] [90m[1mreimport[22m | spark.png[39m[0m
+[  94% ] [90m[1mreimport[22m | throwing_axe.png[39m[0m
+[  95% ] [90m[1mreimport[22m | whirlwind.png[39m[0m
+[  95% ] [90m[1mreimport[22m | bloodletting.png[39m[0m
+[  96% ] [90m[1mreimport[22m | burning_wounds.png[39m[0m
+[  97% ] [90m[1mreimport[22m | crushing_force.png[39m[0m
+[  97% ] [90m[1mreimport[22m | deep_cut.png[39m[0m
+[  98% ] [90m[1mreimport[22m | echo.png[39m[0m
+[  98% ] [90m[1mreimport[22m | edge.png[39m[0m
+[  99% ] [90m[1mreimport[22m | Завершение импорта активов…[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started Импорт или повторный импорт ассетов (167 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Выполнение операций после реимпорта…[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Загрузка редактора (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Загрузка макета редактора…[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Загрузка док-панели…[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m

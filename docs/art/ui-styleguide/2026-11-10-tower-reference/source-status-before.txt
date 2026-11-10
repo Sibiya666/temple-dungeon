@@ -1,0 +1,64 @@
+ M core/Dialoid.Core.Tests/Tower/ActivityInventoryTests.cs
+ M core/Dialoid.Core.Tests/Tower/CraftingTests.cs
+ M core/Dialoid.Core.Tests/Tower/RewardsTests.cs
+ M core/Dialoid.Core.Tests/Tower/TowerCodecTests.cs
+ M core/Dialoid.Core.Tests/Tower/TowerDataLoaderTests.cs
+ M core/Dialoid.Core.Tests/Tower/TowerRunTests.cs
+ M core/Dialoid.Core/Tower/Rewards.cs
+ M core/Dialoid.Core/Tower/TowerAssembly.cs
+ M core/Dialoid.Core/Tower/TowerData.cs
+ M core/Dialoid.Core/Tower/TowerSpec.cs
+ M data/tower/currencies.json
+ M data/tower/floor_mods.json
+ M data/tower/floor_types.json
+ M docs/superpowers/specs/2026-10-29-dialoid-endgame-tower-design.md
+ M game/SelfTest.Tower.cs
+ M game/Ui/Tower/Art/README.md
+ M game/Ui/Tower/TowerBoardArt.cs
+ M game/Ui/Tower/TowerBoardView.cs
+?? docs/art/UI_FRAMES.md
+?? docs/art/tower/activity-glass-icons/
+?? docs/art/tower/standalone-activities/
+?? docs/art/tower/timed-run-glass/
+?? docs/art/ui-frames-720.png
+?? docs/tasks/TASK-tower-independent-activities.md
+?? game/SelfTest.SkillsGraph.cs.uid
+?? game/Ui/Art/CleaveIconsPreview.cs.uid
+?? game/Ui/Art/SkillPortrait.cs.uid
+?? game/Ui/Art/WindowBackdrop.cs.uid
+?? game/Ui/SkillGraphRouting.cs.uid
+?? game/Ui/SkillTreeLayouts.Arcane.cs.uid
+?? game/Ui/SkillTreeLayouts.Warrior.cs.uid
+?? game/Ui/SkillTreeLayouts.cs.uid
+?? game/Ui/SkillsPanel.Catalog.cs.uid
+?? game/Ui/SkillsPanel.Graph.cs.uid
+?? game/Ui/Tower/Art/activities/bosses.png
+?? game/Ui/Tower/Art/activities/bosses.png.import
+?? game/Ui/Tower/Art/activities/clear.png
+?? game/Ui/Tower/Art/activities/clear.png.import
+?? game/Ui/Tower/Art/activities/escort.png
+?? game/Ui/Tower/Art/activities/escort.png.import
+?? game/Ui/Tower/Art/activities/hold.png
+?? game/Ui/Tower/Art/activities/hold.png.import
+?? game/Ui/Tower/Art/activities/hourglass_silhouette.svg
+?? game/Ui/Tower/Art/activities/hourglass_silhouette.svg.import
+?? game/Ui/Tower/Art/activities/levers.png
+?? game/Ui/Tower/Art/activities/levers.png.import
+?? game/Ui/Tower/Art/activities/pending.svg
+?? game/Ui/Tower/Art/activities/pending.svg.import
+?? game/Ui/Tower/Art/activities/ritual.png
+?? game/Ui/Tower/Art/activities/ritual.png.import
+?? game/Ui/Tower/Art/activities/timed_run.png
+?? game/Ui/Tower/Art/activities/timed_run.png.import
+?? game/Ui/Tower/Art/activities/trial.png
+?? game/Ui/Tower/Art/activities/trial.png.import
+?? game/Ui/Tower/Art/activities/waves.png
+?? game/Ui/Tower/Art/activities/waves.png.import
+?? game/Ui/Tower/Art/activity-window.png
+?? game/Ui/Tower/Art/activity-window.png.import
+?? game/Ui/Tower/TowerGlassWindow.cs
+?? game/Ui/Tower/TowerGlassWindow.cs.uid
+?? game/Ui/Tower/activity_glass_motif.gdshader
+?? game/Ui/Tower/activity_glass_motif.gdshader.uid
+?? game/Ui/Tower/activity_window.gdshader
+?? game/Ui/Tower/activity_window.gdshader.uid

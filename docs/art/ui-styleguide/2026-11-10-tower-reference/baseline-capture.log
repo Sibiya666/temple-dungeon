@@ -1,0 +1,24 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.315 - Forward+ - Using Device #0: AMD - AMD Radeon RX 6750 XT
+
+ASSET_MISSING: текстура floor: dialoid-room-v1/floor/diff.jpg — заглушка
+ASSET_MISSING: текстура floor: dialoid-room-v1/floor/nor_gl.jpg — заглушка
+ASSET_MISSING: текстура floor: dialoid-room-v1/floor/rough.jpg — заглушка
+ASSET_MISSING: текстура wall: dialoid-room-v1/wall/diff.jpg — заглушка
+ASSET_MISSING: текстура wall: dialoid-room-v1/wall/nor_gl.jpg — заглушка
+ASSET_MISSING: текстура wall: dialoid-room-v1/wall/rough.jpg — заглушка
+ASSET_MISSING: текстура stone: dialoid-room-v1/stone/diff.jpg — заглушка
+ASSET_MISSING: текстура stone: dialoid-room-v1/stone/nor_gl.jpg — заглушка
+ASSET_MISSING: текстура stone: dialoid-room-v1/stone/rough.jpg — заглушка
+ASSET_MISSING: текстура wood: dialoid-room-v1/wood/diff.jpg — заглушка
+ASSET_MISSING: текстура wood: dialoid-room-v1/wood/nor_gl.jpg — заглушка
+ASSET_MISSING: текстура wood: dialoid-room-v1/wood/rough.jpg — заглушка
+ASSET_MISSING: модель hero: mixamo/characters/Paladin WProp J Nordstrom.fbx — заглушка
+ASSET_MISSING: модель zombie: mixamo/characters/Skeletonzombie T Avelange.fbx — заглушка
+Комната готова: модели заглушки, текстуры однотонные, качество High, недостает ассетов: 14
+Сессия готова: класс warrior, данные C:\Users\sibiya666\.codex\worktrees\tower-ui-reference\dialoid\data
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=tower.open-close: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (2) — это не приемка !!!
+SELFTEST OK panels
+SELFTEST OK tower.open-close
+SELFTEST 2/2
+SELFTEST PASSED

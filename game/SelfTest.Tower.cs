@@ -63,7 +63,7 @@ public sealed partial class SelfTest
             {
                 Node? ancestor = button.GetParent();
                 while (ancestor is not ScrollContainer && ancestor != null) ancestor = ancestor.GetParent();
-                var rect = ((ScrollContainer)ancestor!).GetGlobalRect();
+                var rect = ancestor is ScrollContainer scroll ? scroll.GetGlobalRect() : board.GetGlobalRect();
                 for (int i = 0; !rect.HasPoint(button.GetGlobalRect().GetCenter()) && i < 30; i++)
                 {
                     MouseTap(button.GetGlobalRect().GetCenter().Y < rect.Position.Y ? MouseButton.WheelUp : MouseButton.WheelDown, rect.GetCenter());
@@ -109,16 +109,66 @@ public sealed partial class SelfTest
             await Settle();
             Check(_main.IsTowerOpen && board.Size.IsEqualApprox(new Vector2(1280, 720)), $"{device}: доска F6 не открыта в 720p");
             var grid = (GridContainer)board.FindChild("ActivityGrid", true, false)!;
+            if (device == "mouse")
+            {
+                var rankControl = (OptionButton)board.FindChild("ActivityRank", true, false)!;
+                var lattice = grid.GetParent<PanelContainer>();
+                foreach (var size in new[] { new Vector2I(1600, 900), new Vector2I(1920, 1080), new Vector2I(1280, 720) })
+                {
+                    window.Size = size;
+                    await Settle();
+                    var gridRect = lattice.GetGlobalRect();
+                    var nodesAtSize = grid.GetChildren().OfType<Button>().Where(c => c.Visible).ToArray();
+                    Check(grid.Columns == 8 && board.GetGlobalRect().Encloses(gridRect), $"каталог не помещается при {size}");
+                    foreach (var item in nodesAtSize)
+                    {
+                        var socket = item.GetNode<Control>("SocketBounds").GetGlobalRect();
+                        Check(Mathf.Abs(socket.Size.X - socket.Size.Y) <= 1 && item.GetGlobalRect().Encloses(socket),
+                            $"квадратное гнездо вышло за ячейку при {size}");
+                        Check(item.GetGlobalRect().Encloses(item.GetNode<Label>("Count").GetGlobalRect()), $"счётчик вне ячейки при {size}");
+                    }
+                    foreach (var name in new[] { "Floor_0", "Floor_4", "WholeTowerTarget", "InstallActivity", "RemoveActivity", "ShuffleInventory", "ValidateEntry", "TowerSummit" })
+                        Check(board.GetGlobalRect().Encloses(((Control)board.FindChild(name, true, false)!).GetGlobalRect()), $"{name} вне экрана при {size}");
+                }
+            }
+            for (Node? parent = grid.GetParent(); parent != null && parent != board; parent = parent.GetParent())
+                Check(parent is not ScrollContainer, "у сетки активностей появилась прокрутка");
+            Check(board.GetGlobalRect().Encloses(grid.GetGlobalRect()), "сетка активностей выходит за экран");
             var nodes = grid.GetChildren().OfType<Button>().ToArray();
-            var node = nodes[1];
+            var node = device == "mouse" ? Find($"Activity_stack_{rank}_timed_run") : nodes[1];
             await Activate(node);
             var group = board.Inventory!.Groups(rank).Single(g => g.Id == board.SelectedInventoryId);
             var typeName = board.Data!.FloorType(group.TypeId).Name;
-            var description = (Label)board.FindChild("ActivityDescription", true, false)!;
-            Check(board.InventoryTarget && description.Text.Contains(typeName, StringComparison.Ordinal), "нет описания выбранной активности");
-            Check(node.GetNode<Label>("Type").Text == typeName && node.GetNode<Label>("Rank").Text.Contains(rank.ToString(), StringComparison.Ordinal) &&
-                node.GetNode<Label>("Count").Text == group.Count.ToString(), "карточка не показывает тип, ранг или количество");
+            Check(board.InventoryTarget && node.TooltipText.Contains(typeName, StringComparison.Ordinal), "нет описания выбранной активности");
+            var count = node.GetNode<Label>("Count");
+            Check(node.TooltipText.Contains(typeName, StringComparison.Ordinal) && count.Text == group.Count.ToString() &&
+                count.HorizontalAlignment == HorizontalAlignment.Right && count.VerticalAlignment == VerticalAlignment.Bottom,
+                "название должно быть в подсказке, а количество — справа внизу карточки");
             CaptureTower("activity-selected-" + device + "-720.png");
+            if (device == "mouse")
+            {
+                var neighbor = nodes.First(b => b != node);
+                var point = neighbor.GetGlobalRect().GetCenter();
+                viewport.PushInput(new InputEventMouseMotion { Position = point, GlobalPosition = point, Relative = Vector2.One }, true);
+                await Settle();
+                Check(neighbor.IsHovered() && board.SelectedInventoryId == group.Id, "наведение должно подсветить соседнюю ноду и сохранить выбор");
+                CaptureTower("activity-hover-720.png");
+                if (_screenshotDir != null && DisplayServer.GetName() != "headless")
+                {
+                    var glass = grid.GetParent().GetChildren().OfType<Ui.Tower.TowerGlassWindow>().Single();
+                    var previousFrame = glass.Frame;
+                    try
+                    {
+                        foreach (var frame in new[] { Ui.Tower.TowerGlassWindow.FrameStyle.CornerClips, Ui.Tower.TowerGlassWindow.FrameStyle.Recessed })
+                        {
+                            glass.Frame = frame;
+                            await Settle();
+                            CaptureTower($"activity-frame-{frame}-720.png");
+                        }
+                    }
+                    finally { glass.Frame = previousFrame; }
+                }
+            }
             await Activate(Find("Floor_1"));
             Check(board.SelectedFloor == 1 && !board.InventoryTarget, "не выбран этаж 2");
             await Activate(Find("InstallActivity"));
@@ -139,6 +189,9 @@ public sealed partial class SelfTest
 
     private IEnumerable<Step> TowerSteps()
     {
+        yield return new Step("tower.currency-icons-runtime", TowerCurrencyIconsRuntime);
+        yield return new Step("tower.montage", TowerMontage);
+        yield return new Step("tower.montage-details-input", TowerMontageDetailsInput);
         yield return new Step("tower.focus-contained", async () =>
         {
             var board = _main.TowerBoard!;
@@ -199,18 +252,25 @@ public sealed partial class SelfTest
         yield return new Step("tower.activity-input-mouse", () => ActivityBoardInput("mouse", 8));
         yield return new Step("tower.activity-input-keyboard", () => ActivityBoardInput("keyboard", 9));
         yield return new Step("tower.activity-input-gamepad", () => ActivityBoardInput("gamepad", 10));
-        foreach (string gridName in new[] { "ActivityGrid", "CurrencyGrid" })
+        const string gridName = "CurrencyGrid";
             yield return new Step("tower.wheel-" + gridName, async () =>
             {
                 var board = _main.TowerBoard!;
                 var windowSize = DisplayServer.WindowGetSize();
                 var rootSize = _main.GetTree().Root.Size;
+                var detailToggle = (Button)board.FindChild("ToggleTargetDetails", true, false)!;
+                var targetDetails = (Control)board.FindChild("TargetDetails", true, false)!;
+                bool detailsWereVisible = targetDetails.Visible;
                 try
                 {
                     board.SwitchRank(11);
                     DisplayServer.WindowSetSize(new Vector2I(1280, 720));
                     if (DisplayServer.GetName() == "headless") _main.GetTree().Root.Size = new Vector2I(1280, 720);
                     _main.OpenTowerBoard();
+                    await Settle();
+                    // Base v05 shows every currency. Expanded real quality/mod details provide
+                    // the overflowing panel needed to exercise mouse-wheel/focus handoff.
+                    if (!targetDetails.Visible) detailToggle.EmitSignal(BaseButton.SignalName.Pressed);
                     await Settle();
                     Check(board.Size.X <= 1280 && board.Size.Y <= 720, "сценарий должен выполняться в 720p");
                     var grid = (GridContainer)board.FindChild(gridName, true, false)!;
@@ -276,6 +336,7 @@ public sealed partial class SelfTest
                 }
                 finally
                 {
+                    if (targetDetails.Visible != detailsWereVisible) detailToggle.EmitSignal(BaseButton.SignalName.Pressed);
                     _main.CloseTowerBoard();
                     board.SwitchRank(1);
                     DisplayServer.WindowSetSize(windowSize);
@@ -300,6 +361,37 @@ public sealed partial class SelfTest
                 Check(!prior.HasFocus() && !_main.IsTowerOpen, "закрытие восстановило недоступный фокус");
             }
             finally { prior.FocusMode = mode; _main.CloseTowerBoard(); }
+        });
+        yield return new Step("tower.separate-activities", async () =>
+        {
+            var board = _main.TowerBoard!;
+            var previousRank = board.Assembly!.Spec.Rank;
+            const int rank = 6;
+            try
+            {
+                board.SwitchRank(rank);
+                _main.OpenTowerBoard();
+                await Settle();
+                foreach (var id in new[] { "escort", "hold", "ritual", "levers" })
+                {
+                    var group = board.Inventory!.Groups(rank).Single(g => g.TypeId == id);
+                    var node = board.FindChild("Activity_" + group.Id.Replace(':', '_'), true, false) as Button;
+                    Check(node != null && node.IsVisibleInTree(), $"нет отдельной ноды активности {id}");
+                    node!.EmitSignal(BaseButton.SignalName.Pressed);
+                    Check(board.SelectedInventoryId == group.Id, $"нода {id} выбрала другой стек");
+                    board.SelectFloor(0);
+                    Check(board.InstallSelectedActivity() == Dialoid.Core.Tower.TowerRefusal.None &&
+                        board.Assembly.Spec.Floors[0].TypeId == id, $"на этаж установилась другая активность вместо {id}");
+                    Check(board.RemoveSelectedActivity() == Dialoid.Core.Tower.TowerRefusal.None &&
+                        board.Inventory.Groups(rank).Single(g => g.Id == group.Id).Count == group.Count,
+                        $"при снятии {id} не вернулась в исходный стек");
+                }
+            }
+            finally
+            {
+                _main.CloseTowerBoard();
+                board.SwitchRank(previousRank);
+            }
         });
         yield return new Step("tower.icons", () =>
         {
@@ -358,7 +450,7 @@ public sealed partial class SelfTest
                     board.SelectFloor(slot);
                     ByText("Снять активность этажа").EmitSignal(BaseButton.SignalName.Pressed);
                 }
-                var stack = board.Inventory!.Groups(12).First(g => g.TypeId == "trial");
+                var stack = board.Inventory!.Groups(12).First(g => g.TypeId == "ritual");
                 Press("Activity_" + stack.Id.Replace(':', '_'));
                 Check(board.InventoryTarget && board.SelectedInventoryId == stack.Id, "left node target missing");
                 int before = board.Wallet!.CountUsable("imbue", 12);
@@ -448,16 +540,24 @@ public sealed partial class SelfTest
             var board = _main.TowerBoard!;
             board.SwitchRank(5);
             var inventory = board.Inventory!;
-            var stack = inventory.Groups(5).Single(g => g.TypeId == "trial" && !g.EverModified);
+            var stack = inventory.Groups(5).Single(g => g.TypeId == "ritual" && !g.EverModified);
             board.SelectInventory(stack.Id);
             Check(board.ApplyCurrency("imbue") == Dialoid.Core.Tower.TowerRefusal.None, "не удалось намазать активность в инвентаре");
             var singleton = inventory.Groups(5).Single(g => g.Id == board.SelectedInventoryId);
             Check(singleton.EverModified && singleton.Count == 1 && singleton.Mods.Count == 1, "намазанный экземпляр не отделился от стака");
             Check(inventory.Groups(5).Single(g => g.Id == stack.Id).Count == stack.Count - 1, "стак не уменьшился на один");
             board.SelectFloor(0);
+            var window = _main.GetTree().Root;
+            var previousSize = window.Size;
+            window.Size = new Vector2I(1280, 720);
+            _main.OpenTowerBoard();
+            await Settle();
+            CaptureTower("glass-piece-in-inventory.png");
             Check(board.InstallSelectedActivity() == Dialoid.Core.Tower.TowerRefusal.None, "экземпляр не перенесён на этаж");
             Check(!inventory.Groups(5).Any(g => g.Id == singleton.Id), "экземпляр скопирован вместо переноса");
             Check(board.Assembly!.Spec.Floors[0].Mods.SequenceEqual(singleton.Mods), "перенос изменил свойства");
+            await Settle();
+            CaptureTower("glass-piece-on-floor.png");
             Check(board.RemoveSelectedActivity() == Dialoid.Core.Tower.TowerRefusal.None, "экземпляр не вернулся");
             Check(board.Assembly.Spec.Floors[0].TypeId == null, "этаж не очистился после снятия");
             var returned = inventory.Groups(5).Single(g => g.Id == singleton.Id);
@@ -475,6 +575,8 @@ public sealed partial class SelfTest
                 _main.CloseTowerBoard();
             }
             board.SwitchRank(1);
+            _main.CloseTowerBoard();
+            window.Size = previousSize;
         });
         yield return new Step("tower.open-close", async () =>
         {

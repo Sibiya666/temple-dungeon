@@ -1,0 +1,16 @@
+{
+  "id": "imbue_type",
+  "provider": "built-in GPT image_gen",
+  "requestType": "generation with original reference images",
+  "generatedOriginal": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1c691-6883-7891-baf4-41eff6c62bcb\\exec-2f4f15df-974a-4f21-b1d0-42c78049c6a4.png",
+  "projectOriginal": "originals/imbue_type.png",
+  "prompt": "prompts/imbue_type-production.txt",
+  "references": [
+    "reference/approved-venice-glass.png",
+    "reference/approved-hourglass.png",
+    "reference/approved-shield.png"
+  ],
+  "transparentBackgroundRequested": true,
+  "modelAndSeed": "not exposed by built-in tool",
+  "date": "2026-11-10"
+}

@@ -13,7 +13,7 @@ public partial class SkillsPanel : SessionPanel
     /// <summary>Key of the skill level number (an owner-set <see cref="NumberLabel.InputLine"/>).</summary>
     public const string SkillLevelKey = NumberLabel.InputKeyPrefix + "skill_level";
 
-    private static readonly Color Grey = new(0.55f, 0.55f, 0.58f);
+    private static readonly Color Grey = RoomHudTheme.MutedText;
 
     private Action<NumberLine, string?> _open = null!;
     private string? _commandError;
@@ -57,6 +57,8 @@ public partial class SkillsPanel : SessionPanel
     public void Setup(SandboxSession session, Action<NumberLine, string?> open)
     {
         InitSession(session);
+        Theme = RoomHudTheme.ReferenceWindowTheme();
+        GetChild<ScrollContainer>(0).FollowFocus = true;
         _open = open;
     }
 
@@ -165,9 +167,10 @@ public partial class SkillsPanel : SessionPanel
         }
 
         var heading = new HBoxContainer();
-        if (GameIcons.Skill(slot.SkillId) is { } picture) heading.AddChild(GameIcons.View(picture, 32));
-        heading.AddChild(new Label { Text = $"Дерево скилла «{skill.Name}» (слот {_treeSlot + 1})" });
+        if (GameIcons.Skill(slot.SkillId) is { } picture) heading.AddChild(GameIcons.View(picture, 40));
+        heading.AddChild(RoomHudTheme.Heading(skill.Name, 20));
         Content!.AddChild(heading);
+        DrawAssignmentControls();
         var levelNumber = NumberLabel.For(LevelLine(slot.Level, _treeSlot), _open, skill.Name);
         _skillNumbers.Add(levelNumber);
         Content!.AddChild(levelNumber);
@@ -198,7 +201,7 @@ public partial class SkillsPanel : SessionPanel
 
     private void DrawRotation(Build build)
     {
-        AddText("Ротация (порядок приоритета применения):");
+        Content!.AddChild(RoomHudTheme.Heading("Приоритет навыков", 18));
         var order = ShownOrder();
         ShownRotation = order;
         if (order.Count == 0)
@@ -215,11 +218,12 @@ public partial class SkillsPanel : SessionPanel
             var row = new HBoxContainer();
             var mark = Session.IsGeneratorSkill(order[i]) ? GeneratorMark : "";
             if (GameIcons.Skill(order[i]) is { } rotationIcon) row.AddChild(GameIcons.View(rotationIcon, 20));
-            row.AddChild(new Label { Text = $"{i + 1}. {SkillName(order[i])}{mark}", CustomMinimumSize = new Vector2(320, 0) });
-            var up = new Button { Text = "вверх", Disabled = i == 0 };
+            row.AddChild(new Label { Text = $"{i + 1}. {SkillName(order[i])}{mark}", AutowrapMode = TextServer.AutowrapMode.WordSmart,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill });
+            var up = new Button { Text = "↑", TooltipText = "Повысить приоритет", Disabled = i == 0 };
             up.Pressed += () => MoveInRotation(index, -1);
             row.AddChild(up);
-            var down = new Button { Text = "вниз", Disabled = i == order.Count - 1 };
+            var down = new Button { Text = "↓", TooltipText = "Понизить приоритет", Disabled = i == order.Count - 1 };
             down.Pressed += () => MoveInRotation(index, +1);
             row.AddChild(down);
             Content!.AddChild(row);
@@ -229,7 +233,8 @@ public partial class SkillsPanel : SessionPanel
         foreach (var missing in build.Slots.Select(s => s.SkillId).Where(id => !build.Rotation.Contains(id)))
         {
             var row = new HBoxContainer();
-            row.AddChild(new Label { Text = $"не в ротации: {SkillName(missing)}", CustomMinimumSize = new Vector2(320, 0), Modulate = Grey });
+            row.AddChild(new Label { Text = $"не в ротации: {SkillName(missing)}", AutowrapMode = TextServer.AutowrapMode.WordSmart,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill, Modulate = Grey });
             var add = new Button { Text = "добавить" };
             add.Pressed += () => AddToRotation(missing);
             row.AddChild(add);

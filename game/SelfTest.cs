@@ -135,6 +135,8 @@ public sealed partial class SelfTest
 
         steps.AddRange(RoomSteps());
         steps.AddRange(TowerSteps());
+        steps.Add(new("tower.reference", TowerReference));
+        steps.Add(new("skills.reference", SkillsReference));
 
         var mains = _main.Builds?.References.Where(r => r.Group == ReferenceBuilds.MainGroup).ToList() ?? new();
         steps.Add(new("builds.main-listed", () =>

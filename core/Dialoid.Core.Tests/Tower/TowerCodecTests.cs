@@ -20,6 +20,29 @@ public class TowerCodecTests
         return a.Spec;
     }
 
+    [Theory]
+    [InlineData("escort", "escort_hunters")]
+    [InlineData("hold", "hold_decay")]
+    [InlineData("ritual", "ritual_extra_point")]
+    [InlineData("levers", "levers_more_needed")]
+    public void Legacy_trial_preserves_its_objective_biome_and_rolled_mod(string objective, string modId)
+    {
+        var data = TowerDataLoader.Load(FixturePaths.RealTowerData).Data!;
+        var tier = data.Mod(modId).Tiers[0];
+        var mod = new ModInstance(modId, tier.Tier, tier.Max);
+        var tower = new TowerAssembly(data, 5, RandomSources.Create(SimMode.Roll, 1)).Spec;
+        var floors = tower.Floors.ToArray();
+        floors[0] = new FloorSpec("trial", objective, "crypt", new[] { mod });
+        var legacy = TowerCodec.ToJson(tower with { Floors = floors });
+        Assert.True(TowerCodec.TryFromJson(legacy, data, out var migrated, out var error), error);
+        var floor = migrated!.Floors[0];
+        Assert.Equal(objective, floor.TypeId);
+        Assert.Null(floor.Variant);
+        Assert.Equal("crypt", floor.BiomeId);
+        Assert.Equal(mod, Assert.Single(floor.Mods));
+        Assert.DoesNotContain("\"trial\"", TowerCodec.ToJson(migrated));
+    }
+
     private static string? Error(string json)
     {
         Assert.False(TowerCodec.TryFromJson(json, D, out var spec, out var error));
