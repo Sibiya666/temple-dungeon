@@ -156,7 +156,29 @@ public sealed class TowerAssembly
         return TowerRefusal.None;
     }
 
+    /// <summary>Marks a successful paid inventory fill after all owned floors have been transferred.</summary>
+    internal void RecordInventoryShuffle()
+    {
+        ShuffleBonusActive = true;
+        ShufflesDone++;
+    }
+
     // ---- mutators for Crafting: they never touch the shuffle bonus ----
+
+    /// <summary>Moves an inventory-owned floor without rerolling its contents. Not a public spec import.</summary>
+    internal void ReplaceInventoryFloor(int slot, FloorSpec floor)
+    {
+        CheckSlot(slot);
+        var target = new Slot
+        {
+            TypeId = floor.TypeId, Variant = floor.Variant, BiomeId = floor.BiomeId,
+            Mods = floor.Mods.ToArray(),
+        };
+        if (floor.TypeId != null && floor.Variant != null)
+            target.VariantMemory[floor.TypeId] = floor.Variant;
+        _slots[slot] = target;
+        ShuffleBonusActive = false;
+    }
 
     internal void SetFloorMods(int slot, IReadOnlyList<ModInstance> mods)
     {

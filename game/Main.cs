@@ -138,6 +138,9 @@ public partial class Main : Control
         if (LoadError == null && !SkipHudForGeometryReview)
             TowerWaterfallHud.Install(this);
 
+        if (LoadError == null)
+            BuildTowerBoard();
+
         if (OS.GetCmdlineUserArgs().Contains(SelfTestArg))
             new SelfTest(this).Start();
     }
@@ -148,8 +151,8 @@ public partial class Main : Control
     /// </summary>
     private void WireGamepad()
     {
-        Combat!.InputBlocked = () => Windows.WindowHasFocus;
-        Room!.CameraRig.InputBlocked = () => Windows.WindowHasFocus;
+        Combat!.InputBlocked = () => IsTowerOpen || Windows.WindowHasFocus;
+        Room!.CameraRig.InputBlocked = () => IsTowerOpen || Windows.WindowHasFocus;
         Windows.LeftBottomRightLimit = screen => CombatHud.LeftEdge(screen.X) - CombatHud.WindowGap;
         Windows.HeroScreenX = () => RoomToScreen(Combat.Hero.Position)?.X;
         // Start, then ↓ from the top bar: the combat screen's folded rows (their full lists) on the gamepad.
