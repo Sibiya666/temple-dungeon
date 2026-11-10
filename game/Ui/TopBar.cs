@@ -22,6 +22,20 @@ public partial class TopBar : PanelContainer
     private HBoxContainer _row = null!;
     private int _fontSize;
 
+    public Button? TowerButton { get; private set; }
+
+    public void AddTowerButton(Action open)
+    {
+        var button = TowerButton = new Button
+        {
+            Name = "OpenTower", Text = "Башня F6", FocusMode = FocusModeEnum.All,
+            TooltipText = "Собрать башню — F6",
+        };
+        button.Pressed += open;
+        _row.AddChild(button);
+        _row.MoveChild(button, 0);
+    }
+
     /// <summary>The window buttons by window id.</summary>
     public IReadOnlyDictionary<string, Button> Buttons => _buttons;
 
@@ -172,11 +186,12 @@ public partial class TopBar : PanelContainer
     public override void _Process(double delta)
     {
         // Keep the preset selector reachable at 1366px after adding the service icons.
-        var fontSize = GetViewportRect().Size.X < 1500 ? 14 : 16;
+        var fontSize = GetViewportRect().Size.X < 1700 ? 14 : 16;
         if (_fontSize != fontSize)
         {
             _fontSize = fontSize;
             foreach (var button in _buttons.Values) button.AddThemeFontSizeOverride("font_size", fontSize);
+            TowerButton?.AddThemeFontSizeOverride("font_size", fontSize);
             DummyOptions?.AddThemeFontSizeOverride("font_size", fontSize);
             _row.AddThemeConstantOverride("separation", fontSize == 14 ? 2 : 4);
         }
