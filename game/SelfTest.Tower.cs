@@ -139,6 +139,63 @@ public sealed partial class SelfTest
 
     private IEnumerable<Step> TowerSteps()
     {
+        yield return new Step("tower.focus-contained", async () =>
+        {
+            var board = _main.TowerBoard!;
+            var viewport = _main.GetViewport();
+            var window = _main.GetTree().Root;
+            var previousSize = window.Size;
+            try
+            {
+                window.Size = new Vector2I(1280, 720);
+                _main.OpenTowerBoard();
+                await Settle();
+                var start = viewport.GuiGetFocusOwner()!;
+                var forward = new HashSet<Control>();
+                foreach (bool reverse in new[] { false, true })
+                {
+                    var visited = new HashSet<Control>();
+                    var current = start;
+                    do
+                    {
+                        Check(visited.Add(current!), "Цикл Tab замкнулся до исходной кнопки");
+                        foreach (bool pressed in new[] { true, false })
+                            viewport.PushInput(new InputEventKey { Keycode = Key.Tab, PhysicalKeycode = Key.Tab,
+                                ShiftPressed = reverse, Pressed = pressed }, true);
+                        await NextFrame();
+                        current = viewport.GuiGetFocusOwner()!;
+                        Check(current != null && board.IsAncestorOf(current),
+                            $"{(reverse ? "Shift+Tab" : "Tab")} покинул доску на шаге {visited.Count}: {current?.Name}");
+                    } while (current != start);
+                    if (reverse) Check(visited.SetEquals(forward), "Shift+Tab пропустил доступные элементы доски");
+                    else forward = visited;
+                }
+                foreach (var name in new[] { "ActivityGrid", "Floor_0", "CurrencyGrid" })
+                {
+                    var control = board.FindChild(name, true, false)!;
+                    Check(forward.Any(f => f == control || control.IsAncestorOf(f)), $"Tab пропустил {name}");
+                }
+                // Start at every tab stop to cover each outer edge and scroll position.
+                foreach (var control in forward)
+                foreach (var arrow in new[] { JoyButton.DpadLeft, JoyButton.DpadRight, JoyButton.DpadUp, JoyButton.DpadDown })
+                {
+                    control.GrabFocus();
+                    await Settle();
+                    foreach (bool pressed in new[] { true, false })
+                        viewport.PushInput(new InputEventJoypadButton { ButtonIndex = arrow, Pressed = pressed }, true);
+                    await NextFrame();
+                    var focus = viewport.GuiGetFocusOwner();
+                    Check(focus != null && board.IsAncestorOf(focus), $"{arrow} покинул доску с {control.Name}: {focus?.Name}");
+                }
+            }
+            finally
+            {
+                _main.CloseTowerBoard();
+                window.Size = previousSize;
+                Dialoid.Game.Input.InputDevice.Instance!.Set(Dialoid.Game.Input.InputKind.KeyboardMouse);
+                await Settle();
+            }
+        });
         yield return new Step("tower.activity-input-mouse", () => ActivityBoardInput("mouse", 8));
         yield return new Step("tower.activity-input-keyboard", () => ActivityBoardInput("keyboard", 9));
         yield return new Step("tower.activity-input-gamepad", () => ActivityBoardInput("gamepad", 10));

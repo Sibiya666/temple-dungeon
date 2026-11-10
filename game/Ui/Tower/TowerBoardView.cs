@@ -115,6 +115,8 @@ public partial class TowerBoardView : Control
             option.ClipText = true;
         }
         Theme = CreateTheme();
+        // Godot confines Tab traversal and directional focus searches to this GUI root.
+        TopLevel = true;
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Stop;
         var background = new ColorRect { Color = new Color("0c1114"), MouseFilter = MouseFilterEnum.Ignore };
