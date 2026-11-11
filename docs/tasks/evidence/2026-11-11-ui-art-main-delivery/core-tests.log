@@ -1,0 +1,16 @@
+  Определение проектов для восстановления...
+  Восстановлен C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\core\Dialoid.Core.Tests\Dialoid.Core.Tests.csproj (за 1,02 с).
+  Восстановлен C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\core\Dialoid.Sandbox.Tests\Dialoid.Sandbox.Tests.csproj (за 1,02 с).
+  Проектов обновлено для восстановления: 2 из 4.
+  Dialoid.Core -> C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\core\Dialoid.Core\bin\Debug\net8.0\Dialoid.Core.dll
+  Dialoid.Sandbox -> C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\core\Dialoid.Sandbox\bin\Debug\net8.0\Dialoid.Sandbox.dll
+  Dialoid.Sandbox.Tests -> C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\core\Dialoid.Sandbox.Tests\bin\Debug\net8.0\Dialoid.Sandbox.Tests.dll
+Тестовый запуск для C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\core\Dialoid.Sandbox.Tests\bin\Debug\net8.0\Dialoid.Sandbox.Tests.dll (.NETCoreApp,Version=v8.0)
+Общее количество тестовых файлов (1), соответствующих указанному шаблону.
+  Dialoid.Core.Tests -> C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\core\Dialoid.Core.Tests\bin\Debug\net8.0\Dialoid.Core.Tests.dll
+Тестовый запуск для C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\core\Dialoid.Core.Tests\bin\Debug\net8.0\Dialoid.Core.Tests.dll (.NETCoreApp,Version=v8.0)
+Общее количество тестовых файлов (1), соответствующих указанному шаблону.
+
+Пройден!   : не пройдено     0, пройдено   144, пропущено     0, всего   144, длительность 23 s. - Dialoid.Sandbox.Tests.dll (net8.0)
+
+Пройден!   : не пройдено     0, пройдено  1004, пропущено     0, всего  1004, длительность 1 m 48 s. - Dialoid.Core.Tests.dll (net8.0)
