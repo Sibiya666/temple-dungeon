@@ -1,0 +1,11 @@
+{
+  "key": "dark_slash",
+  "skill_id": "dark_slash",
+  "node_id": null,
+  "subject": "A short curved one-handed blade pointing down and left, cutting ONE broad diagonal wedge-shaped silver-blue shadow streak. The shadow wedge dominates the silhouette; no crossing slash or X-shaped composition.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-f63ee54b-26cd-4dc3-9138-2194067c233e.png",
+  "prompt": "Create ONE square Dialoid icon. Use the supplied approved Venice ORIGINAL as exact style reference. Replace only the central subject with: A short curved one-handed blade pointing down and left, cutting ONE broad diagonal wedge-shaped silver-blue shadow streak. The shadow wedge dominates the silhouette; no crossing slash or X-shaped composition. Keep the original background, palette, diffuse lighting, exposure, contrast, materials, soft edges and detail density. Main form occupies central75%, readable at24px. No letters, numbers, UI, borders, decorative ornaments, broad glow or added sharpening.",
+  "revision": 2
+}

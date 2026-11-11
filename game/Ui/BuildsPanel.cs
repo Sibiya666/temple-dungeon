@@ -1,5 +1,6 @@
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -41,14 +42,26 @@ public partial class BuildsPanel : SessionPanel
     public void Setup(SandboxSession session, string? dataDirectory)
     {
         InitSession(session, withContent: false);
+        Theme = RoomHudTheme.TowerWindowTheme();
         References = dataDirectory == null ? Array.Empty<ReferenceBuildInfo>() : ReferenceBuilds.List(dataDirectory);
-
-        AddChild(new Label { Text = "Эталонные билды (data/builds). Двойной щелчок или «Загрузить»:", AutowrapMode = TextServer.AutowrapMode.WordSmart });
+        AddChild(RoomHudTheme.TowerHeading("Библиотека билдов / загрузка и обмен кодом", 22));
+        var scroll = new ScrollContainer { SizeFlagsVertical = SizeFlags.ExpandFill, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        AddChild(scroll);
+        var columns = new TowerColumns { LeftRatio = .48f, SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
+        scroll.AddChild(columns);
+        var catalogue = new VBoxContainer { Name = "BuildCatalogue", SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
+        var exchange = new VBoxContainer { Name = "BuildExchange", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        columns.AddChild(catalogue);
+        columns.AddChild(exchange);
+        catalogue.AddChild(RoomHudTheme.TowerHeading("ЭТАЛОНЫ / DATA/BUILDS", 15));
+        catalogue.AddChild(new HSeparator());
+        catalogue.AddChild(new Label { Text = "Двойной щелчок или «Загрузить»", AutowrapMode = TextServer.AutowrapMode.WordSmart });
         _tree = new Tree
         {
             HideRoot = true,
             SizeFlagsVertical = SizeFlags.ExpandFill,
-            CustomMinimumSize = new Vector2(0, 300),
+            CustomMinimumSize = new Vector2(0, 240),
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
         };
         var root = _tree.CreateItem();
         var groups = new Dictionary<string, TreeItem>();
@@ -68,32 +81,33 @@ public partial class BuildsPanel : SessionPanel
             item.SetTooltipText(0, info.Path);
             item.SetMetadata(0, i);
         }
-        if (References.Count == 0) AddChild(new Label { Text = "Эталонные билды не найдены." });
+        if (References.Count == 0) catalogue.AddChild(new Label { Text = "Эталонные билды не найдены." });
         _tree.ItemActivated += LoadSelected;
-        AddChild(_tree);
+        catalogue.AddChild(_tree);
 
         var load = new Button { Text = "Загрузить", SizeFlagsHorizontal = SizeFlags.ShrinkBegin };
         load.Pressed += LoadSelected;
-        AddChild(load);
+        catalogue.AddChild(load);
         _loadStatus = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        AddChild(_loadStatus);
+        catalogue.AddChild(_loadStatus);
 
-        AddChild(new HSeparator());
-        AddChild(new Label { Text = "Код билда (DLD1:...) или JSON билда:" });
+        exchange.AddChild(RoomHudTheme.TowerHeading("КОД ТЕКУЩЕГО БИЛДА", 15));
+        exchange.AddChild(new HSeparator());
+        exchange.AddChild(new Label { Text = "Код DLD1:… или JSON билда", AutowrapMode = TextServer.AutowrapMode.WordSmart });
         _code = new TextEdit
         {
             CustomMinimumSize = new Vector2(0, 120),
             WrapMode = TextEdit.LineWrappingMode.Boundary,
         };
-        AddChild(_code);
-        var buttons = new HBoxContainer();
+        exchange.AddChild(_code);
+        var buttons = new HFlowContainer();
         var export = new Button { Text = "Экспорт" };
         export.Pressed += ExportCode;
         var import = new Button { Text = "Импорт" };
         import.Pressed += () => ImportText(_code.Text);
         buttons.AddChild(export);
         buttons.AddChild(import);
-        AddChild(buttons);
+        exchange.AddChild(buttons);
         // Without a keyboard (the gamepad, spec §4): the code goes through the clipboard; the field itself is for typing.
         ButtonPrompts.Skip(_code);
         var clipboard = new HFlowContainer();
@@ -103,9 +117,9 @@ public partial class BuildsPanel : SessionPanel
         paste.Pressed += () => PasteCode();
         clipboard.AddChild(copy);
         clipboard.AddChild(paste);
-        AddChild(clipboard);
+        exchange.AddChild(clipboard);
         _importStatus = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        AddChild(_importStatus);
+        exchange.AddChild(_importStatus);
     }
 
     // ---- handlers (the buttons and the self-test call these) --------------------------------------------------------

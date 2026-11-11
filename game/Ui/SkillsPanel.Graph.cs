@@ -17,18 +17,21 @@ public partial class SkillsPanel
     public Label? SelectedNodeLabel { get; private set; }
     public string SelectedNodeText => SelectedNodeLabel?.Text ?? "";
 
-    private void DrawSkillGraph(SkillDefinition skill, int? editableSlot)
+    private void DrawSkillGraph(SkillDefinition skill, int? editableSlot, VBoxContainer graphPane, VBoxContainer detailPane)
     {
         if (editableSlot >= Session.SlotsOpen || skill.UnlockLevel > Session.Build.Level) editableSlot = null;
         float? zoom = null;
         Vector2 pan = default;
+        Vector2 previousSize = default;
         if (_graphSkillId == skill.Id && GodotObject.IsInstanceValid(SkillGraph)
             && SkillGraph!.Size.X >= 200 && SkillGraph.Size.Y >= 200)
         {
             zoom = SkillGraph!.Zoom;
             pan = SkillGraph.Pan;
+            previousSize = SkillGraph.Size;
         }
-        bool restoreGraphFocus = _graphHadFocus || (GodotObject.IsInstanceValid(SkillGraph) && SkillGraph!.HasFocus());
+        bool restoreGraphFocus = _graphSkillId == skill.Id &&
+            (_graphHadFocus || (GodotObject.IsInstanceValid(SkillGraph) && SkillGraph!.HasFocus()));
         _graphSkillId = skill.Id;
         var points = editableSlot is { } slot ? Session.GetSlot(slot)!.NodePoints : new Dictionary<string, int>();
         var positions = SkillPositions(skill);
@@ -71,18 +74,21 @@ public partial class SkillsPanel
         }
         SkillGraphEdges = edges;
         var toolbar = new HFlowContainer();
+        toolbar.AddChild(RoomHudTheme.TowerHeading("ДЕРЕВО НАВЫКА", 15));
         var fit = new Button { Text = "Вписать дерево" };
         toolbar.AddChild(fit);
-        Content!.AddChild(toolbar);
-        var graphHint = AddText("Колесо / LT/RT — масштаб · перетаскивание — сдвиг", Grey);
+        graphPane.AddChild(toolbar);
+        graphPane.AddChild(new HSeparator());
+        var graphHint = SkillText(graphPane, "Колесо / LT/RT — масштаб · перетаскивание — сдвиг", Grey);
         graphHint.AddThemeFontSizeOverride("font_size", RoomHudTheme.CaptionSize);
         var graph = new SkillTreeGraphView
         {
-            CustomMinimumSize = new Vector2(0, 260), SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            Name = "SkillsTreeGraph", CustomMinimumSize = new Vector2(0, SkillGraphHeight()),
+            SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ShrinkBegin,
             DescriptionInPanel = true
         };
         SkillGraph = graph;
-        Content.AddChild(graph);
+        graphPane.AddChild(graph);
         graph.FocusEntered += () => _graphHadFocus = true;
         graph.FocusExited += () => Callable.From(() =>
         {
@@ -101,7 +107,9 @@ public partial class SkillsPanel
         graph.RouteLinks();
         graph.SetStates(states);
         SelectedNodeLabel = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        Content.AddChild(GameIcons.Description(SelectedNodeLabel, out var selectedIcon));
+        detailPane.AddChild(new HSeparator());
+        detailPane.AddChild(RoomHudTheme.TowerHeading("ВЫБРАННЫЙ УЗЕЛ", 15));
+        detailPane.AddChild(GameIcons.Description(SelectedNodeLabel, out var selectedIcon));
         var actions = new HBoxContainer();
         var plus = new Button { Name = "SkillNodeAdd", Text = "+ Вложить" };
         var minus = new Button { Name = "SkillNodeRemove", Text = "− Снять" };
@@ -109,7 +117,9 @@ public partial class SkillsPanel
         minus.FocusEntered += () => _graphHadFocus = false;
         actions.AddChild(plus);
         actions.AddChild(minus);
-        toolbar.AddChild(actions);
+        detailPane.AddChild(actions);
+        if (skill.Tree.Any(node => !GameIcons.HasDedicatedSkillNodeArt(skill.Id, node.Id)))
+            SkillText(detailPane, "Часть узлов пока использует общие знаки эффектов: комплект смысловых иконок не завершён.", Grey);
         void Select(string id)
         {
             SelectedNodeId = id;
@@ -121,12 +131,11 @@ public partial class SkillsPanel
             SelectedNodeLabel.Text = node == null ? skill.Name + "\n" + skill.Description : Detail(node);
             plus.Disabled = node == null || editableSlot == null || Session.WhyCannotAddSkillNodePoint(editableSlot.Value, id) != null;
             minus.Disabled = node == null || editableSlot == null || points.GetValueOrDefault(id) == 0;
+            ConfigureSkillFocus();
         }
         graph.NodeClicked += Select;
-        graph.HoveredChanged += id =>
-        {
-            if (Dialoid.Game.Input.InputDevice.Gamepad && graph.HasFocus() && id != null) Select(id);
-        };
+        // Navigation moves the focus corners. A commits selection, just as a mouse click does;
+        // merely passing another node must not replace the action the player was navigating toward.
         plus.Pressed += () => { _graphRestoreFocus = "SkillNodeAdd"; if (editableSlot is { } index && SelectedNodeId is { } id) AddPoint(index, id); };
         minus.Pressed += () => { _graphRestoreFocus = "SkillNodeRemove"; if (editableSlot is { } index && SelectedNodeId is { } id) RemovePoint(index, id); };
         var selected = _graphSelections.GetValueOrDefault(skill.Id);
@@ -144,7 +153,7 @@ public partial class SkillsPanel
                 if (!action.Disabled) action.GrabFocus();
                 else graph.GrabFocus();
             }
-            if (zoom is { } z)
+            if (zoom is { } z && graph.Size.DistanceTo(previousSize) < 2)
             {
                 graph.ZoomAt(Vector2.Zero, z / graph.Zoom);
                 graph.PanBy(pan - graph.Pan);
@@ -288,7 +297,10 @@ public partial class SkillTreeGraphView : TreeView, IPadControl
             DrawRect(rect, border, false, 1f);
             if (node.Id == SelectedId)
                 DrawRect(rect.Grow(2), new Color("b9c9cb"), false, 1f);
-            if (node.Id == HoveredId)
+            if (node.Id == HoveredId && !Dialoid.Game.Input.InputDevice.Gamepad)
+                DrawRect(rect.Grow(1), new Color("82979b"), false, 1f);
+            var focusId = Dialoid.Game.Input.InputDevice.Gamepad ? HoveredId : SelectedId;
+            if (node.Id == focusId && HasFocus())
             {
                 // Corner focus remains distinct from the closed selection line, even when they coincide.
                 var focus = rect.Grow(4);
@@ -317,6 +329,23 @@ public partial class SkillTreeGraphView : TreeView, IPadControl
     {
         base._Ready();
         FocusMode = FocusModeEnum.All;
+        // The pad footer and restored side window change the actual workspace after the initial fit.
+        // Resize must fit the new rectangle; focus alone continues to preserve a manual view.
+        Resized += FitToView;
+    }
+
+    public override void _Notification(int what)
+    {
+        // Shared TreeView's passive-tree autofocus zoom is unsuitable for this bounded skill overview.
+        // Keep its navigation/focus handling, but preserve the user's exact view when entering this control.
+        var zoom = Zoom;
+        var pan = Pan;
+        base._Notification(what);
+        if (what == NotificationFocusEnter && Dialoid.Game.Input.InputDevice.Gamepad)
+        {
+            ZoomAt(Vector2.Zero, zoom / Zoom);
+            PanBy(pan - Pan);
+        }
     }
 
     IEnumerable<(string Button, string Label)> IPadControl.PadPrompts()

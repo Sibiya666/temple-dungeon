@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-10",
+  "author": "dialoid-technical-artist /root/seven_ui",
+  "provider": "OpenAI built-in image_gen; model not exposed by tool",
+  "calls": 7,
+  "external_cli_api_calls": 0,
+  "reference": "reference/venice-glass.png",
+  "reference_original": "docs/art/cursor/2026-11-03-venice-358/glass.png",
+  "reference_provider": "Venice, owner-approved original",
+  "licensing": "No new claim about commercial rights; existing source metadata retained at original path",
+  "runtime_integrated": false,
+  "entries": [
+    {
+      "id": "berserk_frenzy",
+      "subject": "A fierce open-jawed war mask, ivory brow with two restrained blood-red glass eye planes: unstoppable berserker frenzy, aggressive attack and self-exposure.",
+      "prompt": "prompts/berserk_frenzy.txt",
+      "original": "originals/berserk_frenzy.png",
+      "exports": [
+        "export/berserk_frenzy-64.png",
+        "export/berserk_frenzy-32.png",
+        "export/berserk_frenzy-24.png"
+      ],
+      "tool": "image_gen.imagegen",
+      "mode": "edit from same original",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1c719-f0d2-70a0-a130-8a9a00ef5153\\exec-e2c7fa54-08af-4239-a970-d170ae999f97.png"
+    },
+    {
+      "id": "insatiable",
+      "subject": "A single deep blood-red glass heart pierced through by a short cold ivory blade, clear heart silhouette: paying life to sustain rage.",
+      "prompt": "prompts/insatiable.txt",
+      "original": "originals/insatiable.png",
+      "exports": [
+        "export/insatiable-64.png",
+        "export/insatiable-32.png",
+        "export/insatiable-24.png"
+      ],
+      "tool": "image_gen.imagegen",
+      "mode": "edit from same original",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1c719-f0d2-70a0-a130-8a9a00ef5153\\exec-5cae0250-3489-414c-9668-43e958fe658a.png"
+    },
+    {
+      "id": "blood_feast",
+      "subject": "Three large blood-red glass drops gathered beneath a cold ivory hooked fang, the drops forming a descending cluster: stacked bleeding fuels attack speed.",
+      "prompt": "prompts/blood_feast.txt",
+      "original": "originals/blood_feast.png",
+      "exports": [
+        "export/blood_feast-64.png",
+        "export/blood_feast-32.png",
+        "export/blood_feast-24.png"
+      ],
+      "tool": "image_gen.imagegen",
+      "mode": "edit from same original",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1c719-f0d2-70a0-a130-8a9a00ef5153\\exec-a646046e-f8bd-48b9-9fe9-412908bc9db1.png"
+    },
+    {
+      "id": "reckless",
+      "subject": "A cracked cold ivory glass shield with its protective center broken open and one blood-red fracture: abandoning resistances to fight while wounded.",
+      "prompt": "prompts/reckless.txt",
+      "original": "originals/reckless.png",
+      "exports": [
+        "export/reckless-64.png",
+        "export/reckless-32.png",
+        "export/reckless-24.png"
+      ],
+      "tool": "image_gen.imagegen",
+      "mode": "edit from same original",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1c719-f0d2-70a0-a130-8a9a00ef5153\\exec-b82dad38-d0ec-48ce-8227-d526130fc860.png"
+    },
+    {
+      "id": "whirl_rage",
+      "subject": "A single broad ivory glass axe blade sweeping in a nearly complete circular spiral, with one small blood-red inner glass arc: a sustained accelerating whirlwind.",
+      "prompt": "prompts/whirl_rage.txt",
+      "original": "originals/whirl_rage.png",
+      "exports": [
+        "export/whirl_rage-64.png",
+        "export/whirl_rage-32.png",
+        "export/whirl_rage-24.png"
+      ],
+      "tool": "image_gen.imagegen",
+      "mode": "edit from same original",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1c719-f0d2-70a0-a130-8a9a00ef5153\\exec-e0859406-cf9d-494d-8c05-60a6a3badac3.png"
+    },
+    {
+      "id": "flesh_rend",
+      "subject": "A cold ivory glass serrated claw leaving two broad parallel blood-red cuts; one extra shorter cut branches from the second: critical strikes add bleeding.",
+      "prompt": "prompts/flesh_rend.txt",
+      "original": "originals/flesh_rend.png",
+      "exports": [
+        "export/flesh_rend-64.png",
+        "export/flesh_rend-32.png",
+        "export/flesh_rend-24.png"
+      ],
+      "tool": "image_gen.imagegen",
+      "mode": "edit from same original",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1c719-f0d2-70a0-a130-8a9a00ef5153\\exec-03c1fa37-4ce4-42d3-a04e-6c552ef63a75.png"
+    },
+    {
+      "id": "battle_trance",
+      "subject": "A side-facing ivory glass closed war helmet with three short blood-red pulse wedges emerging above its brow, disciplined compact silhouette: battle cry sustains fury on attacks.",
+      "prompt": "prompts/battle_trance.txt",
+      "original": "originals/battle_trance.png",
+      "exports": [
+        "export/battle_trance-64.png",
+        "export/battle_trance-32.png",
+        "export/battle_trance-24.png"
+      ],
+      "tool": "image_gen.imagegen",
+      "mode": "edit from same original",
+      "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a1c719-f0d2-70a0-a130-8a9a00ef5153\\exec-ec3c2137-9218-4215-9a7f-ac0ecd0dc035.png"
+    }
+  ]
+}

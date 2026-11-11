@@ -1,6 +1,7 @@
 using Dialoid.Core.Explain;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -46,10 +47,10 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
     private static readonly System.Text.RegularExpressions.Regex DigitGroups = new(@"(?<=\d) (?=\d)", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
     private const int TimeColumn = 0, WhoColumn = 1, WhatColumn = 2;
 
-    private static readonly Color TextColor = new(0.9f, 0.87f, 0.8f);
-    private static readonly Color CritColor = new(1f, 0.8f, 0.4f);
+    private static readonly Color TextColor = new("d8d5c6");
+    private static readonly Color CritColor = new("e6d8cd");
     private static readonly Color RefusalColor = new(1f, 0.55f, 0.48f);
-    private static readonly Color SystemColor = new(0.62f, 0.6f, 0.56f);
+    private static readonly Color SystemColor = new("9baeb3");
     private static readonly Color DotColor = new(0.85f, 0.66f, 0.45f);
     private static readonly Color EffectColor = new(0.62f, 0.85f, 0.6f);
 
@@ -73,6 +74,7 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
     private bool _subscribed;
     private bool _wasVisible;
     private double _sinceRefresh = RefreshSec;
+    private bool _wideRows;
 
     /// <summary>The kinds shown now.</summary>
     public IReadOnlySet<LogKind> VisibleKinds => _kinds;
@@ -137,6 +139,7 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
 
     public override void _Process(double delta)
     {
+        UpdateRowPresentation();
         _sinceRefresh += delta;
         var visible = IsVisibleInTree();
         var opened = visible && !_wasVisible;
@@ -221,7 +224,9 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
 
     private void Build()
     {
-        AddThemeConstantOverride("separation", 4);
+        Theme = RoomHudTheme.TowerWindowTheme();
+        AddThemeConstantOverride("separation", RoomHudTheme.ItemGap);
+        AddChild(RoomHudTheme.TowerHeading("События тренировочной комнаты / время, источник, результат", 16));
         var filters = new HFlowContainer { Name = "Filters" }; // wraps in a narrow log (1366: the log stops left of the combat screen)
         AddChild(filters);
 
@@ -270,12 +275,17 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
             CustomMinimumSize = new Vector2(0, 80),
         };
         _tree.AddThemeFontSizeOverride("font_size", RowFontSize);
+        var surface = RoomHudTheme.TowerSurface(6);
+        surface.BgColor = new Color(.047f, .067f, .078f, .78f);
+        surface.SetBorderWidthAll(0);
+        _tree.AddThemeStyleboxOverride("panel", surface);
+        _tree.AddThemeStyleboxOverride("selected", RoomHudTheme.ReferenceSurface(3, true));
         // A dense chat log: thin row padding and no indent (a flat list), so ~10 rows fit and the event column gets the indent.
         _tree.AddThemeConstantOverride("v_separation", RowPadding);
         _tree.AddThemeConstantOverride("item_margin", 0);
         _tree.SetColumnTitle(TimeColumn, "Время");
         _tree.SetColumnTitle(WhoColumn, "Кто");
-        _tree.SetColumnTitle(WhatColumn, "Что произошло");
+        _tree.SetColumnTitle(WhatColumn, "Событие");
         foreach (var c in new[] { TimeColumn, WhoColumn, WhatColumn }) _tree.SetColumnTitleAlignment(c, HorizontalAlignment.Left);
         _tree.CreateItem();
         ButtonPrompts.Skip(_tree); // rows are read, not pressed: the right stick scrolls them, Y jumps to the newest
@@ -288,6 +298,17 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
         _status = new Label { Name = "Status", AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         _status.AddThemeColorOverride("font_color", SystemColor);
         AddChild(_status);
+    }
+
+    private void UpdateRowPresentation()
+    {
+        var wide = Size.X >= 760;
+        if (_tree == null || wide == _wideRows) return;
+        _wideRows = wide;
+        _tree.AddThemeFontSizeOverride("font_size", wide ? 18 : RowFontSize);
+        _tree.AddThemeConstantOverride("v_separation", wide ? 8 : RowPadding);
+        FitColumns();
+        _rewrap = _dirty = true;
     }
 
     /// <summary>Time and name columns fixed to their widest text (plus the cell margins), the event column takes the rest.</summary>
@@ -352,7 +373,10 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
 
     private void OnScrolled()
     {
-        if (_syncing) return;
+        // Before Tree has measured its first viewport, its internal scrollbar has the default
+        // max=100/page=0 and resets its value asynchronously. That is layout, not owner input.
+        // Keep the requested follow state until a real scrollable viewport exists.
+        if (_syncing || _scroll is not { Page: > 0 }) return;
         var follow = AtBottom();
         if (follow == _followTail) return;
         _followTail = follow;
@@ -366,7 +390,7 @@ public partial class CombatLogWindow : SessionPanel, IPadPanel
         if (count == 0) return;
         _syncing = true;
         _tree.ScrollToItem(root.GetChild(count - 1));
-        if (_scroll != null) _scroll.Value = _scroll.MaxValue;
+        if (_scroll is { Page: > 0 }) _scroll.Value = _scroll.MaxValue;
         _syncing = false;
     }
 

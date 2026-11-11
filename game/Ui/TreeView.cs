@@ -87,6 +87,12 @@ public partial class TreeView : Control, IPadControl
     public string? HoveredId { get; private set; }
 
     public IReadOnlyList<TreeViewNode> Nodes => _nodes;
+    public IReadOnlyList<(string A, string B)> Edges => _edges;
+
+    /// <summary>Opt-in Tower05 presentation used by Ascendancy; other trees keep their existing renderer.</summary>
+    public bool ReferenceStyle { get; set; }
+    private string? _referenceSelected;
+    public string? SelectedNodeId => ReferenceStyle ? _referenceSelected ?? HoveredId : HoveredId;
 
     public override void _Ready()
     {
@@ -109,6 +115,7 @@ public partial class TreeView : Control, IPadControl
         }
         foreach (var (a, b) in edges)
             if (_byId.ContainsKey(a) && _byId.ContainsKey(b)) _edges.Add((a, b));
+        if (_referenceSelected != null && !_byId.ContainsKey(_referenceSelected)) _referenceSelected = null;
 
         _bounds = new Rect2();
         if (_nodes.Count > 0)
@@ -150,7 +157,7 @@ public partial class TreeView : Control, IPadControl
         var span = new Vector2(Mathf.Max(_bounds.Size.X, 1f), Mathf.Max(_bounds.Size.Y, 1f));
         var side = FitMargin;
         var captioned = _nodes.Where(n => n.Caption != null).Select(n => n.Radius).DefaultIfEmpty(0).Min();
-        if (captioned > 0)
+        if (captioned > 0 && !ReferenceStyle)
         {
             var zoomNeeded = (CaptionMinPixels + 0.5f) / captioned;
             side = Mathf.Clamp((Size.X - span.X * zoomNeeded) / 2, FitMargin, FitMargin + CaptionRoom);
@@ -434,6 +441,7 @@ public partial class TreeView : Control, IPadControl
 
     private void SetHovered(string? id)
     {
+        if (ReferenceStyle && id != null) _referenceSelected = id;
         if (id == HoveredId) return;
         HoveredId = id;
         QueueRedraw();
@@ -442,13 +450,18 @@ public partial class TreeView : Control, IPadControl
 
     private void OnResized()
     {
-        if (!_fitted) FitToView();
+        if (!_fitted || ReferenceStyle) FitToView();
     }
 
     // ---- drawing -------------------------------------------------------------------------------------------------------
 
     public override void _Draw()
     {
+        if (ReferenceStyle)
+        {
+            DrawReferenceTree();
+            return;
+        }
         DrawRect(new Rect2(Vector2.Zero, Size), Background);
         if (HasFocus()) DrawRect(new Rect2(Vector2.One, Size - Vector2.One * 2), WindowHost.FocusFrame, false, 2f);
 
@@ -619,6 +632,13 @@ public partial class TreeView : Control, IPadControl
     /// <summary>The tree got the gamepad focus: «Вписать» zoom × <see cref="PadZoomOverFit"/>, centred on the selected node.</summary>
     public void PadFocusZoom()
     {
+        // The seven-node Ascendancy is already a fitted overview. Do not hide outer nodes merely because
+        // the gamepad gained focus; explicit LT/RT zoom and right-stick panning remain available.
+        if (ReferenceStyle)
+        {
+            FitToView();
+            return;
+        }
         if (HoveredId == null || Size.X <= 1) return;
         FitToView();
         if (NodeLocalPosition(HoveredId) is { } p)

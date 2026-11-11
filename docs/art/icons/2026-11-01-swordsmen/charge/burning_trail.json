@@ -1,0 +1,13 @@
+{
+  "skill_id": "charge",
+  "node_id": "burning_trail",
+  "name": "Огненный след",
+  "description": "Рывок оставляет горящий след на 3 с: 25% базы удара огнем в секунду.",
+  "subject": "One deep boot track stretching backward into a narrow strip of low ground fire, a clear scorched lane with restrained ember-orange accents. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/burning_trail.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-e4f5a63c-1f5e-4f99-bdf9-36b7f424522a.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: One deep boot track stretching backward into a narrow strip of low ground fire, a clear scorched lane with restrained ember-orange accents. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

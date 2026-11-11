@@ -1,0 +1,22 @@
+Godot full resource check
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.315 - Forward+ - Using Device #0: AMD - AMD Radeon RX 6750 XT
+
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\Documents\project\dialoid\data
+SWORDSMEN_ICONS_OK: mode=full; 208 exact 64x64 node PNGs, 6 AP skill PNGs; unsafe IDs rejected; active Warrior IDs matched; active catalog unchanged
+
+Targeted skill selftests
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\Documents\project\dialoid\data
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=skills.: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (6) — это не приемка !!!
+SELFTEST OK panels
+SELFTEST OK skills.slots
+SELFTEST OK skills.icon-catalog
+SELFTEST OK skills.radial-graph
+SELFTEST OK skills.all-layouts
+SELFTEST OK skills.node-point
+SELFTEST 6/6
+SELFTEST PASSED

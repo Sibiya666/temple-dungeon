@@ -1,0 +1,11 @@
+{
+  "key": "crush/earthquake",
+  "skill_id": "crush",
+  "node_id": "earthquake",
+  "subject": "An existing broad impact depression with TWO large staggered raised rings of broken stone, a clear secondary central stone uplift inside the first depression. Two consecutive ground pulses, simple large shapes, no hammer.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-267849b7-6257-4472-ab6e-8d2045c9854e.png",
+  "prompt": "Create ONE square Dialoid icon. Use the supplied approved Venice ORIGINAL as exact style reference. Replace only the central subject with: An existing broad impact depression with TWO large staggered raised rings of broken stone, a clear secondary central stone uplift inside the first depression. Two consecutive ground pulses, simple large shapes, no hammer. Keep the original background, palette, diffuse lighting, exposure, contrast, materials, soft edges and detail density. Main form occupies central75%, readable at24px. No letters, numbers, UI, borders, decorative ornaments, broad glow or added sharpening.",
+  "revision": 2
+}

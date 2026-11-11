@@ -25,6 +25,11 @@ public partial class AscendancyPanel : SessionPanel
     private Label _status = null!;
     private Label _hover = null!;
     private TextureRect _hoverIcon = null!;
+    private Label _nodeTitle = null!;
+    private Label _nodeContext = null!;
+    private Label _iconDebt = null!;
+    private Button _nodeAction = null!;
+    private Label _subtitle = null!;
     private Label _violations = null!;
     private string? _commandError;
     private string? _info;
@@ -47,42 +52,83 @@ public partial class AscendancyPanel : SessionPanel
     public void Setup(SandboxSession session)
     {
         InitSession(session, withContent: false);
+        Theme = RoomHudTheme.TowerWindowTheme();
+        _subtitle = RoomHudTheme.TowerHeading("Путь персонажа / Асцендант", 22);
+        AddChild(_subtitle);
 
         var top = new HFlowContainer(); // wraps in a narrow window (plan 4 task 10)
-        top.AddChild(new Label { Text = "Асцендант:" });
         _selector = new OptionButton();
         _selector.ItemSelected += i => SelectAscendancy(AscendancyChoices[(int)i]);
         top.AddChild(_selector);
         _lockHint = new Label();
         top.AddChild(_lockHint);
-        _points = new Label { CustomMinimumSize = new Vector2(260, 0) };
+        _points = new Label();
         top.AddChild(_points);
         var fit = new Button { Text = "Вписать" };
         GameIcons.Decorate(fit, "expand");
         fit.Pressed += () => View.FitToView();
-        top.AddChild(fit);
-        top.AddChild(PassivePanel.Legend());
         AddChild(top);
-
-        AddChild(ButtonPrompts.Help(new Label
-        {
-            Text = "Стартовый узел дается вместе с асцендантом. ЛКМ по notable — взять/снять, колесо — масштаб, перетаскивание — сдвиг.",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
-        }, "Стартовый узел дается вместе с асцендантом. A по notable — взять или снять, LT/RT — масштаб, правый стик — сдвиг, R3 — вписать дерево."));
         _status = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_status);
-        _hover = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        AddChild(GameIcons.Description(_hover, out _hoverIcon));
 
-        View = new TreeView { SizeFlagsVertical = SizeFlags.ExpandFill, SizeFlagsHorizontal = SizeFlags.ExpandFill, DescriptionInPanel = true };
-        View.CustomMinimumSize = new Vector2(0, 300);
+        var scroll = new ScrollContainer { SizeFlagsVertical = SizeFlags.ExpandFill, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        AddChild(scroll);
+        var columns = new TowerColumns { LeftRatio = .62f, SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
+        scroll.AddChild(columns);
+        var graph = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
+        columns.AddChild(graph);
+        var graphToolbar = new HBoxContainer();
+        graphToolbar.AddChild(RoomHudTheme.TowerHeading("ДЕРЕВО АСЦЕНДАНТА", 15));
+        graphToolbar.AddChild(fit);
+        graph.AddChild(graphToolbar);
+        graph.AddChild(new HSeparator());
+        View = new TreeView { Name = "AscendancyTree", SizeFlagsVertical = SizeFlags.ExpandFill, SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            DescriptionInPanel = true, ReferenceStyle = true };
+        View.CustomMinimumSize = new Vector2(0, 320);
         View.NodeClicked += id => NodeClicked(id);
         View.HoveredChanged += _ => UpdateHover();
-        AddChild(View);
+        graph.AddChild(View);
+        var detail = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        columns.AddChild(detail);
+        detail.AddChild(RoomHudTheme.TowerHeading("ВЫБРАННЫЙ УЗЕЛ", 15));
+        detail.AddChild(new HSeparator());
+        var identity = new HBoxContainer();
+        detail.AddChild(identity);
+        _hoverIcon = new TextureRect { Name = "SelectedNodeIcon", CustomMinimumSize = new Vector2(72, 72),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            MouseFilter = MouseFilterEnum.Ignore };
+        identity.AddChild(_hoverIcon);
+        _nodeTitle = RoomHudTheme.TowerHeading("Выберите узел", 24);
+        identity.AddChild(_nodeTitle);
+        _nodeContext = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        _nodeContext.AddThemeColorOverride("font_color", RoomHudTheme.MutedText);
+        detail.AddChild(_nodeContext);
+        _hover = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        detail.AddChild(_hover);
+        _nodeAction = new Button { Text = "Взять узел", Disabled = true, SizeFlagsHorizontal = SizeFlags.ShrinkBegin };
+        _nodeAction.Pressed += () => { if (View.SelectedNodeId is { } id) NodeClicked(id); };
+        detail.AddChild(_nodeAction);
+        _iconDebt = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        _iconDebt.AddThemeColorOverride("font_color", RoomHudTheme.MutedText);
+        detail.AddChild(_iconDebt);
+        AddChild(ButtonPrompts.Help(new Label
+        {
+            Text = "ЛКМ по узлу — взять / снять · колесо — масштаб · перетаскивание — сдвиг",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+        }, "A — взять / снять · LT/RT — масштаб · правый стик — сдвиг · R3 — вписать дерево"));
 
         _violations = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _violations.AddThemeColorOverride("font_color", Red);
         AddChild(_violations);
+        Resized += ApplyReferenceLayout;
+        ApplyReferenceLayout();
+    }
+
+    private void ApplyReferenceLayout()
+    {
+        var narrow = Size.X < 760;
+        _subtitle.Visible = !narrow;
+        View.CustomMinimumSize = new Vector2(0, narrow ? 220 : 320);
     }
 
     // ---- handlers -------------------------------------------------------------------------------------------------------
@@ -138,7 +184,7 @@ public partial class AscendancyPanel : SessionPanel
         for (int i = 1; i < choices.Count; i++)
         {
             var start = data.Ascendancies[choices[i]!].Start;
-            _selector.SetItemIcon(i, GameIcons.Perk(start.Id, start.Effects));
+            _selector.SetItemIcon(i, AscendancyIcons.For(start));
             _selector.GetPopup().SetItemIconMaxWidth(i, 24);
         }
         _selector.Selected = Math.Max(0, choices.IndexOf(build.AscendancyId));
@@ -158,10 +204,12 @@ public partial class AscendancyPanel : SessionPanel
             _status.AddThemeColorOverride("font_color", Red);
         }
         else _status.Text = _info ?? "";
+        _status.Visible = _status.Text.Length > 0;
 
         var violations = Session.Violations.Where(v => v.Code.Contains("ascendancy", StringComparison.Ordinal))
             .Select(v => "• " + v.Message).ToList();
         _violations.Text = violations.Count == 0 ? "" : "Нарушения:\n" + string.Join("\n", violations);
+        _violations.Visible = _violations.Text.Length > 0;
 
         var asc = Current();
         if (asc?.Id != _shownAscendancyId || !_graphShown)
@@ -181,15 +229,15 @@ public partial class AscendancyPanel : SessionPanel
     /// <summary>Start in the centre, notables on a circle in data order starting at the top.</summary>
     public static List<TreeViewNode> Layout(Ascendancy asc)
     {
-        var nodes = new List<TreeViewNode> { new(asc.Start.Id, Vector2.Zero, 30f, asc.Start.Name, null, TooltipOf(asc.Start, true))
-            { Icon = GameIcons.Perk(asc.Start.Id, asc.Start.Effects) } };
+        var nodes = new List<TreeViewNode> { new(asc.Start.Id, Vector2.Zero, 58f, asc.Start.Name, null, TooltipOf(asc.Start, true))
+            { Icon = AscendancyIcons.For(asc.Start) } };
         int count = asc.Notables.Count;
         for (int i = 0; i < count; i++)
         {
             var n = asc.Notables[i];
             float angle = -Mathf.Pi / 2 + Mathf.Tau * i / count;
-            nodes.Add(new TreeViewNode(n.Id, new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * LayoutRadius, 22f, n.Name,
-                n.Cost.ToString(), TooltipOf(n, false)) { Icon = GameIcons.Perk(n.Id, n.Effects) });
+            nodes.Add(new TreeViewNode(n.Id, new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * LayoutRadius, 56f, n.Name,
+                n.Cost.ToString(), TooltipOf(n, false)) { Icon = AscendancyIcons.For(n) });
         }
         return nodes;
     }
@@ -212,17 +260,28 @@ public partial class AscendancyPanel : SessionPanel
 
     private void UpdateHover()
     {
-        _hoverIcon.Texture = View.Nodes.FirstOrDefault(n => n.Id == View.HoveredId)?.Icon ?? GameIcons.Interface("ascendancy");
+        var selected = View.SelectedNodeId;
+        _hoverIcon.Texture = View.Nodes.FirstOrDefault(n => n.Id == selected)?.Icon;
         var asc = Current();
+        _iconDebt.Text = asc != null && asc.Id != "berserker" ? "Иконки этого восхождения — прежние служебные символы. Индивидуальный комплект ещё не подготовлен." : "";
         if (asc == null)
         {
+            _nodeTitle.Text = "Асцендант не выбран";
+            _nodeContext.Text = "";
+            _nodeAction.Disabled = true;
             _hover.Text = "Асцендант не выбран" + (Session.Build.Level < BuildRules.AscendancyUnlockLevel
                 ? $": он открывается с {BuildRules.AscendancyUnlockLevel} уровня."
                 : ": выберите его выше или на вкладке «Персонаж».");
             return;
         }
-        var id = View.HoveredId;
+        var id = selected;
         var node = id == asc.Start.Id ? asc.Start : asc.Notables.FirstOrDefault(n => n.Id == id);
+        _nodeTitle.Text = node?.Name ?? "Выберите узел";
+        var start = node == asc.Start;
+        var taken = node != null && (start || Session.Build.AscendancyNodes.Contains(node.Id));
+        _nodeContext.Text = node == null ? asc.Name : $"{asc.Name} · {(start ? "старт · бесплатно" : $"стоимость {node.Cost}")} · {(taken ? "взят" : "доступен")}";
+        _nodeAction.Disabled = node == null || start;
+        _nodeAction.Text = start ? "Стартовый узел взят" : taken ? "Снять узел" : "Взять узел";
         _hover.Text = node == null
             ? "Наведите на узел, чтобы увидеть описание."
             : TooltipOf(node, node == asc.Start).ReplaceLineEndings(" — ");

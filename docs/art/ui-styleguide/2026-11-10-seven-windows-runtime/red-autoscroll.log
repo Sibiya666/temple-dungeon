@@ -1,0 +1,65 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\data
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=windows|meter|log|charts|gamepad|builds|simulation|ascendancy: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (44) — это не приемка !!!
+SELFTEST OK panels
+SELFTEST OK builds.main-listed
+SELFTEST OK builds.load Чародей, Криомант — Ледяное копье
+SELFTEST OK builds.load Чародей, Пироман — Огненный шар
+SELFTEST OK builds.load Чародей, Криомант — Искра (гибрид)
+SELFTEST OK builds.load Воитель, Берсерк — Вихрь
+SELFTEST OK builds.load Воитель, Громовержец — огненный Рассекающий удар с критом
+SELFTEST OK builds.load Воитель, Громовержец — Сокрушение
+SELFTEST OK builds.import-garbage
+SELFTEST OK ascendancy.take
+SELFTEST OK simulation.reference
+SELFTEST OK simulation.stale
+SELFTEST OK simulation.violations
+SELFTEST NOTE ширина окон: Персонаж 498, Пассивки 528, Асцендант 528, Скиллы 528, Билды 528, Разбор 528, Симуляция 528, Журнал 472, Измеритель 440, Графики 528; верхняя панель 1424
+SELFTEST OK windows.layout
+SELFTEST OK windows.hotkeys
+SELFTEST OK windows.remember-position
+SELFTEST OK windows.focus-blocks-keys
+SELFTEST OK windows.mouse-over-window
+SELFTEST NOTE графики над журналом: (8, 48), (528, 456) / (8, 512), (472, 380) на (1600, 900)
+SELFTEST OK windows.charts-above-log
+SELFTEST NOTE измеритель = журнал: сегмент №1 · 0:09 · Тренировочный · после правки билда, урон 40667,657, журнал видимые 30071,859 + скрытые 10595,797, разница 0; строк журнала 107; колонка имени 193 px при имени 185 px
+SELFTEST OK meter.matches-segment-and-log
+SELFTEST NOTE клик по полосе «Вихрь»: Вихрь · сегмент №1 — DPS за сегмент: 1401,0 | Сегмент №1 · 0:09 · Тренировочный · после правки билда: урон 13 660 за 9,8 с, с учетом защиты манекена. / Защита манекена: до защиты 9 474; броня −0; сопротивления −0; пробивание +837; множитель получаемого урона −0; уязвимость +3 348; обнулено 0; дошло 13 660. / Лист скилла (текущий билд, без защиты манекена): Среднее попадание с учетом крита: 1407,5 (без крита 1095,57; крит ×2,15 с шансом 24,76%). Эта строка — в истории «Разбора» ниже.
+SELFTEST OK meter.bar-opens-breakdown
+SELFTEST FAIL log.filters-and-autoscroll: автопрокрутка не внизу: 0 из 4139
+SELFTEST NOTE потеря на защите (№3 · 0:17 · Тренировочный · после правки билда): до защиты 119450, дошло 148129 (124%), броня 0 (0%), сопротивления 0 (0%), множитель получаемого урона 0 (0%), обнулено 0 (0%), +21 тыс. от уязвимости 21008 (17,6%), +7,7 тыс. от пробивания 7671 (6,4%); Σ потерь − прибавки − до защиты = 0
+SELFTEST OK meter.mitigation-identity
+SELFTEST NOTE графики: линий 5, точек 18, столбиков DPS 4, типов 2, потеря на защите 4, высота 856
+SELFTEST OK charts.series
+SELFTEST NOTE fresh segment: damage 68173,40829992961, dps 6401,2589952985545, focus losses 0
+SELFTEST NOTE fresh segment: damage 68173,40829992961, dps 6401,2589952985545, focus losses 0
+SELFTEST NOTE fresh segment: damage 68173,40829992961, dps 6401,2589952985545, focus losses 0
+SELFTEST NOTE fresh segment: damage 68173,40829992961, dps 6401,2589952985545, focus losses 0
+SELFTEST NOTE fresh segment: damage 65020,676050621674, dps 6105,227798180439, focus losses 0
+SELFTEST NOTE правка билда: контроль без правки DPS 6401,26 = 6401,26; снят int_inferno; «№6 · 0:10 · Тренировочный» DPS 6401,26 → «№8 · 0:10 · Тренировочный · после правки билда» DPS 6105,23 (DPS −5%)
+SELFTEST OK meter.segment-after-build-edit
+SELFTEST OK meter.reset-confirm
+SELFTEST OK meter.restore
+SELFTEST OK gamepad.bindings
+SELFTEST OK gamepad.combat-buttons
+SELFTEST OK gamepad.stick-move
+SELFTEST OK gamepad.lb-rb-target
+SELFTEST OK gamepad.window-focus
+SELFTEST OK gamepad.view-and-ring
+SELFTEST NOTE достижимость с геймпада: Персонаж 27/27, Пассивки 2/2, Асцендант 5/4, Скиллы 28/28, Билды 7/7, Разбор 2/2, Симуляция 7/7, Журнал 4/4, Измеритель 11/9, Графики 1/1
+SELFTEST OK gamepad.reachability
+SELFTEST OK gamepad.tooltip-on-focus
+SELFTEST OK gamepad.passive-tree
+SELFTEST NOTE поле уровня: 20 → 19,20,20,20,20 (слот 1 19)
+SELFTEST OK gamepad.lists-slider-seed
+SELFTEST OK gamepad.meter-reset
+SELFTEST OK gamepad.device-switch
+SELFTEST OK gamepad.disconnect
+SELFTEST OK log.short-types
+SELFTEST OK gamepad.restore
+SELFTEST OK meter.fractional-duration
+SELFTEST OK windows.restore
+SELFTEST 43/44
+SELFTEST FAILED: 1

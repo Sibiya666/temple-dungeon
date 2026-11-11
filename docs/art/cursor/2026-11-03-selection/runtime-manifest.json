@@ -1,0 +1,38 @@
+[
+  {
+    "id": "glass",
+    "source": "docs/art/cursor/2026-11-03-venice-358/cutouts/glass.png",
+    "runtime": "res://Ui/Art/Cursors/glass.png",
+    "width": 48,
+    "height": 48,
+    "hotspot": [
+      2,
+      2
+    ],
+    "tipAlpha": 217
+  },
+  {
+    "id": "spear",
+    "source": "docs/art/cursor/2026-11-03-venice-358/cutouts/spear.png",
+    "runtime": "res://Ui/Art/Cursors/spear.png",
+    "width": 48,
+    "height": 48,
+    "hotspot": [
+      6,
+      3
+    ],
+    "tipAlpha": 249
+  },
+  {
+    "id": "key",
+    "source": "docs/art/cursor/2026-11-03-venice-358/cutouts/key.png",
+    "runtime": "res://Ui/Art/Cursors/key.png",
+    "width": 48,
+    "height": 48,
+    "hotspot": [
+      2,
+      2
+    ],
+    "tipAlpha": 145
+  }
+]

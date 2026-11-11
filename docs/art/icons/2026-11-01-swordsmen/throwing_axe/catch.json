@@ -1,0 +1,13 @@
+{
+  "skill_id": "throwing_axe",
+  "node_id": "catch",
+  "name": "Ловля на лету",
+  "description": "Пойманный топор дает +4 Ярости.",
+  "subject": "An open leather-gloved hand closing around the haft of a returning hatchet, one small muted-red pulse at the secured grip. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/catch.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-346bbcd8-63c9-4a30-8cc0-967bb4149fbb.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: An open leather-gloved hand closing around the haft of a returning hatchet, one small muted-red pulse at the secured grip. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

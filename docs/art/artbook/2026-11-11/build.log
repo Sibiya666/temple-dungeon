@@ -1,0 +1,2 @@
+INVENTORY sources=3830 unique=2422 nonvisual=424 unreadable=0
+{"pages": 409, "images": 2422, "source_files": 3830, "unreadable": [], "unplaced": [], "text_overflows": [], "chapters": {"world": 23, "characters": 43, "tower": 72, "ui": 114, "skills": 208, "icons": 226, "cursors": 309, "effects": 317, "archive": 319, "library": 320}, "feature_count": 19, "pdf_bytes": 45529434, "pdf_sha256": "afd77a0a61461df50f16442e41217be67249373f64321860450ad00df0eab4fa"}

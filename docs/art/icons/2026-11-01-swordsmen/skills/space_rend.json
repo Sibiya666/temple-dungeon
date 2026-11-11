@@ -1,0 +1,9 @@
+{
+  "id": "space_rend",
+  "name": "Разрез пространства",
+  "kind": "skill",
+  "provider": "GPT built-in image_gen",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-e642e34f-22a0-4ed2-bbd8-02973f40c435.png",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "prompt": "Use case: precise-object-edit. One square Dialoid SKILL ICON. Reference image is the approved original Venice family. Replace ONLY its central sword/slash subject with: A sword edge slicing one narrow vertical fissure through space, two clean displaced planes around the cut, cold silver edge with a small blue-black depth. Preserve the original background, overall centered composition, diffuse lighting, palette, exposure, contrast, material rendering, edge softness and detail density. Subject fills central 70-80%, clear silhouette readable at 24px. No text, numbers, lettering, frame, border, UI symbols, decorative ornaments, bloom, added sharpness or overall glow. Opaque original dark background."
+}

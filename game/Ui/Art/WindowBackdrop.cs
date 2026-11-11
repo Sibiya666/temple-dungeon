@@ -18,14 +18,15 @@ public partial class WindowBackdrop : Node2D
         if (window.Spec.Id is not (WindowIds.Character or WindowIds.Skills or WindowIds.Passives
             or WindowIds.Ascendancy or WindowIds.Builds or WindowIds.Breakdown
             or WindowIds.Simulation or WindowIds.Meter or WindowIds.Log or WindowIds.Charts)) return;
-        var texture = GD.Load<Texture2D>($"res://Ui/Art/WindowPanels/{window.Spec.Id}-v1.png");
+        var seven = WindowHost.SupportsExpanded(window.Spec.Id);
+        var texture = GD.Load<Texture2D>(seven ? $"res://Ui/Art/WindowPanels/Seven/{window.Spec.Id}.png" : $"res://Ui/Art/WindowPanels/{window.Spec.Id}-v1.png");
         if (texture == null) return;
         var backdrop = new WindowBackdrop
         {
             Name = LayerName,
             _window = window,
             _texture = texture,
-            _opacity = quiet ? 0.28f : 0.38f,
+            _opacity = seven ? 1f : quiet ? 0.28f : 0.38f,
         };
         // PanelContainer only arranges Control children. A Node2D has no minimum size,
         // mouse filter or focus, and inherits this window's transform and draw order.
@@ -48,14 +49,16 @@ public partial class WindowBackdrop : Node2D
         var scale = Mathf.Max(rect.Size.X / image.X, rect.Size.Y / image.Y);
         var sourceSize = rect.Size / scale;
         // Cover without distortion; retain the upper architectural motif even in short windows.
-        var source = new Rect2(new Vector2((image.X - sourceSize.X) * 0.5f, 0), sourceSize);
+        var source = new Rect2(new Vector2((image.X - sourceSize.X) * 0.5f,
+            _window.Expanded ? Mathf.Min(image.Y * .21875f, Mathf.Max(0, image.Y - sourceSize.Y)) : 0), sourceSize);
         DrawTextureRectRegion(_texture, rect, source, new Color(1, 1, 1, _opacity));
 
         var fadeHeight = Mathf.Min(rect.Size.Y, Mathf.Max(120, rect.Size.Y * 0.6f));
         // Skill nodes sit over the full artwork, including the lower graph area.
         bool skillTree = _window.Spec.Id == WindowIds.Skills;
-        var top = WindowHost.Background with { A = skillTree ? 0.64f : 0.18f };
-        var body = WindowHost.Background with { A = skillTree ? 0.94f : 0.96f };
+        var tower = WindowHost.SupportsExpanded(_window.Spec.Id);
+        var top = WindowHost.Background with { A = tower ? (_window.Expanded ? .68f : .80f) : skillTree ? 0.64f : 0.18f };
+        var body = WindowHost.Background with { A = tower ? (_window.Expanded ? .76f : .90f) : skillTree ? 0.94f : 0.96f };
         var left = rect.Position;
         var right = left + new Vector2(rect.Size.X, 0);
         DrawPolygon(new[] { left, right, right + new Vector2(0, fadeHeight), left + new Vector2(0, fadeHeight) },

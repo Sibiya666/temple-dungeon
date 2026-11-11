@@ -1,6 +1,7 @@
 using Dialoid.Core.Explain;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -59,9 +60,10 @@ public partial class ChartsWindow : SessionPanel
         InitSession(session, withContent: false);
         _room = room;
         _segment = segment;
-        AddThemeConstantOverride("separation", 4);
+        Theme = RoomHudTheme.TowerWindowTheme();
+        AddThemeConstantOverride("separation", RoomHudTheme.GroupGap);
         _title = new Label { Name = "Title", AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        _title.AddThemeColorOverride("font_color", new Color(0.93f, 0.85f, 0.7f));
+        _title.AddThemeColorOverride("font_color", RoomHudTheme.MutedText);
         AddChild(_title);
         var scroll = new ScrollContainer { Name = "Scroll", SizeFlagsVertical = SizeFlags.ExpandFill, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
         AddChild(scroll);
@@ -164,10 +166,10 @@ public partial class ChartsCanvas : Control
     public const float DefenceRowHeight = 68;
     public const float LegendRow = 22;
 
-    private static readonly Color Axis = new(0.45f, 0.42f, 0.38f);
-    private static readonly Color Grid = new(0.22f, 0.21f, 0.2f);
-    private static readonly Color Caption = new(0.93f, 0.85f, 0.7f);
-    private static readonly Color Muted = new(0.7f, 0.67f, 0.62f);
+    private static readonly Color Axis = new("71858c");
+    private static readonly Color Grid = new("293b42");
+    private static readonly Color Caption = new("d8d5c6");
+    private static readonly Color Muted = new("9baeb3");
 
     private static readonly (string Label, Color Color)[] DefenceLegend =
     [
@@ -205,8 +207,18 @@ public partial class ChartsCanvas : Control
         if (_owner.Segment != null && Size.X > 1)
         {
             var y = LayLines(0) + SectionGap;
-            y = LayBars(y, "DPS по скиллам (урон за сегмент / длительность)", _owner.DpsBars, r => MeterColors.Skill(r.Key, _owner.SkillOrder), false) + SectionGap;
-            y = LayBars(y, "Урон по типам (доля от урона сегмента)", _owner.TypeBars, r => MeterColors.Type(r.Key), true) + SectionGap;
+            if (Size.X >= 760)
+            {
+                var width = (Size.X - 32) / 2;
+                var skillEnd = LayBars(y, "DPS ПО СКИЛЛАМ", _owner.DpsBars, r => MeterColors.Skill(r.Key, _owner.SkillOrder), false, 0, width);
+                var typeEnd = LayBars(y, "УРОН ПО ТИПАМ", _owner.TypeBars, r => MeterColors.Type(r.Key), true, width + 32, width);
+                y = Mathf.Max(skillEnd, typeEnd) + SectionGap * 2;
+            }
+            else
+            {
+                y = LayBars(y, "DPS по скиллам (урон / длительность)", _owner.DpsBars, r => MeterColors.Skill(r.Key, _owner.SkillOrder), false) + SectionGap;
+                y = LayBars(y, "Урон по типам (доля от урона сегмента)", _owner.TypeBars, r => MeterColors.Type(r.Key), true) + SectionGap;
+            }
             height = LayDefence(y) + SectionGap;
         }
         if (!Mathf.IsEqualApprox(CustomMinimumSize.Y, height)) CustomMinimumSize = new Vector2(0, height);
@@ -238,10 +250,12 @@ public partial class ChartsCanvas : Control
 
     private float LayLines(float y)
     {
+        var chartHeight = Size.X >= 760 ? 240 : LineChartHeight;
+        _rects.Add((new Rect2(0, y, Size.X, chartHeight + TitleHeight + 26), new Color(.047f, .067f, .078f, .86f), true));
         Text("Урон по времени (за каждую секунду сегмента)", new Vector2(0, Baseline(y, TitleHeight)), Caption);
         y += TitleHeight;
         var lines = _owner.Lines;
-        var plot = new Rect2(AxisWidth, y + 6, Mathf.Max(10, Size.X - AxisWidth - 10), LineChartHeight - 12);
+        var plot = new Rect2(AxisWidth, y + 6, Mathf.Max(10, Size.X - AxisWidth - 10), chartHeight - 12);
         var max = 0.0;
         foreach (var line in lines)
             foreach (var p in line.Points)
@@ -278,7 +292,7 @@ public partial class ChartsCanvas : Control
             if (count > 2) Text($"{RuNumber.Format(span / 2, "0.#")} с", new Vector2(X((count - 1) / 2) - 14, axisY), Muted);
             Text($"{RuNumber.Format(span, "0.#")} с", new Vector2(plot.Position.X, axisY), Muted, HorizontalAlignment.Right, plot.Size.X);
         }
-        y += LineChartHeight + 26;
+        y += chartHeight + 26;
         var legend = new List<(string, Color)>(lines.Count);
         foreach (var line in lines) legend.Add((line.Label, line.Color));
         return LayLegend(y, legend);
@@ -299,21 +313,26 @@ public partial class ChartsCanvas : Control
         return y + LegendRow;
     }
 
-    private float LayBars(float y, string title, IReadOnlyList<MeterRow> rows, Func<MeterRow, Color> color, bool share)
+    private float LayBars(float y, string title, IReadOnlyList<MeterRow> rows, Func<MeterRow, Color> color, bool share, float x = 0, float width = -1)
     {
-        Text(title, new Vector2(0, Baseline(y, TitleHeight)), Caption);
-        y += TitleHeight;
+        if (width < 0) width = Size.X;
+        var rowHeight = Size.X >= 760 ? 36 : BarHeight;
+        Text(title, new Vector2(x, Baseline(y, TitleHeight)), Caption, width: width);
+        _segments.Add((new Vector2(x, y + TitleHeight), new Vector2(x + width, y + TitleHeight), Grid));
+        y += TitleHeight + 8;
         var max = 0.0;
         foreach (var row in rows) if (row.Value > max) max = row.Value;
         foreach (var row in rows)
         {
-            _rects.Add((new Rect2(0, y + 1, Size.X, BarHeight - 2), MeterColors.Track, true));
-            if (max > 0) _rects.Add((new Rect2(0, y + 1, (float)(row.Value / max) * Size.X, BarHeight - 2), color(row), true));
-            var baseline = Baseline(y, BarHeight);
-            Text(row.Label, new Vector2(6, baseline), MeterColors.Text);
-            Text(RuNumber.Short(row.Value) + (share ? " · " + RuNumber.Format(row.Share * 100, "0.#") + "%" : ""),
-                new Vector2(6, baseline), MeterColors.Text, HorizontalAlignment.Right, Size.X - 12);
-            y += BarHeight;
+            _rects.Add((new Rect2(x, y + 2, width, rowHeight - 4), MeterColors.Track, true));
+            if (max > 0) _rects.Add((new Rect2(x, y + 2, (float)(row.Value / max) * width, rowHeight - 4), color(row), true));
+            var baseline = Baseline(y, rowHeight);
+            var value = RuNumber.Short(row.Value) + (share ? " · " + RuNumber.Format(row.Share * 100, "0.#") + "%" : "");
+            var (font, size) = Font();
+            var valueWidth = font.GetStringSize(value, HorizontalAlignment.Left, -1, size).X;
+            Text(row.Label, new Vector2(x + 6, baseline), MeterColors.Text, width: Mathf.Max(0, width - valueWidth - 24));
+            Text(value, new Vector2(x + 6, baseline), MeterColors.Text, HorizontalAlignment.Right, width - 12);
+            y += rowHeight;
         }
         return y;
     }

@@ -1,0 +1,9 @@
+{
+  "key": "battle_cry/unyielding",
+  "subject": "A single thick folded linen bandage with a small tear visibly drawing closed as its two ends overlap, one tiny dried dark-red stain on the fabric. A clean first-aid object, no person, body part, skin or visible injury. Restoration of health through a simple readable bandage silhouette.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-84f7a823-93c3-4d3e-a5de-0aae6217b65a.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon from the supplied approved Venice original. Change only the central subject to: A single thick folded linen bandage with a small tear visibly drawing closed as its two ends overlap, one tiny dried dark-red stain on the fabric. A clean first-aid object, no person, body part, skin or visible injury. Restoration of health through a simple readable bandage silhouette. Keep the original background, palette, diffuse lighting, exposure, contrast, material rendering, soft edges and detail density. One large silhouette fills central75%, readable24px. No text, numbers, lettering, frames, UI, generic stat symbols, neon, bloom or overall glow.",
+  "revision": 2
+}

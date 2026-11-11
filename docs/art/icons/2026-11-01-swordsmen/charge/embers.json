@@ -1,0 +1,13 @@
+{
+  "skill_id": "charge",
+  "node_id": "embers",
+  "name": "Раскаленные угли",
+  "description": "+5% базы удара в секунду для горящего следа за очко.",
+  "subject": "A deeply charred heelprint packed with large banked coals, their hotter orange centers concentrated inside the existing burning trail. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/embers.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-cfc23f4b-0a13-47d9-97b5-86c7d1084257.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A deeply charred heelprint packed with large banked coals, their hotter orange centers concentrated inside the existing burning trail. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

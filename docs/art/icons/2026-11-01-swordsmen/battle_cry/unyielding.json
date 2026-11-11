@@ -1,0 +1,11 @@
+{
+  "skill_id": "battle_cry",
+  "node_id": "unyielding",
+  "name": "Несгибаемость",
+  "subject": "An upright iron shield whose split seam has been firmly repaired with a single pale linen binding; resilience and restoration represented by equipment only. No person, skin or wound.",
+  "kind": "node",
+  "provider": "GPT built-in image_gen",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-9531ef9c-134b-4918-a9d4-a4d4d508cd5e.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon using the approved Venice image as the exact style reference. Change only the central subject to: An upright iron shield whose split seam has been firmly repaired with a single pale linen binding; resilience and restoration represented by equipment only. No person, skin or wound. Preserve background, palette, exposure, contrast, diffuse lighting, edge softness and material detail of the original. Large central silhouette, readable at 24px. No text, numbers, frame, UI, generic stat symbols or glow.",
+  "revision_note": "Equipment-only replacement; initial body illustration was rejected and returned no asset."
+}

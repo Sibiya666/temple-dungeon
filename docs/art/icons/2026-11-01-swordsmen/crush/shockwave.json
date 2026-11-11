@@ -1,0 +1,13 @@
+{
+  "skill_id": "crush",
+  "node_id": "shockwave",
+  "name": "Ударная волна",
+  "description": "Развилка. Зона становится линией: волна пробивает 2 цели за основной (до 3 целей подряд), урон −15% (More).",
+  "subject": "A single wedge of broken ground racing forward in a straight narrow ridge through three aligned stone pegs; no circular blast. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/shockwave.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-e7442eb8-6dd4-4a04-8044-342eebcf67d6.png",
+  "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the approved Venice original reference. Replace ONLY the central subject with: A single wedge of broken ground racing forward in a straight narrow ridge through three aligned stone pegs; no circular blast. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple. Keep the original backdrop, palette, diffuse lighting, exposure, contrast, material rendering, edge softness and detail density. One large clear subject fills central 75%, legible silhouette at 24px. No text, numbers, letters, borders, frames, UI badges, generic stat signs, added ornaments, broad glow, bloom or sharpening. Preserve opaque original dark background."
+}

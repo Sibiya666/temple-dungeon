@@ -1,0 +1,13 @@
+{
+  "skill_id": "dark_wave",
+  "node_id": "dark_trail",
+  "name": "Шлейф",
+  "description": "Leaves one refreshing ground strip for 2 seconds, dealing 20% of hit ailment base per second.",
+  "subject": "A long tapered strip of silver-blue residue on a dark floor, its raised leading lip dissolving into a low persistent film. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/dark_trail.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-91aa9cc8-5077-4491-aa11-8da4fb75ee87.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A long tapered strip of silver-blue residue on a dark floor, its raised leading lip dissolving into a low persistent film. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

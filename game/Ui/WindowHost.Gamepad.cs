@@ -797,6 +797,20 @@ public partial class WindowHost
     public Control? Navigate(Control from, PadCommand dir, Control root)
     {
         var targets = ButtonPrompts.Targets(root);
+        var neighborSide = dir switch
+        {
+            PadCommand.Left => Side.Left,
+            PadCommand.Right => Side.Right,
+            PadCommand.Up => Side.Top,
+            PadCommand.Down => Side.Bottom,
+            _ => (Side?)null,
+        };
+        if (neighborSide is { } direction && from.GetFocusNeighbor(direction) is { IsEmpty: false } path
+            && from.GetNodeOrNull<Control>(path) is { } explicitTarget && targets.Contains(explicitTarget))
+        {
+            explicitTarget.GrabFocus();
+            return explicitTarget;
+        }
         var a = from.GetGlobalRect();
         Control? best = null;
         (float Row, float Side, float Centre) bestScore = (float.MaxValue, float.MaxValue, float.MaxValue);

@@ -143,6 +143,20 @@ public partial class Main : Control
 
         if (OS.GetCmdlineUserArgs().Contains(SelfTestArg))
             new SelfTest(this).Start();
+        else if (LoadError == null && OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--ui-window=", StringComparison.Ordinal)) is { } uiArg)
+            Callable.From(() =>
+            {
+                var id = uiArg["--ui-window=".Length..];
+                if (!Windows.Has(id)) return;
+                if (OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--ui-reference=", StringComparison.Ordinal)) is { } referenceArg)
+                {
+                    var file = referenceArg["--ui-reference=".Length..];
+                    var reference = Builds?.References.FirstOrDefault(r => Path.GetFileName(r.Path) == file);
+                    if (reference != null) Builds!.Load(reference);
+                }
+                OpenWindow(id);
+                if (OS.GetCmdlineUserArgs().Contains("--ui-expanded")) Windows.SetExpanded(id, true);
+            }).CallDeferred();
     }
 
     /// <summary>

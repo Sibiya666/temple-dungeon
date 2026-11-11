@@ -1,6 +1,7 @@
 using Dialoid.Core.Explain;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -18,6 +19,8 @@ public partial class BreakdownPanel : SessionPanel, IPadPanel
     public sealed record Entry(NumberLine Line, string? Context, int Revision);
 
     private readonly List<Entry> _history = new();
+    private VBoxContainer _historyList = null!;
+    private VBoxContainer _detail = null!;
 
     /// <summary>The number shown now, or null.</summary>
     public Entry? Current { get; private set; }
@@ -31,7 +34,20 @@ public partial class BreakdownPanel : SessionPanel, IPadPanel
     /// <summary>The explanation lines of the shown number (empty when nothing is open).</summary>
     public IReadOnlyList<string> ShownLines => Current is { } e ? LinesOf(e.Line) : Array.Empty<string>();
 
-    public void Setup(SandboxSession session) => InitSession(session);
+    public void Setup(SandboxSession session)
+    {
+        InitSession(session, withContent: false);
+        Theme = RoomHudTheme.TowerWindowTheme();
+        AddChild(RoomHudTheme.TowerHeading("Раскрытие числа / источники, модификаторы и история", 22));
+        var scroll = new ScrollContainer { SizeFlagsVertical = SizeFlags.ExpandFill, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        AddChild(scroll);
+        var columns = new TowerColumns { LeftRatio = .30f, SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
+        scroll.AddChild(columns);
+        _historyList = new VBoxContainer { Name = "BreakdownHistory", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        _detail = new VBoxContainer { Name = "BreakdownDetail", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        columns.AddChild(_historyList);
+        columns.AddChild(_detail);
+    }
 
     /// <summary>Opens a number: shows it and puts it on top of the history.</summary>
     public void ShowLine(NumberLine line, string? context = null)
@@ -115,24 +131,44 @@ public partial class BreakdownPanel : SessionPanel, IPadPanel
 
     protected override void DrawContent()
     {
-        if (Current is not { } cur)
-        {
-            AddText("Нажмите на любое число, чтобы увидеть его разбор.");
-        }
-        else
-        {
-            AddText(TitleText).AddThemeFontSizeOverride("font_size", 20);
-            foreach (var line in ShownLines) AddText(line);
-            if (cur.Revision != Session.Revision)
-                AddText("Билд изменился после открытия: это снимок. Откройте число заново для свежего разбора.", Amber);
-        }
-
-        Content!.AddChild(new HSeparator());
-        AddText($"История (последние {HistorySize}):");
+        foreach (var container in new[] { _historyList, _detail })
+            foreach (var child in container.GetChildren())
+            {
+                container.RemoveChild(child);
+                child.QueueFree();
+            }
+        _historyList.AddChild(RoomHudTheme.TowerHeading($"ИСТОРИЯ / ПОСЛЕДНИЕ {HistorySize}", 15));
+        _historyList.AddChild(new HSeparator());
         foreach (var entry in _history)
         {
             var e = entry;
-            Content.AddChild(NumberLabel.For(e.Line, (_, _) => Show(e), e.Context));
+            var item = NumberLabel.For(e.Line, (_, _) => Show(e), e.Context);
+            item.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            item.TooltipText = NumberLabel.TextOf(e.Line, e.Context);
+            _historyList.AddChild(item);
         }
+        _detail.AddChild(RoomHudTheme.TowerHeading("СНИМОК ВЫБРАННОГО ЧИСЛА", 15));
+        _detail.AddChild(new HSeparator());
+        if (Current is not { } cur)
+        {
+            DetailText("Нажмите на любое число, чтобы увидеть его разбор.");
+        }
+        else
+        {
+            if (cur.Context != null) DetailText(cur.Context, RoomHudTheme.MutedText);
+            _detail.AddChild(RoomHudTheme.TowerHeading(cur.Line.Label, 26));
+            _detail.AddChild(RoomHudTheme.TowerHeading(BreakdownText.Value(cur.Line.Value), 38));
+            _detail.AddChild(new HSeparator());
+            foreach (var line in ShownLines) DetailText(line);
+            if (cur.Revision != Session.Revision)
+                DetailText("Билд изменился после открытия: это снимок. Откройте число заново для свежего разбора.", Amber);
+        }
+    }
+
+    private void DetailText(string text, Color? color = null)
+    {
+        var label = new Label { Text = text, AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        if (color != null) label.AddThemeColorOverride("font_color", color.Value);
+        _detail.AddChild(label);
     }
 }

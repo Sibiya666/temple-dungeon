@@ -1,0 +1,12 @@
+{
+  "service": "Venice API",
+  "mode": "edit",
+  "model": "seedream-v5-pro-edit",
+  "seed": 0,
+  "input_image": "./docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "prompt": "Create ONE original finished raster cursor concept based on the reference's quiet dark-fantasy materials, real dimensional shading, restrained ivory/steel edge light and deep soft shadow. The reference is only for material and lighting, REMOVE its sword, slash arc and scene entirely. Render the specified small tangible object, not a flat logo, outline glyph, SVG drawing or diagram. Diagonal orientation: precise sharp working tip at upper left, body extends to lower right. Strong asymmetric readable silhouette suitable for a 40px mouse cursor. Occupy about 75% of the square canvas with clear margin; isolated on completely uniform dark neutral grey background, no cast shadow on background, no gradients or scenery. No text, labels, borders, glitter, dramatic glow, gold or pervasive gritty stone texture. Keep substantial readable forms rather than tiny filigree. Object: a single ancient tower key. Its long narrow forged-iron shaft ends in a sharp upper-left working point, with two clear asymmetric key teeth just behind the point. At lower right a compact hollow bow forms a pointed gothic arch with one central mullion. Dark iron with pale worn silver edges, restrained tangible volume. Distinctly a functional key, not a sword, decorative pendant or abstract symbol.",
+  "negative_prompt": "",
+  "blurred": "false",
+  "date": "2026-11-03T18:13:29",
+  "license_note": "Venice: personal non-commercial (research stage, owner decision 2026-10-30)"
+}

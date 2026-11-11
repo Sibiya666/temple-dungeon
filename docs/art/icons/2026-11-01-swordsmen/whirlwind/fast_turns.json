@@ -1,0 +1,13 @@
+{
+  "skill_id": "whirlwind",
+  "node_id": "fast_turns",
+  "name": "Быстрые обороты",
+  "description": "Удар каждые 0.03 с чаще за очко (стоимость в секунду та же).",
+  "subject": "A single leather-wrapped circular grip rotating on a polished steel ball bearing, three short pale motion bands close to its rim. A quiet mechanical object only, no combat or impact scene.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/fast_turns.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-5de80aec-aa82-4e47-b081-38aec3eb150f.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A single leather-wrapped circular grip rotating on a polished steel ball bearing, three short pale motion bands close to its rim. A quiet mechanical object only, no combat or impact scene. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

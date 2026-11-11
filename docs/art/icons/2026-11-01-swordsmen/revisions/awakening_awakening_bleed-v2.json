@@ -1,0 +1,8 @@
+{
+  "key": "awakening/awakening_bleed",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-07203291-fbff-4ec1-bcc2-dc29758dc4a6.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon from the supplied approved Venice original. Replace only the central subject with one large serrated steel cutting edge and ONE clearly visible dark-red blood droplet hanging from a deep serration. The droplet is a substantial secondary shape, about one eighth of the icon width, with a restrained cool highlight. Isolated equipment still life only: no person, skin, body part or wound. No orange material, flame, sparks, embers, glowing shell or fire effect. Preserve the original background, cool diffuse light, exposure, contrast, calm steel materials and soft edges. Main steel silhouette fills central75%, legible24px. No text, numbers, frame, UI, generic stat sign, neon or bloom.",
+  "revision": 2
+}

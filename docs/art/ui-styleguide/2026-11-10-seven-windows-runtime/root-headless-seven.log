@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\data
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=sevenwindows: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (4) — это не приемка !!!
+SELFTEST OK panels
+SELFTEST OK sevenwindows.host
+SELFTEST OK sevenwindows.ascendancy-icons
+SELFTEST FAIL sevenwindows.reference: узел blood_feast не виден в боковом режиме: центр (530.6944, 353.17755), видимая область (18, 214), (494, 298), view (761, 431), pan (380.5, 215.5), zoom 0,69384056; scroll @ScrollContainer@234=(0, 0), (512, 512), graph=(18, 214), (761, 431), host=(8, 48), (1264, 664), expanded=True
+SELFTEST 3/4
+SELFTEST FAILED: 1

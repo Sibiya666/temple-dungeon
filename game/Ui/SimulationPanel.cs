@@ -35,6 +35,7 @@ public partial class SimulationPanel : SessionPanel
     private readonly List<NumberLabel> _numbers = new();
     private string? _runError;
     private bool _logShown;
+    private VBoxContainer _settings = null!;
 
     /// <summary>The input controls (the self-test sets them like the owner does).</summary>
     public OptionButton DummyOptions { get; private set; } = null!;
@@ -86,17 +87,36 @@ public partial class SimulationPanel : SessionPanel
         _runner = new SimulationRunner(session);
         _mainThreadId = System.Environment.CurrentManagedThreadId;
         _data = session.Data;
+        Theme = RoomHudTheme.TowerWindowTheme();
+        AddChild(RoomHudTheme.TowerHeading("Проверка билда / параметры запуска и результат одной ревизии", 18));
+        var columns = new TowerColumns { Name = "SimulationColumns", SizeFlagsVertical = SizeFlags.ExpandFill };
+        AddChild(columns);
+        var settingsScroll = new ScrollContainer { Name = "SettingsScroll", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        columns.AddChild(settingsScroll);
+        _settings = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        _settings.AddThemeConstantOverride("separation", RoomHudTheme.GroupGap);
+        settingsScroll.AddChild(_settings);
+        _settings.AddChild(RoomHudTheme.TowerHeading("ПАРАМЕТРЫ", 16));
         BuildInputs(session);
         InitSession(session);
+        // Keep SessionPanel's result content and deferred redraw semantics; only its scroll moves to the workspace.
+        var results = new VBoxContainer();
+        results.AddThemeConstantOverride("separation", RoomHudTheme.GroupGap);
+        columns.AddChild(results);
+        results.AddChild(RoomHudTheme.TowerHeading("РЕЗУЛЬТАТ / ТЕКУЩИЙ БИЛД", 16));
+        var resultScroll = Content!.GetParent<ScrollContainer>();
+        RemoveChild(resultScroll);
+        results.AddChild(resultScroll);
     }
 
     private void BuildInputs(SandboxSession session)
     {
         var data = session.Data;
-        var grid = new GridContainer { Columns = 2 };
-        AddChild(grid);
+        var grid = new GridContainer { Columns = 1, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        grid.AddThemeConstantOverride("v_separation", RoomHudTheme.ItemGap);
+        _settings.AddChild(grid);
 
-        DummyOptions = new OptionButton();
+        DummyOptions = new OptionButton { FitToLongestItem = false, ClipText = true };
         foreach (var (id, _) in data.Dummies)
         {
             _dummyIds.Add(id);
@@ -117,13 +137,12 @@ public partial class SimulationPanel : SessionPanel
         Row(grid, "Сид", Seed);
         ButtonPrompts.SeedPad(Seed);
 
-        DummyAttacks = new CheckBox { Text = "манекен бьет персонажа" };
+        DummyAttacks = new CheckBox { Text = "Манекен бьет персонажа" };
         Row(grid, "Защита", DummyAttacks);
 
-        RunButton = new Button { Text = RunCaption, SizeFlagsHorizontal = SizeFlags.ShrinkBegin };
+        RunButton = new Button { Text = RunCaption, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         RunButton.Pressed += () => Simulate();
-        AddChild(RunButton);
-        AddChild(new HSeparator());
+        _settings.AddChild(RunButton);
 
         if (_dummyIds.Count > 0)
         {
@@ -264,8 +283,10 @@ public partial class SimulationPanel : SessionPanel
 
         Header("DPS по скиллам (по всем целям)");
         if (result.DpsBySkill.Count == 0) AddText("нет урона");
+        var skillOrder = MeterColors.SkillOrder(Session);
+        var maxSkillDps = result.DpsBySkill.Values.DefaultIfEmpty(0).Max();
         foreach (var (id, dps) in result.DpsBySkill.OrderByDescending(kv => kv.Value))
-            Number("sim_dps_skill_" + id, SkillTitle(id), dps, BreakdownText.Whole, dpsNote, GameIcons.Skill(id));
+            Number("sim_dps_skill_" + id, SkillTitle(id), dps, BreakdownText.Whole, dpsNote, GameIcons.Skill(id), maxSkillDps, MeterColors.Skill(id, skillOrder));
 
         Header("DPS по типам урона (по всем целям)");
         if (result.DpsByType.Count == 0) AddText("нет урона");
@@ -318,12 +339,13 @@ public partial class SimulationPanel : SessionPanel
             Graph = new SeriesGraph { CustomMinimumSize = new Vector2(0, 160), SizeFlagsHorizontal = SizeFlags.ExpandFill };
             Graph.SetSeries(result.ResourceSeries);
             Content!.AddChild(Graph);
-            var legend = new HBoxContainer();
+            var legend = new HFlowContainer();
             legend.AddChild(Swatch(SeriesGraph.ResourceColor));
             legend.AddChild(new Label { Text = "ресурс   " });
             legend.AddChild(Swatch(SeriesGraph.LifeColor));
-            legend.AddChild(new Label { Text = "здоровье   (каждая линия от 0 до своего максимума за бой)" });
+            legend.AddChild(new Label { Text = "здоровье" });
             Content.AddChild(legend);
+            Content.AddChild(new Label { Text = "Каждая линия от 0 до своего максимума за бой.", AutowrapMode = TextServer.AutowrapMode.WordSmart });
         }
 
         Content!.AddChild(new HSeparator());
@@ -360,16 +382,38 @@ public partial class SimulationPanel : SessionPanel
         AddText(text, color);
     }
 
-    private void Header(string text) => AddText(text + ":", Amber);
+    private void Header(string text)
+    {
+        Content!.AddChild(RoomHudTheme.TowerHeading(text, 17));
+        Content.AddChild(new HSeparator());
+    }
 
     /// <summary>A result number: the formatted value is put into the label, so NumberLabel prints it as is.</summary>
-    private void Number(string key, string caption, double value, Func<double, string> format, string note, Texture2D? icon = null)
+    private void Number(string key, string caption, double value, Func<double, string> format, string note, Texture2D? icon = null, double? maximum = null, Color? barColor = null)
     {
         var label = NumberLabel.For(new NumberLine(key, $"{caption}: {format(value)}", value, null, note), _open);
         label.Icon = icon;
         label.AddThemeConstantOverride("icon_max_width", 20);
+        if (key is "sim_dps_single" or "sim_dps_pack")
+        {
+            label.Text = caption + "\n" + format(value);
+            label.AddThemeFontSizeOverride("font_size", 25);
+            label.AddThemeColorOverride("font_color", RoomHudTheme.Parchment);
+        }
         _numbers.Add(label);
-        Content!.AddChild(label);
+        if (maximum is { } max)
+        {
+            var row = new Control { CustomMinimumSize = new Vector2(0, 36), SizeFlagsHorizontal = SizeFlags.ExpandFill };
+            var track = new ProgressBar { MinValue = 0, MaxValue = Math.Max(1, max), Value = value, ShowPercentage = false, MouseFilter = MouseFilterEnum.Ignore };
+            track.AddThemeStyleboxOverride("background", new StyleBoxFlat { BgColor = MeterColors.Track });
+            track.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = barColor ?? RoomHudTheme.Focus });
+            row.AddChild(track);
+            track.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+            row.AddChild(label);
+            label.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+            Content!.AddChild(row);
+        }
+        else Content!.AddChild(label);
     }
 
     private static ColorRect Swatch(Color color) =>
@@ -377,8 +421,8 @@ public partial class SimulationPanel : SessionPanel
 
     private static void Row(GridContainer grid, string caption, Control control)
     {
-        grid.AddChild(new Label { Text = caption + ":", CustomMinimumSize = new Vector2(200, 0) });
-        control.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
+        grid.AddChild(new Label { Text = caption, SizeFlagsHorizontal = SizeFlags.ExpandFill });
+        control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         grid.AddChild(control);
     }
 }

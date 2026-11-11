@@ -1,0 +1,710 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-11-01",
+  "reviewer_role": "dialoid-technical-artist",
+  "independence": "Reviewer authored Warrior briefs; reviewed Apostate art produced by a different artist/controller.",
+  "scope": "Apostate skill paintings and node-family art review only. No art, code or runtime edits.",
+  "reference": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "criteria": [
+    "Semantic distinctness and readable silhouettes at 64/32/24 px",
+    "Approved Venice lighting, materials, padding and restrained silver-blue dark energy",
+    "No embedded frames, text, numbers, neon or unreadable black main subjects",
+    "Exact percentages and every conditional mechanic need not be encoded in art"
+  ],
+  "skills6": {
+    "expected_count": 6,
+    "reviewed_count": 6,
+    "verdict": "APPROVE",
+    "evidence": [
+      "review/skills-contact.png",
+      "review/skills-sizes.png"
+    ],
+    "assets": [
+      {
+        "asset_id": "dark_slash",
+        "verdict": "APPROVE",
+        "sizes_px": [
+          64,
+          32,
+          24
+        ]
+      },
+      {
+        "asset_id": "dark_wave",
+        "verdict": "APPROVE",
+        "sizes_px": [
+          64,
+          32,
+          24
+        ]
+      },
+      {
+        "asset_id": "space_rend",
+        "verdict": "APPROVE",
+        "sizes_px": [
+          64,
+          32,
+          24
+        ]
+      },
+      {
+        "asset_id": "shadow_step",
+        "verdict": "APPROVE",
+        "sizes_px": [
+          64,
+          32,
+          24
+        ]
+      },
+      {
+        "asset_id": "awakening",
+        "verdict": "APPROVE",
+        "sizes_px": [
+          64,
+          32,
+          24
+        ]
+      },
+      {
+        "asset_id": "crescent_flurry",
+        "verdict": "APPROVE",
+        "sizes_px": [
+          64,
+          32,
+          24
+        ]
+      }
+    ],
+    "closed_previous_blockers": [
+      {
+        "asset_id": "dark_slash",
+        "status": "closed",
+        "previous_issue": "Near-duplicate of Cleave; dark component disappeared at small sizes.",
+        "resolution": "Updated broad single shadow wedge has a distinct silhouette readable at 64/32/24 px."
+      },
+      {
+        "asset_id": "space_rend",
+        "status": "closed",
+        "previous_issue": "Thin dark rift disappeared at small sizes, leaving a similar sword.",
+        "resolution": "Updated wide vertical gap with lit edges remains distinct at 64/32/24 px."
+      },
+      {
+        "asset_id": "awakening",
+        "status": "closed",
+        "previous_issue": "Dark core disappeared, leaving an ordinary armored hand.",
+        "resolution": "Updated large pale energy core separates clearly from the gauntlet at 64/32/24 px."
+      }
+    ],
+    "blocking_asset_ids": [],
+    "notes": "All six silhouettes approved. Adequate padding; no frames, text, neon or excessive bloom."
+  },
+  "dark_slash16": {
+    "expected_count": 16,
+    "source_images_viewed": 16,
+    "contact_sheet_count": 16,
+    "size_reviewed_count": 16,
+    "verdict": "APPROVE",
+    "status": "Complete art review: 16/16 approved at 64/32/24 px.",
+    "assets": [
+      {
+        "asset_id": "slash_edge",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "slash_conversion",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "slash_bleeding",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "double_cut",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "long_cut",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "blade_thirst",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "slash_arc",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "third_wave",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "blade_cadence",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "slash_precision",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "slash_cruelty",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "slash_flow",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "slash_rush",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "blade_guard",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "slash_wounds",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      },
+      {
+        "asset_id": "slash_step_echo",
+        "art_verdict": "APPROVE",
+        "source_image_viewed": true,
+        "size_review": "APPROVE: 64/32/24 px",
+        "evidence": [
+          "review/dark_slash-contact.png",
+          "review/dark_slash-sizes.png"
+        ]
+      }
+    ],
+    "art_blocking_asset_ids": [],
+    "review_evidence_pending_asset_ids": [],
+    "required_follow_up": "None for sheet art review; runtime verification remains pending.",
+    "notes": "Complete updated contact and size sheets viewed. slash_flow and slash_rush now included and approved at 64/32/24 px; previous evidence gap closed. Distinct silhouettes, restrained materials and readable silver-blue energy."
+  },
+  "other_node_families": [
+    {
+      "skill_id": "dark_wave",
+      "expected_count": 18,
+      "status": "REVIEWED_APPROVE",
+      "verdict": "APPROVE",
+      "reason": "All 18 actual images inspected in contact and 64/32/24 px sheets; no blocking art issues.",
+      "evidence": [
+        "review/dark_wave-contact.png",
+        "review/dark_wave-sizes.png"
+      ],
+      "reviewed_count": 18,
+      "art_blocking_asset_ids": [],
+      "assets": [
+        {
+          "asset_id": "sharp_edge",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "pure_dark",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "piercing_wave",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "reflected_wave",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "double_wave",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "compressed_wave",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "dark_clot",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "heavy_wave",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "wide_wave",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "dark_trail",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "greedy_dark",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "dark_outflow",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "crit_reflection",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "keen_sight",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "wave_rending",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "bloody_wave",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "ice_dark",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "slash_echo",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        }
+      ],
+      "notes": "Shared curled-wave vocabulary remains distinguishable through open crest, closed spiral, paired lobes, contact objects and directional silhouettes. Metallic and silver-blue forms retain family consistency; no frames, embedded text or neon."
+    },
+    {
+      "skill_id": "space_rend",
+      "expected_count": 16,
+      "status": "REVIEWED_APPROVE",
+      "verdict": "APPROVE",
+      "reason": "All 16 approved; rend_precision v2 closes the sole previous small-size readability blocker.",
+      "evidence": [
+        "review/space_rend-contact.png",
+        "review/space_rend-sizes.png"
+      ],
+      "reviewed_count": 16,
+      "art_blocking_asset_ids": [],
+      "assets": [
+        {
+          "asset_id": "rend_force",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "wide_rend",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "narrow_rend",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rift_zone",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rift_duration",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rift_depth",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "hungry_void",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "total_devastation",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rend_reach",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rend_speed",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rend_precision",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Selected v2 inspected in updated contact and size sheets: three broad silver planes and their substantial focal junction remain clearly readable at 64/32/24 px. Distinct material form; no neon, frame, text or bloom. Previous hairline readability blocker closed."
+        },
+        {
+          "asset_id": "rend_crit",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rend_penetration",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rend_step_echo",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rend_guard",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        },
+        {
+          "asset_id": "rend_awakening",
+          "verdict": "APPROVE",
+          "sizes_px": [
+            64,
+            32,
+            24
+          ],
+          "finding": "Readable main form and sufficient distinctness at inspected sizes; no blocking style or false-form issue."
+        }
+      ],
+      "notes": "Prior 15 approvals retained. Only rend_precision re-reviewed in this pass using updated space_rend-contact.png and space_rend-sizes.png. Broad silver junction resolves the former disappearing seam.",
+      "closed_previous_blockers": [
+        {
+          "asset_id": "rend_precision",
+          "status": "closed",
+          "previous_issue": "Hairline three-way seam nearly disappeared at 24 px.",
+          "resolution": "Selected v2 broad silver planes and enlarged focal junction remain readable at 64/32/24 px."
+        }
+      ]
+    },
+    {
+      "skill_id": "shadow_step",
+      "expected_count": 16,
+      "status": "DELEGATED_APPROVED",
+      "verdict": "APPROVE",
+      "reason": "Approved by independent James review in review-apostate-late.json; delegated verdict recorded, not re-reviewed here.",
+      "delegated_reviewer": "James",
+      "delegated_report": "review-apostate-late.json"
+    },
+    {
+      "skill_id": "awakening",
+      "expected_count": 22,
+      "status": "DELEGATED_APPROVED",
+      "verdict": "APPROVE",
+      "reason": "Approved by independent James review in review-apostate-late.json; delegated verdict recorded, not re-reviewed here.",
+      "delegated_reviewer": "James",
+      "delegated_report": "review-apostate-late.json"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "expected_count": 16,
+      "status": "DELEGATED_APPROVED",
+      "verdict": "APPROVE",
+      "reason": "Approved by independent James review in review-apostate-late.json; delegated verdict recorded, not re-reviewed here.",
+      "delegated_reviewer": "James",
+      "delegated_report": "review-apostate-late.json"
+    }
+  ],
+  "runtime_verification": {
+    "status": "VISUAL_ONLY_APPROVE",
+    "verification_type": "visual-only",
+    "verified": true,
+    "verified_scope": "Visual inspection of two supplied Godot-rendered asset-preview screenshots only.",
+    "evidence": [
+      "in-game/apostate-skills.png",
+      "in-game/nodes-space_rend.png"
+    ],
+    "visual_findings": [
+      "All six selected Apostate skill paintings display at 64/32/24 px with distinct silhouettes; no visible blank or missing textures.",
+      "All sixteen space_rend node previews display at 64/32/24 px, including the approved broad-junction rend_precision v2. No visible crop, frame or text baked into the art.",
+      "The Apostate screenshot explicitly states archived asset preview only. These images document asset-preview grids, not a restored playable class or gameplay skill-tree interaction."
+    ],
+    "controller_technical_check": {
+      "status": "PASS_REPORTED_BY_CONTROLLER",
+      "resource_count": 214,
+      "timing": "Final full Godot check after the last asset, as reported by controller.",
+      "executed_by_this_reviewer": false,
+      "controller_logs_executed_by_this_reviewer": false,
+      "raw_controller_logs_independently_inspected": false,
+      "attribution": "Controller reports the final 214-resource Godot check passed. This reviewer did not run that check or execute the controller log commands; no independent technical binding verification is claimed."
+    },
+    "scope_limits": "Visual approval covers only the two supplied preview screenshots. Full resource loading, bindings and runtime checks are attributed to controller evidence; remaining three families retain independent James art approvals."
+  },
+  "final_status": "APPROVE: art review complete; supplied runtime previews visually approved; technical 214-resource PASS attributed to controller."
+}

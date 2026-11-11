@@ -1,0 +1,21 @@
+// Generated from completed swordsmen icon masters; see docs/art/icons/2026-11-01-swordsmen/export.py.
+namespace Dialoid.Game.Ui.Art;
+
+public static partial class GameIcons
+{
+    private static readonly Dictionary<string, HashSet<string>> DedicatedNodeArt = new(StringComparer.Ordinal)
+    {
+        ["awakening"] = new(StringComparer.Ordinal) { "awakening_core", "lingering_awakening", "intense_awakening", "awakening_rage", "demonic_blood", "awakening_recovery", "awakening_cast", "awakening_armor", "awakening_dodge", "awakening_resists", "awakening_precision", "awakening_crit", "awakening_area", "awakening_pierce", "awakening_melee", "awakening_projectile", "awakening_penetration", "awakening_guard", "awakening_regen", "awakening_bleed", "awakening_chill", "awakening_step" },
+        ["battle_cry"] = new(StringComparer.Ordinal) { "war_roar", "iron_cry", "intimidation", "battle_rhythm", "ancestral_fury", "long_roar", "unyielding", "steel_will", "hardened_body", "long_stand", "sharp_roar", "blood_cry", "endless_rage", "inspiration", "fury_surge", "tireless", "thunder_roar", "rolling_thunder", "deafening_roar", "ringing_ears" },
+        ["charge"] = new(StringComparer.Ordinal) { "momentum", "ram", "crushing_ram", "stunning_ram", "trample", "long_run", "unstoppable", "burning_trail", "embers", "furious_charge", "quick_feet", "bloody_path", "gore", "shoulder_bash", "armored_charge", "storm_charge", "true_lunge", "finishing_blow" },
+        ["cleave"] = new(StringComparer.Ordinal) { "heavy_hand", "lacerate", "deep_cut", "bloodletting", "thirst", "frenzy", "wide_swing", "split", "precise_strike", "searing_blade", "burning_wounds", "thunder_strike", "echo", "rolling_echo", "steel_skin", "crushing_force", "edge" },
+        ["crescent_flurry"] = new(StringComparer.Ordinal) { "crescent_edge", "wide_fan", "narrowing", "returning_crescent", "cold_crescent", "cutting_wind", "crescent_reach", "crescent_speed", "crescent_precision", "crescent_crit", "crescent_dark", "crescent_chill", "crescent_echo", "crescent_guard", "crescent_awakening", "crescent_dot" },
+        ["crush"] = new(StringComparer.Ordinal) { "brute_force", "wide_impact", "shockwave", "earthquake", "deep_tremors", "fissures", "thunder_hammer", "static_discharge", "torn_earth", "bloody_harvest", "cold_calculation", "fury_return", "peak_fury", "stun", "concussion", "heavy_blow" },
+        ["dark_slash"] = new(StringComparer.Ordinal) { "slash_edge", "slash_conversion", "slash_bleeding", "double_cut", "long_cut", "blade_thirst", "slash_arc", "third_wave", "blade_cadence", "slash_precision", "slash_cruelty", "slash_flow", "slash_rush", "blade_guard", "slash_wounds", "slash_step_echo" },
+        ["dark_wave"] = new(StringComparer.Ordinal) { "sharp_edge", "pure_dark", "piercing_wave", "reflected_wave", "double_wave", "compressed_wave", "dark_clot", "heavy_wave", "wide_wave", "dark_trail", "greedy_dark", "dark_outflow", "crit_reflection", "keen_sight", "wave_rending", "bloody_wave", "ice_dark", "slash_echo" },
+        ["shadow_step"] = new(StringComparer.Ordinal) { "step_force", "arrival_cut", "path_cut", "through_dark", "step_afterimage", "step_recovery", "step_speed", "step_reach", "step_precision", "step_crit", "step_flow", "step_penetration", "step_armor", "step_dodge", "step_wave_echo", "step_awakening" },
+        ["space_rend"] = new(StringComparer.Ordinal) { "rend_force", "wide_rend", "narrow_rend", "rift_zone", "rift_duration", "rift_depth", "hungry_void", "total_devastation", "rend_reach", "rend_speed", "rend_precision", "rend_crit", "rend_penetration", "rend_step_echo", "rend_guard", "rend_awakening" },
+        ["throwing_axe"] = new(StringComparer.Ordinal) { "whetstone", "returning", "axe_fan", "boomerang", "catch", "spare_axe", "piercing_throw", "ricochet", "poisoned_blades", "lethal_dose", "thrower_fury", "jagged_edge", "keen_throw", "headshot", "quick_throw", "storm_edge" },
+        ["whirlwind"] = new(StringComparer.Ordinal) { "steel_storm", "spin_up", "blade_hurricane", "fast_turns", "wide_circle", "thrifty_spin", "grinding_spin", "frenzied_spin", "ice_whirl", "frostbite", "ice_crumbs", "fire_whirl", "fanned_flames", "smoldering", "cutting_wind", "thousand_cuts", "steel_cocoon" },
+    };
+}

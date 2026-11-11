@@ -1,0 +1,13 @@
+{
+  "skill_id": "dark_wave",
+  "node_id": "dark_clot",
+  "name": "Сгусток",
+  "description": "Becomes a spender costing at least 18 Corruption, generating none, with 80% more damage.",
+  "subject": "A dense pear-shaped dark-energy clot with a pale silver-blue solid nose and an inward-drawn tail. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/dark_clot.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-1904b9f9-b7a7-4889-8434-9ff5164422f1.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A dense pear-shaped dark-energy clot with a pale silver-blue solid nose and an inward-drawn tail. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

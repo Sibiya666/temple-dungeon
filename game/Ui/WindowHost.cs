@@ -64,6 +64,33 @@ public partial class WindowHost : Control
     /// <summary>Smallest window a corner drag can make.</summary>
     public static readonly Vector2 MinSize = new(260, 160);
 
+    public static bool SupportsExpanded(string id) => id is WindowIds.Character or WindowIds.Skills or WindowIds.Ascendancy or WindowIds.Builds or WindowIds.Breakdown
+        or WindowIds.Simulation or WindowIds.Log or WindowIds.Meter or WindowIds.Charts;
+
+    private readonly Dictionary<string, Rect2> _sideRects = new();
+
+    /// <summary>Show the approved workspace without overwriting the player's saved side-window rectangle.</summary>
+    public void SetExpanded(string id, bool expanded)
+    {
+        if (!SupportsExpanded(id) || !_windows.TryGetValue(id, out var window) || window.Expanded == expanded) return;
+        if (!window.Visible) OpenWindow(id);
+        _replace.Remove(window);
+        if (expanded) _sideRects[id] = window.GetRect();
+        window.SetExpandedState(expanded);
+        if (!expanded && _sideRects.TryGetValue(id, out var side))
+        {
+            window.Position = side.Position;
+            window.Size = side.Size;
+        }
+        Clamp(window);
+        Raise(id);
+        Changed?.Invoke();
+    }
+
+    private Rect2 ExpandedRect() => new(new Vector2(Margin, TopInset() + Margin),
+        new Vector2(Mathf.Max(MinSize.X, Size.X - 2 * Margin),
+            Mathf.Max(MinSize.Y, Size.Y - TopInset() - 2 * Margin)));
+
     /// <summary>Background of every window: opaque, warm dark (text over the dark scene stays readable).</summary>
     public static readonly Color Background = new("0c1114");
     public static readonly Color TitleBackground = new("162126");
@@ -287,6 +314,7 @@ public partial class WindowHost : Control
     /// <summary>The window at its remembered place and size, or at its default one; always inside the screen.</summary>
     private void Place(GameWindow window)
     {
+        if (window.Expanded) { Clamp(window); return; }
         var rect = DefaultRect(window.Spec);
         if (_config.HasSectionKey(window.Spec.Id, "position") && _config.GetValue(window.Spec.Id, "position").Obj is Vector2 pos)
             rect.Position = pos;
@@ -330,6 +358,13 @@ public partial class WindowHost : Control
     {
         var screen = Size;
         if (screen.X < 1 || screen.Y < 1) return;
+        if (window.Expanded)
+        {
+            var rect = ExpandedRect();
+            if (!window.Position.IsEqualApprox(rect.Position)) window.Position = rect.Position;
+            if (!window.Size.IsEqualApprox(rect.Size)) window.Size = rect.Size;
+            return;
+        }
         var top = TopInset();
         var size = new Vector2(Mathf.Clamp(window.Size.X, MinSize.X, Mathf.Max(MinSize.X, screen.X)),
             Mathf.Clamp(window.Size.Y, MinSize.Y, Mathf.Max(MinSize.Y, screen.Y - top)));
@@ -342,6 +377,7 @@ public partial class WindowHost : Control
     /// <summary>Writes where the owner left the window.</summary>
     private void Remember(GameWindow window)
     {
+        if (window.Expanded) return;
         _replace.Remove(window); // the owner placed it
         Clamp(window);
         _config.SetValue(window.Spec.Id, "position", window.Position);
@@ -353,6 +389,7 @@ public partial class WindowHost : Control
     public void MoveWindow(string id, Vector2 position)
     {
         var window = _windows[id];
+        if (window.Expanded) { Clamp(window); return; }
         window.Position = position;
         Remember(window);
     }
@@ -455,6 +492,8 @@ public partial class GameWindow : PanelContainer
     public Control Content { get; }
     public Label TitleLabel { get; }
     public Button CloseButton { get; }
+    public Button? ExpandButton { get; }
+    public bool Expanded { get; private set; }
 
     /// <summary>The close button was pressed.</summary>
     public event Action? CloseRequested;
@@ -470,6 +509,7 @@ public partial class GameWindow : PanelContainer
     {
         Spec = spec;
         Content = content;
+        if (WindowHost.SupportsExpanded(spec.Id)) Theme = RoomHudTheme.TowerWindowTheme();
         MouseFilter = MouseFilterEnum.Stop;
         var style = new StyleBoxFlat
         {
@@ -506,6 +546,12 @@ public partial class GameWindow : PanelContainer
         };
         TitleLabel.AddThemeColorOverride("font_color", new Color("d8d5c6"));
         row.AddChild(TitleLabel);
+        if (WindowHost.SupportsExpanded(spec.Id))
+        {
+            ExpandButton = new Button { Name = "ExpandWindow", Text = "Развернуть", TooltipText = "Развернуть / вернуть боковое окно", CustomMinimumSize = new Vector2(96, 0) };
+            ExpandButton.Pressed += () => Host?.SetExpanded(Spec.Id, !Expanded);
+            row.AddChild(ExpandButton);
+        }
         CloseButton = new Button { Text = "×", Flat = true, FocusMode = FocusModeEnum.None, TooltipText = "Закрыть (Esc закрывает верхнее окно)", CustomMinimumSize = new Vector2(28, 0) };
         CloseButton.Pressed += () => CloseRequested?.Invoke();
         GameIcons.Decorate(CloseButton, "close", 14);
@@ -557,6 +603,7 @@ public partial class GameWindow : PanelContainer
                 grip.DrawLine(new Vector2(GripSize - 4 * i, GripSize - 2), new Vector2(GripSize - 2, GripSize - 4 * i), c, 1);
         };
         AddChild(grip);
+        _grip = grip;
         grip.SizeFlagsHorizontal = SizeFlags.ShrinkEnd;
         grip.SizeFlagsVertical = SizeFlags.ShrinkEnd;
     }
@@ -566,7 +613,18 @@ public partial class GameWindow : PanelContainer
 
     private readonly StyleBoxFlat _style;
     private readonly PanelContainer _promptPanel;
+    private readonly Control _grip;
     private bool _gamepad;
+
+    internal void SetExpandedState(bool expanded)
+    {
+        Expanded = expanded;
+        _dragging = _resizing = false;
+        _grip.Visible = !expanded;
+        if (ExpandButton != null) ExpandButton.Text = expanded ? "Свернуть" : "Развернуть";
+        ShowDevice(_gamepad);
+        GetNodeOrNull<Node2D>("WindowBackdrop")?.QueueRedraw();
+    }
 
     /// <summary>The prompt line at the bottom («[A] Взять   [X] Атрибут   [B] Закрыть»).</summary>
     public Label PromptBar { get; }
@@ -588,6 +646,7 @@ public partial class GameWindow : PanelContainer
         _gamepad = gamepad;
         var dpad = Dialoid.Game.Input.GamepadLayout.DpadOf(Spec.Id);
         TitleLabel.Text = !gamepad ? $"{Spec.Title} ({KeyName(Spec.Key)})" : dpad is { } b ? $"{Spec.Title} {ButtonPrompts.Glyph(b)}" : Spec.Title;
+        if (Expanded) TitleLabel.Text = "DIALOID  /  " + TitleLabel.Text;
         _promptPanel.Visible = PromptBar.Visible = PadFocused && gamepad;
     }
 
@@ -595,6 +654,7 @@ public partial class GameWindow : PanelContainer
 
     private void OnTitleInput(InputEvent e)
     {
+        if (Expanded) return;
         switch (e)
         {
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } mb:
@@ -613,6 +673,7 @@ public partial class GameWindow : PanelContainer
 
     private void OnGripInput(InputEvent e)
     {
+        if (Expanded) return;
         switch (e)
         {
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } mb:

@@ -1,0 +1,13 @@
+{
+  "skill_id": "awakening",
+  "node_id": "demonic_blood",
+  "name": "Демоническая кровь",
+  "description": "50% increased healing during the main buff; requires a healing source.",
+  "subject": "A detached steel gauntlet joint being restored by one inward dark-red thread joining a small crack, a pale silver-blue ember at the joining point. Equipment only, no person, skin or organic tissue.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/demonic_blood.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-b4c64647-1dd3-4f74-8ba7-51a81a9ce5e2.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A detached steel gauntlet joint being restored by one inward dark-red thread joining a small crack, a pale silver-blue ember at the joining point. Equipment only, no person, skin or organic tissue. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

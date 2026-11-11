@@ -1,0 +1,11 @@
+{
+  "key": "crush/wide_impact",
+  "skill_id": "crush",
+  "node_id": "wide_impact",
+  "subject": "A very broad squat hammer head at ground level, its wide rectangular impact face and a broad horizontal band of displaced stone dominating the image; only a short handle. Wide sideways reach, no thin upright stick.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-b4a80f7e-6259-4248-b8dd-142f4d1b296d.png",
+  "prompt": "Create ONE square Dialoid icon. Use the supplied approved Venice ORIGINAL as exact style reference. Replace only the central subject with: A very broad squat hammer head at ground level, its wide rectangular impact face and a broad horizontal band of displaced stone dominating the image; only a short handle. Wide sideways reach, no thin upright stick. Keep the original background, palette, diffuse lighting, exposure, contrast, materials, soft edges and detail density. Main form occupies central75%, readable at24px. No letters, numbers, UI, borders, decorative ornaments, broad glow or added sharpening.",
+  "revision": 2
+}

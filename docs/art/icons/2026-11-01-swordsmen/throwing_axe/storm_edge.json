@@ -1,0 +1,13 @@
+{
+  "skill_id": "throwing_axe",
+  "node_id": "storm_edge",
+  "name": "Грозовое лезвие",
+  "description": "40% физического урона становится молнией, шанс шока 15%.",
+  "subject": "A broad steel throwing axe with a small silver-blue electrical filament running along part of its cutting edge, the rest remaining plain physical metal. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/storm_edge.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-766990fc-5d32-4e56-8b98-dabe6229f821.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A broad steel throwing axe with a small silver-blue electrical filament running along part of its cutting edge, the rest remaining plain physical metal. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}
