@@ -6,22 +6,17 @@ using Godot;
 namespace Dialoid.Game.Ui.Art;
 
 /// <summary>Bundled UI art. IDs are whitelisted; missing art never hides the caller's text.</summary>
-public static class GameIcons
+public static partial class GameIcons
 {
     private const string Root = "res://Ui/Art/Icons/";
     private static readonly HashSet<string> Skills = new(StringComparer.Ordinal)
     {
         "cleave", "crush", "battle_cry", "whirlwind", "charge", "throwing_axe",
         "spark", "fireball", "ice_lance", "ball_lightning", "meteor", "blink", "poison_cloud",
+        "dark_slash", "dark_wave", "space_rend", "shadow_step", "awakening", "crescent_flurry",
     };
     private static readonly HashSet<string> Ailments = new(StringComparer.Ordinal)
         { "bleed", "ignite", "poison", "shock", "chill", "freeze" };
-    private static readonly HashSet<string> CleaveNodes = new(StringComparer.Ordinal)
-    {
-        "heavy_hand", "lacerate", "deep_cut", "bloodletting", "thirst", "frenzy", "wide_swing",
-        "split", "precise_strike", "searing_blade", "burning_wounds", "thunder_strike", "echo",
-        "rolling_echo", "steel_skin", "crushing_force", "edge",
-    };
     private static readonly HashSet<string> PaintedBuffs = new(StringComparer.Ordinal)
     {
         "battle_cry", "cleave_frenzy", "inspiration", "steel_skin", "blink_focus", "phase_barrier", "berserk_frenzy", "static_charge",
@@ -37,16 +32,26 @@ public static class GameIcons
 
     public static Texture2D? Skill(string? id)
     {
-        id = id switch { "returning_axe" => "throwing_axe", "fireball_blast" => "fireball", "blink_flare" => "blink", _ => id };
+        id = id switch
+        {
+            "returning_axe" => "throwing_axe", "fireball_blast" => "fireball", "blink_flare" => "blink",
+            "dark_wave_return" => "dark_wave", "dark_slash_wave" => "dark_slash", "crescent_return" => "crescent_flurry",
+            _ => id,
+        };
         return id != null && Skills.Contains(id) ? Load("skills/" + id + ".png") : null;
     }
 
     public static Texture2D? Ailment(string? id) => id != null && Ailments.Contains(id) ? Load("ailments/" + id + ".png") : null;
 
-    /// <summary>Individual skill-node art; other skills retain their existing effect symbols.</summary>
+    /// <summary>True only for a whitelisted pair whose dedicated texture actually loads, never a fallback symbol.</summary>
+    public static bool HasDedicatedSkillNodeArt(string skillId, string nodeId) =>
+        DedicatedNodeArt.TryGetValue(skillId, out var nodes) && nodes.Contains(nodeId)
+        && Load("skill_nodes/" + skillId + "/" + nodeId + ".png") != null;
+
+    /// <summary>Dedicated paintings by skill/node pair; unfinished families retain their existing effect symbols.</summary>
     public static Texture2D? SkillNode(string skillId, string nodeId, IReadOnlyList<Effect> effects) =>
-        skillId == "cleave" && CleaveNodes.Contains(nodeId)
-            ? Load("skill_nodes/cleave/" + nodeId + ".png")
+        DedicatedNodeArt.TryGetValue(skillId, out var nodes) && nodes.Contains(nodeId)
+            ? Load("skill_nodes/" + skillId + "/" + nodeId + ".png")
             : Effects(effects);
 
     public static Texture2D? Damage(DamageType type) => Enum.IsDefined(type)

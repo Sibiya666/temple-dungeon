@@ -88,7 +88,8 @@ public sealed partial class SelfTest
         // A developer's shortcut: DIALOID_SELFTEST_FILTER=gamepad runs only the steps whose names start with it (never set by the checks).
         if (System.Environment.GetEnvironmentVariable("DIALOID_SELFTEST_FILTER") is { Length: > 0 } filter)
         {
-            steps = steps.Where(s => s.Name.StartsWith(filter, StringComparison.Ordinal) || s.Name == "panels").ToList();
+            var prefixes = filter.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            steps = steps.Where(s => prefixes.Any(p => s.Name.StartsWith(p, StringComparison.Ordinal)) || s.Name == "panels").ToList();
             GD.Print($"SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER={filter}: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ ({steps.Count}) — это не приемка !!!");
         }
         int failed = 0;
@@ -137,6 +138,13 @@ public sealed partial class SelfTest
         steps.AddRange(TowerSteps());
         steps.Add(new("tower.reference", TowerReference));
         steps.Add(new("skills.reference", SkillsReference));
+        steps.Add(new("charskills.host", CharacterSkillsHost));
+        steps.Add(new("charskills.focus-neighbors", CharacterSkillsFocusNeighbors));
+        steps.Add(new("charskills.commands", CharacterSkillsCommands));
+        steps.Add(new("charskills.reference", CharacterSkillsReference));
+        steps.Add(new("sevenwindows.host", SevenWindowsHost));
+        steps.Add(new("sevenwindows.ascendancy-icons", SevenAscendancyIcons));
+        steps.Add(new("sevenwindows.reference", SevenWindowsReference));
 
         var mains = _main.Builds?.References.Where(r => r.Group == ReferenceBuilds.MainGroup).ToList() ?? new();
         steps.Add(new("builds.main-listed", () =>

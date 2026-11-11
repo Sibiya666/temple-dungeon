@@ -1,0 +1,11 @@
+{
+  "key": "awakening",
+  "skill_id": "awakening",
+  "node_id": null,
+  "subject": "A steel gauntlet opening around a large angular silver-blue flame-shaped core, the core occupying one third of the icon. It is a tangible restrained pale energy form with clean facets, visibly distinct from an ordinary fist, no halo or bloom.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-bb2ed2a0-8d9a-4076-8e7d-e7df7ae06f4f.png",
+  "prompt": "Create ONE square Dialoid icon. Use the supplied approved Venice ORIGINAL as exact style reference. Replace only the central subject with: A steel gauntlet opening around a large angular silver-blue flame-shaped core, the core occupying one third of the icon. It is a tangible restrained pale energy form with clean facets, visibly distinct from an ordinary fist, no halo or bloom. Keep the original background, palette, diffuse lighting, exposure, contrast, materials, soft edges and detail density. Main form occupies central75%, readable at24px. No letters, numbers, UI, borders, decorative ornaments, broad glow or added sharpening.",
+  "revision": 2
+}

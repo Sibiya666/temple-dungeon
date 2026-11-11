@@ -1,0 +1,59 @@
+ERROR: Failed to open 'user://logs/godot2026-11-11T07.21.00.log'.
+   at: copy (core/io/dir_access.cpp:429)
+ERROR: Failed to open log file for writing: user://logs/godot.log
+   at: rotate_file (core/io/logger.cpp:169)
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\data
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=charskills|character|skills|windows|gamepad|builds|sevenwindows.host: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (43) — это не приемка !!!
+SELFTEST OK panels
+SELFTEST OK skills.reference
+SELFTEST OK charskills.host
+SELFTEST FAIL charskills.commands: NullReferenceException: Object reference not set to an instance of an object.
+SELFTEST OK charskills.reference
+SELFTEST OK sevenwindows.host
+SELFTEST OK builds.main-listed
+SELFTEST OK builds.load Чародей, Криомант — Ледяное копье
+SELFTEST OK builds.load Чародей, Пироман — Огненный шар
+SELFTEST OK builds.load Чародей, Криомант — Искра (гибрид)
+SELFTEST OK builds.load Воитель, Берсерк — Вихрь
+SELFTEST OK builds.load Воитель, Громовержец — огненный Рассекающий удар с критом
+SELFTEST OK builds.load Воитель, Громовержец — Сокрушение
+SELFTEST OK character.lines-match
+SELFTEST OK builds.import-garbage
+SELFTEST OK character.illegal-level
+SELFTEST OK character.signal-redraw
+SELFTEST OK skills.slots
+SELFTEST OK skills.icon-catalog
+SELFTEST OK skills.radial-graph
+SELFTEST OK skills.all-layouts
+SELFTEST OK skills.node-point
+SELFTEST NOTE ширина окон: Персонаж 470, Пассивки 528, Асцендант 528, Скиллы 528, Билды 528, Разбор 528, Симуляция 528, Журнал 472, Измеритель 440, Графики 528; верхняя панель 1424
+SELFTEST FAIL windows.layout: поля числа 6 вместо 4
+SELFTEST OK windows.hotkeys
+SELFTEST FAIL windows.remember-position: в user://windows-selftest.cfg позиция
+SELFTEST OK windows.focus-blocks-keys
+SELFTEST OK windows.mouse-over-window
+SELFTEST NOTE графики над журналом: (8, 48), (528, 456) / (8, 512), (472, 380) на (1600, 900)
+SELFTEST OK windows.charts-above-log
+SELFTEST OK gamepad.bindings
+SELFTEST OK gamepad.combat-buttons
+SELFTEST OK gamepad.stick-move
+SELFTEST OK gamepad.lb-rb-target
+SELFTEST OK gamepad.window-focus
+SELFTEST OK gamepad.view-and-ring
+SELFTEST FAIL gamepad.reachability: «Скиллы»: недостижимы с геймпада OptionButton«Слот 5», Button«Назначить», Button«− Снять»
+SELFTEST OK gamepad.tooltip-on-focus
+SELFTEST OK gamepad.passive-tree
+SELFTEST NOTE поле уровня: 20 → 19,20,20,20,20 (слот 1 19)
+SELFTEST OK gamepad.lists-slider-seed
+SELFTEST OK gamepad.meter-reset
+SELFTEST OK gamepad.device-switch
+SELFTEST OK gamepad.disconnect
+SELFTEST OK gamepad.restore
+SELFTEST OK windows.restore
+SELFTEST 39/43
+SELFTEST FAILED: 4

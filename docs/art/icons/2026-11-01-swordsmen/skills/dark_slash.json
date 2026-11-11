@@ -1,0 +1,9 @@
+{
+  "id": "dark_slash",
+  "name": "Тёмный разрез",
+  "kind": "skill",
+  "provider": "GPT built-in image_gen",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-ecb653b6-ebc5-4660-8ea1-ca8266232022.png",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "prompt": "Use case: precise-object-edit. One square Dialoid SKILL ICON. Reference image is the approved original Venice family. Replace ONLY its central sword/slash subject with: One diagonal steel sword cutting a broad single curved slash, a narrow cold black-blue shadow following the steel edge. Preserve the original background, overall centered composition, diffuse lighting, palette, exposure, contrast, material rendering, edge softness and detail density. Subject fills central 70-80%, clear silhouette readable at 24px. No text, numbers, lettering, frame, border, UI symbols, decorative ornaments, bloom, added sharpness or overall glow. Opaque original dark background."
+}

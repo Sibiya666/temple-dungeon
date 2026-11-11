@@ -358,6 +358,8 @@ public sealed partial class SelfTest
         var room = Room;
         var before = room.Quality;
         room.Quality = GraphicsQuality.High;
+        var opening = room.GetNode<SpotLight3D>("HighOpeningLight");
+        const int fixedShadowLights = 2; // Hero and the high opening both reserve a slot.
         var spots = new[]
         {
             room.HeroSpawn, room.DummySpot + new Vector3(1, 0, 1), new Vector3(-10.5f, 0, -7.5f), new Vector3(10.5f, 0, -7.5f),
@@ -368,11 +370,13 @@ public sealed partial class SelfTest
         foreach (var spot in spots)
         {
             room.PlaceHero(spot);
-            var shadows = room.ShadowLights.ToList();
+            var shadows = room.FindChildren("*", nameof(Light3D), true, false)
+                .OfType<Light3D>().Where(light => light.ShadowEnabled).ToList();
             Check(shadows.Count <= RoomView.MaxShadowLights, $"у {spot}: теневых источников {shadows.Count}");
             Check(shadows.Contains(room.HeroLight) && room.HeroLight.ShadowOpacity == 1f, "у света героя нет полной тени");
+            Check(shadows.Contains(opening), "у высокого проёма нет зарезервированной тени");
             Check(!room.FillLight.ShadowEnabled && !room.DummyLight.ShadowEnabled, "заполняющий свет или свет манекена с тенью");
-            var torches = shadows.Where(l => l != room.HeroLight).ToList();
+            var torches = shadows.Where(l => l != room.HeroLight && l != opening).ToList();
             foreach (var t in torches)
             {
                 Check(room.TorchLights.Contains(t), $"тень у постороннего света {t.Name}");
@@ -381,13 +385,13 @@ public sealed partial class SelfTest
                 Check(d <= RoomView.TorchShadowRadius + RoomView.ShadowHysteresis, $"тень у факела в {d:0.#} м от героя");
             }
             var near = room.TorchLights.Count(t => new Vector2(t.Position.X - spot.X, t.Position.Z - spot.Z).Length() <= RoomView.TorchShadowRadius);
-            Check(torches.Count >= Math.Min(near, RoomView.MaxShadowLights - 1) && torches.Count <= RoomView.MaxShadowLights - 1,
+            Check(torches.Count >= Math.Min(near, RoomView.MaxShadowLights - fixedShadowLights) && torches.Count <= RoomView.MaxShadowLights - fixedShadowLights,
                 $"у {spot}: факелов с тенью {torches.Count} при {near} рядом");
             // Same spot again: nothing toggles (hysteresis, state kept).
             var state = room.TorchLights.Select(t => t.ShadowEnabled).ToList();
             room.UpdateShadowBudget();
             Check(room.TorchLights.Select(t => t.ShadowEnabled).SequenceEqual(state), $"у {spot}: тени факелов переключились без движения");
-            if (near > RoomView.MaxShadowLights - 1) limitBound = true;
+            if (near > RoomView.MaxShadowLights - fixedShadowLights) limitBound = true;
             maxTorches = Math.Max(maxTorches, torches.Count);
         }
         Check(maxTorches > 0, "ни один факел не дает тень на высоком качестве");

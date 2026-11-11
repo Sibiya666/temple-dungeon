@@ -1,0 +1,997 @@
+{
+  "reference": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "icons": [
+    {
+      "skill_id": "dark_slash",
+      "node_id": null,
+      "name": "Тёмный разрез",
+      "description": "A one-handed melee area generator; 210% weapon effectiveness, 50% physical-to-dark conversion, 10 Corruption per use, 10% bleed chance.",
+      "subject": "A broad one-handed blade midway through a low diagonal cut, its steel face tangible and its cutting wake a narrow silver-blue shadow ribbon. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "skill",
+      "runtime_path": "game/Ui/Art/Icons/skills/dark_slash.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_edge",
+      "name": "Клинок сумрака",
+      "description": "8% increased damage per point.",
+      "subject": "A heavy triangular cutting bevel biting into a single bent iron rivet, emphasizing the force of the slash. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_edge.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_conversion",
+      "name": "Ночная сталь",
+      "description": "10% additional physical-to-dark conversion per point; exclusive with bleeding; no bleeding at full conversion.",
+      "subject": "A cutaway steel blade section whose pale metal transitions into a solid silver-blue dark-energy edge. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_conversion.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_bleeding",
+      "name": "Кровоточащая кромка",
+      "description": "8 percentage points of bleed chance per point; exclusive with dark conversion, retaining physical damage.",
+      "subject": "A hooked cutting tooth catching a small strip of cloth with a single muted dark-red bead at its tip. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_bleeding.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "double_cut",
+      "name": "Двойной рез",
+      "description": "Two hits at 120% weapon effectiveness each instead of one at 210%; resource gained once.",
+      "subject": "A single split leather practice pad bearing two separate parallel fresh cuts, the lower cut still edged with a faint silver-blue wake. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/double_cut.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "long_cut",
+      "name": "Протяжный разрез",
+      "description": "50% increased area and 10% more damage, with 10% reduced attack speed.",
+      "subject": "A long heavy scimitar-shaped slash wake sweeping slowly across a broad horizontal span; a short solid steel heel anchors the motion. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/long_cut.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "blade_thirst",
+      "name": "Жажда клинка",
+      "description": "3 extra Corruption per use when the primary target is bleeding.",
+      "subject": "A hollow hooked blade ferrule drawing one dark-red droplet inward through a narrow silver-blue channel. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/blade_thirst.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_arc",
+      "name": "Дуга клинка",
+      "description": "15% increased slash area per point.",
+      "subject": "A broad fan-shaped sheet of cut sailcloth opening along one curved silver-blue incision. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_arc.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "third_wave",
+      "name": "Третья волна",
+      "description": "Every third use casts a small Dark Wave at 40% base damage; copy has no resource, seals or tree.",
+      "subject": "A single small detached wave peeling away from the end of a fading slash ribbon; no extra skill portrait. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/third_wave.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "blade_cadence",
+      "name": "Ритм клинка",
+      "description": "4% increased attack speed per point.",
+      "subject": "A tense gloved wrist turning a compact sword hilt, with a short clean repeated motion blur at the knuckles. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/blade_cadence.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_precision",
+      "name": "Взгляд мечника",
+      "description": "1.5 percentage points of critical chance per point.",
+      "subject": "One narrowed human eye beneath a plain brow guard, looking down the exact line of a tiny reflected cutting edge. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_precision.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_cruelty",
+      "name": "Жестокость клинка",
+      "description": "10% additional critical damage per point.",
+      "subject": "A pierced iron gorget folded sharply inward around one deep oblique strike, a small bright contact edge marking the decisive hit. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_cruelty.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_flow",
+      "name": "Течение Скверны",
+      "description": "1 extra Corruption generated per use per point.",
+      "subject": "An open sword pommel with a narrow silver-blue stream collecting inside its cupped metal interior. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_flow.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_rush",
+      "name": "Порыв мечника",
+      "description": "Every third use grants 10% attack speed for 2 seconds.",
+      "subject": "A swordsman's forward forearm snapping out of a loose sleeve, one short trailing cuff fold conveying a sudden burst. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_rush.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "blade_guard",
+      "name": "Защита клинком",
+      "description": "Using the skill grants 15% increased armor for 2 seconds.",
+      "subject": "A broad sword crossguard braced against a dented steel vambrace, forming one compact defensive mass. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/blade_guard.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_wounds",
+      "name": "Следы клинка",
+      "description": "10% increased bleed damage per point; needs remaining physical damage.",
+      "subject": "A folded bandage cut deeply through its layers, one restrained dark-red seep following the incision. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_wounds.png"
+    },
+    {
+      "skill_id": "dark_slash",
+      "node_id": "slash_step_echo",
+      "name": "Тень выпада",
+      "description": "10% increased damage per point for 2 seconds after Shadow Step.",
+      "subject": "A lunging boot print ending in a sharp upward cut wake, joined into one forward-thrust silhouette. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_slash/slash_step_echo.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": null,
+      "name": "Волна тьмы",
+      "description": "A piercing projectile generator; 160% weapon effectiveness, 70% physical-to-dark conversion, 6 Corruption, one projectile piercing one target.",
+      "subject": "One substantial upright silver-blue cutting wave travelling forward, a dull steel-like leading edge and a short tapering dark wake. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "skill",
+      "runtime_path": "game/Ui/Art/Icons/skills/dark_wave.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "sharp_edge",
+      "name": "Острый край",
+      "description": "8% increased damage per point.",
+      "subject": "A thick wave crest with a distinctly sharpened chisel-like leading ridge, slicing one loose iron shaving. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/sharp_edge.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "pure_dark",
+      "name": "Чистая тьма",
+      "description": "10% additional physical-to-dark conversion per point, up to 100%; no bleed without physical damage.",
+      "subject": "A tightly curled wave made entirely of solid readable silver-blue dark energy, with no remaining metallic core. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/pure_dark.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "piercing_wave",
+      "name": "Сквозная",
+      "description": "One additional pierced target per point.",
+      "subject": "One slender travelling wave passing through two overlapping hanging leather flaps, leaving aligned openings. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/piercing_wave.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "reflected_wave",
+      "name": "Отраженная волна",
+      "description": "A returning copy hits the primary target at 50% base damage; no tree, resource or seals.",
+      "subject": "A single hooked returning wave curling back toward its own fading outbound wake, a clear hairpin silhouette. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/reflected_wave.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "double_wave",
+      "name": "Двойная волна",
+      "description": "One extra projectile, with 20% less damage; exclusive projectile form.",
+      "subject": "A bifurcated wave front splitting into two equally sized thin lobes with a wide clear gap. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/double_wave.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "compressed_wave",
+      "name": "Сжатая волна",
+      "description": "No piercing; 50% more damage and 5 percentage points of critical chance.",
+      "subject": "A short dense wedge-shaped wave stopped against one buckled iron plate, all force concentrated at its blunt impact. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/compressed_wave.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "dark_clot",
+      "name": "Сгусток",
+      "description": "Becomes a spender costing at least 18 Corruption, generating none, with 80% more damage.",
+      "subject": "A dense pear-shaped dark-energy clot with a pale silver-blue solid nose and an inward-drawn tail. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/dark_clot.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "heavy_wave",
+      "name": "Тяжелая волна",
+      "description": "15% more damage and 8% reduced attack speed per point; requires Dark Clot.",
+      "subject": "A low thick wave shaped like a heavy rolling metal lip, its bowed front visibly crushing a small folded sheet. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/heavy_wave.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "wide_wave",
+      "name": "Широкий взмах",
+      "description": "Adds area with base radius 0.8; 15% increased area per point.",
+      "subject": "A broad shallow scoop-shaped wave front spreading sideways close to the floor. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/wide_wave.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "dark_trail",
+      "name": "Шлейф",
+      "description": "Leaves one refreshing ground strip for 2 seconds, dealing 20% of hit ailment base per second.",
+      "subject": "A long tapered strip of silver-blue residue on a dark floor, its raised leading lip dissolving into a low persistent film. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/dark_trail.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "greedy_dark",
+      "name": "Жадная тьма",
+      "description": "2 extra Corruption per use per point.",
+      "subject": "A deep curled wave cavity gathering a small silver-blue stream into its hollow center. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/greedy_dark.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "dark_outflow",
+      "name": "Отток",
+      "description": "Every fourth use grants 15% attack speed for 3 seconds.",
+      "subject": "A narrow nozzle-shaped wave tail releasing a fast taut jet, with one sharply stretched crest. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/dark_outflow.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "crit_reflection",
+      "name": "Отражение",
+      "description": "Extra Corruption scales with full critical chance in 10-point steps; node capped at 3 extra Corruption.",
+      "subject": "A small concave polished steel shard focusing a thin reflected cutting glint into one collected silver-blue bead. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/crit_reflection.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "keen_sight",
+      "name": "Обостренный взгляд",
+      "description": "2 percentage points of critical chance per point.",
+      "subject": "A single hawk-like visor aperture framing a clear distant wave tip; no crosshair. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/keen_sight.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "wave_rending",
+      "name": "Рассечение",
+      "description": "15% additional critical damage per point.",
+      "subject": "A heavy iron buckle cleaved open from within by a wedge of wave energy, its two torn halves still attached. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/wave_rending.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "bloody_wave",
+      "name": "Кровавая волна",
+      "description": "25 percentage points of bleed chance and 30% increased damage against bleeding targets; needs physical damage.",
+      "subject": "A curved wave lip carrying a thin physical steel splinter and one dark-red smear along its cutting face. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/bloody_wave.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "ice_dark",
+      "name": "Ледяная тьма",
+      "description": "Converts base damage to cold before conversion and chills on hit; dark-art identity remains.",
+      "subject": "A blunt translucent ice wave with a thick pale frozen crest and a tiny cold-blue contact patch; no purple shadow glow. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/ice_dark.png"
+    },
+    {
+      "skill_id": "dark_wave",
+      "node_id": "slash_echo",
+      "name": "Эхо разреза",
+      "description": "The next direct Dark Wave within 2 seconds after Dark Slash gains 20% increased damage per point; all its hits benefit, then charge is spent.",
+      "subject": "A travelling wave growing directly from a single diagonal cut in a hanging cloth strip, one joined cause-and-effect form. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/dark_wave/slash_echo.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": null,
+      "name": "Разрез пространства",
+      "description": "A dark melee area spender; 520% weapon effectiveness, full physical-to-dark conversion, radius 2, costs 35 Corruption.",
+      "subject": "A tall oblique tear in empty space, its two silver-blue lips pulled apart around a deep but readable interior, with one short steel blade tip at the opening. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "skill",
+      "runtime_path": "game/Ui/Art/Icons/skills/space_rend.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rend_force",
+      "name": "Сила разлома",
+      "description": "8% increased damage per point.",
+      "subject": "A thick spatial tear crushing a single iron compression collar inward, emphasizing force rather than extra area. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rend_force.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "wide_rend",
+      "name": "Широкий рез",
+      "description": "Exclusive form: cross-shaped rend with 60% increased area.",
+      "subject": "One broad cross-shaped dimensional fissure with four uneven tapered silver edges, clean inorganic spatial planes; no emblem, lettering or organic forms.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/wide_rend.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "narrow_rend",
+      "name": "Узкий рез",
+      "description": "Exclusive form: removes area and grants 50% more single-target damage.",
+      "subject": "A needle-thin vertical spatial slit driven precisely through the center of one small armored boss. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/narrow_rend.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rift_zone",
+      "name": "Разрыв",
+      "description": "Leaves one refreshing dark ground zone for 2 seconds at 20% of hit ailment base per second; does not stack.",
+      "subject": "A shallow oval opening pooled against the floor, silver-blue vapor held low inside its lip. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rift_zone.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rift_duration",
+      "name": "Долгий разлом",
+      "description": "Adds 0.5 seconds to ground-zone duration per point.",
+      "subject": "A low dimensional fissure held open by two thick curved silver edges, one small ribbon of vapor lingering above; clean inorganic spatial geometry without organic forms.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rift_duration.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rift_depth",
+      "name": "Глубина разлома",
+      "description": "10% increased damage over time from the zone per point.",
+      "subject": "A steep funnel-shaped ground tear exposing a pale inner wall deep below the surface. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rift_depth.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "hungry_void",
+      "name": "Голодная пустота",
+      "description": "Minimum cost reduced from 35 to 30 Corruption, with 10% less damage.",
+      "subject": "A small partially closed void mouth drawing in one thin wisp, its restrained narrow opening showing a smaller expenditure. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/hungry_void.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "total_devastation",
+      "name": "Полное опустошение",
+      "description": "Devastation exponent becomes 0.8 instead of 0.55; requires at least 60 Corruption, even with debt.",
+      "subject": "A massive spatial cleft consuming the center of one heavy iron block, leaving two thick outer shoulders suspended around the void. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/total_devastation.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rend_reach",
+      "name": "Размах разлома",
+      "description": "12% increased area per point; ineffective with Narrow Rend.",
+      "subject": "A horizontally spreading tear stretching a plain hanging fabric panel outward along a wide shallow opening. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rend_reach.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rend_speed",
+      "name": "Быстрый разлом",
+      "description": "4% increased attack speed per point.",
+      "subject": "A razor-like spatial opening snapped open diagonally, its lips swept sharply backward by the quick motion. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rend_speed.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rend_precision",
+      "name": "Точка разрыва",
+      "description": "1.5 percentage points of critical chance per point.",
+      "subject": "A tiny bright puncture opening exactly at the junction of three seams in a plain steel plate. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rend_precision.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rend_crit",
+      "name": "Разлом брони",
+      "description": "10% additional critical damage per point.",
+      "subject": "One breastplate plate torn into a deep angular V, with a concentrated silver-blue split at its weakest seam. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rend_crit.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rend_penetration",
+      "name": "Бездна за гранью",
+      "description": "2 percentage points of dark resistance penetration per point.",
+      "subject": "A spatial seam continuing cleanly through a thick folded protective mantle, a pale interior visible beyond both layers. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rend_penetration.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rend_step_echo",
+      "name": "След пространств",
+      "description": "10% increased damage per point for 3 seconds after Shadow Step.",
+      "subject": "A deep heel impression opening directly into an upright spatial gash, sharing one continuous tapered contour. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rend_step_echo.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rend_guard",
+      "name": "Стойка разрыва",
+      "description": "Using the skill grants 20% increased armor for 2 seconds.",
+      "subject": "A planted armored knee braced beside a narrow sealed spatial seam, its overlapping plates forming a stable triangular mass. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rend_guard.png"
+    },
+    {
+      "skill_id": "space_rend",
+      "node_id": "rend_awakening",
+      "name": "Открытая бездна",
+      "description": "5% increased attack speed per point while Awakening is active.",
+      "subject": "An upright rift snapping open around a single awakened silver-blue ember, short taut lips suggesting accelerated opening. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rend_awakening.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": null,
+      "name": "Теневой шаг",
+      "description": "A dark movement melee area generator; 240% weapon effectiveness, full dark conversion, 8-unit dash, radius 1.5, 15 Corruption, 8-second cooldown.",
+      "subject": "One pale armored swordsman in a low forward dash, a single tapered silver-blue trail connecting the lifted rear foot to the arrival cut. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "skill",
+      "runtime_path": "game/Ui/Art/Icons/skills/shadow_step.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_force",
+      "name": "Теневой выпад",
+      "description": "8% increased damage per point.",
+      "subject": "A thrusting armored shoulder and bent elbow driving one short bright weapon point forward; crop as one forceful body mass. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_force.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "arrival_cut",
+      "name": "Удар прибытия",
+      "description": "Exclusive form: single-target strike at dash end, zero radius, 40% more damage.",
+      "subject": "A planted boot at the abrupt end of a tapering dash trail, with a single narrow vertical strike rising from the toe. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/arrival_cut.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "path_cut",
+      "name": "Разрез пути",
+      "description": "Exclusive form: path strike gains area tag and 40% increased area.",
+      "subject": "A long broad strip of hanging cloth sliced along the entire length of a silver-blue dash passage. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/path_cut.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "through_dark",
+      "name": "Шаг сквозь тьму",
+      "description": "Cooldown becomes 6 seconds instead of 8; resource gain becomes 10 instead of 15.",
+      "subject": "A light boot already lifting out of a short dark fold, leaving only a small dwindling silver-blue resource wisp. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/through_dark.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_afterimage",
+      "name": "Послеобраз",
+      "description": "After stepping, take 10 percentage points less damage for 1.5 seconds.",
+      "subject": "One translucent folded coat afterimage catching a small incoming splinter while its solid wearer has already slipped beyond the edge. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_afterimage.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_recovery",
+      "name": "Ритм переходов",
+      "description": "4% increased cooldown recovery per point.",
+      "subject": "A pivoting armored heel returning to a ready stance inside its own compact curling shadow wake. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_recovery.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_speed",
+      "name": "Легкость тени",
+      "description": "5% increased attack speed for Shadow Step per point.",
+      "subject": "A light raised forefoot with loose ankle cloth streaming almost horizontally behind the swift step. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_speed.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_reach",
+      "name": "Теневой коридор",
+      "description": "12% increased area per point; ineffective with Arrival Strike.",
+      "subject": "A wide slit corridor through a hanging dark curtain, a pale floor strip expanding sideways between its pulled edges. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_reach.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_precision",
+      "name": "Верный переход",
+      "description": "1.5 percentage points of critical chance per point.",
+      "subject": "An armored toe landing exactly in a narrow opening between two joined floor plates, one concentrated contact glint. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_precision.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_crit",
+      "name": "Смертельный переход",
+      "description": "10% additional critical damage per point.",
+      "subject": "A kicked-open armored greave with one severe diagonal impact cut at its knee joint. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_crit.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_flow",
+      "name": "Поток перехода",
+      "description": "1 extra Corruption per use per point.",
+      "subject": "A cupped boot heel gathering a thin silver-blue stream from its receding footprint. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_flow.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_penetration",
+      "name": "Сквозь завесу",
+      "description": "2 percentage points of dark resistance penetration per point.",
+      "subject": "A pale gloved hand pushing through a dense folded dark veil, the silver-blue passage visible through its thickness. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_penetration.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_armor",
+      "name": "Броня сумрака",
+      "description": "After stepping, gain 20% increased armor for 2 seconds.",
+      "subject": "A turning articulated hip plate locking over a thigh as the dash settles, with one narrow residual shadow trail. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_armor.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_dodge",
+      "name": "Ускользающая тень",
+      "description": "After stepping, gain 5 percentage points of dodge chance for 2 seconds.",
+      "subject": "A bent knee slipping sideways past a short incoming spear tip, motion contained in one compact evasive pose. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_dodge.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_wave_echo",
+      "name": "Переход волны",
+      "description": "10% increased step damage per point for 2 seconds after Dark Wave.",
+      "subject": "A forward-leaning boot riding out of the curl of one fading projectile wave, heel and crest joined in a strong diagonal. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_wave_echo.png"
+    },
+    {
+      "skill_id": "shadow_step",
+      "node_id": "step_awakening",
+      "name": "Переход пробуждения",
+      "description": "5% increased step cooldown recovery per point during Awakening.",
+      "subject": "An awakened silver-blue ember held in the hollow of an upturned boot sole as the foot returns rapidly to readiness. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/shadow_step/step_awakening.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": null,
+      "name": "Пробуждение",
+      "description": "An 8-second buff granting 20% attack speed and double generator Corruption; 25-second cooldown, works without tree points.",
+      "subject": "A calm armored swordsman's upper body drawing upright as a small silver-blue dark-energy core opens beneath the sternum; readable pale armor, no demonic neon aura. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "skill",
+      "runtime_path": "game/Ui/Art/Icons/skills/awakening.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_core",
+      "name": "Искра пробуждения",
+      "description": "Using Awakening adds 5% attack speed for 8 seconds; base buff works without this node.",
+      "subject": "A small solid silver-blue ember cracking open a plain steel seed casing, its two lips tense with new motion. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_core.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "lingering_awakening",
+      "name": "Затянувшееся пробуждение",
+      "description": "Main buff lasts 11 instead of 8 seconds; base cooldown becomes 30 instead of 25; auxiliary buffs unchanged.",
+      "subject": "A tall enclosed ember sustained inside a deep folded metal wick cup, one long steady pale tongue rising from it. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/lingering_awakening.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "intense_awakening",
+      "name": "Насыщенное пробуждение",
+      "description": "Main buff lasts 5 seconds and grants 40% instead of 20% attack speed; generation remains doubled.",
+      "subject": "A short compact ember bursting from a tightly pinched metal cup, with one sharp forceful tongue rather than a large aura. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/intense_awakening.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_rage",
+      "name": "Ярость пробуждения",
+      "description": "While main buff is active, generator Corruption becomes triple instead of double through an extra 1.5 multiplier.",
+      "subject": "A clenched gauntlet drawing a thick silver-blue resource stream into its palm, tiny awakened ember at the wrist. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_rage.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "demonic_blood",
+      "name": "Демоническая кровь",
+      "description": "50% increased healing during the main buff; requires a healing source.",
+      "subject": "A detached steel gauntlet joint being restored by one inward dark-red thread joining a small crack, a pale silver-blue ember at the joining point. Equipment only, no person, skin or organic tissue.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/demonic_blood.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_recovery",
+      "name": "Зов пробуждения",
+      "description": "4% increased Awakening cooldown recovery per point.",
+      "subject": "A hinged steel ember cradle springing back open after closing, its cooled outer lip and small returning core clearly separated. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_recovery.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_cast",
+      "name": "Быстрое пробуждение",
+      "description": "5% increased Awakening cast speed per point.",
+      "subject": "A gloved thumb flicking open a small split chest clasp, releasing one compact silver-blue spark immediately. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_cast.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_armor",
+      "name": "Доспех пробуждения",
+      "description": "Awakening grants 20% increased armor for 8 seconds.",
+      "subject": "A broad overlapping cuirass fastening shut around a small pale core, its solid steel plates dominating the silhouette. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_armor.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_dodge",
+      "name": "Ускользание бездны",
+      "description": "Awakening grants 4 percentage points of dodge chance for 8 seconds.",
+      "subject": "A narrow waist turning aside beneath a loose coat, a single incoming dart missing its silver-blue awakened core. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_dodge.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_resists",
+      "name": "Покров бездны",
+      "description": "Awakening grants 8 percentage points to all five resistances for 8 seconds.",
+      "subject": "One thick folded mantle sheltering a pale ember; tiny extinguished ember, frost and corrosive specks remain confined to its outer hem, not a rainbow aura. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_resists.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_precision",
+      "name": "Взор пробуждения",
+      "description": "Awakening grants dark arts 2 percentage points of critical chance for 8 seconds.",
+      "subject": "A plain half-mask with one sharply illuminated eye socket and a tiny silver-blue ember reflected inside. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_precision.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_crit",
+      "name": "Жестокое пробуждение",
+      "description": "Awakening grants dark arts 15% additional critical damage for 8 seconds.",
+      "subject": "A closed gauntlet crushing a split steel clasp around a concentrated pale core, one decisive fracture dominating. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_crit.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_area",
+      "name": "Размах пробуждения",
+      "description": "Awakening grants dark arts 15% increased area for 8 seconds.",
+      "subject": "An open armored elbow spreading a single broad cloak fold outward from a small awakened shoulder ember. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_area.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_pierce",
+      "name": "Сквозной сумрак",
+      "description": "Awakening grants dark-art projectiles one additional pierced target for 8 seconds.",
+      "subject": "A pale elongated projectile passing cleanly through a folded double-thickness leather collar, tiny awakened ember at its tail. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_pierce.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_melee",
+      "name": "Клинок пробуждения",
+      "description": "Awakening grants melee dark arts 15% increased damage for 8 seconds.",
+      "subject": "A short inward-curved steel blade gripped close to a breastplate, one small core seated at the guard lighting the cutting belly. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_melee.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_projectile",
+      "name": "Волны пробуждения",
+      "description": "Awakening grants projectile dark arts 15% increased damage for 8 seconds.",
+      "subject": "A tall sail-shaped projectile crest carrying a small dense awakened ember in its thick leading shoulder. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_projectile.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_penetration",
+      "name": "Пронзающий сумрак",
+      "description": "Awakening grants dark arts 3 percentage points of dark resistance penetration for 8 seconds.",
+      "subject": "A thin silver-blue lance of dark energy boring through a tightly wrapped protective cord knot, one tiny core behind it. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_penetration.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_guard",
+      "name": "Стойкость пробуждения",
+      "description": "For the first 2 seconds after use, damage taken is reduced by 5 percentage points.",
+      "subject": "An armored forearm held firmly across the chest, a small incoming chip arrested against its broad outer plate. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_guard.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_regen",
+      "name": "Живая искра",
+      "description": "Awakening grants 0.5% life regeneration per second for 8 seconds; disabled by Initiation.",
+      "subject": "A small living ember nested in the closing seam of a scraped knuckle, a faint pale thread joining the skin. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_regen.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_bleed",
+      "name": "Кровь пробуждения",
+      "description": "Awakening grants dark arts 10 percentage points of bleed chance for 8 seconds; needs physical damage.",
+      "subject": "A thin serrated steel sliver emerging from a split ember casing, one restrained dark-red bead caught on a tooth. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_bleed.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_chill",
+      "name": "Стужа пробуждения",
+      "description": "Awakening grants dark arts 10 percentage points of chill chance for 8 seconds; needs cold damage.",
+      "subject": "An awakened core enclosed in one thick frost-coated steel shell, a small cold-blue patch freezing its lower lip. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_chill.png"
+    },
+    {
+      "skill_id": "awakening",
+      "node_id": "awakening_step",
+      "name": "Шаг пробуждения",
+      "description": "Awakening grants Shadow Step 15% increased cooldown recovery for 8 seconds.",
+      "subject": "A boot ankle clasp opening around a small silver-blue core as the heel recoils from a fading dash track. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_step.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": null,
+      "name": "Шквал полумесяцев",
+      "description": "A full-dark projectile area spender with two hits, 160% listed weapon effectiveness, radius 1.2 and 35 Corruption cost.",
+      "subject": "A compact paired sweep of two tangible silver-blue crescent projectiles, one leading and one offset behind, with clean dark negative space between them. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "skill",
+      "runtime_path": "game/Ui/Art/Icons/skills/crescent_flurry.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_edge",
+      "name": "Острие полумесяца",
+      "description": "8% increased damage per point.",
+      "subject": "One thick crescent cutting lip with a sharply beveled inner edge biting a small curled iron shaving. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_edge.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "wide_fan",
+      "name": "Широкий веер",
+      "description": "Exclusive form: 60% increased fan area.",
+      "subject": "A broad open fan of crescent-shaped cutting energy with widely separated outer tips, one coherent sweeping surface. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/wide_fan.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "narrowing",
+      "name": "Сужение",
+      "description": "Exclusive form: 50% less area, three hits with 20% less damage each; description specifies 3 hits at 64% from an 80% hit base.",
+      "subject": "A tight cluster of three slim crescents stacked almost edge-on into one narrow forward-pointing bundle. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/narrowing.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "returning_crescent",
+      "name": "Обратный полумесяц",
+      "description": "Returning copy at 40% base damage with no tree, Corruption or seal consumption.",
+      "subject": "A backward-hooked crescent turning around its own rounded tip, with a short fading outbound ribbon behind the bend. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/returning_crescent.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "cold_crescent",
+      "name": "Лунный холод",
+      "description": "Cold replaces physical before conversion and chills on hit; dark-art identity remains.",
+      "subject": "A solid translucent ice crescent with a blunt frozen belly and one restrained cold-blue cutting margin. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/cold_crescent.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "cutting_wind",
+      "name": "Режущий ветер полумесяца",
+      "description": "One additional pierced target.",
+      "subject": "A long narrow crescent cleanly threading through two small torn cloth folds along the same flight path. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/cutting_wind.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_reach",
+      "name": "Разлет полумесяцев",
+      "description": "12% increased area per point.",
+      "subject": "An outward-opening crescent with exceptionally long separated horns and a shallow silver-blue connecting belly. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_reach.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_speed",
+      "name": "Летящий серп",
+      "description": "4% increased attack speed per point.",
+      "subject": "A steeply tilted thin sickle-shaped projectile with a short taut tail pulled straight behind its fast-leading tip. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_speed.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_precision",
+      "name": "Лунный прицел",
+      "description": "1.5 percentage points of critical chance per point.",
+      "subject": "A crescent tip touching the exact narrow seam of one rounded iron shoulder plate, one small contact glint. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_precision.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_crit",
+      "name": "Острая луна",
+      "description": "10% additional critical damage per point.",
+      "subject": "A deep hooked crescent buried in a broken steel ring, the ring split sharply at one concentrated bite. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_crit.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_dark",
+      "name": "Тьма полумесяца",
+      "description": "2 percentage points of dark resistance penetration per point; does not enhance cold form.",
+      "subject": "A dense silver-blue crescent cutting through a thick wrapped protective veil, its uninterrupted inner edge visible on both sides. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_dark.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_chill",
+      "name": "Стылый серп",
+      "description": "10 percentage points of chill chance per point; requires Lunar Cold and cold damage.",
+      "subject": "A hooked frozen sickle tip catching a cloth tassel, a tiny cold-blue frost crust stiffening the contact point. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_chill.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_echo",
+      "name": "Эхо дальней волны",
+      "description": "10% increased Flurry damage per point for 2 seconds after Dark Wave.",
+      "subject": "A crescent separating from the hollow shoulder of a fading tall wave, one continuous silver-blue handoff. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_echo.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_guard",
+      "name": "Лунная завеса",
+      "description": "After use, gain 5 percentage points of dodge chance for 2 seconds.",
+      "subject": "A crescent-shaped fold of cloak pulled aside as a small incoming splinter passes through the vacated space. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_guard.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_awakening",
+      "name": "Полнолуние бездны",
+      "description": "5% increased attack speed per point while Awakening is active.",
+      "subject": "A tightly curling crescent accelerating around one small awakened ember, leaving an open gap rather than a decorative full halo. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_awakening.png"
+    },
+    {
+      "skill_id": "crescent_flurry",
+      "node_id": "crescent_dot",
+      "name": "Холодный разрез",
+      "description": "10% increased damage against chilled targets per point; this modifier is not damage over time despite its ID.",
+      "subject": "A crescent incision driven through one frost-stiffened leather pad, a small cold-blue fracture at the cut showing the chilled target. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crescent_flurry/crescent_dot.png"
+    }
+  ],
+  "catalog_source": "C:/Users/sibiya666/.codex/worktrees/apostate-core/dialoid/data/skills.json",
+  "catalog_sha256": "46c25f5fcc38ed460029905ef69c0c9488b5ad7bef00760dd12598d40ff2eb30"
+}

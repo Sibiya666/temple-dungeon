@@ -36,7 +36,8 @@ public partial class SkillsPanel : IPadPanel
 
     private void DrawCatalog()
     {
-        Content!.AddChild(RoomHudTheme.Heading("Навыки персонажа"));
+        Content!.AddChild(RoomHudTheme.TowerHeading("Путь персонажа / Навыки", 24));
+        SkillText(Content, "КАТАЛОГ НАВЫКОВ", Grey);
         var instruction = AddText("Выберите навык, чтобы изучить дерево.", Grey);
         instruction.AddThemeFontSizeOverride("font_size", RoomHudTheme.CaptionSize);
         var grid = new HFlowContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
@@ -47,12 +48,13 @@ public partial class SkillsPanel : IPadPanel
         {
             var skill = Session.Data.Skills[id];
             var locked = skill.UnlockLevel > Session.Build.Level;
-            var tile = new VBoxContainer { CustomMinimumSize = new Vector2(112, 0) };
+            var tile = new VBoxContainer { CustomMinimumSize = new Vector2(148, 0) };
+            tile.AddThemeConstantOverride("separation", 10);
             grid.AddChild(tile);
             var button = new Button
             {
                 Name = "Skill_" + id,
-                CustomMinimumSize = new Vector2(80, 80),
+                CustomMinimumSize = new Vector2(112, 112),
                 SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
                 TooltipText = $"{skill.Name}\nОткрыть дерево скилла" + (locked ? $"\nОткроется на {skill.UnlockLevel} уровне" : ""),
                 FocusMode = FocusModeEnum.All,
@@ -69,6 +71,8 @@ public partial class SkillsPanel : IPadPanel
                     scroll.ScrollVertical = 0;
                 }
                 _focusDetail = button.HasFocus();
+                _graphHadFocus = false;
+                _graphRestoreFocus = null;
                 _browsedSkillId = id;
                 RequestRedraw();
             };
@@ -78,7 +82,7 @@ public partial class SkillsPanel : IPadPanel
                 Text = skill.Name,
                 AutowrapMode = TextServer.AutowrapMode.WordSmart,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                CustomMinimumSize = new Vector2(112, 42),
+                CustomMinimumSize = new Vector2(148, 44),
             });
             int assigned = Enumerable.Range(0, Dialoid.Sandbox.SandboxSession.SlotCount)
                 .FirstOrDefault(i => Session.GetSlot(i)?.SkillId == id, -1);
@@ -132,7 +136,7 @@ public partial class SkillsPanel : IPadPanel
         return true;
     }
 
-    private void DrawAssignmentControls()
+    private void DrawAssignmentControls(VBoxContainer target)
     {
         if (_assignmentSkillId != _browsedSkillId)
         {
@@ -142,7 +146,8 @@ public partial class SkillsPanel : IPadPanel
             if (_assignmentSlot < 0 && Session.SlotsOpen > 0) _assignmentSlot = 0;
         }
         var row = new HFlowContainer();
-        Content!.AddChild(row);
+        target.AddChild(RoomHudTheme.TowerHeading("НАЗНАЧЕНИЕ", 15));
+        target.AddChild(row);
         var options = new OptionButton();
         AssignmentSlotOptions = options;
         for (int i = 0; i < Dialoid.Sandbox.SandboxSession.SlotCount; i++)
@@ -185,18 +190,82 @@ public partial class SkillsPanel : IPadPanel
     }
     private void DrawDefinition(SkillDefinition skill)
     {
-        var heading = new HBoxContainer();
-        if (GameIcons.Skill(_browsedSkillId!) is { } icon) heading.AddChild(GameIcons.View(icon, 40));
-        heading.AddChild(RoomHudTheme.Heading(skill.Name, 20));
-        Content!.AddChild(heading);
-        DrawAssignmentControls();
+        var (graphPane, detail) = DrawSkillWorkspace(skill);
+        DrawAssignmentControls(detail);
         if (skill.UnlockLevel > Session.Build.Level)
-            AddText($"Откроется на {skill.UnlockLevel} уровне. Дерево можно изучить заранее.", Grey);
-        AddText(skill.UnlockLevel > Session.Build.Level
+            SkillText(detail, $"Откроется на {skill.UnlockLevel} уровне. Дерево можно изучить заранее.", Grey);
+        SkillText(detail, skill.UnlockLevel > Session.Build.Level
             ? "Просмотр дерева · назначение и вложение очков пока недоступны."
             : "Просмотр · для вложения очков назначьте навык в слот.", Grey);
         foreach (var node in skill.Tree) _previewNodeIds.Add(node.Id);
-        DrawSkillGraph(skill, null);
+        DrawSkillGraph(skill, null, graphPane, detail);
+    }
+
+    private (VBoxContainer Graph, VBoxContainer Detail) DrawSkillWorkspace(SkillDefinition skill)
+    {
+        var columns = new TowerColumns
+        {
+            Name = "SkillsDetailColumns", LeftRatio = .64f, Breakpoint = 780,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        Content!.AddChild(columns);
+        var graph = new VBoxContainer { Name = "SkillsTreePane", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        var detail = new VBoxContainer { Name = "SkillsDetailPane", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        columns.AddChild(graph);
+        columns.AddChild(detail);
+        var identity = new HBoxContainer();
+        var portrait = new TextureRect
+        {
+            Name = "BrowsedSkillPortrait", Texture = GameIcons.Skill(skill.Id),
+            CustomMinimumSize = new Vector2(72, 72), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, MouseFilter = MouseFilterEnum.Ignore,
+            SizeFlagsVertical = SizeFlags.ShrinkBegin,
+        };
+        identity.AddChild(portrait);
+        identity.AddChild(RoomHudTheme.TowerHeading(skill.Name, 24));
+        detail.AddChild(identity);
+        SkillText(detail, _treeSlot >= 0 ? $"Назначен · слот {_treeSlot + 1}" : "Просмотр навыка", Grey);
+        SkillText(detail, skill.Description);
+        detail.AddChild(new HSeparator());
+        return (graph, detail);
+    }
+
+    private static Label SkillText(VBoxContainer target, string text, Color? color = null)
+    {
+        var label = new Label { Text = text, AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        if (color is { } tint) label.AddThemeColorOverride("font_color", tint);
+        target.AddChild(label);
+        return label;
+    }
+
+    private void ApplySkillLayout()
+    {
+        if (GodotObject.IsInstanceValid(SkillGraph))
+            SkillGraph!.CustomMinimumSize = new Vector2(0, SkillGraphHeight());
+    }
+
+    // The graph is a bounded workspace, never a virtual page taller than its visible scroll viewport.
+    private float SkillGraphHeight() => Mathf.Clamp(GetChild<ScrollContainer>(0).Size.Y - 140, 220, 620);
+
+    private void ConfigureSkillFocus()
+    {
+        if (_browsedSkillId == null || Content == null || !Content.IsInsideTree()) return;
+        var targets = ButtonPrompts.Targets(Content);
+        if (targets.Count < 2) return;
+        // Spatial navigation sees the tall graph beside several short rows. Give vertical traversal
+        // an explicit reading order so the graph's overlapping rectangle cannot swallow those rows.
+        for (int i = 0; i < targets.Count; i++)
+        {
+            targets[i].FocusNeighborTop = i > 0 ? targets[i].GetPathTo(targets[i - 1]) : new NodePath("");
+            targets[i].FocusNeighborBottom = i + 1 < targets.Count ? targets[i].GetPathTo(targets[i + 1]) : new NodePath("");
+        }
+        if (SkillGraph == null || AssignmentSlotOptions == null || AssignSkillButton == null) return;
+        var entry = !AssignmentSlotOptions.Disabled ? (Control)AssignmentSlotOptions : targets.FirstOrDefault(t =>
+            t.FindParent("SkillsDetailPane") != null);
+        if (entry == null) return;
+        SkillGraph.FocusNeighborRight = SkillGraph.GetPathTo(entry);
+        entry.FocusNeighborLeft = entry.GetPathTo(SkillGraph);
     }
 
     public bool PadButton(PadCommand command, Control? focus) => false;
@@ -204,6 +273,8 @@ public partial class SkillsPanel : IPadPanel
     {
         if (_browsedSkillId == null) return false;
         _assignmentSkillId = null;
+        _graphHadFocus = false;
+        _graphRestoreFocus = null;
         _returnToSkill = _browsedSkillId;
         _browsedSkillId = null;
         if (Content!.GetParent() is ScrollContainer scroll)
@@ -223,6 +294,8 @@ public partial class SkillsPanel : IPadPanel
         _browsedSkillId = null;
         _returnToSkill = null;
         _focusDetail = false;
+        _graphHadFocus = false;
+        _graphRestoreFocus = null;
         if (hadDetail) RequestRedraw();
     }
 }

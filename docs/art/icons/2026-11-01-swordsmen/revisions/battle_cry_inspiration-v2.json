@@ -1,0 +1,9 @@
+{
+  "key": "battle_cry/inspiration",
+  "subject": "Two steel gauntlets supporting a short horizontal sword hilt close together, the second hand forming a firm rest beneath the first for an economical compact grip. No raised arm, attack scene, enchanted ribbon or energy effects.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-44abe70a-8809-42b2-b11e-5719dd5e1c4c.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon from the supplied approved Venice original. Change only the central subject to: Two steel gauntlets supporting a short horizontal sword hilt close together, the second hand forming a firm rest beneath the first for an economical compact grip. No raised arm, attack scene, enchanted ribbon or energy effects. Keep the original background, palette, diffuse lighting, exposure, contrast, material rendering, soft edges and detail density. One large silhouette fills central75%, readable24px. No text, numbers, lettering, frames, UI, generic stat symbols, neon, bloom or overall glow.",
+  "revision": 2
+}

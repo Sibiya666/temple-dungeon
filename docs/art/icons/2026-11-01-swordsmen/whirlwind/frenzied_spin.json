@@ -1,0 +1,13 @@
+{
+  "skill_id": "whirlwind",
+  "node_id": "frenzied_spin",
+  "name": "Неистовое вращение",
+  "description": "Развилка роли. 14 Ярости в секунду, урон +30% More.",
+  "subject": "A straining mailed hand wrapped tightly around a spinning weapon shaft, a torn red wrist binding pulled into a harsh compact spiral. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/frenzied_spin.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-46349ce4-5b0b-44f5-9221-b66eda5d5b2b.png",
+  "prompt": "Use case: precise-object-edit. Create ONE square Dialoid skill-tree node icon from the approved Venice original reference. Replace ONLY the central subject with: A straining mailed hand wrapped tightly around a spinning weapon shaft, a torn red wrist binding pulled into a harsh compact spiral. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple. Keep the original backdrop, palette, diffuse lighting, exposure, contrast, material rendering, edge softness and detail density. One large clear subject fills central 75%, legible silhouette at 24px. No text, numbers, letters, borders, frames, UI badges, generic stat signs, added ornaments, broad glow, bloom or sharpening. Preserve opaque original dark background."
+}

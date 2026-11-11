@@ -1,0 +1,790 @@
+{
+  "reference": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "icons": [
+    {
+      "skill_id": "crush",
+      "node_id": "brute_force",
+      "name": "Грубая сила",
+      "description": "+8% урона за очко.",
+      "subject": "A massive square warhammer head driving straight down into a buckled iron plate; emphasize weight and the broad blunt striking face. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/brute_force.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "wide_impact",
+      "name": "Широкий удар",
+      "description": "+15% площади за очко.",
+      "subject": "A heavy maul planted at the center of a broad shallow impact bowl, its wide raised earth lip forming one clear low oval. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/wide_impact.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "shockwave",
+      "name": "Ударная волна",
+      "description": "Развилка. Зона становится линией: волна пробивает 2 цели за основной (до 3 целей подряд), урон −15% (More).",
+      "subject": "A single wedge of broken ground racing forward in a straight narrow ridge through three aligned stone pegs; no circular blast. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/shockwave.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "earthquake",
+      "name": "Землетрясение",
+      "description": "Развилка. Удар вызывает повторный толчок: копия Сокрушения с силой 40%.",
+      "subject": "One sunken hammer crater with a second raised earth pulse emerging beneath its rim, a clear delayed echo of the original impact. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/earthquake.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "deep_tremors",
+      "name": "Глубокие толчки",
+      "description": "Повторный толчок и другие триггерные копии Сокрушения: +25% More урона за очко.",
+      "subject": "A cutaway earth block with a broad secondary compression fold thrusting upward beneath an old impact dent; the underground echo is the dominant mass. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/deep_tremors.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "fissures",
+      "name": "Трещины",
+      "description": "Толчок раскалывает землю: зона 3 с наносит 10% базы удара физическим уроном в секунду.",
+      "subject": "One open forked ground fissure with pale freshly exposed edges and a thin ribbon of falling grit, conveying a lingering physical hazard without lava. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/fissures.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "thunder_hammer",
+      "name": "Громовой молот",
+      "description": "Весь урон становится молнией, шанс шока 25%. Кровотечение (физический недуг) и бонусы к физическому урону после этого не работают.",
+      "subject": "A compact steel hammer whose entire striking face carries a restrained silver-blue electrical seam, with one short discharge entering the ground; no blood. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/thunder_hammer.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "static_discharge",
+      "name": "Остаточный разряд",
+      "description": "+5% эффекта шока за очко.",
+      "subject": "A bent iron nail trapped between two separated fragments of struck armor, one tight silver-blue electrical arc holding across the gap. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/static_discharge.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "torn_earth",
+      "name": "Рваная земля",
+      "description": "+6% шанса кровотечения за очко. Не работает вместе с «Громовым молотом».",
+      "subject": "A jagged stone splinter protruding from a torn leather greave, with one small dark-red bead at the puncture. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/torn_earth.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "bloody_harvest",
+      "name": "Кровавая жатва",
+      "description": "+8% More урона по каждой кровоточащей цели за очко.",
+      "subject": "A broad crushing mallet pressing into an already blood-soaked bandage on a broken armor plate; the existing dark-red stain remains clearly visible. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/bloody_harvest.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "cold_calculation",
+      "name": "Холодный расчет",
+      "description": "−2 Ярости к стоимости за очко.",
+      "subject": "A relaxed mailed hand using a short balanced hammer grip close to the head, conveying a carefully economical ground strike. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/cold_calculation.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "fury_return",
+      "name": "Возврат ярости",
+      "description": "Часть Ярости возвращается сразу: стоимость еще −4. Не зависит от бонусов к генерации Ярости.",
+      "subject": "A leather wrist loop snapping a recoiling mallet haft back into an open gauntlet after impact; a tiny muted-red accent at the catching palm. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/fury_return.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "peak_fury",
+      "name": "Пик ярости",
+      "description": "Стойка: если после оплаты Ярость выше 50%, удар наносит +15% More урона.",
+      "subject": "A braced muscular forearm raising a heavy stone-headed maul to its highest ready position, taut tendons and one small muted-red wrist accent. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/peak_fury.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "stun",
+      "name": "Оглушение",
+      "description": "Попадание оглушает основную цель на 1 с (как заморозка, без броска шанса).",
+      "subject": "A dented closed helmet tilted sharply downward beneath a blunt hammer imprint, the rigid arrested posture conveying incapacitation; no ice. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/stun.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "concussion",
+      "name": "Сотрясение",
+      "description": "+25% длительности оглушения за очко.",
+      "subject": "A bowed armored head held inside a broad slowly fading pressure crescent, conveying prolonged disorientation after a blunt impact; no ice or stars. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/concussion.png"
+    },
+    {
+      "skill_id": "crush",
+      "node_id": "heavy_blow",
+      "name": "Тяжкий удар",
+      "description": "+2% шанса крита за очко.",
+      "subject": "A narrow hammer peen precisely seated in the weak join of a thick iron breastplate, with a single clean radial fracture at contact. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/crush/heavy_blow.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "war_roar",
+      "name": "Боевой рев",
+      "description": "Развилка клича. Бафф «Боевой клич»: +20% урона на 8 с.",
+      "subject": "An open shouting warrior mouth above a clenched armored fist, cropped into one strong rising silhouette; a short breath plume conveys offensive resolve. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/war_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "iron_cry",
+      "name": "Железный клич",
+      "description": "Развилка клича. Вместо урона бафф «Боевой клич» дает +250 брони и −5% получаемого урона на 8 с.",
+      "subject": "A shouting steel faceguard integrated with a broad overlapping gorget, breath pressing against the reinforced collar to convey protective resolve. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/iron_cry.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "intimidation",
+      "name": "Устрашение",
+      "description": "Враги устрашены: весь урон +10% More на 8 с.",
+      "subject": "A snarling warrior face looming in profile over one recoiling enemy helmet at its lower edge; keep the warrior face dominant and the enemy subordinate. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/intimidation.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "battle_rhythm",
+      "name": "Боевой ритм",
+      "description": "Клич дает +12% скорости атаки на 8 с.",
+      "subject": "A compact hide war drum struck by one angled beater, with two short closely spaced rebound impressions conveying faster attacks. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/battle_rhythm.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "ancestral_fury",
+      "name": "Ярость предков",
+      "description": "Клич дает +3% шанса крита на 8 с.",
+      "subject": "A weathered ancestor's face embossed in an old steel cheekguard, its keen eye aligned above a single precise fresh notch in an enemy visor. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/ancestral_fury.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "long_roar",
+      "name": "Протяжный рев",
+      "description": "Развилка темпа. Основной бафф урона «Боевой клич» длится 12 с вместо 8 (другие баффы клича — по-прежнему 8 с).",
+      "subject": "A long curved war horn releasing one extended tapering breath ribbon, its powerful sustained call conveying the longer offensive buff. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/long_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "unyielding",
+      "name": "Несгибаемость",
+      "description": "Клич дает 1.5% регенерации здоровья в секунду на 8 с.",
+      "subject": "An upright iron shield whose split seam has been firmly repaired with a single pale linen binding; resilience and restoration represented by equipment only. No person, skin or wound. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/unyielding.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "steel_will",
+      "name": "Стальная воля",
+      "description": "Клич дает +15% ко всем сопротивлениям на 8 с.",
+      "subject": "A firmly closed steel visor shedding a few tiny fire, frost, electrical, venom and silver-blue dark-energy traces from its surface; metal remains dominant. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/steel_will.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "hardened_body",
+      "name": "Закаленное тело",
+      "description": "Клич дает +15% максимума здоровья на 8 с.",
+      "subject": "A thick padded gambeson enclosed by broad leather reinforcement straps and a rounded steel chest plate; protective equipment only, empty and with no person or exposed skin. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/hardened_body.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "long_stand",
+      "name": "Долгая стойкость",
+      "description": "Развилка темпа. Основной бафф брони «Боевой клич» длится 12 с вместо 8 (другие баффы клича — по-прежнему 8 с).",
+      "subject": "A tall planted pavise with a deep iron supporting foot, a long trailing breath wisp behind its upper edge conveying sustained defensive resolve. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/long_stand.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "sharp_roar",
+      "name": "Отрывистый рев",
+      "description": "Развилка темпа. +40% скорости перезарядки клича.",
+      "subject": "A short straight signal horn expelling one crisp compact burst of breath, the sharply cut mouth and tight plume conveying rapid reuse. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/sharp_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "blood_cry",
+      "name": "Клич крови",
+      "description": "Клич дает +30% к генерации Ярости на 8 с (отдельный бафф, с любым корнем).",
+      "subject": "A shouting mouth framed by a blood-marked leather throat guard, breath drawing a small muted-red wisp outward into a ready clenched hand. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/blood_cry.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "endless_rage",
+      "name": "Неиссякаемая ярость",
+      "description": "Клич: Ярость восстанавливается на 3 в секунду 8 с.",
+      "subject": "A small coal nestled in a clenched mailed palm, its low red core steadily fed by a narrow uninterrupted breath stream from above. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/endless_rage.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "inspiration",
+      "name": "Воодушевление",
+      "description": "Клич: спендеры стоят на 20% меньше Ярости 8 с.",
+      "subject": "A warrior hand easing its tight grip on a heavy weapon haft while a breath ribbon supports the wrist, conveying less exertion for powerful attacks. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/inspiration.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "fury_surge",
+      "name": "Прилив ярости",
+      "description": "Клич сразу дает +6 Ярости за очко.",
+      "subject": "A clenched bare fist suddenly catching a compact incoming breath gust, one muted-red pulse concentrated at the knuckles to convey immediate gained fury. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/fury_surge.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "tireless",
+      "name": "Неумолчный клич",
+      "description": "+6% скорости перезарядки клича за очко: баффы держатся большую часть боя.",
+      "subject": "A worn bellows beside a short horn mouthpiece, its folded leather visibly rebounding for another breath; one compact combined instrument silhouette. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/tireless.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "thunder_roar",
+      "name": "Громовой рев",
+      "description": "Клич накладывает шок на основную цель без броска шанса: цель получает больше урона 3 с (с «Заземлением» Громовержца — 5 с).",
+      "subject": "An open steel war horn directing one short silver-blue electrical snap into the edge of an enemy helmet, conveying guaranteed shock without a damaging explosion. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/thunder_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "rolling_thunder",
+      "name": "Раскаты",
+      "description": "+7.5% эффекта шока от клича за очко.",
+      "subject": "A struck enemy shoulder plate gripped by a thick compact silver-blue electrical coil, emphasizing stronger lingering shock rather than a second shout. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/rolling_thunder.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "deafening_roar",
+      "name": "Оглушающий рев",
+      "description": "Клич оглушает основную цель на 1 с (как заморозка, без броска шанса): оглушенный враг не бьет.",
+      "subject": "An enemy helmet compressed between a broad incoming breath wave and its own bent ear guard, abruptly arrested in mid-tilt; no frost. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/deafening_roar.png"
+    },
+    {
+      "skill_id": "battle_cry",
+      "node_id": "ringing_ears",
+      "name": "Звон в ушах",
+      "description": "+50% длительности оглушения от клича за очко.",
+      "subject": "A close side view of a battered helmet ear cup with a long fading ivory vibration crescent trapped inside it, conveying prolonged deafness and incapacitation. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/battle_cry/ringing_ears.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "steel_storm",
+      "name": "Стальной смерч",
+      "description": "+8% урона за очко.",
+      "subject": "One broad steel glaive head sweeping through a low heavy spiral of pale steel motion, the sharpened mass clearly dominant. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/steel_storm.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "spin_up",
+      "name": "Раскрутка",
+      "description": "Со второго удара канала (0.4 с): +5% More урона за очко.",
+      "subject": "A warrior's planted pivot boot twisting against the floor as a second, stronger crescent sweep curls around its heel. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/spin_up.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "blade_hurricane",
+      "name": "Ураган клинков",
+      "description": "С третьего удара канала (0.8 с): +25% More урона.",
+      "subject": "A tightly wound vertical helix of broad cutting steel ribbons, its upper turn thickening after the lower turns to convey a fully sustained channel. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/blade_hurricane.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "fast_turns",
+      "name": "Быстрые обороты",
+      "description": "Удар каждые 0.03 с чаще за очко (стоимость в секунду та же).",
+      "subject": "A single leather-wrapped circular grip rotating on a polished steel ball bearing, three short pale motion bands close to its rim. A quiet mechanical object only, no combat or impact scene.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/fast_turns.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "wide_circle",
+      "name": "Широкий круг",
+      "description": "+15% площади за очко.",
+      "subject": "A long-handled poleaxe sweeping a wide low oval around a central pivot point, leaving ample empty center and a broad outer reach. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/wide_circle.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "thrifty_spin",
+      "name": "Экономное вращение",
+      "description": "−1 Ярости в секунду за очко.",
+      "subject": "A lightly held rotating staff balanced on a relaxed gauntlet fingertip, its small smooth loop conveying a low-exertion continuous spin. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/thrifty_spin.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "grinding_spin",
+      "name": "Жернов",
+      "description": "Развилка роли. Вихрь становится генератором: не тратит Ярость, дает 2 Ярости за удар, урон −45% (More). Канал не прерывается, поэтому «Раскрутка» действует почти всегда.",
+      "subject": "A heavy iron mill wheel rolling around its central pin, a small muted-red ember gathering at the axle from each contact; no fire damage. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/grinding_spin.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "frenzied_spin",
+      "name": "Неистовое вращение",
+      "description": "Развилка роли. 14 Ярости в секунду, урон +30% More.",
+      "subject": "A straining mailed hand wrapped tightly around a spinning weapon shaft, a torn red wrist binding pulled into a harsh compact spiral. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/frenzied_spin.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "ice_whirl",
+      "name": "Ледяной вихрь",
+      "description": "Развилка стихии. Весь урон становится холодом (охлаждает), шанс заморозки 5%. Кровотечение и бонусы к физическому урону после этого не работают.",
+      "subject": "One broad crescent of translucent pale ice wrapped around a steel haft, its leading edge frosted and a small frozen chip caught at the tip. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/ice_whirl.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "frostbite",
+      "name": "Обморожение",
+      "description": "+6% More урона по охлажденным целям за очко.",
+      "subject": "A detached frost-encrusted steel shield plate with one clear angular fracture confined to its thick ice layer. Equipment and ice only, no person, limb or injury.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/frostbite.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "ice_crumbs",
+      "name": "Ледяная крошка",
+      "description": "+3% шанса заморозки за очко.",
+      "subject": "A clenched enemy gauntlet becoming locked inside one coarse ice clump, with a few large angular chips gathering at the wrist. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/ice_crumbs.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "fire_whirl",
+      "name": "Огненный смерч",
+      "description": "Развилка стихии. 50% физического урона становится огнем, шанс поджога 15%.",
+      "subject": "A steel cutting crescent with one half bare metal and the other carrying a low ember-orange flame, joined into a single sweeping curve. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/fire_whirl.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "fanned_flames",
+      "name": "Раздувание пламени",
+      "description": "+8% шанса поджога за очко.",
+      "subject": "A rotating blade fanning a small tongue of flame onto a dark leather sleeve; the new ignition point is tiny and localized. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/fanned_flames.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "smoldering",
+      "name": "Тлеющие угли",
+      "description": "+1 к максимуму стаков поджога за очко.",
+      "subject": "A compact overlapping cluster of banked coals embedded in one charred armor patch, several distinct low orange cores conveying layered burning. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/smoldering.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "cutting_wind",
+      "name": "Режущий ветер",
+      "description": "+12% шанса кровотечения за очко. Не работает с «Ледяным вихрем».",
+      "subject": "A single pale razorlike wind crescent lifting a narrow cut leather strip, a small dark-red bead clinging to the cut edge. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/cutting_wind.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "thousand_cuts",
+      "name": "Тысяча порезов",
+      "description": "+10% More урона по кровоточащим целям за очко.",
+      "subject": "An already blood-stained bracer receiving a tight cluster of fresh shallow curved cuts, one large readable damaged shape with restrained red accents. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/thousand_cuts.png"
+    },
+    {
+      "skill_id": "whirlwind",
+      "node_id": "steel_cocoon",
+      "name": "Стальной кокон",
+      "description": "Пока воин вращается, он получает +120 брони (бафф на 1 с, обновляется каждым ударом).",
+      "subject": "Overlapping curved steel lames folding into a protective shell around a small pivot boot, the shell following the direction of its spin. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/steel_cocoon.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "momentum",
+      "name": "Разгон",
+      "description": "+8% урона за очко.",
+      "subject": "An armored runner's heavy forward boot driving off a compressed stone foothold, the diagonal leg and trailing grit conveying accelerating impact. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/momentum.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "ram",
+      "name": "Таран",
+      "description": "Развилка. Удар в конце рывка: +60% More урона.",
+      "subject": "A massive blunt iron shoulder guard striking a buckled door plank at the end of a straight lunge, one forceful contact point. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/ram.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "crushing_ram",
+      "name": "Сокрушающий таран",
+      "description": "Таран: +10% шанса крита.",
+      "subject": "A wedge-shaped reinforced shoulder boss precisely splitting the vulnerable central rivet of a breastplate, with one sharp contact glint. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/crushing_ram.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "stunning_ram",
+      "name": "Оглушающий таран",
+      "description": "Таран оглушает основную цель на 1 с (как заморозка, без броска шанса).",
+      "subject": "A broad armored shoulder pressed into an enemy helmet, the helmet hanging motionless and slack after the collision; no frost. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/stunning_ram.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "trample",
+      "name": "Сквозной натиск",
+      "description": "Развилка. Урон по пути: рывок бьет все цели на линии (зона радиуса 2.5), урон −30% (More).",
+      "subject": "A low armored shin plowing along a straight furrow through several knocked-aside enemy greaves, one continuous forward lane rather than a final single-target hit. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/trample.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "long_run",
+      "name": "Дальний бросок",
+      "description": "+20% площади натиска за очко.",
+      "subject": "A broad charging bootprint cutting a wide swath through scattered broken spear shafts, its spread emphasizing increased affected area rather than travel distance. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/long_run.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "unstoppable",
+      "name": "Неудержимость",
+      "description": "Убийство рывком почти сбрасывает перезарядку: следующий рывок в течение 9 с перезаряжается в 4 раза быстрее.",
+      "subject": "A running armored heel springing forward from a fallen empty enemy helmet, an unbroken motion sweep carrying the next charge onward. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/unstoppable.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "burning_trail",
+      "name": "Огненный след",
+      "description": "Рывок оставляет горящий след на 3 с: 25% базы удара огнем в секунду.",
+      "subject": "One deep boot track stretching backward into a narrow strip of low ground fire, a clear scorched lane with restrained ember-orange accents. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/burning_trail.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "embers",
+      "name": "Раскаленные угли",
+      "description": "+5% базы удара в секунду для горящего следа за очко.",
+      "subject": "A deeply charred heelprint packed with large banked coals, their hotter orange centers concentrated inside the existing burning trail. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/embers.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "furious_charge",
+      "name": "Яростный натиск",
+      "description": "Рывок дает +5 Ярости за очко.",
+      "subject": "A clenched running gauntlet thrusting forward from a trailing sleeve, a small muted-red pulse gathering inside the fist during the dash. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/furious_charge.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "quick_feet",
+      "name": "Быстрые ноги",
+      "description": "+8% скорости перезарядки за очко.",
+      "subject": "A light armored heel already lifting from a fresh footprint, a short tight return of its ankle strap suggesting readiness to dash again. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/quick_feet.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "bloody_path",
+      "name": "Кровавый путь",
+      "description": "+15% шанса кровотечения за очко.",
+      "subject": "A sharp greave edge slicing past a leather-clad calf, leaving one narrow dark-red smear along a straight ground track. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/bloody_path.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "gore",
+      "name": "Пронзание",
+      "description": "+30% More урона по кровоточащим целям.",
+      "subject": "A stout shoulder spike driving into an already blood-stained armor gap, the older stain visible beneath the deeper new puncture. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/gore.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "shoulder_bash",
+      "name": "Удар плечом",
+      "description": "После рывка атаки на 4 с быстрее на 12%.",
+      "subject": "An armored shoulder turning directly out of a forward collision into a quick raised gauntlet follow-through, a short paired motion sweep indicating faster subsequent attacks. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/shoulder_bash.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "armored_charge",
+      "name": "Бронированный натиск",
+      "description": "После рывка +150 брони на 4 с.",
+      "subject": "A forward-leaning cuirass whose sliding outer plates lock together behind the shoulder after a dash, a compact reinforced torso silhouette. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/armored_charge.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "storm_charge",
+      "name": "Грозовой рывок",
+      "description": "50% физического урона становится молнией, шанс шока 25%.",
+      "subject": "A charging iron sabaton striking a plate with bare steel on one side and a small silver-blue electrical discharge on the other, conveying partial lightning conversion. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/storm_charge.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "true_lunge",
+      "name": "Точный выпад",
+      "description": "+2% шанса крита за очко.",
+      "subject": "A slim spear point passing precisely through the small open seam of a raised enemy visor, a single clean diagonal thrust. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/true_lunge.png"
+    },
+    {
+      "skill_id": "charge",
+      "node_id": "finishing_blow",
+      "name": "Добивающий удар",
+      "description": "+30% критического урона.",
+      "subject": "A heavy war-pick beak buried in an already split helmet crown, the widened fracture conveying a devastating critical impact. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/charge/finishing_blow.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "whetstone",
+      "name": "Заточка",
+      "description": "+8% урона за очко.",
+      "subject": "A broad axe bit resting against a small whetstone, its newly honed edge forming one clear pale diagonal. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/whetstone.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "returning",
+      "name": "Возвращение",
+      "description": "Развилка полета. Топор возвращается и еще раз бьет основную цель: отдельный удар 70% оружия (узлы дерева на него не действуют).",
+      "subject": "A compact throwing hatchet flying back along a hooked pale flight ribbon toward the same nicked armor plate it has already struck. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/returning.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "axe_fan",
+      "name": "Веер топоров",
+      "description": "Развилка полета. +2 топора: каждый летит в свою цель.",
+      "subject": "Three short throwing hatchets spreading from one common release point into a broad fan, each angled toward a separate subordinate armor fragment. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/axe_fan.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "boomerang",
+      "name": "Бумеранг",
+      "description": "Развилка полета. Легкий топор-бумеранг: +10 Ярости за применение, +20% скорости атаки, урон −25% (More).",
+      "subject": "A light crescent-shaped throwing axe with a short hollow haft, turning through a compact fast flight curve; a tiny muted-red accent at the grip. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/boomerang.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "catch",
+      "name": "Ловля на лету",
+      "description": "Пойманный топор дает +4 Ярости.",
+      "subject": "An open leather-gloved hand closing around the haft of a returning hatchet, one small muted-red pulse at the secured grip. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/catch.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "spare_axe",
+      "name": "Запасной топор",
+      "description": "+1 топор за очко.",
+      "subject": "A spare short-handled hatchet being drawn from a simple leather belt loop, its square poll and wrapped haft forming a compact upright silhouette. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/spare_axe.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "piercing_throw",
+      "name": "Пробивной бросок",
+      "description": "Топор пробивает +1 цель за очко.",
+      "subject": "A narrow bearded throwing axe passing edge-first through two aligned leather armor scraps, one straight continuous flight slit. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/piercing_throw.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "ricochet",
+      "name": "Рикошет",
+      "description": "Топор отскакивает в еще одну цель.",
+      "subject": "A hooked throwing axe rebounding from the sloped edge of an iron buckler toward a second small armor piece, a clear angular flight bend. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/ricochet.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "poisoned_blades",
+      "name": "Отравленные лезвия",
+      "description": "15% физического урона становится ядом и +10% шанса отравления за очко.",
+      "subject": "A pale throwing-axe edge carrying a thin viscous muted-green smear and one hanging venom droplet; most of the metal remains bare. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/poisoned_blades.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "lethal_dose",
+      "name": "Смертельная доза",
+      "description": "+25% More урона по отравленным целям.",
+      "subject": "An axe bit embedded in an already venom-stained leather shoulder pad, the old green stain spreading beneath the deeper fresh impact. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/lethal_dose.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "thrower_fury",
+      "name": "Ярость метателя",
+      "description": "+2 Ярости за применение за очко.",
+      "subject": "A taut throwing forearm just after release, its empty gloved fingers curling back around a small gathered muted-red wisp. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/thrower_fury.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "jagged_edge",
+      "name": "Зазубренное лезвие",
+      "description": "+10% шанса кровотечения за очко.",
+      "subject": "A close broad axe edge with a few deep functional teeth snagging a torn leather strip, one restrained dark-red bead in a notch. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/jagged_edge.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "keen_throw",
+      "name": "Меткий бросок",
+      "description": "+2% шанса крита за очко.",
+      "subject": "A small balanced throwing axe entering the narrow gap between two overlapping armor plates, its clean exact alignment dominant. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/keen_throw.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "headshot",
+      "name": "В голову",
+      "description": "+20% критического урона за очко.",
+      "subject": "A blunt-backed hatchet sunk edge-first into the crown of an empty steel helmet, one deep opened split conveying a stronger critical hit. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/headshot.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "quick_throw",
+      "name": "Быстрый бросок",
+      "description": "+6% скорости атаки за очко.",
+      "subject": "A gloved throwing hand snapping a slender hatchet free of a low wrist grip, one short tight release streak conveying faster throws. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/quick_throw.png"
+    },
+    {
+      "skill_id": "throwing_axe",
+      "node_id": "storm_edge",
+      "name": "Грозовое лезвие",
+      "description": "40% физического урона становится молнией, шанс шока 15%.",
+      "subject": "A broad steel throwing axe with a small silver-blue electrical filament running along part of its cutting edge, the rest remaining plain physical metal. Preserve the approved Venice Cleave reference: one large readable subject, quiet steel, leather or pale ivory materials, soft cool directional light, deep charcoal background and restrained edge detail. Only tiny localized effect color where specified. Compose for distinct silhouettes at 64/32/24 px. No labels, numbers, frames, UI, generic stat emblems, decorative bloom or neon purple.",
+      "kind": "node",
+      "runtime_path": "game/Ui/Art/Icons/skill_nodes/throwing_axe/storm_edge.png"
+    }
+  ],
+  "catalog_source": "C:/Users/sibiya666/Documents/project/dialoid/data/skills.json",
+  "catalog_sha256": "22307f8839beeb433acb4c85528acd699cb08ab988573cb83bccdbefaa193cd6"
+}

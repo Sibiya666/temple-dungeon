@@ -1,0 +1,8 @@
+{
+  "key": "space_rend/rend_precision",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-1ea25fe5-eacf-48c0-ba53-9e0cb3cea69c.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon from the supplied approved Venice original. Replace only the central subject with three thick folded silver metal planes meeting at one broad clean three-way junction. A large sharply defined triangular contact corner is the focal shape, occupying a quarter of the image; all three adjoining planes are substantial and readable, not hairline seams. Quiet inorganic spatial geometry, no floating emblem. Preserve the original dark background, cool diffuse light, exposure, contrast, soft edges and calm materials. Main form fills central75%, readable24px. No text, numbers, UI, frame, neon, bloom or overall glow.",
+  "revision": 2
+}

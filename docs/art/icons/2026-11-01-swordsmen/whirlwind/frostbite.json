@@ -1,0 +1,13 @@
+{
+  "skill_id": "whirlwind",
+  "node_id": "frostbite",
+  "name": "Обморожение",
+  "description": "+6% More урона по охлажденным целям за очко.",
+  "subject": "A detached frost-encrusted steel shield plate with one clear angular fracture confined to its thick ice layer. Equipment and ice only, no person, limb or injury.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/whirlwind/frostbite.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-c8c95b87-5df3-4bce-9439-fc2666778454.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A detached frost-encrusted steel shield plate with one clear angular fracture confined to its thick ice layer. Equipment and ice only, no person, limb or injury. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

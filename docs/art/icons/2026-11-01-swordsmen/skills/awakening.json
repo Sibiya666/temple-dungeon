@@ -1,0 +1,9 @@
+{
+  "id": "awakening",
+  "name": "Пробуждение",
+  "kind": "skill",
+  "provider": "GPT built-in image_gen",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-5dce0d91-158f-408f-8be9-6403fb339d41.png",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "prompt": "Use case: precise-object-edit. One square Dialoid SKILL ICON. Reference image is the approved original Venice family. Replace ONLY its central sword/slash subject with: One clenched steel gauntlet opening around a compact dark core, a few restrained silver cracks releasing inward shadow, no explosion or bright halo. Preserve the original background, overall centered composition, diffuse lighting, palette, exposure, contrast, material rendering, edge softness and detail density. Subject fills central 70-80%, clear silhouette readable at 24px. No text, numbers, lettering, frame, border, UI symbols, decorative ornaments, bloom, added sharpness or overall glow. Opaque original dark background."
+}

@@ -1,0 +1,27 @@
+ERROR: Failed to open 'user://logs/godot2026-11-11T07.18.19.log'.
+   at: copy (core/io/dir_access.cpp:429)
+ERROR: Failed to open log file for writing: user://logs/godot.log
+   at: rotate_file (core/io/logger.cpp:169)
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.315 - Forward+ - Using Device #0: AMD - AMD Radeon RX 6750 XT
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\data
+ERROR: Condition "f.is_null()" is true.
+   at: _save_to_cache (servers/rendering/renderer_rd/shader_rd.cpp:696)
+SELFTEST NOTE !!! DIALOID_SELFTEST_FILTER=charskills: ЗАПУЩЕНЫ НЕ ВСЕ ШАГИ (3) — это не приемка !!!
+SELFTEST OK panels
+SELFTEST FAIL charskills.host: character: нет полного рабочего пространства
+SELFTEST SCREENSHOT C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\docs\art\ui-styleguide\2026-11-11-character-skills-runtime\before\charskills-720-character-side.png 1280x720
+SELFTEST SCREENSHOT C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\docs\art\ui-styleguide\2026-11-11-character-skills-runtime\before\charskills-720-skills-catalog.png 1280x720
+SELFTEST SCREENSHOT C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\docs\art\ui-styleguide\2026-11-11-character-skills-runtime\before\charskills-720-skills-detail.png 1280x720
+SELFTEST SCREENSHOT C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\docs\art\ui-styleguide\2026-11-11-character-skills-runtime\before\charskills-720-world-hud.png 1280x720
+SELFTEST SCREENSHOT C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\docs\art\ui-styleguide\2026-11-11-character-skills-runtime\before\charskills-900-character-side.png 1600x900
+SELFTEST SCREENSHOT C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\docs\art\ui-styleguide\2026-11-11-character-skills-runtime\before\charskills-900-skills-catalog.png 1600x900
+SELFTEST SCREENSHOT C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\docs\art\ui-styleguide\2026-11-11-character-skills-runtime\before\charskills-900-skills-detail.png 1600x900
+SELFTEST SCREENSHOT C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\docs\art\ui-styleguide\2026-11-11-character-skills-runtime\before\charskills-900-world-hud.png 1600x900
+SELFTEST OK charskills.reference
+SELFTEST 2/3
+SELFTEST FAILED: 1

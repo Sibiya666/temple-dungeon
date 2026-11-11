@@ -301,7 +301,7 @@ public sealed partial class SelfTest
         _main.OpenWindow(WindowIds.Meter);
         Meter.Refresh();
         Check(!Meter.TotalText.EndsWith("0:00"), $"длительность обрезана: {Meter.TotalText}");
-        var total = Meter.GetNode<Label>("Total");
+        var total = Meter.FindChild("Total", true, false) as Label ?? throw new Failure("нет итоговой строки измерителя");
         Check(total.TooltipText.Contains(Dialoid.Core.Explain.RuNumber.Format(Training.Current!.Duration, "0.######")), "нет точной длительности в подсказке");
         Device.Set(Dialoid.Game.Input.InputKind.Gamepad);
         await NextFrame();

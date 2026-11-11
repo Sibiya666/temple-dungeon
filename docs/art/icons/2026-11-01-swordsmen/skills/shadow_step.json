@@ -1,0 +1,9 @@
+{
+  "id": "shadow_step",
+  "name": "Теневой шаг",
+  "kind": "skill",
+  "provider": "GPT built-in image_gen",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-c97fa32e-681f-42b6-ae6f-441409b78fc3.png",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "prompt": "Use case: precise-object-edit. One square Dialoid SKILL ICON. Reference image is the approved original Venice family. Replace ONLY its central sword/slash subject with: One leather boot stepping between two offset fading dark silhouettes, a clean short shadow trail marking rapid movement, no full person or face. Preserve the original background, overall centered composition, diffuse lighting, palette, exposure, contrast, material rendering, edge softness and detail density. Subject fills central 70-80%, clear silhouette readable at 24px. No text, numbers, lettering, frame, border, UI symbols, decorative ornaments, bloom, added sharpness or overall glow. Opaque original dark background."
+}

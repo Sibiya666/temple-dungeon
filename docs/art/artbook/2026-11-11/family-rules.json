@@ -1,0 +1,218 @@
+[
+  {
+    "prefix": "docs/art/ui-styleguide/2026-11-11-ui-art-unified/",
+    "source_root": "worktree",
+    "status": "verified-unified-runtime",
+    "title": "Объединённый UI и арт: игровые проверки",
+    "provider": "Godot runtime",
+    "evidence": "docs/art/ui-styleguide/2026-11-11-ui-art-unified/README.md"
+  },
+  {
+    "prefix": "docs/art/ui-styleguide/2026-11-11-character-skills-runtime/root-after/",
+    "source_root": "worktree",
+    "status": "approved-local-runtime",
+    "title": "Персонаж и навыки — Tower05, финальные игровые кадры",
+    "provider": "Godot runtime",
+    "evidence": "docs/art/ui-styleguide/2026-11-11-character-skills-runtime/{UI-REVIEW,ART-REVIEW,CODE-REVIEW,root-receipt}.md"
+  },
+  {
+    "prefix": "docs/art/ui-styleguide/2026-11-10-seven-windows-runtime/root-after/",
+    "source_root": "worktree",
+    "status": "approved-local-runtime",
+    "title": "Семь окон — Tower05, финальные игровые кадры",
+    "provider": "Godot runtime",
+    "evidence": "docs/art/ui-styleguide/2026-11-10-seven-windows-runtime/{UI-REVIEW,ART-REVIEW,CODE-REVIEW,root-receipt}.md"
+  },
+  {
+    "prefix": "docs/art/ui-styleguide/2026-11-10-seven-windows/icons/originals/",
+    "source_root": "any",
+    "status": "approved-local-art",
+    "title": "Семь узлов Берсерка",
+    "provider": "GPT imagegen от Venice",
+    "evidence": "docs/art/ui-styleguide/2026-11-10-seven-windows/README.md"
+  },
+  {
+    "prefix": "docs/art/ui-styleguide/2026-11-10-seven-windows/",
+    "source_root": "any",
+    "status": "approved-static-layout",
+    "title": "Семь окон — статические макеты Tower05",
+    "provider": "Собственная компоновка, существующие Venice-задники",
+    "evidence": "docs/art/ui-styleguide/2026-11-10-seven-windows/README.md"
+  },
+  {
+    "prefix": "docs/art/tower/currency-icons-2026-11-10/originals/",
+    "source_root": "worktree",
+    "status": "approved-runtime-art",
+    "title": "Расходники и эмблемы Башни",
+    "provider": "GPT imagegen от утверждённых Venice-референсов",
+    "evidence": "docs/art/ui-styleguide/2026-11-10-tower-currency-icons/root-receipt.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-11-01-swordsmen/revisions/",
+    "source_root": "main-copy",
+    "status": "mixed-revision-archive-see-selected-revisions",
+    "title": "Ревизии иконок Воителя и Отступника",
+    "provider": "GPT imagegen от Venice cleave",
+    "evidence": "docs/art/icons/2026-11-01-swordsmen/selected-revisions.json"
+  },
+  {
+    "prefix": "docs/art/icons/2026-11-01-swordsmen/",
+    "source_root": "main-copy",
+    "status": "approved-art-archive-see-manifest",
+    "title": "Воитель и Отступник — 197 новых мастеров, 14 выбранных ревизий",
+    "provider": "GPT imagegen от Venice cleave",
+    "evidence": "docs/art/icons/2026-11-01-swordsmen/README.md; manifest.json; selected-revisions.json"
+  },
+  {
+    "prefix": "docs/art/icons/2026-11-03-stained-glass-skills/masters/",
+    "source_root": "any",
+    "status": "owner-approved",
+    "title": "Витражная пятёрка навыков",
+    "provider": "GPT imagegen от Venice glass",
+    "evidence": "docs/art/icons/2026-11-03-stained-glass-skills/README.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-11-03-stained-glass-skills/adoption/",
+    "source_root": "any",
+    "status": "approved-runtime-evidence",
+    "title": "Витражная пятёрка в игре",
+    "provider": "Godot runtime",
+    "evidence": "docs/art/icons/2026-11-03-stained-glass-skills/adoption/README.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-10-31-cleave-nodes/",
+    "source_root": "any",
+    "status": "approved-art-and-runtime",
+    "title": "17 индивидуальных узлов Рассекающего удара",
+    "provider": "GPT imagegen от Venice cleave",
+    "evidence": "docs/art/icons/2026-10-31-cleave-nodes/README.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-10-31-venice-ui-concepts/d4.png",
+    "source_root": "any",
+    "status": "owner-approved-style-reference",
+    "title": "Venice D4 — основной художественный эталон",
+    "provider": "Venice",
+    "evidence": "docs/art/ART_DIRECTION.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-10-31-venice-ui-concepts/",
+    "source_root": "any",
+    "status": "style-exploration-not-all-approved",
+    "title": "Поиск UI-стиля Venice",
+    "provider": "Venice",
+    "evidence": "docs/art/ART_DIRECTION.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-10-31-venice-tower-icons/",
+    "source_root": "any",
+    "status": "owner-approved-reference-family",
+    "title": "Venice — эталон формы иконок",
+    "provider": "Venice",
+    "evidence": "docs/art/ART_DIRECTION.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-10-31-venice-tower-backgrounds/",
+    "source_root": "any",
+    "status": "owner-approved-reference-family",
+    "title": "Башенные пространства: персонаж, навыки, пассивки",
+    "provider": "Venice",
+    "evidence": "docs/art/ART_DIRECTION.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-10-31-venice-full-backgrounds/",
+    "source_root": "any",
+    "status": "adopted-background-family",
+    "title": "Семь самостоятельных архитектурных сцен",
+    "provider": "Venice seedream-v5-pro-edit",
+    "evidence": "docs/art/icons/2026-10-31-venice-full-backgrounds/README.md; ART_DIRECTION.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-10-31-gpt-remaining-backgrounds/",
+    "source_root": "any",
+    "status": "superseded-exploration",
+    "title": "Исторические GPT-пробы задников, заменены Venice",
+    "provider": "GPT imagegen",
+    "evidence": "docs/art/icons/2026-10-31-venice-full-backgrounds/README.md"
+  },
+  {
+    "prefix": "docs/art/icons/2026-10-31-gpt-controlled-edit/",
+    "source_root": "any",
+    "status": "research-not-runtime",
+    "title": "Контрольная предметная замена от Venice",
+    "provider": "GPT imagegen",
+    "evidence": "docs/art/icons/2026-10-31-gpt-controlled-edit/README.md"
+  },
+  {
+    "prefix": "docs/art/concepts/2026-10-31-rogue-kitsune/",
+    "source_root": "main-copy",
+    "status": "owner-approved-concepts-not-runtime",
+    "title": "Кицуне: старт, иллюзии, механизмы",
+    "provider": "Venice seedream-v5-pro",
+    "evidence": "spike-3d/briefs/rogue-kitsune/README.md (позднее подтверждение одобрения владельца)"
+  },
+  {
+    "prefix": "spike-3d/briefs/rogue-kitsune/",
+    "source_root": "main-copy",
+    "status": "research-3d-not-final-runtime",
+    "title": "Кицуне — три 3D-заготовки и проверка скелетов",
+    "provider": "Venice references; Tripo geometry/rig; Blender local renders",
+    "evidence": "spike-3d/briefs/rogue-kitsune/README.md"
+  },
+  {
+    "prefix": "spike-3d/briefs/rogach-rubaka/",
+    "source_root": "main-copy",
+    "status": "research-concept-model-pipeline",
+    "title": "Рогач-рубака: концепт, ортографии и модель",
+    "provider": "Venice concepts; Tripo model/rig (см. соседние JSON)",
+    "evidence": "spike-3d/briefs/rogach-rubaka.md; docs/art/2026-10-31-models-assets-alignment.md"
+  },
+  {
+    "prefix": "spike-3d/briefs/rogach-shaman/",
+    "source_root": "main-copy",
+    "status": "research-concept-model-pipeline",
+    "title": "Рогач-шаман: концепт, ортографии и модель",
+    "provider": "Venice concepts; Tripo model/rig (см. соседние JSON)",
+    "evidence": "spike-3d/briefs/rogach-shaman.md; docs/art/2026-10-31-models-assets-alignment.md"
+  },
+  {
+    "prefix": "docs/art/ronin/2026-10-31-grounding-fixed/",
+    "source_root": "main-copy",
+    "status": "targeted-runtime-fix-evidence",
+    "title": "Ронин — исправленная опора в анимации",
+    "provider": "Godot runtime",
+    "evidence": "docs/art/ronin/2026-10-31-playable/README.md"
+  },
+  {
+    "prefix": "docs/art/ronin/2026-10-31-playable/",
+    "source_root": "main-copy",
+    "status": "historical-runtime-integration-known-test-failures",
+    "title": "Ронин в игровой комнате — историческая интеграция",
+    "provider": "Godot runtime; Tripo/Mixamo assets",
+    "evidence": "docs/art/ronin/2026-10-31-playable/README.md (108/111, затем целевые фиксы)"
+  },
+  {
+    "prefix": "docs/art/cursor/2026-11-03-selection/",
+    "source_root": "main-copy",
+    "status": "ui-approved-playtest-three-options",
+    "title": "Курсоры: витраж, наконечник, ключ",
+    "provider": "Venice originals; GPT cutouts; Godot runtime",
+    "evidence": "docs/art/cursor/2026-11-03-selection/README.md"
+  },
+  {
+    "prefix": "docs/art/cursor/2026-11-03-venice-358/",
+    "source_root": "any",
+    "status": "research-selected-glass-reference",
+    "title": "Курсорные формы и витражный оригинал",
+    "provider": "Venice originals; GPT transparent derivatives in cutouts",
+    "evidence": "docs/art/STAINED_GLASS_EXPLORATION.md (main); cursor/2026-11-03-selection/README.md (main)"
+  },
+  {
+    "prefix": "docs/art/cursor/",
+    "source_root": "any",
+    "status": "historical-superseded-cursor-trials",
+    "title": "Исторические векторные курсоры",
+    "provider": "Собственная векторная геометрия",
+    "evidence": "docs/art/cursor/README.md; main cursor/2026-11-03-selection/README.md"
+  }
+]

@@ -1,0 +1,22 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.315 - Forward+ - Using Device #0: AMD - AMD Radeon RX 6750 XT
+
+ERROR: ConfigFile parse error at C:\Users\sibiya666\AppData\Local\Temp\dialoid-cursor-3657e19942ab40039598e04de2a0525e.cfg:0: Unexpected EOF while parsing simple tag.
+   at: _parse (core/io/config_file.cpp:293)
+   C# backtrace (most recent call first):
+       [0] int Godot.NativeCalls.godot_icall_1_159(nint, nint, string) (/root/godot/modules/mono/glue/GodotSharp/GodotSharp/Generated/NativeCalls.cs:1433)
+       [1] Godot.Error Godot.ConfigFile.Load(string) (/root/godot/modules/mono/glue/GodotSharp/GodotSharp/Generated/GodotObjects/ConfigFile.cs:185)
+       [2] string Dialoid.Game.Ui.Art.TowerCursor.LoadSelection(string) (C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\game\Ui\Art\TowerCursor.cs:50)
+       [3] void Dialoid.Game.Ui.Art.TowerCursorCheck.CheckPreferences(Dialoid.Game.Ui.Art.TowerCursor, string) (C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\game\Ui\Art\TowerCursorCheck.cs:143)
+       [4] void Dialoid.Game.Ui.Art.TowerCursorCheck+<_Ready>d__1.MoveNext() (C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\game\Ui\Art\TowerCursorCheck.cs:21)
+       [5] void System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start<TStateMachine>(TStateMachine&)
+       [6] void Dialoid.Game.Ui.Art.TowerCursorCheck._Ready()
+       [7] bool Godot.Node.InvokeGodotClassMethod(Godot.NativeInterop.godot_string_name&, Godot.NativeInterop.NativeVariantPtrArgs, Godot.NativeInterop.godot_variant&) (/root/godot/modules/mono/glue/GodotSharp/GodotSharp/Generated/GodotObjects/Node.cs:2660)
+       [8] bool Dialoid.Game.Ui.Art.TowerCursorCheck.InvokeGodotClassMethod(Godot.NativeInterop.godot_string_name&, Godot.NativeInterop.NativeVariantPtrArgs, Godot.NativeInterop.godot_variant&) (C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\game\.godot\mono\temp\obj\Debug\Godot.SourceGenerators\Godot.SourceGenerators.ScriptMethodsGenerator\Dialoid.Game.Ui.Art.TowerCursorCheck_ScriptMethods.generated.cs:70)
+       [9] Godot.NativeInterop.godot_bool Godot.Bridge.CSharpInstanceBridge.Call(nint, Godot.NativeInterop.godot_string_name*, Godot.NativeInterop.godot_variant**, int, Godot.NativeInterop.godot_variant_call_error*, Godot.NativeInterop.godot_variant*) (/root/godot/modules/mono/glue/GodotSharp/GodotSharp/Core/Bridge/CSharpInstanceBridge.cs:24)
+Комната готова: модели есть, текстуры есть, качество High, недостает ассетов: 0
+Сессия готова: класс warrior, данные C:\Users\sibiya666\.codex\worktrees\seven-windows-runtime\dialoid\data
+CURSOR_BUTTONS_OK: ordinary button hand, disabled arrow, explicit Ibeam/Cross retained, plain Control arrow
+CURSOR_F8_OK: Viewport.PushInput press/release cycles once and saves isolated preference; echo ignored
+CURSOR_OK: 3 distinct 48px PNGs, opaque hotspots, shared Arrow/PointingHand; native=True
+CURSOR_SELECTION_OK: default, cycle, save/load, corrupt/unknown config, F8 guards, text focus; profile unchanged

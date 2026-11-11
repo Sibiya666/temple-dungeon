@@ -1,0 +1,2 @@
+# PDF artbooks contain encoded image streams and must never be diffed as text.
+*.pdf binary

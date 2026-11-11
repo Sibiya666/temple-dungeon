@@ -1,0 +1,151 @@
+{
+  "review_date": "2026-11-01",
+  "reviewer_role": "dialoid-technical-artist",
+  "review_type": "Independent review of another artist Warrior images; reviewer authored Apostate briefs, not these Warrior images.",
+  "scope": "Five Warrior node-icon families only; excludes parent skill paintings and other trees.",
+  "reference": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "art_direction": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/ART_DIRECTION.md",
+  "verdict": "APPROVE",
+  "total_count": 87,
+  "approved_count": 87,
+  "revise_count": 0,
+  "approved_family_count": 5,
+  "revise_family_count": 0,
+  "sizes_reviewed_px": [
+    64,
+    32,
+    24
+  ],
+  "criteria": "Distinct concrete readable silhouettes and appropriate ability metaphors; restrained Venice style; no baked text, UI frames or generic stat symbols. Exact numerical conditions need not be encoded in the artwork.",
+  "visual_findings": [
+    "No accidental letters, baked UI frames or generic stat symbols observed on reviewed sheets.",
+    "Cold restrained materials and local elemental accents are consistent with the approved reference.",
+    "Equipment edges and motion arcs are object/effect contours, not UI frames."
+  ],
+  "reviewed_sheets": [
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/crush-contact.png",
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/crush-sizes.png",
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/battle_cry-contact.png",
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/battle_cry-sizes.png",
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/whirlwind-contact.png",
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/whirlwind-sizes.png",
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/charge-contact.png",
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/charge-sizes.png",
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/throwing_axe-contact.png",
+    "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/review/throwing_axe-sizes.png"
+  ],
+  "families": [
+    {
+      "skill_id": "crush",
+      "count": 16,
+      "verdict": "APPROVE",
+      "approved_count": 16,
+      "revise_count": 0,
+      "blocking_asset_ids": [],
+      "closed_previous_blockers": [
+        {
+          "evidence": "The larger horizontal hammer impact reads as broad area at 64/32/24 px.",
+          "node_id": "wide_impact",
+          "status": "closed"
+        },
+        {
+          "evidence": "Nested raised ground contours provide a readable secondary-tremor metaphor.",
+          "node_id": "earthquake",
+          "status": "closed"
+        },
+        {
+          "evidence": "Large upward deformation below the impact replaces fine geological layering.",
+          "node_id": "deep_tremors",
+          "status": "closed"
+        },
+        {
+          "evidence": "A short close grip and compact strike communicate economical force without requiring numerical cost encoding.",
+          "node_id": "cold_calculation",
+          "status": "closed"
+        },
+        {
+          "evidence": "A clear return arc leads the hammer toward a receiving palm; distinct from peak_fury.",
+          "node_id": "fury_return",
+          "status": "closed"
+        }
+      ],
+      "notes": "Current contact and 64/32/24 sheets reinspected; all five v2 fixes remain approved, eleven unchanged approvals retained. Actual crush tree screenshot also inspected: icons occupy their frames and rank text is legible."
+    },
+    {
+      "skill_id": "battle_cry",
+      "count": 20,
+      "verdict": "APPROVE",
+      "approved_count": 20,
+      "revise_count": 0,
+      "blocking_asset_ids": [],
+      "closed_previous_blockers": [
+        {
+          "evidence": "Bandage-only replacement communicates recovery and remains readable at 24 px.",
+          "node_id": "unyielding",
+          "status": "closed"
+        },
+        {
+          "evidence": "Compact two-handed grip communicates controlled economical handling; previous enchantment ribbon removed.",
+          "node_id": "inspiration",
+          "status": "closed"
+        }
+      ],
+      "notes": "Both v2 replacements reviewed on the latest sheets; other eighteen retain their previous approval."
+    },
+    {
+      "skill_id": "whirlwind",
+      "count": 17,
+      "verdict": "APPROVE",
+      "approved_count": 17,
+      "revise_count": 0,
+      "blocking_asset_ids": [],
+      "closed_previous_blockers": [
+        {
+          "node_id": "frostbite",
+          "status": "closed",
+          "evidence": "Selected v2 inspected on updated contact and 64/32/24 px sheets: frost-coated wooden training post with a large diagonal split and detached ice fragments. Reads as damage against a chilled target rather than defensive armor. Distinct silhouette survives reduction; no text, UI frame, repair, armor or person."
+        }
+      ],
+      "blockers": [],
+      "notes": "Final frostbite-v2 asset-only rereview approved; other sixteen approvals unchanged. Whirlwind family is now 17/17 APPROVE. Earlier actual-game screenshot predates this replacement; refreshed final-run screenshot has not been inspected."
+    },
+    {
+      "skill_id": "charge",
+      "count": 18,
+      "verdict": "APPROVE",
+      "approved_count": 18,
+      "revise_count": 0,
+      "blocking_asset_ids": [],
+      "closed_previous_blockers": [],
+      "notes": "Full family reviewed at 64/32/24 px. Impact, traversal, recovery, armor and elemental metaphors are distinguishable; no incorrect mechanical mode found."
+    },
+    {
+      "skill_id": "throwing_axe",
+      "count": 16,
+      "verdict": "APPROVE",
+      "approved_count": 16,
+      "revise_count": 0,
+      "blocking_asset_ids": [],
+      "closed_previous_blockers": [],
+      "notes": "Full family reviewed at 64/32/24 px. Returning, catching, fan, piercing and ricochet compositions differ. Neutral curved bronze boomerang reads as a material, not fire."
+    }
+  ],
+  "runtime_ui_review": {
+    "status": "APPROVE",
+    "inspected_screenshots": [
+      "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/in-game-warrior/warrior-tree-crush.png",
+      "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/in-game-warrior/warrior-tree-whirlwind.png"
+    ],
+    "available_tree_screenshot_count": 6,
+    "runtime_verified": true,
+    "scope": "Visual verification of two actual game screenshots; log inspection of full Warrior exact-path asset check. No independent test execution or source-code review performed by this reviewer.",
+    "icon_frame_fill": "PASS: distinct node artwork occupies the intended square frames without visible stretching, spill or blank placeholder tiles in both inspected trees.",
+    "text_overlap": "PASS within inspected tree areas: no unintended overlap with headings or descriptions; rank counters intentionally occupy the lower icon area and remain legible. Lower description content extends below the scroll viewport; this is outside the node-art verdict.",
+    "evidence_log": "C:/Users/sibiya666/Documents/project/dialoid/docs/art/icons/2026-11-01-swordsmen/warrior-ui-final.log",
+    "evidence_log_result": "SWORDSMEN_ICONS_OK: mode=warrior-only; 104 exact 64x64 node PNGs, 0 AP skill PNGs; unsafe IDs rejected; active Warrior IDs matched; active catalog unchanged",
+    "full_warrior_node_count": 104,
+    "fallback_claim": "Exact-path success is evidenced by the log; the hardcoded-directory fix and no-fallback implementation were reported by the owner, not independently reviewed in source here.",
+    "latest_asset_revision_ui_status": "pending_refresh_for_frostbite_v2",
+    "latest_asset_revision_ui_note": "Previously inspected Crush and Whirlwind actual-game screenshots and 104-node log remain historical integration evidence. frostbite-v2 is approved at asset sizes only; no claim that this replacement has been visually checked in the refreshed game UI."
+  }
+}

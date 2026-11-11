@@ -55,6 +55,43 @@ public static class RoomHudTheme
         return theme;
     }
 
+    private static readonly SystemFont TowerSerif = new() { FontNames = new[] { "Georgia", "Times New Roman" } };
+
+    public static Label TowerHeading(string text, int size = HeadingSize)
+    {
+        var label = Heading(text, size);
+        label.AddThemeFontOverride("font", TowerSerif);
+        return label;
+    }
+
+    public static StyleBoxFlat TowerSurface(int padding = 8)
+    {
+        var surface = ReferenceSurface(padding);
+        surface.BgColor = new Color(.047f, .067f, .078f, .68f);
+        return surface;
+    }
+
+    public static Theme TowerWindowTheme()
+    {
+        var theme = ReferenceWindowTheme();
+        foreach (var type in new[] { "Button", "OptionButton" })
+        {
+            foreach (var state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled" })
+            {
+                var face = TowerSurface(6);
+                face.BgColor = Stone with { A = state == "hover" ? .85f : .58f };
+                face.BorderColor = state is "pressed" or "hover_pressed" ? Focus : Bronze;
+                theme.SetStylebox(state, type, face);
+            }
+            theme.SetStylebox("focus", type, ReferenceFocus());
+        }
+        foreach (var type in new[] { "Tree", "ItemList", "TextEdit", "LineEdit" })
+            theme.SetStylebox(type == "Tree" || type == "ItemList" ? "panel" : "normal", type, TowerSurface());
+        theme.SetColor("font_selected_color", "Tree", Parchment);
+        theme.SetStylebox("selected", "Tree", TowerSurface(2));
+        return theme;
+    }
+
     /// <summary>Each call returns a separate mutable style; no component shares focus state.</summary>
     public static StyleBoxTexture Panel(float margin = 8) => Frame("stone-frame.svg", margin);
     public static StyleBoxTexture Border() => Frame("bronze-border.svg", 0);

@@ -57,9 +57,12 @@ public partial class SkillsPanel : SessionPanel
     public void Setup(SandboxSession session, Action<NumberLine, string?> open)
     {
         InitSession(session);
-        Theme = RoomHudTheme.ReferenceWindowTheme();
+        Theme = RoomHudTheme.TowerWindowTheme();
         GetChild<ScrollContainer>(0).FollowFocus = true;
+        GetChild<ScrollContainer>(0).Resized += ApplySkillLayout;
         _open = open;
+        Resized += ApplySkillLayout;
+        VisibilityChanged += () => { if (IsVisibleInTree()) Callable.From(ConfigureSkillFocus).CallDeferred(); };
     }
 
     // ---- handlers (the controls and the self-test call these) -------------------------------------------------------
@@ -124,6 +127,8 @@ public partial class SkillsPanel : SessionPanel
 
     protected override void DrawContent()
     {
+        // Resolve paths only after replacement children enter the tree; no path survives a rebuild.
+        Callable.From(ConfigureSkillFocus).CallDeferred();
         _skillNumbers.Clear();
         _slotOptions.Clear();
         _slotChoices.Clear();
@@ -166,30 +171,41 @@ public partial class SkillsPanel : SessionPanel
             return;
         }
 
-        var heading = new HBoxContainer();
-        if (GameIcons.Skill(slot.SkillId) is { } picture) heading.AddChild(GameIcons.View(picture, 40));
-        heading.AddChild(RoomHudTheme.Heading(skill.Name, 20));
-        Content!.AddChild(heading);
-        DrawAssignmentControls();
+        var (graphPane, detail) = DrawSkillWorkspace(skill);
+        DrawAssignmentControls(detail);
         var levelNumber = NumberLabel.For(LevelLine(slot.Level, _treeSlot), _open, skill.Name);
+        PresentSkillNumber(levelNumber);
         _skillNumbers.Add(levelNumber);
-        Content!.AddChild(levelNumber);
+        detail.AddChild(levelNumber);
 
         int total = Session.SkillPointsTotal(_treeSlot), spent = Session.SkillPointsSpent(_treeSlot);
         PointsText = $"Очки дерева: потрачено {spent} из {total}, свободно {Session.SkillPointsFree(_treeSlot)}";
-        AddText(PointsText, spent > total ? Red : null);
+        SkillText(detail, PointsText, spent > total ? Red : null);
 
-        DrawSkillGraph(skill, _treeSlot);
+        DrawSkillGraph(skill, _treeSlot, graphPane, detail);
 
-        Content.AddChild(new HSeparator());
+        detail.AddChild(new HSeparator());
+        detail.AddChild(RoomHudTheme.TowerHeading("ЧИСЛА НАВЫКА", 15));
         var lines = Session.SkillLines(_treeSlot);
-        if (lines.Count == 0) AddText("Числа скилла не посчитаны: исправьте нарушения.", Red);
+        if (lines.Count == 0) SkillText(detail, "Числа скилла не посчитаны: исправьте нарушения.", Red);
         foreach (var line in lines)
         {
             var label = NumberLabel.For(line, _open, skill.Name);
+            PresentSkillNumber(label);
             _skillNumbers.Add(label);
-            Content.AddChild(label);
+            detail.AddChild(label);
         }
+    }
+
+    private static void PresentSkillNumber(NumberLabel label)
+    {
+        // The surrounding pane already names the skill. Keep its full breakdown context and tooltip,
+        // but wrap the local reading surface so even the longest line ends with a visible value.
+        label.Text = NumberLabel.TextOf(label.Line);
+        label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        label.TextOverrunBehavior = TextServer.OverrunBehavior.NoTrimming;
+        label.ClipText = true;
+        label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
     }
 
     /// <summary>Caption under the rotation: the simulator always tries every non-generator first (core Rotation).</summary>
@@ -201,7 +217,7 @@ public partial class SkillsPanel : SessionPanel
 
     private void DrawRotation(Build build)
     {
-        Content!.AddChild(RoomHudTheme.Heading("Приоритет навыков", 18));
+        Content!.AddChild(RoomHudTheme.TowerHeading("Приоритет навыков", 18));
         var order = ShownOrder();
         ShownRotation = order;
         if (order.Count == 0)

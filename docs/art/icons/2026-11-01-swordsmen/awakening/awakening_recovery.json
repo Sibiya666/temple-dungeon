@@ -1,0 +1,13 @@
+{
+  "skill_id": "awakening",
+  "node_id": "awakening_recovery",
+  "name": "Зов пробуждения",
+  "description": "4% increased Awakening cooldown recovery per point.",
+  "subject": "A hinged steel ember cradle springing back open after closing, its cooled outer lip and small returning core clearly separated. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/awakening/awakening_recovery.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-5f8b177b-85e7-42c6-a2b3-9b648437c60f.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A hinged steel ember cradle springing back open after closing, its cooled outer lip and small returning core clearly separated. Match the approved Venice Cleave reference: one dominant concrete silhouette, restrained natural materials, cool diffuse directional light, pale silver and ivory against a deep charcoal background, soft controlled edges and calm surfaces. Dark energy is readable silver-blue; effect color stays tiny and local. Keep the main form readable at 64, 32 and 24 px. No labels, letters, numbers, frames, UI, generic stat symbols, neon purple, broad bloom or black unreadable subject. Any supporting contact object remains subordinate; do not turn this into a multi-object scene or reuse the parent sword portrait. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

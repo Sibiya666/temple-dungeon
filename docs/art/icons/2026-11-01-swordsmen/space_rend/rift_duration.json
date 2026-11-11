@@ -1,0 +1,13 @@
+{
+  "skill_id": "space_rend",
+  "node_id": "rift_duration",
+  "name": "Долгий разлом",
+  "description": "Adds 0.5 seconds to ground-zone duration per point.",
+  "subject": "A low dimensional fissure held open by two thick curved silver edges, one small ribbon of vapor lingering above; clean inorganic spatial geometry without organic forms.",
+  "kind": "node",
+  "runtime_path": "game/Ui/Art/Icons/skill_nodes/space_rend/rift_duration.png",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-0e507836-7d79-4160-be41-ea093984ecc7.png",
+  "prompt": "Create ONE square Dialoid skill-tree icon. The supplied image is the approved Venice style reference. Replace only its central subject with: A low dimensional fissure held open by two thick curved silver edges, one small ribbon of vapor lingering above; clean inorganic spatial geometry without organic forms. Preserve original background, palette, exposure, contrast, diffuse light, material rendering and soft edges. Large centered main form occupying 75% of the square; recognizable silhouette at 24 pixels. No text, numbers, labels, border, frame, generic stat symbols, decorative ornaments, neon, bloom, overall glow or sharpening. Keep the opaque dark background."
+}

@@ -18,6 +18,8 @@ public partial class CharacterPanel : SessionPanel
 
     private Action<NumberLine, string?> _open = null!;
     private string? _commandError;
+    private string? _restoreFocus;
+    private VBoxContainer _settings = null!;
     private readonly List<NumberLabel> _numbers = new();
     private readonly List<string> _violations = new();
     private readonly List<CheckBox> _itemBoxes = new();
@@ -49,6 +51,7 @@ public partial class CharacterPanel : SessionPanel
     public void Setup(SandboxSession session, Action<NumberLine, string?> open)
     {
         InitSession(session);
+        Theme = RoomHudTheme.TowerWindowTheme();
         _open = open;
     }
 
@@ -73,6 +76,7 @@ public partial class CharacterPanel : SessionPanel
     {
         if (!result.Ok)
         {
+            RememberFocus();
             _commandError = result.Error;
             RequestRedraw();
         }
@@ -81,6 +85,7 @@ public partial class CharacterPanel : SessionPanel
 
     protected override void OnSessionChanged()
     {
+        RememberFocus();
         _commandError = null;
         RequestRedraw();
     }
@@ -98,6 +103,30 @@ public partial class CharacterPanel : SessionPanel
 
         if (_commandError != null) AddText("Команда отклонена: " + _commandError, Red);
 
+        Content!.AddChild(RoomHudTheme.TowerHeading("Снаряжение и показатели"));
+        if (Session.Violations.Count > 0)
+        {
+            var warning = new VBoxContainer { Name = "CharacterValidityWarning", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+            Content.AddChild(warning);
+            Note(warning, "Билд требует исправления", Red);
+            foreach (var violation in Session.Violations) Note(warning, "• " + violation.Message, Red);
+        }
+        var columns = new TowerColumns { Name = "CharacterColumns", LeftRatio = .40f,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        Content.AddChild(columns);
+        _settings = new VBoxContainer { Name = "CharacterSettings", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        columns.AddChild(_settings);
+        var identity = new HBoxContainer { Name = "CharacterIdentity" };
+        _settings.AddChild(identity);
+        identity.AddChild(new TextureRect { Texture = GameIcons.Class(build.ClassId),
+            CustomMinimumSize = new Vector2(72, 72), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, MouseFilter = MouseFilterEnum.Ignore });
+        var identityText = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        identity.AddChild(identityText);
+        identityText.AddChild(RoomHudTheme.TowerHeading(data.Classes[build.ClassId].Name, 24));
+        Note(identityText, build.AscendancyId is { } ascendancy ? data.Ascendancies[ascendancy].Name : "Асцендант не выбран");
+        Section(_settings, "НАСТРОЙКИ ПЕРСОНАЖА");
+
         // Class.
         var classIds = data.Classes.Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
         var classBox = Options(classIds.Select(id => data.Classes[id].Name), classIds.IndexOf(build.ClassId));
@@ -109,13 +138,16 @@ public partial class CharacterPanel : SessionPanel
             classBox.GetPopup().SetItemIconMaxWidth(i, 24);
         }
         classBox.ItemSelected += i => SelectClass(classIds[(int)i]);
-        Row("Класс (смена сбрасывает билд)", classBox);
+        Row("Класс", classBox);
+        Note(_settings, "Смена класса сбрасывает билд.");
 
         // Level: the slider applies on release (or on a click/keyboard step) so dragging does not rebuild the panel;
         // the mouse wheel does not change it (scrolling the page over it must not edit the build).
         var levelNumber = NumberLabel.For(LevelLine(build.Level), _open);
+        StyleNumber(levelNumber);
         var slider = new HSlider
         {
+            Name = "LevelSlider",
             MinValue = 1,
             MaxValue = BuildRules.MaxLevel,
             Step = 1,
@@ -138,6 +170,7 @@ public partial class CharacterPanel : SessionPanel
             CallDeferred(MethodName.ApplyLevel, (int)slider.Value);
         };
         _numbers.Add(levelNumber);
+        levelNumber.Name = "LevelNumber";
         Row("Уровень", slider, levelNumber);
 
         // Ascendancy: only the current class's, chosen from level 20 (an already chosen one can always be removed).
@@ -145,23 +178,27 @@ public partial class CharacterPanel : SessionPanel
         ascIds.AddRange(data.Ascendancies.Values.Where(a => a.ClassId == build.ClassId)
             .OrderBy(a => a.Id, StringComparer.Ordinal).Select(a => (string?)a.Id));
         var ascBox = Options(ascIds.Select(id => id == null ? "(нет)" : data.Ascendancies[id].Name), ascIds.IndexOf(build.AscendancyId));
+        ascBox.Name = "AscendancyChoice";
         ascBox.AddThemeConstantOverride("icon_max_width", 24);
         for (int i = 1; i < ascIds.Count; i++)
         {
             var start = data.Ascendancies[ascIds[i]!].Start;
-            ascBox.SetItemIcon(i, GameIcons.Perk(start.Id, start.Effects));
+            ascBox.SetItemIcon(i, AscendancyIcons.For(start));
             ascBox.GetPopup().SetItemIconMaxWidth(i, 24);
         }
         ascBox.Disabled = build.Level < BuildRules.AscendancyUnlockLevel && build.AscendancyId == null;
         ascBox.ItemSelected += i => SelectAscendancy(ascIds[(int)i]);
         Row("Асцендант", ascBox,
-            ascBox.Disabled ? new Label { Text = $"открывается с {BuildRules.AscendancyUnlockLevel} уровня" } : null);
+            ascBox.Disabled ? new Label { Text = $"Открывается с {BuildRules.AscendancyUnlockLevel} уровня",
+                AutowrapMode = TextServer.AutowrapMode.WordSmart } : null);
 
         // Weapon: any class may take any weapon stub (spec §8); a type the attacks cannot use shows up as a violation.
         var weaponIds = new List<string?> { null };
         weaponIds.AddRange(data.Weapons.Keys.OrderBy(k => k, StringComparer.Ordinal).Select(k => (string?)k));
         var weaponBox = Options(weaponIds.Select(id => id == null ? "(нет)" : data.Weapons[id].Name),
             weaponIds.IndexOf(build.WeaponId));
+        weaponBox.Name = "WeaponChoice";
+        Section(_settings, "СНАРЯЖЕНИЕ");
         weaponBox.AddThemeConstantOverride("icon_max_width", 24);
         for (int i = 1; i < weaponIds.Count; i++)
         {
@@ -174,42 +211,105 @@ public partial class CharacterPanel : SessionPanel
         Row("Оружие", weaponBox);
 
         // Items.
-        AddText("Предметы-заглушки:");
+        Note(_settings, "Предметы");
         foreach (var item in data.Items.Values.OrderBy(i => i.Id, StringComparer.Ordinal))
         {
             var id = item.Id;
-            var box = new CheckBox { Text = item.Name, ButtonPressed = build.ItemIds.Contains(id) };
+            var box = new CheckBox { Name = "Item_" + id, Text = item.Name, ButtonPressed = build.ItemIds.Contains(id),
+                TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis, TooltipText = item.Name };
             box.Icon = id == "ring_of_mist" ? GameIcons.Symbol("ring") : GameIcons.Skill(item.GrantsSkill);
             box.AddThemeConstantOverride("icon_max_width", 24);
             box.Toggled += _ => ToggleItem(id);
             _itemBoxes.Add(box);
-            Content!.AddChild(box);
+            _settings.AddChild(box);
         }
 
         // Violations.
-        Content!.AddChild(new HSeparator());
+        Section(_settings, "СОСТОЯНИЕ БИЛДА");
         var violations = Session.Violations;
-        if (violations.Count == 0) AddText("Нарушений нет.");
+        if (violations.Count == 0) Note(_settings, "Нарушений нет.");
         else
         {
-            AddText("Нарушения:", Red);
+            Note(_settings, "Нарушения:", Red);
             foreach (var v in violations)
             {
                 _violations.Add(v.Message);
-                AddText("• " + v.Message, Red);
+                Note(_settings, "• " + v.Message, Red);
             }
         }
 
         // Numbers.
-        Content.AddChild(new HSeparator());
+        var stats = new VBoxContainer { Name = "CharacterStats", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        columns.AddChild(stats);
+        Section(stats, "ПОКАЗАТЕЛИ ПЕРСОНАЖА");
+        Note(stats, "Выберите показатель, чтобы открыть его разбор.");
         var lines = Session.CharacterLines;
-        if (lines.Count == 0) AddText("Показатели не посчитаны: исправьте нарушения.", Red);
+        if (lines.Count == 0) Note(stats, "Показатели не посчитаны: исправьте нарушения.", Red);
         foreach (var line in lines)
         {
+            var heading = line.Key switch
+            {
+                "str" => "АТРИБУТЫ", "life" => "ЗДОРОВЬЕ", "resource_max" => "РЕСУРС",
+                "armor" => "ЗАЩИТА", "crit_chance" => "УРОН", _ => null,
+            };
+            if (heading != null) Section(stats, heading);
             var label = NumberLabel.For(line, _open);
+            StyleNumber(label);
+            label.Name = "Stat_" + line.Key;
+            label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             _numbers.Add(label);
-            Content.AddChild(label);
+            stats.AddChild(label);
         }
+        if (_restoreFocus is { } focusName)
+        {
+            _restoreFocus = null;
+            Callable.From(() =>
+            {
+                var owner = GetViewport().GuiGetFocusOwner();
+                if (owner != null && !IsAncestorOf(owner)) return;
+                var target = ButtonPrompts.Walk(this).OfType<Control>().FirstOrDefault(c => c.Name == focusName);
+                if (target != null && target.IsVisibleInTree() && target.FocusMode != FocusModeEnum.None)
+                    target.GrabFocus();
+            }).CallDeferred();
+        }
+    }
+
+    private void RememberFocus()
+    {
+        if (!IsInsideTree()) return;
+        var owner = GetViewport().GuiGetFocusOwner();
+        if (owner != null && IsAncestorOf(owner)) _restoreFocus = owner.Name;
+    }
+
+    private static void Section(VBoxContainer parent, string title)
+    {
+        parent.AddChild(RoomHudTheme.TowerHeading(title, 15));
+        parent.AddChild(new HSeparator());
+    }
+
+    private void StyleNumber(NumberLabel label)
+    {
+        // Preserve NumberLabel.Text and its breakdown contract, including values at the end of long captions.
+        label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        label.TextOverrunBehavior = TextServer.OverrunBehavior.NoTrimming;
+        label.ClipText = true;
+        // Flat numbers retain the established text geometry while inheriting Tower05 states.
+        var defaults = ThemeDB.GetDefaultTheme().GetStylebox("normal", "Button");
+        foreach (var state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled", "focus" })
+        {
+            var style = (StyleBox)Theme.GetStylebox(state, "Button").Duplicate();
+            foreach (var side in new[] { Side.Left, Side.Right, Side.Top, Side.Bottom })
+                style.SetContentMargin(side, defaults.GetContentMargin(side));
+            label.AddThemeStyleboxOverride(state, style);
+        }
+    }
+
+    private static void Note(VBoxContainer parent, string text, Color? color = null)
+    {
+        var label = new Label { Text = text, AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        label.AddThemeColorOverride("font_color", color ?? RoomHudTheme.MutedText);
+        parent.AddChild(label);
     }
 
     private void ApplyLevel(int level)
@@ -222,7 +322,7 @@ public partial class CharacterPanel : SessionPanel
 
     private static OptionButton Options(IEnumerable<string> texts, int selected)
     {
-        var box = new OptionButton();
+        var box = new OptionButton { FitToLongestItem = false, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         foreach (var t in texts) box.AddItem(t);
         box.Selected = selected;
         return box;
@@ -230,15 +330,15 @@ public partial class CharacterPanel : SessionPanel
 
     private void Row(string caption, params Control?[] controls)
     {
-        var row = new HBoxContainer();
-        row.AddChild(new Label { Text = caption + ":", CustomMinimumSize = new Vector2(240, 0) });
+        var row = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        Note(row, caption);
         foreach (var c in controls)
         {
             if (c == null) continue;
-            // A number beside a control (the level) keeps its whole text: «…» there would hide the number.
+            // The level keeps its whole text: «…» there would hide the number.
             if (c is NumberLabel number) number.TextOverrunBehavior = TextServer.OverrunBehavior.NoTrimming;
             row.AddChild(c);
         }
-        Content!.AddChild(row);
+        _settings.AddChild(row);
     }
 }

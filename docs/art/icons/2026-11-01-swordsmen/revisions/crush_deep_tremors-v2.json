@@ -1,0 +1,11 @@
+{
+  "key": "crush/deep_tremors",
+  "skill_id": "crush",
+  "node_id": "deep_tremors",
+  "subject": "A shallow impact depression above ONE massive upward-moving wedge of stone deforming it from underneath, a clean cutaway silhouette with just two large stone masses. Force from below, not a layered geological cube.",
+  "provider": "GPT built-in image_gen",
+  "reference": "docs/art/icons/2026-10-31-venice-tower-icons/cleave.png",
+  "source": "C:\\Users\\sibiya666\\.codex\\generated_images\\01a18f14-7a1b-7f33-9864-f1ad58c78ddc\\exec-45bd17c9-4f81-49d5-a2e1-d10bec5f07ea.png",
+  "prompt": "Create ONE square Dialoid icon. Use the supplied approved Venice ORIGINAL as exact style reference. Replace only the central subject with: A shallow impact depression above ONE massive upward-moving wedge of stone deforming it from underneath, a clean cutaway silhouette with just two large stone masses. Force from below, not a layered geological cube. Keep the original background, palette, diffuse lighting, exposure, contrast, materials, soft edges and detail density. Main form occupies central75%, readable at24px. No letters, numbers, UI, borders, decorative ornaments, broad glow or added sharpening.",
+  "revision": 2
+}

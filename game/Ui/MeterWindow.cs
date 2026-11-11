@@ -4,6 +4,7 @@ using Dialoid.Core.Simulation;
 using Dialoid.Game.Room;
 using Dialoid.Sandbox;
 using Godot;
+using Dialoid.Game.Ui.Art;
 
 namespace Dialoid.Game.Ui;
 
@@ -33,7 +34,7 @@ public partial class MeterWindow : SessionPanel, IPadPanel
 
     private static readonly MeterMode[] ModeOrder = [MeterMode.DpsBySkill, MeterMode.DamageBySkill, MeterMode.DamageByType, MeterMode.Mitigation];
     private static readonly SimMode[] SimModes = [SimMode.Roll, SimMode.Average];
-    private static readonly Color Grey = new(0.62f, 0.6f, 0.56f);
+    private static readonly Color Grey = new("9baeb3");
 
     private TrainingRoom _room = null!;
     private Action<NumberLine, string?> _open = null!;
@@ -390,31 +391,46 @@ public partial class MeterWindow : SessionPanel, IPadPanel
 
     private void Build()
     {
-        AddThemeConstantOverride("separation", 4);
+        Theme = RoomHudTheme.TowerWindowTheme();
+        AddThemeConstantOverride("separation", RoomHudTheme.ItemGap);
+        AddChild(RoomHudTheme.TowerHeading("Сегмент боя / наблюдаемый урон с учетом защиты манекена", 17));
+        var columns = new TowerColumns { Name = "MeterColumns", SizeFlagsVertical = SizeFlags.ExpandFill, LeftMinimumHeight = 190 };
+        AddChild(columns);
+        var summaryScroll = new ScrollContainer { Name = "SegmentScroll", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        columns.AddChild(summaryScroll);
+        var summary = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        summary.AddThemeConstantOverride("separation", RoomHudTheme.GroupGap);
+        summaryScroll.AddChild(summary);
+        summary.AddChild(RoomHudTheme.TowerHeading("ВЫБОР СЕГМЕНТА", 16));
+        var detailsScroll = new ScrollContainer { Name = "DetailsScroll", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        columns.AddChild(detailsScroll);
+        var details = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
+        details.AddThemeConstantOverride("separation", RoomHudTheme.GroupGap);
+        detailsScroll.AddChild(details);
 
         var top = new HBoxContainer { Name = "Segment" };
-        AddChild(top);
+        summary.AddChild(top);
         _segments = new OptionButton { Name = "Segments", FocusMode = FocusModeEnum.None, ClipText = true, TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis, FitToLongestItem = false, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(120, 0), TooltipText = SegmentsHint };
         _segments.ItemSelected += i => SelectSegment(i >= 0 && i < _segmentChoices.Count ? (i == 0 ? null : _segmentChoices[(int)i]) : null);
         top.AddChild(_segments);
 
         var modeRow = new HFlowContainer { Name = "ModeRow" };
-        AddChild(modeRow);
-        _modes = new OptionButton { Name = "Modes", FocusMode = FocusModeEnum.None };
+        details.AddChild(modeRow);
+        _modes = new OptionButton { Name = "Modes", FocusMode = FocusModeEnum.None, FitToLongestItem = false, ClipText = true, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(180, 0) };
         foreach (var mode in ModeOrder) _modes.AddItem(CombatLogText.MeterModeName(mode));
         _modes.Select(0);
         _modes.ItemSelected += i => SetMode(ModeOrder[(int)i]);
         modeRow.AddChild(_modes);
-        _change = new Label { Name = "Change", HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Stop };
+        _change = new Label { Name = "Change", AutowrapMode = TextServer.AutowrapMode.WordSmart, VerticalAlignment = VerticalAlignment.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Stop };
         ButtonPrompts.Info(_change);
-        modeRow.AddChild(_change);
 
-        _total = ButtonPrompts.Info(new Label { Name = "Total", ClipText = true, MouseFilter = MouseFilterEnum.Stop });
-        _total.AddThemeColorOverride("font_color", new Color(0.93f, 0.85f, 0.7f));
-        AddChild(_total);
+        _total = ButtonPrompts.Info(new Label { Name = "Total", AutowrapMode = TextServer.AutowrapMode.WordSmart, MouseFilter = MouseFilterEnum.Stop });
+        _total.AddThemeColorOverride("font_color", RoomHudTheme.Parchment);
+        summary.AddChild(_total);
+        summary.AddChild(_change);
 
         var scroll = new ScrollContainer { Name = "BarsScroll", SizeFlagsVertical = SizeFlags.ExpandFill, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, CustomMinimumSize = new Vector2(0, 60) };
-        AddChild(scroll);
+        details.AddChild(scroll);
         var barsBox = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         scroll.AddChild(barsBox);
         _bars = new MeterBars { Name = "Bars", SizeFlagsHorizontal = SizeFlags.ExpandFill };
@@ -427,11 +443,12 @@ public partial class MeterWindow : SessionPanel, IPadPanel
         _hint.AddThemeColorOverride("font_color", MeterColors.BonusText);
         barsBox.AddChild(_hint);
 
-        AddChild(new HSeparator());
+        details.AddChild(RoomHudTheme.TowerHeading("НАСТРОЙКИ КОМНАТЫ", 16));
+        details.AddChild(new HSeparator());
         var sim = new HFlowContainer { Name = "Sim" };
-        AddChild(sim);
+        details.AddChild(sim);
         sim.AddChild(new Label { Text = "Случайность:", VerticalAlignment = VerticalAlignment.Center });
-        _simMode = new OptionButton { Name = "SimMode", FocusMode = FocusModeEnum.None, TooltipText = "Бросок: настоящие криты и шансы недугов по сиду. Среднее: ожидаемые значения." };
+        _simMode = new OptionButton { Name = "SimMode", FocusMode = FocusModeEnum.None, FitToLongestItem = false, ClipText = true, CustomMinimumSize = new Vector2(100, 0), TooltipText = "Бросок: настоящие криты и шансы недугов по сиду. Среднее: ожидаемые значения." };
         foreach (var mode in SimModes) _simMode.AddItem(BreakdownText.ModeName(mode));
         _simMode.ItemSelected += i => SetSimMode(SimModes[(int)i], (int)_seed.Value);
         sim.AddChild(_simMode);
@@ -442,7 +459,7 @@ public partial class MeterWindow : SessionPanel, IPadPanel
         ButtonPrompts.SeedPad(_seed);
 
         var actions = new HFlowContainer { Name = "Actions" };
-        AddChild(actions);
+        summary.AddChild(actions);
         _reset = new Button { Name = "Reset", Text = "Сбросить", FocusMode = FocusModeEnum.None, TooltipText = "Закрыть текущий сегмент и удалить все сохраненные (спросит подтверждение)" };
         _reset.Pressed += RequestReset;
         actions.AddChild(_reset);
@@ -451,12 +468,13 @@ public partial class MeterWindow : SessionPanel, IPadPanel
         actions.AddChild(_charts);
         _floating = new CheckBox { Name = "Floating", Text = "Числа урона", ButtonPressed = true, FocusMode = FocusModeEnum.None, TooltipText = "Всплывающие числа урона над манекеном" };
         _floating.Toggled += SetFloatingNumbers;
-        actions.AddChild(_floating);
+        details.AddChild(_floating);
+        details.AddChild(new Label { Text = "Нажмите на полосу, чтобы открыть разбор урона скилла.", AutowrapMode = TextServer.AutowrapMode.WordSmart });
 
         _confirm = new VBoxContainer { Name = "ConfirmReset", Visible = false };
-        AddChild(_confirm);
+        summary.AddChild(_confirm);
         var question = new Label { Text = ResetQuestion, AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        question.AddThemeColorOverride("font_color", new Color(1f, 0.8f, 0.4f));
+        question.AddThemeColorOverride("font_color", new Color("c4968e"));
         _confirm.AddChild(question);
         var answers = new HBoxContainer();
         _confirm.AddChild(answers);
@@ -491,6 +509,7 @@ public partial class MeterWindow : SessionPanel, IPadPanel
 public partial class MeterBars : Control, IPadControl
 {
     public const float RowHeight = 26;
+    public float DisplayRowHeight => Size.X >= 760 ? 40 : RowHeight;
     public const float TextInset = 6;
     public const float MinGap = 12;
 
@@ -504,6 +523,7 @@ public partial class MeterBars : Control, IPadControl
     private Color[] _texts = Array.Empty<Color>();
     private float[] _labelWidths = Array.Empty<float>();
     private double _max;
+    private bool _wide;
 
     public IReadOnlyList<MeterRow> Rows => _rows;
     public bool Clickable { get; private set; }
@@ -523,7 +543,7 @@ public partial class MeterBars : Control, IPadControl
         _skillOrder = skillOrder ?? Array.Empty<string>();
         Clickable = clickable;
         MouseDefaultCursorShape = clickable ? CursorShape.PointingHand : CursorShape.Arrow;
-        CustomMinimumSize = new Vector2(0, rows.Count * RowHeight);
+        CustomMinimumSize = new Vector2(0, rows.Count * DisplayRowHeight);
         var n = rows.Count;
         _values = new string[n];
         _fills = new Color[n];
@@ -579,23 +599,24 @@ public partial class MeterBars : Control, IPadControl
 
     private float FillWidth(int index) => _max > 0 ? (float)(_rows[index].Value / _max) * Size.X : 0;
 
-    public int RowAt(Vector2 at) => at.Y < 0 ? -1 : (int)(at.Y / RowHeight) is var i && i < _rows.Count ? i : -1;
+    public int RowAt(Vector2 at) => at.Y < 0 ? -1 : (int)(at.Y / DisplayRowHeight) is var i && i < _rows.Count ? i : -1;
 
-    private (Font Font, int Size) Font() => (GetThemeDefaultFont(), GetThemeDefaultFontSize());
+    private (Font Font, int Size) Font() => (GetThemeDefaultFont(), GetThemeDefaultFontSize() + (Size.X >= 760 ? 3 : 0));
 
     public override void _Draw()
     {
         if (_rows.Count == 0) return;
         var (font, size) = Font();
         var ascent = font.GetAscent(size);
-        var textY = (RowHeight + ascent - font.GetDescent(size)) / 2;
+        var height = DisplayRowHeight;
+        var textY = (height + ascent - font.GetDescent(size)) / 2;
         for (var i = 0; i < _rows.Count; i++)
         {
-            var y = i * RowHeight;
-            var track = new Rect2(0, y + 1, Size.X, RowHeight - 2);
+            var y = i * height;
+            var track = new Rect2(0, y + 2, Size.X, height - 4);
             DrawRect(track, MeterColors.Track);
             var fill = FillWidth(i);
-            if (fill > 0) DrawRect(new Rect2(0, y + 1, fill, RowHeight - 2), _fills[i]);
+            if (fill > 0) DrawRect(new Rect2(0, y + 2, fill, height - 4), _fills[i]);
             if (i == _hover && HasFocus()) DrawRect(track.Grow(-1), WindowHost.FocusFrame, false, 2);
             else if (i == _hover && Clickable) DrawRect(track, MeterColors.HoverEdge, false, 1);
             DrawText(font, new Vector2(LabelX(i), y + textY), _rows[i].Label, HorizontalAlignment.Left, -1, size, _texts[i]);
@@ -633,7 +654,12 @@ public partial class MeterBars : Control, IPadControl
 
     public override void _Notification(int what)
     {
-        if (what == NotificationMouseExit && _hover >= 0 && !Dialoid.Game.Input.InputDevice.Gamepad)
+        if (what == NotificationResized && _wide != (Size.X >= 760))
+        {
+            _wide = Size.X >= 760;
+            SetRows(_rows, _mode, Clickable, _skillOrder);
+        }
+        else if (what == NotificationMouseExit && _hover >= 0 && !Dialoid.Game.Input.InputDevice.Gamepad)
         {
             _hover = -1;
             QueueRedraw();
@@ -652,7 +678,7 @@ public partial class MeterBars : Control, IPadControl
     public int FocusedRow => _hover;
 
     /// <summary>The focused row's rectangle on screen (the tooltip and checks).</summary>
-    public Rect2 RowRect(int index) => new(GlobalPosition + new Vector2(0, index * RowHeight), new Vector2(Size.X, RowHeight));
+    public Rect2 RowRect(int index) => new(GlobalPosition + new Vector2(0, index * DisplayRowHeight), new Vector2(Size.X, DisplayRowHeight));
 
     public bool PadInput(PadCommand command)
     {
@@ -667,9 +693,9 @@ public partial class MeterBars : Control, IPadControl
                 // Keep the row in view inside the window's scroll.
                 if (GetParent()?.GetParent() is ScrollContainer s2)
                 {
-                    var top = _hover * RowHeight;
+                    var top = _hover * DisplayRowHeight;
                     if (top < s2.ScrollVertical) s2.ScrollVertical = (int)top;
-                    else if (top + RowHeight > s2.ScrollVertical + s2.Size.Y) s2.ScrollVertical = (int)(top + RowHeight - s2.Size.Y);
+                    else if (top + DisplayRowHeight > s2.ScrollVertical + s2.Size.Y) s2.ScrollVertical = (int)(top + DisplayRowHeight - s2.Size.Y);
                 }
                 return true;
             case PadCommand.Accept:
@@ -682,7 +708,7 @@ public partial class MeterBars : Control, IPadControl
 
     public bool PadStick(Vector2 value, double delta) => false;
 
-    public string PadTooltip() => _hover >= 0 && _hover < _rows.Count ? _GetTooltip(new Vector2(4, _hover * RowHeight + RowHeight / 2)) : TooltipText;
+    public string PadTooltip() => _hover >= 0 && _hover < _rows.Count ? _GetTooltip(new Vector2(4, _hover * DisplayRowHeight + DisplayRowHeight / 2)) : TooltipText;
 
     public IEnumerable<(string Button, string Label)> PadPrompts()
     {
@@ -712,20 +738,20 @@ public partial class MeterBars : Control, IPadControl
 /// <summary>Colours of the meter and the charts: one per skill (by its slot), per damage type, per defence step; bonuses violet.</summary>
 public static class MeterColors
 {
-    public static readonly Color Track = new(0.16f, 0.15f, 0.14f);
-    public static readonly Color HoverEdge = new(0.93f, 0.85f, 0.7f);
-    public static readonly Color Text = new(0.96f, 0.94f, 0.9f);
+    public static readonly Color Track = new("132027");
+    public static readonly Color HoverEdge = new("b7cbd0");
+    public static readonly Color Text = new("d8d5c6");
     public static readonly Color TextShadow = new(0, 0, 0, 0.85f);
     public static readonly Color BonusText = new(0.82f, 0.68f, 1f);
     /// <summary>A row that holds zero, greyed out.</summary>
-    public static readonly Color Muted = new(0.55f, 0.53f, 0.5f);
+    public static readonly Color Muted = new("839399");
     /// <summary>The neutral «до защиты» base of «Потеря на защите».</summary>
     public static readonly Color Before = new(0.36f, 0.34f, 0.31f);
 
     private static readonly Color[] Skills =
     [
-        new(0.78f, 0.45f, 0.18f), new(0.25f, 0.5f, 0.76f), new(0.42f, 0.62f, 0.25f), new(0.68f, 0.32f, 0.52f),
-        new(0.7f, 0.6f, 0.2f), new(0.25f, 0.6f, 0.58f), new(0.52f, 0.38f, 0.72f), new(0.5f, 0.48f, 0.45f),
+        new("456674"), new("526575"), new("536b5b"), new("78546b"),
+        new("78795e"), new("497c78"), new("70627f"), new("6b777d"),
     ];
 
     public static readonly Color Final = new(0.36f, 0.6f, 0.3f);
